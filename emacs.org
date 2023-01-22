@@ -1,0 +1,584 @@
+#+title: Samuel Michael Vanie's EMACS Configuration
+#+PROPERTY: header-args:emacs-lisp :tangle ./init.el
+
+
+* Declare some global variables
+
+Declare some of my variables for my global configuration
+
+#+BEGIN_SRC emacs-lisp
+;; NOTE: init.el is now generated from Emacs.org.  Please edit that file
+;;       in Emacs and init.el will be generated automatically!
+
+;; You will most likely need to adjust this font size for your system!
+(defvar smv/default-font-size 112)
+(defvar smv/default-variable-font-size 112)
+#+END_SRC
+
+
+* Package System setup
+
+Emacs has a built in package manager but it doesn’t make it easy to automatically install packages on a new system the first time you pull down your configuration. use-package is a really helpful package used in this configuration to make it a lot easier to automate the installation and configuration of everything else we use.
+
+#+BEGIN_SRC emacs-lisp
+
+;; Initialize package sources
+(require 'package)
+
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("org" . "https://orgmode.org/elpa/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")))
+
+(package-initialize)
+(unless package-archive-contents
+  (package-refresh-contents))
+
+  ;; Initialize use-package on non-Linux platforms
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+
+(require 'use-package)
+(setq use-package-always-ensure t)
+
+#+END_SRC
+
+** Automatic update packages
+
+The auto-package-update package helps us keep our Emacs packages up to date! It will prompt you after a certain number of days either at startup or at a specific time of day to remind you to update your packages.
+
+You can also use M-x auto-package-update-now to update right now!
+
+#+begin_src emacs-lisp
+(use-package auto-package-update
+  :custom
+  (auto-package-update-interval 7)
+  (auto-package-update-prompt-before-update t)
+  (auto-package-update-hide-results t)
+  :config
+  (auto-package-update-maybe)
+  (auto-package-update-at-time "09:00"))
+#+end_src
+
+
+* Keep Folders clean
+
+We use the no-littering package to keep folders where we edit files and the Emacs configuration folder clean! It knows about a wide variety of variables for built in Emacs features as well as those from community packages so it can be much easier than finding and setting these variables yourself.
+
+#+begin_src emacs-lisp
+
+;; NOTE: If you want to move everything out of the ~/.emacs.d folder
+;; reliably, set `user-emacs-directory` before loading no-littering!
+;(setq user-emacs-directory "~/.cache/emacs")
+
+(use-package no-littering)
+
+;; no-littering doesn't set this by default so we must place
+;; auto save files in the same path as it uses for sessions
+(setq auto-save-file-name-transforms
+      `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+
+#+end_src
+
+
+* Basic UI Configuration
+
+This section configures basic UI settings that remove unneeded elements to make Emacs look a lot more minimal and modern.
+
+#+begin_src emacs-lisp
+
+(scroll-bar-mode -1) ; Disable visible scroll bar
+(tool-bar-mode -1) ; Disable the toolbar
+(tooltip-mode -1) ; Disable tooltips
+(set-fringe-mode 10) ; Give some breathing room
+(menu-bar-mode -1) ; Disable menu bar
+
+
+(column-number-mode)
+(global-display-line-numbers-mode t) ;; print line numbers for files
+
+;; some modes doesn't have to start with lines enable
+(dolist (mode '(org-mode-hook
+            term-mode-hook
+            shell-mode-hook
+            eshell-mode-hook))
+(add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+#+end_src
+
+** Font Configuration
+
+I use JetbrainsMono Nerd Font and Cantarell fonts as my mains fonts.
+- Jetbrains for code part with fixed font
+- Cantarell for text part for example in org mode
+
+#+begin_src emacs-lisp
+(set-face-attribute 'default nil :family "JetBrainsMono Nerd Font" :height smv/default-font-size)
+;; Set the fixed pitch face
+(set-face-attribute 'fixed-pitch nil :font "JetBrainsMono Nerd Font" :height smv/default-font-size)
+
+;; Set the variable pitch face
+(set-face-attribute 'variable-pitch nil :font "Cantarell" :height smv/default-variable-font-size :weight 'regular)
+#+end_src
+
+** Adding color to delimiters
+
+Rainbow permits to match pairs delimiters with the same color.
+
+#+begin_src emacs-lisp
+(use-package rainbow-delimiters
+	     :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+
+
+* Keybindings Configuration
+
+As a past vim user I use evil-mode to activate vim keybindings inside of my emacs configuration to navigate and edit code more easily.
+
+I also use general which permits to configure more easily my keybindings with a leader key.
+
+evil-collection permit to activate automatically evil-mode in multiple emacs packages
+
+#+begin_src emacs-lisp
+
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+(use-package general ;; for setting keybindings
+:ensure t
+:config
+(general-create-definer smv/leader-keys
+    :keymaps '(normal visual emacs)
+    :prefix "SPC"
+    :global-prefix "SPC")
+
+(smv/leader-keys
+    "t" '(:ignore t :which-key "toggles")
+    "tt" '(counsel-load-theme :which-key "choose theme")))
+
+;; Activate vim keybindings inside of emacs
+(use-package evil
+  :init
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-C-i-jump nil)
+  :config
+  (evil-mode 1)
+  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+  (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
+
+  (evil-set-initial-state 'messages-buffer-mode 'normal)
+  (evil-set-initial-state 'dashboard-mode 'normal))
+
+;; Add evil-keybindings to more modes inside of emacs
+(use-package evil-collection
+  :after evil
+  :config
+  (evil-collection-init))
+
+#+end_src
+
+
+* UI Configuration
+
+** Color Theme
+
+[[https://github.com/hlissner/emacs-doom-themes][doom-themes]]  is a set of themes that support various emacs modes. It also has support for doom-modeline that I use as my mode line.
+Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-theme~
+
+#+begin_src emacs-lisp
+(use-package doom-themes
+  :init (load-theme 'doom-dracula t))
+#+end_src
+
+** Better Mode line
+
+[[https://github.com/seagle0128/doom-modeline][doom-modeline]] is a very attractive and rich mode line configuration for emacs. I use all-the-icons packages to add to it some cool icons.
+You will have to install the icons on your machine before to get the full functionnalities : ~M-x all-the-icons-install-fonts~ .
+
+#+begin_src emacs-lisp
+
+(use-package all-the-icons)
+
+(use-package doom-modeline
+  :init (doom-modeline-mode 1)
+  :custom ((doom-modeline-height 15)))
+
+#+end_src
+
+** Which Key
+
+[[https://github.com/justbur/emacs-which-key][which-key]]  is a useful UI panel that appears when you start pressing any key binding in Emacs to offer you all possible completions for the prefix. For example, if you press C-c (hold control and press the letter c), a panel will appear at the bottom of the frame displaying all of the bindings under that prefix and which command they run. This is very useful for learning the possible key bindings in the mode of your current buffer.
+
+#+begin_src emacs-lisp
+(use-package which-key ;; print next keybindings
+	     :init (which-key-mode) ;; happens before the package is loaded
+	     :diminish which-key-mode
+	     :config ;; only runs after the mode is loaded
+	     (setq which-key-idle-delay 0.3))
+#+end_src
+
+** Ivy and Counsel
+
+[[https://oremacs.com/swiper/][Ivy]]  is an excellent completion framework for Emacs. It provides a minimal yet powerful selection menu that appears when you open files, switch buffers, and for many other tasks in Emacs. Counsel is a customized set of commands to replace `find-file` with `counsel-find-file`, etc which provide useful commands for each of the default completion commands.
+
+[[https://github.com/Yevgnen/ivy-rich][ivy-rich]]  adds extra columns to a few of the Counsel commands to provide more information about each item.
+
+#+begin_src emacs-lisp
+
+(use-package ivy
+  :diminish
+  :bind (("C-s" . swiper)
+         :map ivy-minibuffer-map
+         ("TAB" . ivy-alt-done)
+         ("C-l" . ivy-alt-done)
+         ("C-j" . ivy-next-line)
+         ("C-k" . ivy-previous-line)
+         :map ivy-switch-buffer-map
+         ("C-k" . ivy-previous-line)
+         ("C-l" . ivy-done)
+         ("C-d" . ivy-switch-buffer-kill)
+         :map ivy-reverse-i-search-map
+         ("C-k" . ivy-previous-line)
+         ("C-d" . ivy-reverse-i-search-kill))
+  :config
+  (ivy-mode 1))
+
+(use-package ivy-rich
+  :after ivy
+  :init
+  (ivy-rich-mode 1))
+
+(use-package counsel
+  :bind (("C-M-j" . 'counsel-switch-buffer)
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history))
+  :custom
+  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
+  :config
+  (counsel-mode 1))
+#+end_src
+
+*** Improved Candidate Sorting with prescient.el
+
+[[https://github.com/radian-software/prescient.el][prescient.el]] provides some helpful behavior for sorting Ivy completion candidates based on how recently or frequently you select them. This can be especially helpful when using M-x to run commands that you don’t have bound to a key but still need to access occasionally.
+
+#+begin_src emacs-lisp
+
+(use-package ivy-prescient
+  :after counsel
+  :custom
+  (ivy-prescient-enable-filtering nil)
+  :config
+  ;; Uncomment the following line to have sorting remembered across sessions!
+  ;(prescient-persist-mode 1)
+  (ivy-prescient-mode 1))
+
+#+end_src
+
+
+** Helpful Help Commands
+
+[[https://github.com/Wilfred/helpful][Helpful]] adds a lot of very helpful (get it?) information to Emacs’ describe- command buffers. For example, if you use describe-function, you will not only get the documentation about the function, you will also see the source code of the function and where it gets used in other places in the Emacs configuration. It is very useful for figuring out how things work in Emacs.
+
+#+begin_src emacs-lisp
+
+(use-package helpful
+  :commands (helpful-callable helpful-variable helpful-command helpful-key)
+  :custom
+  (counsel-describe-function-function #'helpful-callable)
+  (counsel-describe-variable-function #'helpful-variable)
+  :bind
+  ([remap describe-function] . counsel-describe-function)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-variable] . counsel-describe-variable)
+  ([remap describe-key] . helpful-key))
+
+#+end_src
+
+
+** Text Scaling
+
+I use hydra to build a trasient that will permit me to quickly adjust the scale of my text. I boud it to `C-s t s`, and once activated, j and k to increase and decrease the text size.
+
+#+begin_src emacs-lisp
+(use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple times
+
+(defhydra hydra-text-scale (:timeout 3)
+  "scalte text"
+  ("j" text-scale-increase "in")
+  ("k" text-scale-decrease "out")
+  ("f" nil "finished" :exit t))
+
+(smv/leader-keys ;; use general to set a keybinding to quickly change text size
+  "ts" '(hydra-text-scale/body :which-key "scale text"))
+#+end_src
+
+
+* Org Mode
+
+[[https://orgmode.org/][OrgMode]] is a rich document editor, project planner, task and time tracker, blogging engine, and literate coding utility all wrapped up in one package.
+
+** Better Font Faces
+
+I create a function called `smv/org-font-setup` to configure various text faces for tweaking org-mode. I have fixed font for code source, table, ... and variable font (Cantarell for text).
+
+#+begin_src emacs-lisp
+
+(defun smv/org-font-setup ()
+ (font-lock-add-keywords 'org-mode ;; Change the list icon style from "-" to "."
+                        '(("^ *\\([-]\\) "
+                           (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+ (font-lock-add-keywords 'org-mode
+                        '(("^ *\\([+]\\) "
+                           (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "◦"))))))
+
+ ;; configuration of heading levels size
+ (dolist (face '((org-level-1 . 1.2)
+		(org-level-2 . 1.1)
+		(org-level-3 . 1.05)
+		(org-level-4 . 1.0)
+		(org-level-5 . 1.1)
+		(org-level-6 . 1.1)
+		(org-level-7 . 1.1)
+		(org-level-8 . 1.1)))
+   (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+;; Ensure that anything that should be fixed-pitch in Org files appears that way
+  (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
+  (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
+  (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
+  (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
+  (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
+  (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
+
+#+end_src
+
+
+** Basic Config
+
+This section contains the basic configuration for org-mode plus the configuration for Org agendas and capture templates
+
+#+begin_src emacs-lisp
+
+(defun smv/org-mode-setup()
+  (org-indent-mode)
+  (variable-pitch-mode 1)
+  (auto-fill-mode 0)
+  (visual-line-mode 1)
+  (setq evil-auto-indent nil))
+
+  
+(use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
+:hook (org-mode . smv/org-mode-setup)
+:config
+(setq org-ellipsis " ▼:")
+(setq org-agenda-start-with-log-mode t)
+(setq org-log-done 'time)
+(setq org-log-into-drawer t)
+
+(setq org-agenda-files
+        '("~/.org/todo.org"))
+
+(setq org-todo-keywords
+        '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+        (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+
+;; easily move task to another header
+(setq org-refile-targets
+        '(("Archive.org" :maxlevel . 1)
+        ("Tasks.org" :maxlevel . 1)))
+
+;; Save Org buffers after refiling!
+(advice-add 'org-refile :after 'org-save-all-org-buffers)
+
+(setq org-tag-alist
+    '((:startgroup)
+        ; Put mutually exclusive tags here
+        (:endgroup)
+        ("@errand" . ?E)
+        ("@home" . ?H)
+        ("@work" . ?W)
+        ("agenda" . ?a)
+        ("planning" . ?p)
+        ("publish" . ?P)
+        ("batch" . ?b)
+        ("note" . ?n)
+        ("idea" . ?i)))
+
+(setq org-agenda-custom-commands
+    '(("d" "Dashboard"
+    ((agenda "" ((org-deadline-warning-days 7)))
+    (todo "NEXT"
+        ((org-agenda-overriding-header "Next Tasks")))
+    (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+
+    ("n" "Next Tasks"
+    ((todo "NEXT"
+        ((org-agenda-overriding-header "Next Tasks")))))
+
+    ("W" "Work Tasks" tags-todo "+work-email")
+
+    ;; Low-effort next actions
+    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+    ((org-agenda-overriding-header "Low Effort Tasks")
+    (org-agenda-max-todos 20)
+    (org-agenda-files org-agenda-files)))))
+
+(setq org-capture-templates ;; quickly add todos entries without going into the file
+    `(("t" "Tasks / Projects")
+    ("tt" "Task" entry (file+olp "~/.org/tasks.org" "Inbox")
+            "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
+
+    ("j" "Journal Entries")
+    ("jm" "Meeting" entry
+            (file+olp+datetree "~/.org/journal.org")
+            "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
+            :clock-in :clock-resume
+            :empty-lines 1)))
+
+(smv/org-font-setup))
+#+end_src
+
+
+** Nicer Heading
+
+[[https://github.com/sabof/org-bullets][org-bullets]] permits to change the icon used for the different headings in org-mode.
+
+I use also `org-num` to add numbers in front of my different headlines.
+
+#+begin_src emacs-lisp
+
+(use-package org-bullets ;; change the bullets in my org mode files
+    :after org
+    :hook (org-mode . org-bullets-mode)
+    :custom
+    (org-bullets-bullet-list '("◉" "☯" "○" "☯" "✸" "☯" "✿" "☯" "✜" "☯" "◆" "☯" "▶")))
+
+;; Outline numbering for org mode
+(use-package org-num
+  :load-path "lisp/"
+  :after org
+  :hook (org-mode . org-num-mode))
+#+end_src
+
+
+** Center buffers
+
+To center buffers I use the [[https://github.com/rnkn/olivetti][olivetti]] minor-mode. It is more easy and pratical and doesn't only serve in org-mode.
+
+#+begin_src emacs-lisp
+(use-package olivetti) ;; use to stretch the page on the center to be able to focus on document writing
+#+end_src
+
+
+** Configure Babel Languages
+
+To execute or export code in org-mode code blocks, you’ll need to set up org-babel-load-languages for each language you’d like to use. [[https://orgmode.org/worg/org-contrib/babel/languages.html][This page]] documents all of the languages that you can use with org-babel.
+
+#+begin_src emacs-lisp
+(with-eval-after-load 'org
+  (org-babel-do-load-languages
+      'org-babel-load-languages
+      '((emacs-lisp . t)
+      (python . t)))
+
+  (push '("conf-unix" . conf-unix) org-src-lang-modes))
+#+end_src
+
+
+** Structure Templates
+
+Org mode's [[https://orgmode.org/manual/Structure-Templates.html][structure template]] feature enables you to quickly insert code blocks into your Org files in combination with `org-tempo` by typing `<` followed by the template name like `el` or `py` and then press `TAB`. For example, to insert an empy `emacs-lisp` block below, you can type `<el` and press `TAB` to expand into such a block.
+
+#+begin_src emacs-lisp
+(with-eval-after-load 'org
+  ;; This is needed as of Org 9.2
+  (require 'org-tempo)
+
+  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("py" . "src python")))
+#+end_src
+
+
+** Auto-tangle Configuration files
+
+This snippets adds a hook to `org-mode` buffers so that efs/org-babel-tangle-config gets executed each time such a buffer gets saved. This function checks to see if the file being saved is the Emacs.org file you’re looking at right now, and if so, automatically exports the configuration here to the associated output files. Tangle is use to export org mode files into the configuration init.el file.
+
+#+begin_src emacs-lisp
+
+;; Automatically tangle our Emacs.org config file when we save it
+(defun smv/org-babel-tangle-config ()
+  (when (string-equal (buffer-file-name)
+                      (expand-file-name "~/.emacs.d/emacs.org"))
+    ;; Dynamic scoping to the rescue
+    (let ((org-confirm-babel-evaluate nil))
+      (org-babel-tangle))))
+
+(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'smv/org-babel-tangle-config)))
+
+#+end_src
+
+
+
+* Development
+
+** Languages
+
+** Company Mode
+
+** Projectile
+
+[[https://projectile.mx/][Projectile]] is my project management library for Emacs, it makes a lot easier to navigate around code for various languages.
+
+#+begin_src emacs-lisp
+
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :custom ((projectile-completion-system 'ivy))
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :init
+  ;; NOTE: Set this to the folder where you keep your Git repos!
+  (when (file-directory-p "~/projects")
+    (setq projectile-project-search-path '("~/projects")))
+  (setq projectile-switch-project-action #'projectile-dired))
+
+(use-package counsel-projectile
+  :after projectile
+  :config (counsel-projectile-mode))
+
+#+end_src
+
+
+** Magit
+
+[[https://magit.vc/][Magit]] is a git interface for emacs. It's very handy and fun to use.
+
+#+begin_src emacs-lisp
+(use-package magit
+  :commands magit-status
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
+;; NOTE: Make sure to configure a GitHub token before using this package!
+;; - https://magit.vc/manual/forge/Token-Creation.html#Token-Creation
+;; - https://magit.vc/manual/ghub/Getting-Started.html#Getting-Started
+(use-package forge
+  :after magit)
+#+end_src
+
+
+** Commenting
+
+I use evil-nerd-commenter to comment some regions of my code easily.
+
+#+begin_src emacs-lisp
+(use-package evil-nerd-commenter
+  :bind ("M-/" . evilnc-comment-or-uncomment-lines))
+#+end_src
