@@ -529,7 +529,94 @@ This snippets adds a hook to `org-mode` buffers so that efs/org-babel-tangle-con
 
 ** Languages
 
+*** IDE Features with lsp-mode
+
+Language server configuration for programming part.
+I use some useful lsp packages with downloaded languages server for my programming journey.
+
+**** lsp-mode
+
+#+begin_src emacs-lisp
+
+(defun efs/lsp-mode-setup ()
+  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+  (lsp-headerline-breadcrumb-mode))
+
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook (lsp-mode . efs/lsp-mode-setup)
+  :init
+  (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+  :config
+  (lsp-enable-which-key-integration t))
+
+#+end_src
+
+**** lsp-ui
+
+#+begin_src emacs-lisp
+
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-doc-position 'bottom))
+
+#+end_src
+
+**** lsp-treemacs
+
+#+begin_src emacs-lisp
+
+(use-package lsp-treemacs
+  :after lsp)
+
+#+end_src
+
+**** lsp-ivy
+
+lsp-ivy integrates Ivy with lsp-mode to make it easy to search for things by name in your code. When you run these commands, a prompt will appear in the minibuffer allowing you to type part of the name of a symbol in your code. Results will be populated in the minibuffer so that you can find what you’re looking for and jump to that location in the code upon selecting the result.
+
+#+begin_src emacs-lisp
+(use-package lsp-ivy)
+#+end_src
+
+*** TypeScript
+
+Typescript configuration in lsp.
+You will need to install typescript-language-server with `npm install -g typescript-language-server typescript` .
+
+#+begin_src emacs-lisp
+
+(use-package typescript-mode
+  :mode "\\.ts\\'"
+  :hook (typescript-mode . lsp-deferred)
+  :config
+  (setq typescript-indent-level 2))
+
+#+end_src
+
+
 ** Company Mode
+
+Company Mode provides a nicer in-buffer completion interface than completion-at-point which is more reminiscent of what you would expect from an IDE. We add a simple configuration to make the keybindings a little more useful (TAB now completes the selection and initiates completion at the current location if needed).
+
+#+begin_src emacs-lisp
+
+(use-package company
+  :after lsp-mode
+  :hook (lsp-mode . company-mode)
+  :bind (:map company-active-map
+         ("<tab>" . company-complete-selection))
+        (:map lsp-mode-map
+         ("<tab>" . company-indent-or-complete-common))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
+
+(use-package company-box
+  :hook (company-mode . company-box-mode))
+
+#+end_src
 
 ** Projectile
 
