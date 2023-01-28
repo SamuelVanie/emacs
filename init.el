@@ -354,11 +354,27 @@
 
 (use-package lsp-ivy)
 
+(use-package flycheck)
+
+(use-package yasnippet
+    :config (yas-global-mode))
+
+(use-package dap-mode)
+
 (use-package typescript-mode
-  :mode "\\.ts\\'"
-  :hook (typescript-mode . lsp-deferred)
-  :config
-  (setq typescript-indent-level 2))
+    :mode "\\.ts\\'"
+    :hook (typescript-mode . lsp-deferred)
+    :config
+    (setq typescript-indent-level 2)
+    (require 'dap-node)
+    (dap-node-setup))
+
+(use-package lsp-java
+    :config
+    (add-hook 'java-mode-hook 'lsp)
+    ;; current VSCode defaults for quick load
+    (setq lsp-java-vmargs '("-XX:+UseParallelGC" "-XX:GCTimeRatio=4" "-XX:AdaptiveSizePolicyWeight=90" "-Dsun.zip.disableMemoryMapping=true" "-Xmx2G" "-Xms100m"))
+)
 
 (use-package company
   :after lsp-mode
@@ -403,3 +419,16 @@
 
 (use-package evil-nerd-commenter
   :bind ("M-/" . evilnc-comment-or-uncomment-lines))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(company-box company lsp-java typescript-mode dap-mode yasnippet flycheck lsp-ivy lsp-treemacs which-key use-package treemacs rainbow-delimiters org-bullets olivetti no-littering lsp-ui ivy-rich ivy-prescient helpful general forge evil-nerd-commenter evil-collection doom-themes doom-modeline counsel-projectile auto-package-update all-the-icons)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )

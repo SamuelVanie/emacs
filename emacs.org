@@ -580,6 +580,34 @@ lsp-ivy integrates Ivy with lsp-mode to make it easy to search for things by nam
 (use-package lsp-ivy)
 #+end_src
 
+
+**** flycheck
+
+Show error on fly with flycheck package
+
+#+begin_src emacs-lisp
+(use-package flycheck)
+#+end_src
+
+
+**** yasnippet
+
+Useful snippets for quick programming
+
+#+begin_src emacs-lisp
+(use-package yasnippet
+    :config (yas-global-mode))
+#+end_src
+
+
+*** Debugging with dap-mode
+
+Dap-mode is the debugger mode. It goes with lsp-mode
+
+#+begin_src emacs-lisp
+(use-package dap-mode)
+#+end_src
+
 *** TypeScript
 
 Typescript configuration in lsp.
@@ -588,11 +616,24 @@ You will need to install typescript-language-server with `npm install -g typescr
 #+begin_src emacs-lisp
 
 (use-package typescript-mode
-  :mode "\\.ts\\'"
-  :hook (typescript-mode . lsp-deferred)
-  :config
-  (setq typescript-indent-level 2))
+    :mode "\\.ts\\'"
+    :hook (typescript-mode . lsp-deferred)
+    :config
+    (setq typescript-indent-level 2)
+    (require 'dap-node)
+    (dap-node-setup))
 
+#+end_src
+
+*** JAVA
+
+#+begin_src emacs-lisp
+(use-package lsp-java
+    :config
+    (add-hook 'java-mode-hook 'lsp)
+    ;; current VSCode defaults for quick load
+    (setq lsp-java-vmargs '("-XX:+UseParallelGC" "-XX:GCTimeRatio=4" "-XX:AdaptiveSizePolicyWeight=90" "-Dsun.zip.disableMemoryMapping=true" "-Xmx2G" "-Xms100m"))
+)
 #+end_src
 
 
