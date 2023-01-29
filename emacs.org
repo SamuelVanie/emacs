@@ -94,6 +94,7 @@ This section configures basic UI settings that remove unneeded elements to make 
 
 
 (column-number-mode)
+(setq display-line-numbers-type 'relative)
 (global-display-line-numbers-mode t) ;; print line numbers for files
 
 ;; some modes doesn't have to start with lines enable
@@ -608,6 +609,42 @@ Dap-mode is the debugger mode. It goes with lsp-mode
 (use-package dap-mode)
 #+end_src
 
+
+*** Web Programming
+
+**** Emmet-mode
+
+Emmet mode allors you to easily expand html and css abbreviations for instance if I type "p" then press control and j I get <p></p>. You can also use things like ~".container>section>(h1+p)"~.
+
+#+begin_src emacs-lisp
+(use-package emmet-mode)
+#+end_src>
+
+**** Web-mode
+The useful web mode for programming
+
+#+begin_src emacs-lisp
+(defun smv/web-mode-hook ()
+  "Hooks for Web mode."
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2)
+)
+
+(use-package web-mode
+    :mode ("\\.phtml\\'"  "\\.php\\'" "\\.[agj]sp\\'" "\\.as[cp]x\\'" "\\.erb\\'" "\\.mustache\\'" "\\.djhtml\\'" "\\.html?\\'" "\\.scss\\'" "\\.css\\'")
+    :hook (web-mode-hook . smv/web-mode-hook)
+)
+#+end_src>
+
+**** prettier
+
+Prettier automatically formats the code for you. I hate when it's in other modes but in web mode it's quite useful.
+
+#+begin_src emacs-lisp
+(use-package prettier)
+#+end_src
+
 *** TypeScript
 
 Typescript configuration in lsp.
@@ -646,10 +683,6 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
 (use-package company
   :after lsp-mode
   :hook (lsp-mode . company-mode)
-  :bind (:map company-active-map
-         ("<tab>" . company-complete-selection))
-        (:map lsp-mode-map
-         ("<tab>" . company-indent-or-complete-common))
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))
