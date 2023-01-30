@@ -673,6 +673,14 @@ You will need to install typescript-language-server with `npm install -g typescr
 )
 #+end_src
 
+*** R
+If you don't know the R language it's a scripting language mainly used in statistics.
+[[https://ess.r-project.org/][ess]] esigned to support editing of scripts and interaction with various statistical analysis programs such as R, S-Plus, SAS, Stata and OpenBUGS/JAGS. It will permit run the scripting command line R in emacs.
+
+#+begin_src emacs-lisp
+(use-package ess)
+#+end_src
+
 
 ** Company Mode
 
