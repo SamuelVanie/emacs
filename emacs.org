@@ -681,6 +681,13 @@ If you don't know the R language it's a scripting language mainly used in statis
 (use-package ess)
 #+end_src
 
+*** RUST
+
+#+begin_src emacs-lisp
+(use-package rust-mode
+    :hook (rust-mode . lsp-deferred))
+#+end_src
+
 
 ** Company Mode
 
