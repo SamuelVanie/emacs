@@ -225,8 +225,9 @@
     (org-notify-start)
 
     (org-notify-add 'default
-                '(:time "1d" :period "5m" :duration 70 :actions -notify)
-                '(:time "2d" :actions -email))
+                '(:time "1d" :period "5m" :duration 80 :actions -notify)
+                '(:time "2d" :period "10m" :duration 50 :actions -notify)
+                '(:time "3d" :actions -email))
 )
 
 (defun smv/org-mode-setup()
@@ -236,7 +237,7 @@
   (visual-line-mode 1)
   (setq evil-auto-indent nil))
 
-  
+
 (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
 :hook (org-mode . smv/org-mode-setup)
 :config
@@ -246,7 +247,8 @@
 (setq org-log-into-drawer t)
 
 (setq org-agenda-files
-        '("~/.org/todo.org"))
+        '("~/.org/todo.org"
+          "~/.org/projects.org"))
 
 (setq org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
@@ -254,8 +256,9 @@
 
 ;; easily move task to another header
 (setq org-refile-targets
-        '(("Archive.org" :maxlevel . 1)
-        ("Tasks.org" :maxlevel . 1)))
+        '(("archive.org" :maxlevel . 1)
+        ("todo.org" :maxlevel . 1)
+        ("projects.org" :maxlevel . 1)))
 
 ;; Save Org buffers after refiling!
 (advice-add 'org-refile :after 'org-save-all-org-buffers)
@@ -264,9 +267,7 @@
     '((:startgroup)
         ; Put mutually exclusive tags here
         (:endgroup)
-        ("@errand" . ?E)
-        ("@home" . ?H)
-        ("@work" . ?W)
+        ("@school" . ?s)
         ("agenda" . ?a)
         ("planning" . ?p)
         ("publish" . ?P)
@@ -285,7 +286,8 @@
     ((todo "NEXT"
         ((org-agenda-overriding-header "Next Tasks")))))
 
-    ("W" "Work Tasks" tags-todo "+work-email")
+    ("s" "School Tasks" tags-todo "+school")
+    ("P" "Projects" tags-todo "+projects")
 
     ;; Low-effort next actions
     ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
@@ -294,8 +296,8 @@
     (org-agenda-files org-agenda-files)))))
 
 (setq org-capture-templates ;; quickly add todos entries without going into the file
-    `(("t" "Tasks / Projects")
-    ("tt" "Task" entry (file+olp "~/.org/tasks.org" "Inbox")
+    `(("t" "Tasks")
+    ("tt" "Task" entry (file+olp "~/.org/todo.org" "Inbox")
             "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
     ("j" "Journal Entries")
