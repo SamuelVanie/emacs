@@ -215,6 +215,20 @@
   (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
   (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
+(use-package org
+    :ensure org-plus-contrib)
+
+(use-package org-notify
+    :ensure nil
+    :after org
+    :config
+    (org-notify-start)
+
+    (org-notify-add 'default
+                '(:time "1d" :period "5m" :duration 70 :actions -notify)
+                '(:time "2d" :actions -email))
+)
+
 (defun smv/org-mode-setup()
   (org-indent-mode)
   (variable-pitch-mode 1)
