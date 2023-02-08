@@ -26,16 +26,16 @@ Emacs has a built in package manager but it doesn’t make it easy to automatica
 (require 'package)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("org" . "https://orgmode.org/elpa/")
-                         ("elpa" . "https://elpa.gnu.org/packages/")))
+                        ("org" . "https://orgmode.org/elpa/")
+                        ("elpa" . "https://elpa.gnu.org/packages/")))
 
 (package-initialize)
 (unless package-archive-contents
-  (package-refresh-contents))
+(package-refresh-contents))
 
-  ;; Initialize use-package on non-Linux platforms
+;; Initialize use-package on non-Linux platforms
 (unless (package-installed-p 'use-package)
-  (package-install 'use-package))
+(package-install 'use-package))
 
 (require 'use-package)
 (setq use-package-always-ensure t)
@@ -157,25 +157,30 @@ evil-collection permit to activate automatically evil-mode in multiple emacs pac
 
 ;; Activate vim keybindings inside of emacs
 (use-package evil
-  :init
-  (setq evil-want-integration t)
-  (setq evil-want-keybinding nil)
-  (setq evil-want-C-u-scroll t)
-  (setq evil-want-C-i-jump nil)
-  :config
-  (evil-mode 1)
-  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-  (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
+    :init
+    (setq evil-want-integration t)
+    (setq evil-want-keybinding nil)
+    (setq evil-want-C-u-scroll t)
+    (setq evil-want-C-i-jump nil)
+    :config
+    (evil-mode 1)
+    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+    (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
 
-  (evil-set-initial-state 'messages-buffer-mode 'normal)
-  (evil-set-initial-state 'dashboard-mode 'normal))
+    (evil-set-initial-state 'messages-buffer-mode 'normal)
+    (evil-set-initial-state 'dashboard-mode 'normal))
 
 ;; Add evil-keybindings to more modes inside of emacs
 (use-package evil-collection
-  :after evil
-  :config
-  (evil-collection-init))
+    :after evil
+    :config
+    (evil-collection-init))
 
+
+(use-package evil-surround
+:ensure t
+:config
+    (global-evil-surround-mode 1))
 #+end_src
 
 
@@ -374,8 +379,8 @@ Permit to show notifications for tasks I have to do.
     (org-notify-start)
 
     (org-notify-add 'default
-                '(:time "1d" :period "5m" :duration 80 :actions -notify)
-                '(:time "2d" :period "10m" :duration 50 :actions -notify)
+                '(:time "1d" :period "30m" :duration 50 :actions -notify)
+                '(:time "2d" :period "50m" :duration 40 :actions -notify)
                 '(:time "3d" :actions -email))
 )
 #+end_src
@@ -387,84 +392,85 @@ This section contains the basic configuration for org-mode plus the configuratio
 
 #+begin_src emacs-lisp
 
-    (defun smv/org-mode-setup()
-      (org-indent-mode)
-      (variable-pitch-mode 1)
-      (auto-fill-mode 0)
-      (visual-line-mode 1)
-      (setq evil-auto-indent nil))
+(defun smv/org-mode-setup()
+(org-indent-mode)
+(variable-pitch-mode 1)
+(auto-fill-mode 0)
+(visual-line-mode 1)
+(setq evil-auto-indent nil))
 
-  
-    (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
-    :hook (org-mode . smv/org-mode-setup)
-    :config
-    (setq org-ellipsis " ▼:")
-    (setq org-agenda-start-with-log-mode t)
-    (setq org-log-done 'time)
-    (setq org-log-into-drawer t)
 
-    (setq org-agenda-files
-            '("~/.org/todo.org"
-              "~/.org/projects.org"))
+(use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
+:hook (org-mode . smv/org-mode-setup)
+:config
+(setq org-ellipsis " ▼:")
+(setq org-agenda-start-with-log-mode t)
+(setq org-log-done 'time)
+(setq org-log-into-drawer t)
 
-    (setq org-todo-keywords
-            '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-            (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+(setq org-agenda-files
+        '("~/.org/todo.org"
+        "~/.org/projects.org"
+        "~/.org/journal.org"))
 
-    ;; easily move task to another header
-    (setq org-refile-targets
-            '(("archive.org" :maxlevel . 1)
-            ("todo.org" :maxlevel . 1)
-            ("projects.org" :maxlevel . 1)))
+(setq org-todo-keywords
+        '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+        (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
-    ;; Save Org buffers after refiling!
-    (advice-add 'org-refile :after 'org-save-all-org-buffers)
+;; easily move task to another header
+(setq org-refile-targets
+        '(("archive.org" :maxlevel . 1)
+        ("todo.org" :maxlevel . 1)
+        ("projects.org" :maxlevel . 1)))
 
-    (setq org-tag-alist
-        '((:startgroup)
-            ; Put mutually exclusive tags here
-            (:endgroup)
-            ("@school" . ?s)
-            ("agenda" . ?a)
-            ("planning" . ?p)
-            ("publish" . ?P)
-            ("batch" . ?b)
-            ("note" . ?n)
-            ("idea" . ?i)))
+;; Save Org buffers after refiling!
+(advice-add 'org-refile :after 'org-save-all-org-buffers)
 
-    (setq org-agenda-custom-commands
-        '(("d" "Dashboard"
-        ((agenda "" ((org-deadline-warning-days 7)))
-        (todo "NEXT"
-            ((org-agenda-overriding-header "Next Tasks")))
-        (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+(setq org-tag-alist
+    '((:startgroup)
+        ; Put mutually exclusive tags here
+        (:endgroup)
+        ("@school" . ?s)
+        ("agenda" . ?a)
+        ("planning" . ?p)
+        ("publish" . ?P)
+        ("batch" . ?b)
+        ("note" . ?n)
+        ("idea" . ?i)))
 
-        ("n" "Next Tasks"
-        ((todo "NEXT"
-            ((org-agenda-overriding-header "Next Tasks")))))
+(setq org-agenda-custom-commands
+    '(("d" "Dashboard"
+    ((agenda "" ((org-deadline-warning-days 7)))
+    (todo "NEXT"
+        ((org-agenda-overriding-header "Next Tasks")))
+    (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
 
-        ("s" "School Tasks" tags-todo "+school")
-        ("P" "Projects" tags-todo "+projects")
+    ("n" "Next Tasks"
+    ((todo "NEXT"
+        ((org-agenda-overriding-header "Next Tasks")))))
 
-        ;; Low-effort next actions
-        ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-        ((org-agenda-overriding-header "Low Effort Tasks")
-        (org-agenda-max-todos 20)
-        (org-agenda-files org-agenda-files)))))
+    ("s" "School Tasks" tags-todo "+school")
+    ("P" "Projects" tags-todo "+projects")
 
-    (setq org-capture-templates ;; quickly add todos entries without going into the file
-        `(("t" "Tasks")
-        ("tt" "Task" entry (file+olp "~/.org/todo.org" "Inbox")
-                "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
+    ;; Low-effort next actions
+    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+    ((org-agenda-overriding-header "Low Effort Tasks")
+    (org-agenda-max-todos 20)
+    (org-agenda-files org-agenda-files)))))
 
-        ("j" "Journal Entries")
-        ("jm" "Meeting" entry
-                (file+olp+datetree "~/.org/journal.org")
-                "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
-                :clock-in :clock-resume
-                :empty-lines 1)))
+(setq org-capture-templates ;; quickly add todos entries without going into the file
+    `(("t" "Tasks")
+    ("tt" "Task" entry (file+olp "~/.org/todo.org" "Inbox")
+            "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
-    (smv/org-font-setup))
+    ("j" "Journal Entries")
+    ("jm" "Meeting" entry
+            (file+olp+datetree "~/.org/journal.org")
+            "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
+            :clock-in :clock-resume
+            :empty-lines 1)))
+
+(smv/org-font-setup))
 #+end_src
 
 
@@ -700,8 +706,18 @@ You will need to install typescript-language-server with `npm install -g typescr
 If you don't know the R language it's a scripting language mainly used in statistics.
 [[https://ess.r-project.org/][ess]] esigned to support editing of scripts and interaction with various statistical analysis programs such as R, S-Plus, SAS, Stata and OpenBUGS/JAGS. It will permit run the scripting command line R in emacs.
 
+I have also installed some packages like poly-R it permits to run R code inside of markdown files. It also permits to use RMarkdown format files inside of Emacs.
+
 #+begin_src emacs-lisp
 (use-package ess)
+(use-package markdown-mode)
+(use-package poly-R)
+
+(add-to-list 'auto-mode-alist
+            '("\\.[rR]md\\'" . poly-gfm+r-mode))
+
+;; use braces around code block language strings:
+(setq markdown-code-block-braces t)
 #+end_src
 
 *** RUST

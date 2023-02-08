@@ -9,16 +9,16 @@
 (require 'package)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("org" . "https://orgmode.org/elpa/")
-                         ("elpa" . "https://elpa.gnu.org/packages/")))
+                        ("org" . "https://orgmode.org/elpa/")
+                        ("elpa" . "https://elpa.gnu.org/packages/")))
 
 (package-initialize)
 (unless package-archive-contents
-  (package-refresh-contents))
+(package-refresh-contents))
 
-  ;; Initialize use-package on non-Linux platforms
+;; Initialize use-package on non-Linux platforms
 (unless (package-installed-p 'use-package)
-  (package-install 'use-package))
+(package-install 'use-package))
 
 (require 'use-package)
 (setq use-package-always-ensure t)
@@ -87,24 +87,30 @@
 
 ;; Activate vim keybindings inside of emacs
 (use-package evil
-  :init
-  (setq evil-want-integration t)
-  (setq evil-want-keybinding nil)
-  (setq evil-want-C-u-scroll t)
-  (setq evil-want-C-i-jump nil)
-  :config
-  (evil-mode 1)
-  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-  (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
+    :init
+    (setq evil-want-integration t)
+    (setq evil-want-keybinding nil)
+    (setq evil-want-C-u-scroll t)
+    (setq evil-want-C-i-jump nil)
+    :config
+    (evil-mode 1)
+    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+    (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
 
-  (evil-set-initial-state 'messages-buffer-mode 'normal)
-  (evil-set-initial-state 'dashboard-mode 'normal))
+    (evil-set-initial-state 'messages-buffer-mode 'normal)
+    (evil-set-initial-state 'dashboard-mode 'normal))
 
 ;; Add evil-keybindings to more modes inside of emacs
 (use-package evil-collection
-  :after evil
-  :config
-  (evil-collection-init))
+    :after evil
+    :config
+    (evil-collection-init))
+
+
+(use-package evil-surround
+:ensure t
+:config
+    (global-evil-surround-mode 1))
 
 (use-package doom-themes
   :init (load-theme 'doom-dracula t))
@@ -225,17 +231,17 @@
     (org-notify-start)
 
     (org-notify-add 'default
-                '(:time "1d" :period "5m" :duration 80 :actions -notify)
-                '(:time "2d" :period "10m" :duration 50 :actions -notify)
+                '(:time "1d" :period "30m" :duration 50 :actions -notify)
+                '(:time "2d" :period "50m" :duration 40 :actions -notify)
                 '(:time "3d" :actions -email))
 )
 
 (defun smv/org-mode-setup()
-  (org-indent-mode)
-  (variable-pitch-mode 1)
-  (auto-fill-mode 0)
-  (visual-line-mode 1)
-  (setq evil-auto-indent nil))
+(org-indent-mode)
+(variable-pitch-mode 1)
+(auto-fill-mode 0)
+(visual-line-mode 1)
+(setq evil-auto-indent nil))
 
 
 (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
@@ -248,7 +254,8 @@
 
 (setq org-agenda-files
         '("~/.org/todo.org"
-          "~/.org/projects.org"))
+        "~/.org/projects.org"
+        "~/.org/journal.org"))
 
 (setq org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
@@ -396,6 +403,14 @@
 )
 
 (use-package ess)
+(use-package markdown-mode)
+(use-package poly-R)
+
+(add-to-list 'auto-mode-alist
+            '("\\.[rR]md\\'" . poly-gfm+r-mode))
+
+;; use braces around code block language strings:
+(setq markdown-code-block-braces t)
 
 (use-package rust-mode
     :hook (rust-mode . lsp-deferred))
