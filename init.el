@@ -12,7 +12,6 @@
 (require 'package)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                        ("org" . "https://orgmode.org/elpa/")
                         ("elpa" . "https://elpa.gnu.org/packages/")))
 
 (package-initialize)
@@ -225,19 +224,20 @@
   (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
 (use-package org
-    :ensure org-plus-contrib)
+:pin gnu
+:ensure org-plus-contrib)
 
-(use-package org-notify
-    :ensure nil
-    :after org
-    :config
-    (org-notify-start)
+  (use-package org-notify
+      :ensure nil
+      :after org
+      :config
+      (org-notify-start)
 
-    (org-notify-add 'default
-                '(:time "1d" :period "30m" :duration 50 :actions -notify)
-                '(:time "2d" :period "50m" :duration 40 :actions -notify)
-                '(:time "3d" :actions -email))
-)
+      (org-notify-add 'default
+                  '(:time "1d" :period "30m" :duration 50 :actions -notify)
+                  '(:time "2d" :period "50m" :duration 40 :actions -notify)
+                  '(:time "3d" :actions -email))
+  )
 
 (defun smv/org-mode-setup()
 (org-indent-mode)
