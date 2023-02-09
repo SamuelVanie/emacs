@@ -1,9 +1,12 @@
 ;; NOTE: init.el is now generated from Emacs.org.  Please edit that file
-;;       in Emacs and init.el will be generated automatically!
+  ;;       in Emacs and init.el will be generated automatically!
 
-;; You will most likely need to adjust this font size for your system!
+  ;; You will most likely need to adjust this font size for your system!
 (defvar smv/default-font-size 112)
 (defvar smv/default-variable-font-size 112)
+
+;; remove noise for not non allowed command in emacs if your system make them
+(setq ring-bell-function 'ignore)
 
 ;; Initialize package sources
 (require 'package)
