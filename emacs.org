@@ -671,6 +671,7 @@ The useful web mode for programming
     :hook
     (web-mode . smv/web-mode-hook)
     (web-mode . emmet-mode)
+    (web-mode . lsp-deferred)
 )
 
 (add-to-list 'auto-mode-alist '("\\.ts\\'" . web-mode))
