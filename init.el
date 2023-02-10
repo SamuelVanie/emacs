@@ -12,6 +12,7 @@
 (require 'package)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
                         ("elpa" . "https://elpa.gnu.org/packages/")))
 
 (package-initialize)
@@ -224,8 +225,7 @@
   (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
 (use-package org
-:pin gnu
-:ensure org-plus-contrib)
+:ensure org-contrib)
 
   (use-package org-notify
       :ensure nil
@@ -457,3 +457,16 @@
 
 (use-package evil-nerd-commenter
   :bind ("M-/" . evilnc-comment-or-uncomment-lines))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(evil-nerd-commenter forge magit counsel-projectile projectile company-box company rust-mode poly-R ess lsp-java typescript-mode prettier dap-mode yasnippet flycheck lsp-ivy lsp-treemacs lsp-ui lsp-mode olivetti org-bullets org-contrib hydra helpful ivy-prescient counsel ivy-rich ivy which-key doom-modeline all-the-icons doom-themes evil-surround evil-collection evil general rainbow-delimiters no-littering auto-package-update use-package)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
