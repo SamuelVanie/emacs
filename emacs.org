@@ -25,22 +25,23 @@ Emacs has a built in package manager but it doesn’t make it easy to automatica
 
 #+BEGIN_SRC emacs-lisp
 
-;; Initialize package sources
-(require 'package)
+  ;; Initialize package sources
+  (require 'package)
 
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-			("elpa" . "https://elpa.gnu.org/packages/")))
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                           ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+                          ("elpa" . "https://elpa.gnu.org/packages/")))
 
-(package-initialize)
-(unless package-archive-contents
-(package-refresh-contents))
+  (package-initialize)
+  (unless package-archive-contents
+  (package-refresh-contents))
 
-;; Initialize use-package on non-Linux platforms
-(unless (package-installed-p 'use-package)
-(package-install 'use-package))
+  ;; Initialize use-package on non-Linux platforms
+  (unless (package-installed-p 'use-package)
+  (package-install 'use-package))
 
-(require 'use-package)
-(setq use-package-always-ensure t)
+  (require 'use-package)
+  (setq use-package-always-ensure t)
 
 #+END_SRC
 
@@ -666,15 +667,16 @@ The useful web mode for programming
 )
 
 
+(use-package web-mode
+    :hook
+    (web-mode . smv/web-mode-hook)
+    (web-mode . emmet-mode)
+)
+
 (add-to-list 'auto-mode-alist '("\\.ts\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.css?\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.js\\'" . web-mode))
-
-(use-package web-mode
-    :hook (web-mode-hook . smv/web-mode-hook)
-    (web-mode-hook . emmet-mode)
-)
 
 (add-hook 'web-mode-before-auto-complete-hooks
     '(lambda ()
