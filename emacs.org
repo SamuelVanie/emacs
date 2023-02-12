@@ -25,23 +25,23 @@ Emacs has a built in package manager but it doesn’t make it easy to automatica
 
 #+BEGIN_SRC emacs-lisp
 
-  ;; Initialize package sources
-  (require 'package)
+;; Initialize package sources
+(require 'package)
 
-  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                           ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-                          ("elpa" . "https://elpa.gnu.org/packages/")))
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+                        ("elpa" . "https://elpa.gnu.org/packages/")))
 
-  (package-initialize)
-  (unless package-archive-contents
-  (package-refresh-contents))
+(package-initialize)
+(unless package-archive-contents
+(package-refresh-contents))
 
-  ;; Initialize use-package on non-Linux platforms
-  (unless (package-installed-p 'use-package)
-  (package-install 'use-package))
+;; Initialize use-package on non-Linux platforms
+(unless (package-installed-p 'use-package)
+(package-install 'use-package))
 
-  (require 'use-package)
-  (setq use-package-always-ensure t)
+(require 'use-package)
+(setq use-package-always-ensure t)
 
 #+END_SRC
 
@@ -116,12 +116,12 @@ I use JetbrainsMono Nerd Font and Cantarell fonts as my mains fonts.
 - Cantarell for text part for example in org mode
 
 #+begin_src emacs-lisp
-(set-face-attribute 'default nil :family "JetBrainsMono Nerd Font" :height smv/default-font-size)
-;; Set the fixed pitch face
+
+(set-face-attribute 'default nil :family "JetBrainsMono Nerd Font" :height smv/default-font-size) ;; Set the fixed pitch face
 (set-face-attribute 'fixed-pitch nil :font "JetBrainsMono Nerd Font" :height smv/default-font-size)
 
-;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "Cantarell" :height smv/default-variable-font-size :weight 'regular)
+(set-face-attribute 'variable-pitch nil :font "Cantarell" :height smv/default-variable-font-size :weight 'regular) ;; Set the variable pitch face
+
 #+end_src
 
 ** Adding color to delimiters
@@ -170,6 +170,12 @@ evil-collection permit to activate automatically evil-mode in multiple emacs pac
     (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
     (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
 
+    (define-key evil-insert-state-map (kbd "C-n") nil)
+    (define-key evil-insert-state-map (kbd "C-p") nil)
+
+    (define-key evil-normal-state-map (kbd "C-n") nil)
+    (define-key evil-normal-state-map (kbd "C-p") nil)
+
     (evil-set-initial-state 'messages-buffer-mode 'normal)
     (evil-set-initial-state 'dashboard-mode 'normal))
 
@@ -196,7 +202,7 @@ Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-th
 
 #+begin_src emacs-lisp
 (use-package doom-themes
-  :init (load-theme 'doom-dracula t))
+  :init (load-theme 'doom-dark+ t))
 #+end_src
 
 ** Better Mode line
@@ -334,35 +340,35 @@ I create a function called `smv/org-font-setup` to configure various text faces 
 #+begin_src emacs-lisp
 
 (defun smv/org-font-setup ()
- (font-lock-add-keywords 'org-mode ;; Change the list icon style from "-" to "."
-                        '(("^ *\\([-]\\) "
-                           (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
- (font-lock-add-keywords 'org-mode
-                        '(("^ *\\([+]\\) "
-                           (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "◦"))))))
+    (font-lock-add-keywords 'org-mode ;; Change the list icon style from "-" to "."
+                            '(("^ *\\([-]\\) "
+                            (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+    (font-lock-add-keywords 'org-mode
+                            '(("^ *\\([+]\\) "
+                            (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "◦"))))))
 
- ;; configuration of heading levels size
- (dolist (face '((org-level-1 . 1.2)
-		(org-level-2 . 1.1)
-		(org-level-3 . 1.05)
-		(org-level-4 . 1.0)
-		(org-level-5 . 1.1)
-		(org-level-6 . 1.1)
-		(org-level-7 . 1.1)
-		(org-level-8 . 1.1)))
-   (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
-;; Ensure that anything that should be fixed-pitch in Org files appears that way
-  (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
-  (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
-  (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
-  (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
-  (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
-  (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
+    ;; configuration of heading levels size
+    (dolist (face '((org-level-1 . 1.2)
+                        (org-level-2 . 1.1)
+                        (org-level-3 . 1.05)
+                        (org-level-4 . 1.0)
+                        (org-level-5 . 1.1)
+                        (org-level-6 . 1.1)
+                        (org-level-7 . 1.1)
+                        (org-level-8 . 1.1)))
+        (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+    ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+    (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
+    (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
+    (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+    (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+    (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
+    (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
+    (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
 #+end_src
 
@@ -668,16 +674,16 @@ The useful web mode for programming
 
 
 (use-package web-mode
+    :mode (("\\.html?\\'" . web-mode)
+            ("\\.css?\\'" . web-mode)
+            ("\\.js\\'" . web-mode)
+            ("\\.ts\\'" . web-mode))
     :hook
     (web-mode . smv/web-mode-hook)
     (web-mode . emmet-mode)
+    (web-mode . prettier-mode)
     (web-mode . lsp-deferred)
 )
-
-(add-to-list 'auto-mode-alist '("\\.ts\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.css?\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.js\\'" . web-mode))
 
 (add-hook 'web-mode-before-auto-complete-hooks
     '(lambda ()
@@ -812,14 +818,4 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
 ;; - https://magit.vc/manual/ghub/Getting-Started.html#Getting-Started
 (use-package forge
   :after magit)
-#+end_src
-
-
-** Commenting
-
-I use evil-nerd-commenter to comment some regions of my code easily.
-
-#+begin_src emacs-lisp
-(use-package evil-nerd-commenter
-  :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 #+end_src
