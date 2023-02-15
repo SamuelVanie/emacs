@@ -147,16 +147,16 @@ evil-collection permit to activate automatically evil-mode in multiple emacs pac
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 (use-package general ;; for setting keybindings
-:ensure t
-:config
-(general-create-definer smv/leader-keys
-    :keymaps '(normal visual emacs)
-    :prefix "SPC"
-    :global-prefix "SPC")
+    :ensure t
+    :config
+    (general-create-definer smv/leader-keys
+        :keymaps '(normal visual emacs)
+        :prefix "SPC"
+        :global-prefix "SPC")
 
-(smv/leader-keys
-    "t" '(:ignore t :which-key "toggles")
-    "tt" '(counsel-load-theme :which-key "choose theme")))
+    (smv/leader-keys
+        "t" '(:ignore t :which-key "toggles")
+        "tt" '(counsel-load-theme :which-key "choose theme")))
 
 ;; Activate vim keybindings inside of emacs
 (use-package evil
@@ -176,6 +176,17 @@ evil-collection permit to activate automatically evil-mode in multiple emacs pac
     (define-key evil-normal-state-map (kbd "C-n") nil)
     (define-key evil-normal-state-map (kbd "C-p") nil)
 
+    (define-key evil-visual-state-map (kbd "C-n") nil)
+    (define-key evil-visual-state-map (kbd "C-p") nil)
+
+    (define-key evil-visual-state-map (kbd "C-a") nil)
+    (define-key evil-normal-state-map (kbd "C-a") nil)
+    (define-key evil-insert-state-map (kbd "C-a") nil)
+
+    (define-key evil-visual-state-map (kbd "C-e") nil)
+    (define-key evil-normal-state-map (kbd "C-e") nil)
+    (define-key evil-insert-state-map (kbd "C-e") nil)
+    
     (evil-set-initial-state 'messages-buffer-mode 'normal)
     (evil-set-initial-state 'dashboard-mode 'normal))
 
@@ -187,8 +198,8 @@ evil-collection permit to activate automatically evil-mode in multiple emacs pac
 
 
 (use-package evil-surround
-:ensure t
-:config
+    :ensure t
+    :config
     (global-evil-surround-mode 1))
 #+end_src
 
@@ -357,18 +368,18 @@ I create a function called `smv/org-font-setup` to configure various text faces 
                         (org-level-7 . 1.1)
                         (org-level-8 . 1.1)))
         (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
-    ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-    (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
-    (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
-    (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
-    (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
-    (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
-    (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-    (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-    (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-    (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
-    (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
-    (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
+        ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+        (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
+        (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
+        (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
+        (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
+        (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
+        (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+        (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+        (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+        (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
+        (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
+        (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
 #+end_src
 
@@ -379,7 +390,7 @@ Permit to show notifications for tasks I have to do.
 
 #+begin_src emacs-lisp
 (use-package org
-:ensure org-contrib)
+    :ensure org-contrib)
 
 (use-package org-notify
     :ensure nil
@@ -402,84 +413,84 @@ This section contains the basic configuration for org-mode plus the configuratio
 #+begin_src emacs-lisp
 
 (defun smv/org-mode-setup()
-(org-indent-mode)
-(variable-pitch-mode 1)
-(auto-fill-mode 0)
-(visual-line-mode 1)
-(setq evil-auto-indent nil))
+    (org-indent-mode)
+    (variable-pitch-mode 1)
+    (auto-fill-mode 0)
+    (visual-line-mode 1)
+    (setq evil-auto-indent nil))
 
 
 (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
-:hook (org-mode . smv/org-mode-setup)
-:config
-(setq org-ellipsis " ▼:")
-(setq org-agenda-start-with-log-mode t)
-(setq org-log-done 'time)
-(setq org-log-into-drawer t)
+    :hook (org-mode . smv/org-mode-setup)
+    :config
+    (setq org-ellipsis " ▼:")
+    (setq org-agenda-start-with-log-mode t)
+    (setq org-log-done 'time)
+    (setq org-log-into-drawer t)
 
-(setq org-agenda-files
-        '("~/.org/todo.org"
-        "~/.org/projects.org"
-        "~/.org/journal.org"))
+    (setq org-agenda-files
+            '("~/.org/todo.org"
+            "~/.org/projects.org"
+            "~/.org/journal.org"))
 
-(setq org-todo-keywords
-        '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-        (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+    (setq org-todo-keywords
+            '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+            (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
-;; easily move task to another header
-(setq org-refile-targets
-        '(("archive.org" :maxlevel . 1)
-        ("todo.org" :maxlevel . 1)
-        ("projects.org" :maxlevel . 1)))
+    ;; easily move task to another header
+    (setq org-refile-targets
+            '(("archive.org" :maxlevel . 1)
+            ("todo.org" :maxlevel . 1)
+            ("projects.org" :maxlevel . 1)))
 
-;; Save Org buffers after refiling!
-(advice-add 'org-refile :after 'org-save-all-org-buffers)
+    ;; Save Org buffers after refiling!
+    (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
-(setq org-tag-alist
-    '((:startgroup)
-        ; Put mutually exclusive tags here
-        (:endgroup)
-        ("@school" . ?s)
-        ("agenda" . ?a)
-        ("planning" . ?p)
-        ("publish" . ?P)
-        ("batch" . ?b)
-        ("note" . ?n)
-        ("idea" . ?i)))
+    (setq org-tag-alist
+        '((:startgroup)
+            ; Put mutually exclusive tags here
+            (:endgroup)
+            ("@school" . ?s)
+            ("agenda" . ?a)
+            ("planning" . ?p)
+            ("publish" . ?P)
+            ("batch" . ?b)
+            ("note" . ?n)
+            ("idea" . ?i)))
 
-(setq org-agenda-custom-commands
-    '(("d" "Dashboard"
-    ((agenda "" ((org-deadline-warning-days 7)))
-    (todo "NEXT"
-        ((org-agenda-overriding-header "Next Tasks")))
-    (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+    (setq org-agenda-custom-commands
+        '(("d" "Dashboard"
+        ((agenda "" ((org-deadline-warning-days 7)))
+        (todo "NEXT"
+            ((org-agenda-overriding-header "Next Tasks")))
+        (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
 
-    ("n" "Next Tasks"
-    ((todo "NEXT"
-        ((org-agenda-overriding-header "Next Tasks")))))
+        ("n" "Next Tasks"
+        ((todo "NEXT"
+            ((org-agenda-overriding-header "Next Tasks")))))
 
-    ("s" "School Tasks" tags-todo "+school")
-    ("P" "Projects" tags-todo "+projects")
+        ("s" "School Tasks" tags-todo "+school")
+        ("P" "Projects" tags-todo "+projects")
 
-    ;; Low-effort next actions
-    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-    ((org-agenda-overriding-header "Low Effort Tasks")
-    (org-agenda-max-todos 20)
-    (org-agenda-files org-agenda-files)))))
+        ;; Low-effort next actions
+        ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+        ((org-agenda-overriding-header "Low Effort Tasks")
+        (org-agenda-max-todos 20)
+        (org-agenda-files org-agenda-files)))))
 
-(setq org-capture-templates ;; quickly add todos entries without going into the file
-    `(("t" "Tasks")
-    ("tt" "Task" entry (file+olp "~/.org/todo.org" "Inbox")
-            "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
+    (setq org-capture-templates ;; quickly add todos entries without going into the file
+        `(("t" "Tasks")
+        ("tt" "Task" entry (file+olp "~/.org/todo.org" "Inbox")
+                "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
-    ("j" "Journal Entries")
-    ("jm" "Meeting" entry
-            (file+olp+datetree "~/.org/journal.org")
-            "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
-            :clock-in :clock-resume
-            :empty-lines 1)))
+        ("j" "Journal Entries")
+        ("jm" "Meeting" entry
+                (file+olp+datetree "~/.org/journal.org")
+                "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
+                :clock-in :clock-resume
+                :empty-lines 1)))
 
-(smv/org-font-setup))
+    (smv/org-font-setup))
 #+end_src
 
 
@@ -656,12 +667,14 @@ Emmet mode allors you to easily expand html and css abbreviations for instance i
 
 #+begin_src emacs-lisp
 (use-package emmet-mode)
-#+end_src>
+#+end_src
 
 **** Web-mode
+
 The useful web mode for programming
 
 #+begin_src emacs-lisp
+
 (defun smv/web-mode-hook ()
   "Hooks for Web mode."
   (setq web-mode-markup-indent-offset 2)
@@ -696,7 +709,7 @@ The useful web mode for programming
     	   (setq emmet-use-css-transform t)
       	 (setq emmet-use-css-transform nil)))))
 
-#+end_src>
+#+end_src
 
 **** prettier
 

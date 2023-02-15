@@ -75,16 +75,16 @@
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 (use-package general ;; for setting keybindings
-:ensure t
-:config
-(general-create-definer smv/leader-keys
-    :keymaps '(normal visual emacs)
-    :prefix "SPC"
-    :global-prefix "SPC")
+    :ensure t
+    :config
+    (general-create-definer smv/leader-keys
+        :keymaps '(normal visual emacs)
+        :prefix "SPC"
+        :global-prefix "SPC")
 
-(smv/leader-keys
-    "t" '(:ignore t :which-key "toggles")
-    "tt" '(counsel-load-theme :which-key "choose theme")))
+    (smv/leader-keys
+        "t" '(:ignore t :which-key "toggles")
+        "tt" '(counsel-load-theme :which-key "choose theme")))
 
 ;; Activate vim keybindings inside of emacs
 (use-package evil
@@ -104,6 +104,17 @@
     (define-key evil-normal-state-map (kbd "C-n") nil)
     (define-key evil-normal-state-map (kbd "C-p") nil)
 
+    (define-key evil-visual-state-map (kbd "C-n") nil)
+    (define-key evil-visual-state-map (kbd "C-p") nil)
+
+    (define-key evil-visual-state-map (kbd "C-a") nil)
+    (define-key evil-normal-state-map (kbd "C-a") nil)
+    (define-key evil-insert-state-map (kbd "C-a") nil)
+
+    (define-key evil-visual-state-map (kbd "C-e") nil)
+    (define-key evil-normal-state-map (kbd "C-e") nil)
+    (define-key evil-insert-state-map (kbd "C-e") nil)
+    
     (evil-set-initial-state 'messages-buffer-mode 'normal)
     (evil-set-initial-state 'dashboard-mode 'normal))
 
@@ -115,8 +126,8 @@
 
 
 (use-package evil-surround
-:ensure t
-:config
+    :ensure t
+    :config
     (global-evil-surround-mode 1))
 
 (use-package doom-themes
@@ -215,21 +226,21 @@
                         (org-level-7 . 1.1)
                         (org-level-8 . 1.1)))
         (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
-    ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-    (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
-    (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
-    (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
-    (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
-    (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
-    (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-    (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-    (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-    (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
-    (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
-    (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
+        ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+        (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
+        (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
+        (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
+        (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
+        (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
+        (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+        (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+        (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+        (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
+        (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
+        (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
 (use-package org
-:ensure org-contrib)
+    :ensure org-contrib)
 
 (use-package org-notify
     :ensure nil
@@ -244,84 +255,84 @@
 )
 
 (defun smv/org-mode-setup()
-(org-indent-mode)
-(variable-pitch-mode 1)
-(auto-fill-mode 0)
-(visual-line-mode 1)
-(setq evil-auto-indent nil))
+    (org-indent-mode)
+    (variable-pitch-mode 1)
+    (auto-fill-mode 0)
+    (visual-line-mode 1)
+    (setq evil-auto-indent nil))
 
 
 (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
-:hook (org-mode . smv/org-mode-setup)
-:config
-(setq org-ellipsis " ▼:")
-(setq org-agenda-start-with-log-mode t)
-(setq org-log-done 'time)
-(setq org-log-into-drawer t)
+    :hook (org-mode . smv/org-mode-setup)
+    :config
+    (setq org-ellipsis " ▼:")
+    (setq org-agenda-start-with-log-mode t)
+    (setq org-log-done 'time)
+    (setq org-log-into-drawer t)
 
-(setq org-agenda-files
-        '("~/.org/todo.org"
-        "~/.org/projects.org"
-        "~/.org/journal.org"))
+    (setq org-agenda-files
+            '("~/.org/todo.org"
+            "~/.org/projects.org"
+            "~/.org/journal.org"))
 
-(setq org-todo-keywords
-        '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-        (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+    (setq org-todo-keywords
+            '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+            (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
-;; easily move task to another header
-(setq org-refile-targets
-        '(("archive.org" :maxlevel . 1)
-        ("todo.org" :maxlevel . 1)
-        ("projects.org" :maxlevel . 1)))
+    ;; easily move task to another header
+    (setq org-refile-targets
+            '(("archive.org" :maxlevel . 1)
+            ("todo.org" :maxlevel . 1)
+            ("projects.org" :maxlevel . 1)))
 
-;; Save Org buffers after refiling!
-(advice-add 'org-refile :after 'org-save-all-org-buffers)
+    ;; Save Org buffers after refiling!
+    (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
-(setq org-tag-alist
-    '((:startgroup)
-        ; Put mutually exclusive tags here
-        (:endgroup)
-        ("@school" . ?s)
-        ("agenda" . ?a)
-        ("planning" . ?p)
-        ("publish" . ?P)
-        ("batch" . ?b)
-        ("note" . ?n)
-        ("idea" . ?i)))
+    (setq org-tag-alist
+        '((:startgroup)
+            ; Put mutually exclusive tags here
+            (:endgroup)
+            ("@school" . ?s)
+            ("agenda" . ?a)
+            ("planning" . ?p)
+            ("publish" . ?P)
+            ("batch" . ?b)
+            ("note" . ?n)
+            ("idea" . ?i)))
 
-(setq org-agenda-custom-commands
-    '(("d" "Dashboard"
-    ((agenda "" ((org-deadline-warning-days 7)))
-    (todo "NEXT"
-        ((org-agenda-overriding-header "Next Tasks")))
-    (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+    (setq org-agenda-custom-commands
+        '(("d" "Dashboard"
+        ((agenda "" ((org-deadline-warning-days 7)))
+        (todo "NEXT"
+            ((org-agenda-overriding-header "Next Tasks")))
+        (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
 
-    ("n" "Next Tasks"
-    ((todo "NEXT"
-        ((org-agenda-overriding-header "Next Tasks")))))
+        ("n" "Next Tasks"
+        ((todo "NEXT"
+            ((org-agenda-overriding-header "Next Tasks")))))
 
-    ("s" "School Tasks" tags-todo "+school")
-    ("P" "Projects" tags-todo "+projects")
+        ("s" "School Tasks" tags-todo "+school")
+        ("P" "Projects" tags-todo "+projects")
 
-    ;; Low-effort next actions
-    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-    ((org-agenda-overriding-header "Low Effort Tasks")
-    (org-agenda-max-todos 20)
-    (org-agenda-files org-agenda-files)))))
+        ;; Low-effort next actions
+        ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+        ((org-agenda-overriding-header "Low Effort Tasks")
+        (org-agenda-max-todos 20)
+        (org-agenda-files org-agenda-files)))))
 
-(setq org-capture-templates ;; quickly add todos entries without going into the file
-    `(("t" "Tasks")
-    ("tt" "Task" entry (file+olp "~/.org/todo.org" "Inbox")
-            "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
+    (setq org-capture-templates ;; quickly add todos entries without going into the file
+        `(("t" "Tasks")
+        ("tt" "Task" entry (file+olp "~/.org/todo.org" "Inbox")
+                "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
-    ("j" "Journal Entries")
-    ("jm" "Meeting" entry
-            (file+olp+datetree "~/.org/journal.org")
-            "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
-            :clock-in :clock-resume
-            :empty-lines 1)))
+        ("j" "Journal Entries")
+        ("jm" "Meeting" entry
+                (file+olp+datetree "~/.org/journal.org")
+                "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
+                :clock-in :clock-resume
+                :empty-lines 1)))
 
-(smv/org-font-setup))
+    (smv/org-font-setup))
 
 (use-package org-bullets ;; change the bullets in my org mode files
     :after org
@@ -391,6 +402,42 @@
     :config (yas-global-mode))
 
 (use-package dap-mode)
+
+(use-package emmet-mode)
+
+(defun smv/web-mode-hook ()
+  "Hooks for Web mode."
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2)
+  (setq web-mode-enable-current-column-highlight t)
+  (setq web-mode-enable-current-element-highlight t)
+(set (make-local-variable 'company-backends) '(company-css company-web-html company-yasnippet company-files))
+)
+
+
+(use-package web-mode
+    :mode (("\\.html?\\'" . web-mode)
+            ("\\.css?\\'" . web-mode)
+            ("\\.js\\'" . web-mode)
+            ("\\.ts\\'" . web-mode))
+    :hook
+    (web-mode . smv/web-mode-hook)
+    (web-mode . emmet-mode)
+    (web-mode . prettier-mode)
+    (web-mode . lsp-deferred)
+)
+
+(add-hook 'web-mode-before-auto-complete-hooks
+    '(lambda ()
+     (let ((web-mode-cur-language
+  	    (web-mode-language-at-pos)))
+               (if (string= web-mode-cur-language "php")
+    	   (yas-activate-extra-mode 'php-mode)
+      	 (yas-deactivate-extra-mode 'php-mode))
+               (if (string= web-mode-cur-language "css")
+    	   (setq emmet-use-css-transform t)
+      	 (setq emmet-use-css-transform nil)))))
 
 (use-package prettier)
 
