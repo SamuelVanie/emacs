@@ -7,15 +7,18 @@
 Declare some of my variables for my global configuration
 
 #+BEGIN_SRC emacs-lisp
-  ;; NOTE: init.el is now generated from Emacs.org.  Please edit that file
-  ;;       in Emacs and init.el will be generated automatically!
+;; NOTE: init.el is now generated from Emacs.org.  Please edit that file
+;;       in Emacs and init.el will be generated automatically!
 
-  ;; You will most likely need to adjust this font size for your system!
+;; You will most likely need to adjust this font size for your system!
 (defvar smv/default-font-size 112)
 (defvar smv/default-variable-font-size 112)
 
 ;; remove noise for not non allowed command in emacs if your system make them
 (setq ring-bell-function 'ignore)
+
+;; Make frame transparency overridable
+(defvar smv/frame-transparency '(90 . 90))
 #+END_SRC
 
 
@@ -100,6 +103,13 @@ This section configures basic UI settings that remove unneeded elements to make 
 (setq display-line-numbers-type 'relative)
 (global-display-line-numbers-mode t) ;; print line numbers for files
 
+
+  ;; Set frame transparency
+(set-frame-parameter (selected-frame) 'alpha smv/frame-transparency)
+(add-to-list 'default-frame-alist `(alpha . ,smv/frame-transparency))
+(set-frame-parameter (selected-frame) 'fullscreen 'maximized)
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
+
 ;; some modes doesn't have to start with lines enable
 (dolist (mode '(org-mode-hook
             term-mode-hook
@@ -117,10 +127,13 @@ I use JetbrainsMono Nerd Font and Cantarell fonts as my mains fonts.
 
 #+begin_src emacs-lisp
 
-(set-face-attribute 'default nil :family "JetBrainsMono Nerd Font" :height smv/default-font-size) ;; Set the fixed pitch face
+(set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height smv/default-font-size)
+
+;; Set the fixed pitch face
 (set-face-attribute 'fixed-pitch nil :font "JetBrainsMono Nerd Font" :height smv/default-font-size)
 
-(set-face-attribute 'variable-pitch nil :font "Cantarell" :height smv/default-variable-font-size :weight 'regular) ;; Set the variable pitch face
+;; Set the variable pitch face
+(set-face-attribute 'variable-pitch nil :font "Cantarell" :height smv/default-variable-font-size :weight 'regular)
 
 #+end_src
 
@@ -131,22 +144,22 @@ You will need to install the package ligature, because it cannot be installed au
 
 #+begin_src emacs-lisp
 (use-package ligature
-  :config
-  ;; Enable all JetBrains Mono ligatures in programming modes
-  (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
-                                      "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
-                                      "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
-                                      "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
-                                      "<*>" "<->" "<!--" ":>" ":<" ":::" "::" ":?" ":?>" ":=" "::=" "=>>"
-                                      "==>" "=/=" "=!=" "=>" "===" "=:=" "==" "!==" "!!" "!=" ">]" ">:"
-                                      ">>-" ">>=" ">=>" ">>>" ">-" ">=" "&&&" "&&" "|||>" "||>" "|>" "|]"
-                                      "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||" ".." ".?" ".=" ".-" "..<"
-                                      "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
-                                      "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
-                                      "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
-  ;; Enables ligature checks globally in all buffers. You can also do it
-  ;; per mode with `ligature-mode'.
-  (global-ligature-mode t))
+    :config
+    ;; Enable all JetBrains Mono ligatures in programming modes
+    (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
+                                        "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
+                                        "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
+                                        "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
+                                        "<*>" "<->" "<!--" ":>" ":<" ":::" "::" ":?" ":?>" ":=" "::=" "=>>"
+                                        "==>" "=/=" "=!=" "=>" "===" "=:=" "==" "!==" "!!" "!=" ">]" ">:"
+                                        ">>-" ">>=" ">=>" ">>>" ">-" ">=" "&&&" "&&" "|||>" "||>" "|>" "|]"
+                                        "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||" ".." ".?" ".=" ".-" "..<"
+                                        "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
+                                        "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
+                                        "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
+    ;; Enables ligature checks globally in all buffers. You can also do it
+    ;; per mode with `ligature-mode'.
+    (global-ligature-mode t))
 #+end_src
 
 ** Adding color to delimiters
@@ -160,6 +173,8 @@ Rainbow permits to match pairs delimiters with the same color.
 
 
 * Keybindings Configuration
+
+** evil-mode
 
 As a past vim user I use evil-mode to activate vim keybindings inside of my emacs configuration to navigate and edit code more easily.
 
@@ -183,7 +198,7 @@ evil-collection permit to activate automatically evil-mode in multiple emacs pac
         "t" '(:ignore t :which-key "toggles")
         "tt" '(counsel-load-theme :which-key "choose theme")))
 
-;; Activate vim keybindings inside of emacs
+  ;; Activate vim keybindings inside of emacs
 (use-package evil
     :init
     (setq evil-want-integration t)
@@ -211,11 +226,11 @@ evil-collection permit to activate automatically evil-mode in multiple emacs pac
     (define-key evil-visual-state-map (kbd "C-e") nil)
     (define-key evil-normal-state-map (kbd "C-e") nil)
     (define-key evil-insert-state-map (kbd "C-e") nil)
-    
+
     (evil-set-initial-state 'messages-buffer-mode 'normal)
     (evil-set-initial-state 'dashboard-mode 'normal))
 
-;; Add evil-keybindings to more modes inside of emacs
+  ;; Add evil-keybindings to more modes inside of emacs
 (use-package evil-collection
     :after evil
     :config
@@ -545,7 +560,7 @@ Permit to show notifications for tasks I have to do.
     (org-notify-add 'default
 		'(:time "1d" :period "30m" :duration 50 :actions -notify)
 		'(:time "2d" :period "50m" :duration 40 :actions -notify)
-		'(:time "3d" :actions -email))
+		'(:time "3d" :period "1h" :duration 20 :actions -notify))
 )
 #+end_src
 
@@ -815,45 +830,51 @@ Emmet mode allors you to easily expand html and css abbreviations for instance i
 
 **** Web-mode
 
-The useful web mode for programming
+The useful web mode for programming.
+I use firefox as my browser so I install dap-firefox to quickly debug my javascript code inside this browser.
+Check the documentation for your browser : [[https://emacs-lsp.github.io/dap-mode/page/configuration/][lsp configuration]]
 
 #+begin_src emacs-lisp
 
-(defun smv/web-mode-hook ()
-  "Hooks for Web mode."
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
-  (setq web-mode-code-indent-offset 2)
-  (setq web-mode-enable-current-column-highlight t)
-  (setq web-mode-enable-current-element-highlight t)
-(set (make-local-variable 'company-backends) '(company-css company-web-html company-yasnippet company-files))
-)
+  (defun smv/web-mode-hook ()
+    "Hooks for Web mode."
+    (setq web-mode-markup-indent-offset 2)
+    (setq web-mode-css-indent-offset 2)
+    (setq web-mode-code-indent-offset 2)
+    (setq web-mode-enable-current-column-highlight t)
+    (setq web-mode-enable-current-element-highlight t)
+  (set (make-local-variable 'company-backends) '(company-css company-web-html company-yasnippet company-files))
+  )
 
 
-(use-package web-mode
-    :mode (("\\.html?\\'" . web-mode)
-            ("\\.css?\\'" . web-mode)
-            ("\\.js\\'" . web-mode)
-            ("\\.ts\\'" . web-mode))
-    :hook
-    (web-mode . smv/web-mode-hook)
-    (web-mode . emmet-mode)
-    (web-mode . prettier-mode)
-    (web-mode . lsp-deferred)
-)
+  (use-package web-mode
+      :mode (("\\.html?\\'" . web-mode)
+              ("\\.css?\\'" . web-mode)
+              ("\\.js\\'" . web-mode)
+              ("\\.ts\\'" . web-mode))
+      :hook
+      (web-mode . smv/web-mode-hook)
+      (web-mode . emmet-mode)
+      (web-mode . prettier-mode)
+      (web-mode . lsp-deferred)
+      :config
+      (require 'dap-firefox)
+      (dap-firefox-setup)
+  )
 
-(add-hook 'web-mode-before-auto-complete-hooks
-    '(lambda ()
-     (let ((web-mode-cur-language
-  	    (web-mode-language-at-pos)))
-               (if (string= web-mode-cur-language "php")
-    	   (yas-activate-extra-mode 'php-mode)
-      	 (yas-deactivate-extra-mode 'php-mode))
-               (if (string= web-mode-cur-language "css")
-    	   (setq emmet-use-css-transform t)
-      	 (setq emmet-use-css-transform nil)))))
+  (add-hook 'web-mode-before-auto-complete-hooks
+      '(lambda ()
+       (let ((web-mode-cur-language
+              (web-mode-language-at-pos)))
+                 (if (string= web-mode-cur-language "php")
+             (yas-activate-extra-mode 'php-mode)
+           (yas-deactivate-extra-mode 'php-mode))
+                 (if (string= web-mode-cur-language "css")
+             (setq emmet-use-css-transform t)
+           (setq emmet-use-css-transform nil)))))
 
 #+end_src
+
 
 **** prettier
 
@@ -969,10 +990,4 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
   :commands magit-status
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
-
-;; NOTE: Make sure to configure a GitHub token before using this package!
-;; - https://magit.vc/manual/forge/Token-Creation.html#Token-Creation
-;; - https://magit.vc/manual/ghub/Getting-Started.html#Getting-Started
-(use-package forge
-  :after magit)
 #+end_src

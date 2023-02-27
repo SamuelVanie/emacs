@@ -1,12 +1,15 @@
 ;; NOTE: init.el is now generated from Emacs.org.  Please edit that file
-  ;;       in Emacs and init.el will be generated automatically!
+;;       in Emacs and init.el will be generated automatically!
 
-  ;; You will most likely need to adjust this font size for your system!
+;; You will most likely need to adjust this font size for your system!
 (defvar smv/default-font-size 112)
 (defvar smv/default-variable-font-size 112)
 
 ;; remove noise for not non allowed command in emacs if your system make them
 (setq ring-bell-function 'ignore)
+
+;; Make frame transparency overridable
+(defvar smv/frame-transparency '(90 . 90))
 
 ;; Initialize package sources
 (require 'package)
@@ -57,6 +60,13 @@
 (setq display-line-numbers-type 'relative)
 (global-display-line-numbers-mode t) ;; print line numbers for files
 
+
+  ;; Set frame transparency
+(set-frame-parameter (selected-frame) 'alpha smv/frame-transparency)
+(add-to-list 'default-frame-alist `(alpha . ,smv/frame-transparency))
+(set-frame-parameter (selected-frame) 'fullscreen 'maximized)
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
+
 ;; some modes doesn't have to start with lines enable
 (dolist (mode '(org-mode-hook
             term-mode-hook
@@ -64,28 +74,31 @@
             eshell-mode-hook))
 (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-(set-face-attribute 'default nil :family "JetBrainsMono Nerd Font" :height smv/default-font-size) ;; Set the fixed pitch face
+(set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height smv/default-font-size)
+
+;; Set the fixed pitch face
 (set-face-attribute 'fixed-pitch nil :font "JetBrainsMono Nerd Font" :height smv/default-font-size)
 
-(set-face-attribute 'variable-pitch nil :font "Cantarell" :height smv/default-variable-font-size :weight 'regular) ;; Set the variable pitch face
+;; Set the variable pitch face
+(set-face-attribute 'variable-pitch nil :font "Cantarell" :height smv/default-variable-font-size :weight 'regular)
 
 (use-package ligature
-  :config
-  ;; Enable all JetBrains Mono ligatures in programming modes
-  (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
-                                      "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
-                                      "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
-                                      "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
-                                      "<*>" "<->" "<!--" ":>" ":<" ":::" "::" ":?" ":?>" ":=" "::=" "=>>"
-                                      "==>" "=/=" "=!=" "=>" "===" "=:=" "==" "!==" "!!" "!=" ">]" ">:"
-                                      ">>-" ">>=" ">=>" ">>>" ">-" ">=" "&&&" "&&" "|||>" "||>" "|>" "|]"
-                                      "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||" ".." ".?" ".=" ".-" "..<"
-                                      "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
-                                      "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
-                                      "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
-  ;; Enables ligature checks globally in all buffers. You can also do it
-  ;; per mode with `ligature-mode'.
-  (global-ligature-mode t))
+    :config
+    ;; Enable all JetBrains Mono ligatures in programming modes
+    (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
+                                        "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
+                                        "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
+                                        "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
+                                        "<*>" "<->" "<!--" ":>" ":<" ":::" "::" ":?" ":?>" ":=" "::=" "=>>"
+                                        "==>" "=/=" "=!=" "=>" "===" "=:=" "==" "!==" "!!" "!=" ">]" ">:"
+                                        ">>-" ">>=" ">=>" ">>>" ">-" ">=" "&&&" "&&" "|||>" "||>" "|>" "|]"
+                                        "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||" ".." ".?" ".=" ".-" "..<"
+                                        "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
+                                        "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
+                                        "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
+    ;; Enables ligature checks globally in all buffers. You can also do it
+    ;; per mode with `ligature-mode'.
+    (global-ligature-mode t))
 
 (use-package rainbow-delimiters
 	     :hook (prog-mode . rainbow-delimiters-mode))
@@ -104,7 +117,7 @@
         "t" '(:ignore t :which-key "toggles")
         "tt" '(counsel-load-theme :which-key "choose theme")))
 
-;; Activate vim keybindings inside of emacs
+  ;; Activate vim keybindings inside of emacs
 (use-package evil
     :init
     (setq evil-want-integration t)
@@ -132,11 +145,11 @@
     (define-key evil-visual-state-map (kbd "C-e") nil)
     (define-key evil-normal-state-map (kbd "C-e") nil)
     (define-key evil-insert-state-map (kbd "C-e") nil)
-    
+
     (evil-set-initial-state 'messages-buffer-mode 'normal)
     (evil-set-initial-state 'dashboard-mode 'normal))
 
-;; Add evil-keybindings to more modes inside of emacs
+  ;; Add evil-keybindings to more modes inside of emacs
 (use-package evil-collection
     :after evil
     :config
@@ -384,7 +397,7 @@
     (org-notify-add 'default
 		'(:time "1d" :period "30m" :duration 50 :actions -notify)
 		'(:time "2d" :period "50m" :duration 40 :actions -notify)
-		'(:time "3d" :actions -email))
+		'(:time "3d" :period "1h" :duration 20 :actions -notify))
 )
 
 (defun smv/org-mode-setup()
@@ -559,18 +572,21 @@
     (web-mode . emmet-mode)
     (web-mode . prettier-mode)
     (web-mode . lsp-deferred)
+    :config
+    (require 'dap-firefox)
+    (dap-firefox-setup)
 )
 
 (add-hook 'web-mode-before-auto-complete-hooks
     '(lambda ()
      (let ((web-mode-cur-language
-  	    (web-mode-language-at-pos)))
+            (web-mode-language-at-pos)))
                (if (string= web-mode-cur-language "php")
-    	   (yas-activate-extra-mode 'php-mode)
-      	 (yas-deactivate-extra-mode 'php-mode))
+           (yas-activate-extra-mode 'php-mode)
+         (yas-deactivate-extra-mode 'php-mode))
                (if (string= web-mode-cur-language "css")
-    	   (setq emmet-use-css-transform t)
-      	 (setq emmet-use-css-transform nil)))))
+           (setq emmet-use-css-transform t)
+         (setq emmet-use-css-transform nil)))))
 
 (use-package prettier)
 
@@ -632,9 +648,3 @@
   :commands magit-status
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
-
-;; NOTE: Make sure to configure a GitHub token before using this package!
-;; - https://magit.vc/manual/forge/Token-Creation.html#Token-Creation
-;; - https://magit.vc/manual/ghub/Getting-Started.html#Getting-Started
-(use-package forge
-  :after magit)
