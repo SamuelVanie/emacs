@@ -227,6 +227,10 @@ evil-collection permit to activate automatically evil-mode in multiple emacs pac
     (define-key evil-normal-state-map (kbd "C-e") nil)
     (define-key evil-insert-state-map (kbd "C-e") nil)
 
+    (define-key evil-visual-state-map (kbd "C-d") nil)
+    (define-key evil-normal-state-map (kbd "C-d") nil)
+    (define-key evil-insert-state-map (kbd "C-d") nil)
+
     (evil-set-initial-state 'messages-buffer-mode 'normal)
     (evil-set-initial-state 'dashboard-mode 'normal))
 
@@ -806,6 +810,17 @@ Useful snippets for quick programming
 #+begin_src emacs-lisp
 (use-package yasnippet
     :config (yas-global-mode))
+#+end_src
+
+
+*** Yaml-mode
+
+Mode for yaml configuration files editing.
+
+#+begin_src emacs-lisp
+(use-package yaml-mode
+:mode "\\.yml\\'"
+)
 #+end_src
 
 

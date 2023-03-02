@@ -146,6 +146,10 @@
     (define-key evil-normal-state-map (kbd "C-e") nil)
     (define-key evil-insert-state-map (kbd "C-e") nil)
 
+    (define-key evil-visual-state-map (kbd "C-d") nil)
+    (define-key evil-normal-state-map (kbd "C-d") nil)
+    (define-key evil-insert-state-map (kbd "C-d") nil)
+
     (evil-set-initial-state 'messages-buffer-mode 'normal)
     (evil-set-initial-state 'dashboard-mode 'normal))
 
@@ -546,6 +550,10 @@
 
 (use-package yasnippet
     :config (yas-global-mode))
+
+(use-package yaml-mode
+:mode "\\.yml\\'"
+)
 
 (use-package dap-mode)
 
