@@ -61,11 +61,14 @@
 (global-display-line-numbers-mode t) ;; print line numbers for files
 
 
-  ;; Set frame transparency
+;; Set frame transparency
 (set-frame-parameter (selected-frame) 'alpha smv/frame-transparency)
 (add-to-list 'default-frame-alist `(alpha . ,smv/frame-transparency))
 (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
+
+;; Set frame font
+(add-to-list 'default-frame-alist '(font . "JetBrainsMono Nerd Font"))
 
 ;; some modes doesn't have to start with lines enable
 (dolist (mode '(org-mode-hook
