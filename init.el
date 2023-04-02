@@ -1,5 +1,4 @@
-;; NOTE: init.el is now generated from Emacs.org.  Please edit that file
-;;       in Emacs and init.el will be generated automatically!
+(setq gc-const-threshold (* 50 1000 1000))
 
 ;; You will most likely need to adjust this font size for your system!
 (defvar smv/default-font-size 112)
@@ -11,8 +10,12 @@
 ;; Make frame transparency overridable
 (defvar smv/frame-transparency '(90 . 90))
 
+(setq custom-file (locate-user-emacs-file "custom-vars.el"))
+(load custom-file 'noerror 'nomessage)
+
 ;; Initialize package sources
 (require 'package)
+(require 'cl)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
@@ -22,21 +25,20 @@
 (unless package-archive-contents
 (package-refresh-contents))
 
-;; Initialize use-package on non-Linux platforms
-(unless (package-installed-p 'use-package)
-(package-install 'use-package))
+(unless (package-installed-p 'quelpa)
+(with-temp-buffer
+(url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
+(eval-buffer)
+(quelpa-self-upgrade)))
 
-(require 'use-package)
+(quelpa
+    '(quelpa-use-package
+    :fetcher git
+    :url "https://github.com/quelpa/quelpa-use-package.git"))
+
+(require 'quelpa-use-package)
+
 (setq use-package-always-ensure t)
-
-(use-package auto-package-update
-  :custom
-  (auto-package-update-interval 7)
-  (auto-package-update-prompt-before-update t)
-  (auto-package-update-hide-results t)
-  :config
-  (auto-package-update-maybe)
-  (auto-package-update-at-time "09:00"))
 
 ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
 ;; reliably, set `user-emacs-directory` before loading no-littering!
@@ -169,7 +171,7 @@
     (global-evil-surround-mode 1))
 
 (use-package doom-themes
-  :init (load-theme 'doom-dark+ t))
+  :init (load-theme 'doom-snazzy t))
 
 (use-package all-the-icons)
 
@@ -186,18 +188,18 @@
 (use-package ivy
   :diminish
   :bind (("C-s" . swiper)
-         :map ivy-minibuffer-map
-         ("TAB" . ivy-alt-done)
-         ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
-         :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
-         ("C-d" . ivy-switch-buffer-kill)
-         :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
+          :map ivy-minibuffer-map
+          ("TAB" . ivy-alt-done)
+          ("C-l" . ivy-alt-done)
+          ("C-j" . ivy-next-line)
+          ("C-k" . ivy-previous-line)
+          :map ivy-switch-buffer-map
+          ("C-k" . ivy-previous-line)
+          ("C-l" . ivy-done)
+          ("C-d" . ivy-switch-buffer-kill)
+          :map ivy-reverse-i-search-map
+          ("C-k" . ivy-previous-line)
+          ("C-d" . ivy-reverse-i-search-kill))
   :config
   (ivy-mode 1))
 
@@ -208,8 +210,8 @@
 
 (use-package counsel
   :bind (("C-M-j" . 'counsel-switch-buffer)
-         :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history))
+          :map minibuffer-local-map
+          ("C-r" . 'counsel-minibuffer-history))
   :custom
   (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
   :config
@@ -558,7 +560,13 @@
 :mode "\\.yml\\'"
 )
 
-(use-package dap-mode)
+(use-package dap-mode
+    :after
+    lsp-mode
+    :config
+    (dap-auto-configure-mode)
+    :hook (dap-stopped . (lambda (arg) (call-interactively #'dap-hydra)))
+)
 
 (use-package emmet-mode)
 
@@ -571,7 +579,6 @@
   (setq web-mode-enable-current-element-highlight t)
 (set (make-local-variable 'company-backends) '(company-css company-web-html company-yasnippet company-files))
 )
-
 
 (use-package web-mode
     :mode (("\\.html?\\'" . web-mode)
@@ -588,16 +595,18 @@
     (dap-firefox-setup)
 )
 
+(setq dap-firefox-debug-program '("node" "/home/vanieb/.emacs.d/var/dap/extensions/vscode/firefox-devtools.vscode-firefox-debug/extension/dist/adapter.bundle.js"))
+
 (add-hook 'web-mode-before-auto-complete-hooks
     '(lambda ()
-     (let ((web-mode-cur-language
+      (let ((web-mode-cur-language
             (web-mode-language-at-pos)))
-               (if (string= web-mode-cur-language "php")
-           (yas-activate-extra-mode 'php-mode)
-         (yas-deactivate-extra-mode 'php-mode))
-               (if (string= web-mode-cur-language "css")
-           (setq emmet-use-css-transform t)
-         (setq emmet-use-css-transform nil)))))
+                (if (string= web-mode-cur-language "php")
+            (yas-activate-extra-mode 'php-mode)
+          (yas-deactivate-extra-mode 'php-mode))
+                (if (string= web-mode-cur-language "css")
+            (setq emmet-use-css-transform t)
+          (setq emmet-use-css-transform nil)))))
 
 (use-package prettier)
 
@@ -627,7 +636,10 @@
 (setq markdown-code-block-braces t)
 
 (use-package rust-mode
-    :hook (rust-mode . lsp-deferred))
+    :hook (rust-mode . lsp-deferred)
+    :config
+    (require 'dap-cpptools)
+    (dap-cpptools-setup))
 
 (use-package company
   :after lsp-mode
@@ -638,6 +650,149 @@
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
+
+(defun rk/copilot-tab ()
+"Tab command that will complet with copilot if a completion is
+available. Otherwise will try company, yasnippet or normal
+tab-indent."
+(interactive)
+(or (copilot-accept-completion)
+    (company-yasnippet-or-completion)
+    (indent-for-tab-command)))
+
+(defun rk/copilot-complete-or-accept ()
+  "Command that either triggers a completion or accepts one if one
+is available. Useful if you tend to hammer your keys like I do."
+  (interactive)
+  (if (copilot--overlay-visible)
+      (progn
+        (copilot-accept-completion)
+        (open-line 1)
+        (next-line))
+    (copilot-complete)))
+
+(defun rk/copilot-quit ()
+"Run `copilot-clear-overlay' or `keyboard-quit'. If copilot is
+cleared, make sure the overlay doesn't come back too soon."
+(interactive)
+(condition-case err
+    (when copilot--overlay
+      (lexical-let ((pre-copilot-disable-predicates copilot-disable-predicates))
+        (setq copilot-disable-predicates (list (lambda () t)))
+        (copilot-clear-overlay)
+        (run-with-idle-timer
+          1.0
+          nil
+          (lambda ()
+            (setq copilot-disable-predicates pre-copilot-disable-predicates)))))
+  (error handler)))
+
+(defun rk/copilot-complete-if-active (next-func n)
+(let ((completed (when copilot-mode (copilot-accept-completion))))
+  (unless completed (funcall next-func n))))
+
+(defun rk/no-copilot-mode ()
+"Helper for `rk/no-copilot-modes'."
+(copilot-mode -1))
+
+(defvar rk/no-copilot-modes '(shell-mode
+                              inferior-python-mode
+                              eshell-mode
+                              term-mode
+                              vterm-mode
+                              comint-mode
+                              compilation-mode
+                              debugger-mode
+                              dired-mode-hook
+                              compilation-mode-hook
+                              flutter-mode-hook
+                              minibuffer-mode-hook)
+  "Modes in which copilot is inconvenient.")
+
+(defvar rk/copilot-manual-mode nil
+  "When `t' will only show completions when manually triggered, e.g. via M-C-<return>.")
+
+(defvar rk/copilot-enable-for-org nil
+  "Should copilot be enabled for org-mode buffers?")
+
+
+
+(defun rk/copilot-enable-predicate ()
+  ""
+  (and
+    (eq (get-buffer-window) (selected-window))))
+
+(defun rk/copilot-disable-predicate ()
+  "When copilot should not automatically show completions."
+  (or rk/copilot-manual-mode
+      (member major-mode rk/no-copilot-modes)
+      (and (not rk/copilot-enable-for-org) (eq major-mode 'org-mode))
+      (company--active-p)))
+
+(defun rk/copilot-change-activation ()
+    "Switch between three activation modes:
+  - automatic: copilot will automatically overlay completions
+  - manual: you need to press a key (C-M-<return>) to trigger completions
+  - off: copilot is completely disabled."
+  (interactive)
+  (if (and copilot-mode rk/copilot-manual-mode)
+      (progn
+        (message "deactivating copilot")
+        (global-copilot-mode -1)
+        (setq rk/copilot-manual-mode nil))
+    (if copilot-mode
+        (progn
+          (message "activating copilot manual mode")
+          (setq rk/copilot-manual-mode t))
+      (message "activating copilot mode")
+      (global-copilot-mode))))
+
+
+(use-package copilot
+:quelpa (copilot :fetcher github
+                  :repo "zerolfx/copilot.el"
+                  :diminish
+                  :branch "main"
+                  :files ("dist" "*.el")
+))
+;; keybindings that are active when copilot shows completions
+(define-key copilot-mode-map (kbd "C-M-<next>") #'copilot-next-completion)
+(define-key copilot-mode-map (kbd "C-M-<prior>") #'copilot-previous-completion)
+(define-key copilot-mode-map (kbd "C-M-<right>") #'copilot-accept-completion-by-word)
+(define-key copilot-mode-map (kbd "C-M-<down>") #'copilot-accept-completion-by-line)
+
+;; global keybindings
+(define-key global-map (kbd "C-M-<return>") #'rk/copilot-complete-or-accept)
+(define-key global-map (kbd "C-M-<escape>") #'rk/copilot-change-activation)
+
+;; Do copilot-quit when pressing C-g
+(advice-add 'keyboard-quit :before #'rk/copilot-quit)
+
+;; complete by pressing right or tab but only when copilot completions are
+;; shown. This means we leave the normal functionality intact.
+(advice-add 'right-char :around #'rk/copilot-complete-if-active)
+(advice-add 'indent-for-tab-command :around #'rk/copilot-complete-if-active)
+
+;; deactivate copilot for certain modes
+(add-to-list 'copilot-enable-predicates #'rk/copilot-enable-predicate)
+(add-to-list 'copilot-disable-predicates #'rk/copilot-disable-predicate)
+
+(eval-after-load 'copilot
+  '(progn
+     ;; Note company is optional but given we use some company commands above
+     ;; we'll require it here. If you don't use it, you can remove all company
+     ;; related code from this file, copilot does not need it.
+     (require 'company)
+     (global-copilot-mode)))
+
+(defun smv/gptel-api-key ()
+  "Retrieve my OpenAI API key from a secure location."
+  (with-temp-buffer
+    (insert-file-contents-literally "~/.open_api_key")
+    (string-trim (buffer-string))))
+
+(use-package gptel)
+(setq gptel-api-key (smv/gptel-api-key))
 
 (use-package projectile
   :diminish projectile-mode
@@ -656,6 +811,9 @@
   :config (counsel-projectile-mode))
 
 (use-package magit
-  :commands magit-status
-  :custom
-  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+:commands magit-status
+:custom
+(magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
+  
+(setq gc-const-threshold (* 2 1000 1000))
