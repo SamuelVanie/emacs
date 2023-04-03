@@ -79,6 +79,15 @@ We use the no-littering package to keep folders where we edit files and the Emac
 
 #+end_src
 
+* Undo tree
+
+Convenient way of switching between the different versions of your project. No more lose your past history.
+[[https://github.com/apchamberlain/undo-tree.el][undo-tree]]
+
+#+begin_src emacs-lisp
+(use-package undo-tree)
+(global-undo-tree-mode)
+#+end_src
 
 * Basic UI Configuration
 
@@ -833,6 +842,26 @@ Dap-mode is the debugger mode. It goes with lsp-mode
     (dap-auto-configure-mode)
     :hook (dap-stopped . (lambda (arg) (call-interactively #'dap-hydra)))
 )
+
+
+(evil-define-key 'normal dap-mode-map (kbd "K") #'dap-tooltip-at-point)
+
+; Basic dap-mode keybindings (similar to VSCode)
+(define-key dap-mode-map (kbd "<f5>") 'dap-debug)
+(define-key dap-mode-map (kbd "<f9>") 'dap-breakpoint-toggle)
+(define-key dap-mode-map (kbd "C-<f9>") 'dap-breakpoint-condition)
+(define-key dap-mode-map (kbd "M-<f9>") 'dap-breakpoint-log-message)
+(define-key dap-mode-map (kbd "<f10>") 'dap-next)
+(define-key dap-mode-map (kbd "<f11>") 'dap-step-in)
+(define-key dap-mode-map (kbd "S-<f11>") 'dap-step-out)
+(define-key dap-mode-map (kbd "<f12>") 'dap-ui-inspect-thing-at-point)
+(define-key dap-mode-map (kbd "C-<f5>") 'dap-stop-thread)
+(define-key dap-mode-map (kbd "S-<f5>") 'dap-restart-frame)
+
+;; dap-ui keybindings
+(define-key dap-ui-repl-mode-map (kbd "C-<f5>") 'dap-stop-thread)
+(define-key dap-ui-repl-mode-map (kbd "S-<f5>") 'dap-restart-frame)
+(define-key dap-ui-repl-mode-map (kbd "<f12>") 'dap-ui-inspect-thing-at-point)
 #+end_src
 
 

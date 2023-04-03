@@ -51,6 +51,9 @@
 (setq auto-save-file-name-transforms
       `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
 
+(use-package undo-tree)
+(global-undo-tree-mode)
+
 (scroll-bar-mode -1) ; Disable visible scroll bar
 (tool-bar-mode -1) ; Disable the toolbar
 (tooltip-mode -1) ; Disable tooltips
@@ -567,6 +570,26 @@
     (dap-auto-configure-mode)
     :hook (dap-stopped . (lambda (arg) (call-interactively #'dap-hydra)))
 )
+
+
+(evil-define-key 'normal dap-mode-map (kbd "K") #'dap-tooltip-at-point)
+
+; Basic dap-mode keybindings (similar to VSCode)
+(define-key dap-mode-map (kbd "<f5>") 'dap-debug)
+(define-key dap-mode-map (kbd "<f9>") 'dap-breakpoint-toggle)
+(define-key dap-mode-map (kbd "C-<f9>") 'dap-breakpoint-condition)
+(define-key dap-mode-map (kbd "M-<f9>") 'dap-breakpoint-log-message)
+(define-key dap-mode-map (kbd "<f10>") 'dap-next)
+(define-key dap-mode-map (kbd "<f11>") 'dap-step-in)
+(define-key dap-mode-map (kbd "S-<f11>") 'dap-step-out)
+(define-key dap-mode-map (kbd "<f12>") 'dap-ui-inspect-thing-at-point)
+(define-key dap-mode-map (kbd "C-<f5>") 'dap-stop-thread)
+(define-key dap-mode-map (kbd "S-<f5>") 'dap-restart-frame)
+
+;; dap-ui keybindings
+(define-key dap-ui-repl-mode-map (kbd "C-<f5>") 'dap-stop-thread)
+(define-key dap-ui-repl-mode-map (kbd "S-<f5>") 'dap-restart-frame)
+(define-key dap-ui-repl-mode-map (kbd "<f12>") 'dap-ui-inspect-thing-at-point)
 
 (use-package emmet-mode)
 
