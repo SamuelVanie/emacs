@@ -1201,3 +1201,18 @@ Using chatgpt directly in emacs so that I will not be obliged to switch to the w
   
 (setq gc-const-threshold (* 2 1000 1000))
 #+end_src
+
+
+* Tools
+
+** PlantUML
+
+PlantUML is a java application used to build UML diagrams easily with text like syntax.
+You will need to download the plantuml jar application and paste it to the corresponding directory. Link : [[https://plantuml.com/download][plantuml]]
+
+#+begin_src emacs-lisp
+(use-package plantuml-mode)
+(setq org-plantuml-jar-path (expand-file-name "/home/vanieb/.emacs.d/plantuml.jar"))
+(add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
+(org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
+#+end_src

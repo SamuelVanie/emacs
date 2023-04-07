@@ -840,3 +840,8 @@ cleared, make sure the overlay doesn't come back too soon."
 
   
 (setq gc-const-threshold (* 2 1000 1000))
+
+(use-package plantuml-mode)
+(setq org-plantuml-jar-path (expand-file-name "/home/vanieb/.emacs.d/plantuml.jar"))
+(add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
+(org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
