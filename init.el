@@ -54,6 +54,14 @@
 (use-package undo-tree)
 (global-undo-tree-mode)
 
+(defun kill-all-buffers ()
+  "Kill all buffers without asking for confirmation."
+  (interactive)
+  (dolist (buffer (buffer-list))
+    (kill-buffer buffer)))
+
+(global-set-key (kbd "C-c k a") 'kill-all-buffers)
+
 (scroll-bar-mode -1) ; Disable visible scroll bar
 (tool-bar-mode -1) ; Disable the toolbar
 (tooltip-mode -1) ; Disable tooltips
@@ -547,7 +555,10 @@
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
   :custom
-  (lsp-ui-doc-position 'bottom))
+  (lsp-ui-doc-position 'at-point)
+  (lsp-ui-doc-enable t)
+  :bind
+  (:map evil-normal-state-map ("H" . lsp-ui-doc-toggle)))
 
 (use-package lsp-treemacs
   :after lsp)
@@ -630,6 +641,9 @@
                 (if (string= web-mode-cur-language "css")
             (setq emmet-use-css-transform t)
           (setq emmet-use-css-transform nil)))))
+
+(use-package rjsx-mode)
+(add-to-list 'auto-mode-alist '("components\\/.*\\.js\\'" . rjsx-mode))
 
 (use-package prettier)
 

@@ -89,6 +89,20 @@ Convenient way of switching between the different versions of your project. No m
 (global-undo-tree-mode)
 #+end_src
 
+* Kill buffers
+
+I'm writing this function to kill all the buffers because it is really boring to get the confirmation prompt every time you want to kill all the buffers with kill-some-buffers
+
+#+begin_src emacs-lisp
+(defun kill-all-buffers ()
+  "Kill all buffers without asking for confirmation."
+  (interactive)
+  (dolist (buffer (buffer-list))
+    (kill-buffer buffer)))
+
+(global-set-key (kbd "C-c k a") 'kill-all-buffers)
+#+end_src
+
 * Basic UI Configuration
 
 This section configures basic UI settings that remove unneeded elements to make Emacs look a lot more minimal and modern.
@@ -778,7 +792,10 @@ I use some useful lsp packages with downloaded languages server for my programmi
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
   :custom
-  (lsp-ui-doc-position 'bottom))
+  (lsp-ui-doc-position 'at-point)
+  (lsp-ui-doc-enable t)
+  :bind
+  (:map evil-normal-state-map ("H" . lsp-ui-doc-toggle)))
 
 #+end_src
 
@@ -883,46 +900,53 @@ Check the documentation for your browser : [[https://emacs-lsp.github.io/dap-mod
 
 #+begin_src emacs-lisp
 
-(defun smv/web-mode-hook ()
-  "Hooks for Web mode."
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
-  (setq web-mode-code-indent-offset 2)
-  (setq web-mode-enable-current-column-highlight t)
-  (setq web-mode-enable-current-element-highlight t)
-(set (make-local-variable 'company-backends) '(company-css company-web-html company-yasnippet company-files))
-)
+  (defun smv/web-mode-hook ()
+    "Hooks for Web mode."
+    (setq web-mode-markup-indent-offset 2)
+    (setq web-mode-css-indent-offset 2)
+    (setq web-mode-code-indent-offset 2)
+    (setq web-mode-enable-current-column-highlight t)
+    (setq web-mode-enable-current-element-highlight t)
+  (set (make-local-variable 'company-backends) '(company-css company-web-html company-yasnippet company-files))
+  )
 
-(use-package web-mode
-    :mode (("\\.html?\\'" . web-mode)
-            ("\\.css?\\'" . web-mode)
-            ("\\.js\\'" . web-mode)
-            ("\\.ts\\'" . web-mode))
-    :hook
-    (web-mode . smv/web-mode-hook)
-    (web-mode . emmet-mode)
-    (web-mode . prettier-mode)
-    (web-mode . lsp-deferred)
-    :config
-    (require 'dap-firefox)
-    (dap-firefox-setup)
-)
+  (use-package web-mode
+      :mode (("\\.html?\\'" . web-mode)
+              ("\\.css?\\'" . web-mode)
+              ("\\.js\\'" . web-mode)
+              ("\\.ts\\'" . web-mode))
+      :hook
+      (web-mode . smv/web-mode-hook)
+      (web-mode . emmet-mode)
+      (web-mode . prettier-mode)
+      (web-mode . lsp-deferred)
+      :config
+      (require 'dap-firefox)
+      (dap-firefox-setup)
+  )
 
-(setq dap-firefox-debug-program '("node" "/home/vanieb/.emacs.d/var/dap/extensions/vscode/firefox-devtools.vscode-firefox-debug/extension/dist/adapter.bundle.js"))
+  (setq dap-firefox-debug-program '("node" "/home/vanieb/.emacs.d/var/dap/extensions/vscode/firefox-devtools.vscode-firefox-debug/extension/dist/adapter.bundle.js"))
 
-(add-hook 'web-mode-before-auto-complete-hooks
-    '(lambda ()
-      (let ((web-mode-cur-language
-            (web-mode-language-at-pos)))
-                (if (string= web-mode-cur-language "php")
-            (yas-activate-extra-mode 'php-mode)
-          (yas-deactivate-extra-mode 'php-mode))
-                (if (string= web-mode-cur-language "css")
-            (setq emmet-use-css-transform t)
-          (setq emmet-use-css-transform nil)))))
+  (add-hook 'web-mode-before-auto-complete-hooks
+      '(lambda ()
+        (let ((web-mode-cur-language
+              (web-mode-language-at-pos)))
+                  (if (string= web-mode-cur-language "php")
+              (yas-activate-extra-mode 'php-mode)
+            (yas-deactivate-extra-mode 'php-mode))
+                  (if (string= web-mode-cur-language "css")
+              (setq emmet-use-css-transform t)
+            (setq emmet-use-css-transform nil)))))
 
 #+end_src
 
+
+**** JSX support
+
+#+begin_src emacs-lisp
+(use-package rjsx-mode)
+(add-to-list 'auto-mode-alist '("components\\/.*\\.js\\'" . rjsx-mode))
+#+end_src
 
 **** prettier
 
