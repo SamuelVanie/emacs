@@ -61,6 +61,7 @@
     (kill-buffer buffer)))
 
 (global-set-key (kbd "C-c k a") 'kill-all-buffers)
+(global-set-key (kbd "C-k") 'kill-line)
 
 (scroll-bar-mode -1) ; Disable visible scroll bar
 (tool-bar-mode -1) ; Disable the toolbar
@@ -182,7 +183,7 @@
     (global-evil-surround-mode 1))
 
 (use-package doom-themes
-  :init (load-theme 'doom-snazzy t))
+  :init (load-theme 'doom-gruvbox t))
 
 (use-package all-the-icons)
 
@@ -605,20 +606,19 @@
 (use-package emmet-mode)
 
 (defun smv/web-mode-hook ()
-  "Hooks for Web mode."
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
-  (setq web-mode-code-indent-offset 2)
-  (setq web-mode-enable-current-column-highlight t)
-  (setq web-mode-enable-current-element-highlight t)
+"Hooks for Web mode."
+(setq web-mode-markup-indent-offset 2)
+(setq web-mode-css-indent-offset 2)
+(setq web-mode-code-indent-offset 2)
+(setq web-mode-enable-current-column-highlight t)
+(setq web-mode-enable-current-element-highlight t)
 (set (make-local-variable 'company-backends) '(company-css company-web-html company-yasnippet company-files))
 )
 
 (use-package web-mode
     :mode (("\\.html?\\'" . web-mode)
             ("\\.css?\\'" . web-mode)
-            ("\\.js\\'" . web-mode)
-            ("\\.ts\\'" . web-mode))
+            )
     :hook
     (web-mode . smv/web-mode-hook)
     (web-mode . emmet-mode)
@@ -633,17 +633,26 @@
 
 (add-hook 'web-mode-before-auto-complete-hooks
     '(lambda ()
-      (let ((web-mode-cur-language
+    (let ((web-mode-cur-language
             (web-mode-language-at-pos)))
                 (if (string= web-mode-cur-language "php")
             (yas-activate-extra-mode 'php-mode)
-          (yas-deactivate-extra-mode 'php-mode))
+        (yas-deactivate-extra-mode 'php-mode))
                 (if (string= web-mode-cur-language "css")
             (setq emmet-use-css-transform t)
-          (setq emmet-use-css-transform nil)))))
+        (setq emmet-use-css-transform nil)))))
 
-(use-package rjsx-mode)
-(add-to-list 'auto-mode-alist '("components\\/.*\\.js\\'" . rjsx-mode))
+(use-package lsp-tailwindcss
+    :init
+    (setq lsp-tailwindcss-add-on-mode t))
+
+(use-package rjsx-mode
+  :mode (("\\.js\\'" . rjsx-mode)
+            ("\\.ts\\'" . rjsx-mode))
+  :hook
+  (rjsx-mode . emmet-mode)
+  (rjsx-mode . prettier-mode)
+  (rjsx-mode . lsp-deferred))
 
 (use-package prettier)
 
@@ -677,6 +686,15 @@
     :config
     (require 'dap-cpptools)
     (dap-cpptools-setup))
+
+(use-package flutter)
+
+(use-package dart-mode
+    :hook (dart-mode . lsp-deferred))
+
+(use-package lsp-dart
+    :config
+    (add-hook 'dart-mode-hook 'lsp))
 
 (use-package company
   :after lsp-mode
