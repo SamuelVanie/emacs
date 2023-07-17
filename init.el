@@ -555,9 +555,8 @@
 (lsp-enable-which-key-integration t))
 
 ;; only watch over the current project directory files
-(setq lsp-file-watch-ignored
-      (list (concat (regexp-quote (project-root (project-current)))
-                    "/[^.].*")))
+(setq lsp-file-watch-ignored (list (rx-to-string `(and (or bos "/" (and "/home" (* any)) "/") (not (any ".")))
+                                               'no-group)))
 
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)

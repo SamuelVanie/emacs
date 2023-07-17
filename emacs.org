@@ -786,10 +786,8 @@ I use some useful lsp packages with downloaded languages server for my programmi
 (lsp-enable-which-key-integration t))
 
 ;; only watch over the current project directory files
-(setq lsp-file-watch-ignored
-      (list (concat (regexp-quote (project-root (project-current)))
-                    "/[^.].*")))
-
+(setq lsp-file-watch-ignored (list (rx-to-string `(and (or bos "/" (and "/home" (* any)) "/") (not (any ".")))
+                                               'no-group)))
 
 #+end_src
 
