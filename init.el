@@ -183,7 +183,7 @@
     (global-evil-surround-mode 1))
 
 (use-package doom-themes
-  :init (load-theme 'doom-gruvbox t))
+  :init (load-theme 'doom-monokai-classic t))
 
 (use-package all-the-icons)
 
@@ -524,12 +524,13 @@
   (push '("conf-unix" . conf-unix) org-src-lang-modes))
 
 (with-eval-after-load 'org
-  ;; This is needed as of Org 9.2
-  (require 'org-tempo)
+;; This is needed as of Org 9.2
+(require 'org-tempo)
 
-  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-  (add-to-list 'org-structure-template-alist '("py" . "src python")))
+(add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+(add-to-list 'org-structure-template-alist '("py" . "src python"))
+(add-to-list 'org-structure-template-alist '("ru" . "src rust")))
 
 ;; Automatically tangle our Emacs.org config file when we save it
 (defun smv/org-babel-tangle-config ()
@@ -542,16 +543,21 @@
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'smv/org-babel-tangle-config)))
 
 (defun efs/lsp-mode-setup ()
-  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-  (lsp-headerline-breadcrumb-mode))
+(setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+(lsp-headerline-breadcrumb-mode))
 
 (use-package lsp-mode
-  :commands (lsp lsp-deferred)
-  :hook (lsp-mode . efs/lsp-mode-setup)
-  :init
-  (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
-  :config
-  (lsp-enable-which-key-integration t))
+:commands (lsp lsp-deferred)
+:hook (lsp-mode . efs/lsp-mode-setup)
+:init
+(setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+:config
+(lsp-enable-which-key-integration t))
+
+;; only watch over the current project directory files
+(setq lsp-file-watch-ignored
+      (list (concat (regexp-quote (project-root (project-current)))
+                    "/[^.].*")))
 
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
@@ -565,6 +571,11 @@
   :after lsp)
 
 (use-package lsp-ivy)
+
+(use-package company-tabnine :ensure t)
+(add-to-list 'company-backends #'company-tabnine)
+(setq company-idle-delay 0)
+(setq company-show-numbers t)
 
 (use-package flycheck)
 
@@ -690,11 +701,17 @@
 (use-package flutter)
 
 (use-package dart-mode
-    :hook (dart-mode . lsp-deferred))
+    :mode "\\.dart\\'"
+    :hook (dart-mode . lsp-deferred)
+)
 
 (use-package lsp-dart
     :config
     (add-hook 'dart-mode-hook 'lsp))
+
+(setq lsp-dart-sdk-dir "/home/vanieb/development/flutter/bin/cache/dart-sdk")
+(setq lsp-dart-flutter-sdk "/home/vanieb/development/flutter")
+(setq flutter-sdk-path "/home/vanieb/development/flutter")
 
 (use-package company
   :after lsp-mode
@@ -705,15 +722,6 @@
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
-
-(defun rk/copilot-tab ()
-"Tab command that will complet with copilot if a completion is
-available. Otherwise will try company, yasnippet or normal
-tab-indent."
-(interactive)
-(or (copilot-accept-completion)
-    (company-yasnippet-or-completion)
-    (indent-for-tab-command)))
 
 (defun rk/copilot-complete-or-accept ()
   "Command that either triggers a completion or accepts one if one
@@ -741,10 +749,6 @@ cleared, make sure the overlay doesn't come back too soon."
           (lambda ()
             (setq copilot-disable-predicates pre-copilot-disable-predicates)))))
   (error handler)))
-
-(defun rk/copilot-complete-if-active (next-func n)
-(let ((completed (when copilot-mode (copilot-accept-completion))))
-  (unless completed (funcall next-func n))))
 
 (defun rk/no-copilot-mode ()
 "Helper for `rk/no-copilot-modes'."
@@ -826,7 +830,6 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; complete by pressing right or tab but only when copilot completions are
 ;; shown. This means we leave the normal functionality intact.
 (advice-add 'right-char :around #'rk/copilot-complete-if-active)
-(advice-add 'indent-for-tab-command :around #'rk/copilot-complete-if-active)
 
 ;; deactivate copilot for certain modes
 (add-to-list 'copilot-enable-predicates #'rk/copilot-enable-predicate)
