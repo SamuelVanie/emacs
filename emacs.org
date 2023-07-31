@@ -33,6 +33,7 @@ Emacs has a built in package manager but it doesn’t make it easy to automatica
 ;; Initialize package sources
 (require 'package)
 (require 'cl)
+(require 'dired-x)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
@@ -57,6 +58,7 @@ Emacs has a built in package manager but it doesn’t make it easy to automatica
 
 (setq use-package-always-ensure t)
 
+(add-hook 'dired-mode-hook 'dired-hide-details-mode)
 #+END_SRC
 
 
@@ -820,17 +822,6 @@ lsp-ivy integrates Ivy with lsp-mode to make it easy to search for things by nam
 
 #+begin_src emacs-lisp
 (use-package lsp-ivy)
-#+end_src
-
-**** Tabnine
-
-[[https://github.com/TommyX12/company-tabnine][TabNine]] is the all-language autocompleter. It uses machine learning to provide responsive, reliable, and relevant suggestions.
-
-#+begin_src emacs-lisp
-(use-package company-tabnine :ensure t)
-(add-to-list 'company-backends #'company-tabnine)
-(setq company-idle-delay 0)
-(setq company-show-numbers t)
 #+end_src
 
 **** flycheck

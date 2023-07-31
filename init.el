@@ -16,6 +16,7 @@
 ;; Initialize package sources
 (require 'package)
 (require 'cl)
+(require 'dired-x)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
@@ -39,6 +40,8 @@
 (require 'quelpa-use-package)
 
 (setq use-package-always-ensure t)
+
+(add-hook 'dired-mode-hook 'dired-hide-details-mode)
 
 ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
 ;; reliably, set `user-emacs-directory` before loading no-littering!
@@ -570,11 +573,6 @@
   :after lsp)
 
 (use-package lsp-ivy)
-
-(use-package company-tabnine :ensure t)
-(add-to-list 'company-backends #'company-tabnine)
-(setq company-idle-delay 0)
-(setq company-show-numbers t)
 
 (use-package flycheck)
 
