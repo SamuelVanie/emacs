@@ -30,35 +30,37 @@ Emacs has a built in package manager but it doesn’t make it easy to automatica
 
 #+BEGIN_SRC emacs-lisp
 
-;; Initialize package sources
-(require 'package)
-(require 'cl)
-(require 'dired-x)
+  ;; Initialize package sources
+  (require 'package)
+  (require 'cl)
+  (require 'dired-x)
 
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-                        ("elpa" . "https://elpa.gnu.org/packages/")))
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                          ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+                          ("elpa" . "https://elpa.gnu.org/packages/")))
 
-(package-initialize)
-(unless package-archive-contents
-(package-refresh-contents))
+  (package-initialize)
+  (unless package-archive-contents
+  (package-refresh-contents))
 
-(unless (package-installed-p 'quelpa)
-(with-temp-buffer
-(url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
-(eval-buffer)
-(quelpa-self-upgrade)))
+  (unless (package-installed-p 'quelpa)
+  (with-temp-buffer
+  (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
+  (eval-buffer)
+  (quelpa-self-upgrade)))
 
-(quelpa
-    '(quelpa-use-package
-    :fetcher git
-    :url "https://github.com/quelpa/quelpa-use-package.git"))
+  (quelpa
+      '(quelpa-use-package
+      :fetcher git
+      :url "https://github.com/quelpa/quelpa-use-package.git"))
 
-(require 'quelpa-use-package)
+  (require 'quelpa-use-package)
+  
+  (setq use-package-always-ensure t)
 
-(setq use-package-always-ensure t)
+  (add-hook 'dired-mode-hook 'dired-hide-details-mode)
 
-(add-hook 'dired-mode-hook 'dired-hide-details-mode)
+  (global-set-key [remap dabbrev-expand] 'hippie-expand)
 #+END_SRC
 
 
@@ -144,7 +146,7 @@ This section configures basic UI settings that remove unneeded elements to make 
 
 ** Font Configuration
 
-I use JetbrainsMono Nerd Font and Cantarell fonts as my mains fonts.
+I use JetbrainsMono Nerd Font and Roboto Condensed fonts as my mains fonts.
 - Jetbrains for code part with fixed font
 - Cantarell for text part for example in org mode
 
@@ -156,7 +158,7 @@ I use JetbrainsMono Nerd Font and Cantarell fonts as my mains fonts.
 (set-face-attribute 'fixed-pitch nil :font "JetBrainsMono Nerd Font" :height smv/default-font-size)
 
 ;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "Cantarell" :height smv/default-variable-font-size :weight 'regular)
+(set-face-attribute 'variable-pitch nil :font "Roboto Condensed" :height smv/default-variable-font-size :weight 'light)
 
 #+end_src
 
@@ -532,7 +534,7 @@ I use hydra to build a trasient that will permit me to quickly adjust the scale 
 
 ** Better Font Faces
 
-I create a function called `smv/org-font-setup` to configure various text faces for tweaking org-mode. I have fixed font for code source, table, ... and variable font (Cantarell for text).
+I create a function called `smv/org-font-setup` to configure various text faces for tweaking org-mode. I have fixed font for code source, table, ... and variable font (Roboto Condensed light for text).
 
 #+begin_src emacs-lisp
 
@@ -553,7 +555,7 @@ I create a function called `smv/org-font-setup` to configure various text faces 
                         (org-level-6 . 1.1)
                         (org-level-7 . 1.1)
                         (org-level-8 . 1.1)))
-        (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+        (set-face-attribute (car face) nil :font "Roboto Condensed" :weight 'light :height (cdr face)))
         ;; Ensure that anything that should be fixed-pitch in Org files appears that way
         (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
         (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
@@ -849,8 +851,9 @@ Mode for yaml configuration files editing.
 
 #+begin_src emacs-lisp
 (use-package yaml-mode
-:mode "\\.yml\\'"
-)
+:mode (("\\.yml\\'" . web-mode)
+            ("\\.yaml\\'" . web-mode)
+            ))
 #+end_src
 
 
@@ -886,6 +889,9 @@ Dap-mode is the debugger mode. It goes with lsp-mode
 (define-key dap-ui-repl-mode-map (kbd "C-<f5>") 'dap-stop-thread)
 (define-key dap-ui-repl-mode-map (kbd "S-<f5>") 'dap-restart-frame)
 (define-key dap-ui-repl-mode-map (kbd "<f12>") 'dap-ui-inspect-thing-at-point)
+
+
+(require 'dap-cpptools)
 #+end_src
 
 
@@ -989,6 +995,17 @@ You will need to install typescript-language-server with `npm install -g typescr
     (require 'dap-node)
     (dap-node-setup))
 
+#+end_src
+
+*** PHP
+
+Installing PHP
+
+#+begin_src emacs-lisp
+(use-package php-mode
+  :mode "\\.php\\'"
+  :hook (php-mode . lsp-deferred)
+  )
 #+end_src
 
 *** JAVA
@@ -1248,19 +1265,4 @@ Using chatgpt directly in emacs so that I will not be obliged to switch to the w
 
   
 (setq gc-const-threshold (* 2 1000 1000))
-#+end_src
-
-
-* Tools
-
-** PlantUML
-
-PlantUML is a java application used to build UML diagrams easily with text like syntax.
-You will need to download the plantuml jar application and paste it to the corresponding directory. Link : [[https://plantuml.com/download][plantuml]]
-
-#+begin_src emacs-lisp
-(use-package plantuml-mode)
-(setq org-plantuml-jar-path (expand-file-name "/home/vanieb/.emacs.d/plantuml.jar"))
-(add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
-(org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
 #+end_src

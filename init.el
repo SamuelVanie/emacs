@@ -43,6 +43,8 @@
 
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
 
+(global-set-key [remap dabbrev-expand] 'hippie-expand)
+
 ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
 ;; reliably, set `user-emacs-directory` before loading no-littering!
 ;(setq user-emacs-directory "~/.cache/emacs")
@@ -100,7 +102,7 @@
 (set-face-attribute 'fixed-pitch nil :font "JetBrainsMono Nerd Font" :height smv/default-font-size)
 
 ;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "Cantarell" :height smv/default-variable-font-size :weight 'regular)
+(set-face-attribute 'variable-pitch nil :font "Roboto Condensed" :height smv/default-variable-font-size :weight 'light)
 
 (use-package ligature
     :config
@@ -395,7 +397,7 @@
                         (org-level-6 . 1.1)
                         (org-level-7 . 1.1)
                         (org-level-8 . 1.1)))
-        (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+        (set-face-attribute (car face) nil :font "Roboto Condensed" :weight 'light :height (cdr face)))
         ;; Ensure that anything that should be fixed-pitch in Org files appears that way
         (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
         (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
@@ -580,8 +582,9 @@
     :config (yas-global-mode))
 
 (use-package yaml-mode
-:mode "\\.yml\\'"
-)
+:mode (("\\.yml\\'" . web-mode)
+            ("\\.yaml\\'" . web-mode)
+            ))
 
 (use-package dap-mode
     :after
@@ -610,6 +613,9 @@
 (define-key dap-ui-repl-mode-map (kbd "C-<f5>") 'dap-stop-thread)
 (define-key dap-ui-repl-mode-map (kbd "S-<f5>") 'dap-restart-frame)
 (define-key dap-ui-repl-mode-map (kbd "<f12>") 'dap-ui-inspect-thing-at-point)
+
+
+(require 'dap-cpptools)
 
 (use-package emmet-mode)
 
@@ -671,6 +677,11 @@
     (setq typescript-indent-level 2)
     (require 'dap-node)
     (dap-node-setup))
+
+(use-package php-mode
+  :mode "\\.php\\'"
+  :hook (php-mode . lsp-deferred)
+  )
 
 (use-package lsp-java
     :config
@@ -872,8 +883,3 @@ cleared, make sure the overlay doesn't come back too soon."
 
   
 (setq gc-const-threshold (* 2 1000 1000))
-
-(use-package plantuml-mode)
-(setq org-plantuml-jar-path (expand-file-name "/home/vanieb/.emacs.d/plantuml.jar"))
-(add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
-(org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
