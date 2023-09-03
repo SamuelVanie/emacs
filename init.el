@@ -19,23 +19,23 @@
 (require 'dired-x)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-                        ("elpa" . "https://elpa.gnu.org/packages/")))
+                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")))
 
 (package-initialize)
 (unless package-archive-contents
-(package-refresh-contents))
+  (package-refresh-contents))
 
 (unless (package-installed-p 'quelpa)
-(with-temp-buffer
-(url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
-(eval-buffer)
-(quelpa-self-upgrade)))
+  (with-temp-buffer
+    (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
+    (eval-buffer)
+    (quelpa-self-upgrade)))
 
 (quelpa
-    '(quelpa-use-package
-    :fetcher git
-    :url "https://github.com/quelpa/quelpa-use-package.git"))
+ '(quelpa-use-package
+   :fetcher git
+   :url "https://github.com/quelpa/quelpa-use-package.git"))
 
 (require 'quelpa-use-package)
 
@@ -680,7 +680,6 @@
 
 (use-package php-mode
   :mode "\\.php\\'"
-  :hook (php-mode . lsp-deferred)
   )
 
 (use-package lsp-java
