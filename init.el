@@ -127,68 +127,69 @@
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
-(use-package general ;; for setting keybindings
-    :ensure t
-    :config
-    (general-create-definer smv/leader-keys
-        :keymaps '(normal visual emacs)
-        :prefix "SPC"
-        :global-prefix "SPC")
+  (use-package general ;; for setting keybindings
+      :ensure t
+      :config
+      (general-create-definer smv/leader-keys
+          :keymaps '(normal visual emacs)
+          :prefix "SPC"
+          :global-prefix "SPC")
 
-    (smv/leader-keys
-        "t" '(:ignore t :which-key "toggles")
-        "tt" '(counsel-load-theme :which-key "choose theme")))
+      (smv/leader-keys
+          "t" '(:ignore t :which-key "toggles")
+          "tt" '(counsel-load-theme :which-key "choose theme")))
 
-  ;; Activate vim keybindings inside of emacs
-(use-package evil
-    :init
-    (setq evil-want-integration t)
-    (setq evil-want-keybinding nil)
-    (setq evil-want-C-u-scroll t)
-    (setq evil-want-C-i-jump nil)
-    :config
-    (evil-mode 1)
-    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-    (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
+    ;; Activate vim keybindings inside of emacs
+  (use-package evil
+      :init
+      (setq evil-want-integration t)
+      (setq evil-want-keybinding nil)
+      (setq evil-want-C-u-scroll t)
+      (setq evil-want-C-i-jump nil)
+      :config
+      (evil-mode 1)
+      (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+      (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
 
-    (define-key evil-insert-state-map (kbd "C-n") nil)
-    (define-key evil-insert-state-map (kbd "C-p") nil)
+      (define-key evil-insert-state-map (kbd "C-n") nil)
+      (define-key evil-insert-state-map (kbd "C-p") nil)
 
-    (define-key evil-normal-state-map (kbd "C-n") nil)
-    (define-key evil-normal-state-map (kbd "C-p") nil)
+      (define-key evil-normal-state-map (kbd "C-n") nil)
+      (define-key evil-normal-state-map (kbd "C-p") nil)
 
-    (define-key evil-visual-state-map (kbd "C-n") nil)
-    (define-key evil-visual-state-map (kbd "C-p") nil)
+      (define-key evil-visual-state-map (kbd "C-n") nil)
+      (define-key evil-visual-state-map (kbd "C-p") nil)
 
-    (define-key evil-visual-state-map (kbd "C-a") nil)
-    (define-key evil-normal-state-map (kbd "C-a") nil)
-    (define-key evil-insert-state-map (kbd "C-a") nil)
+      (define-key evil-visual-state-map (kbd "C-a") nil)
+      (define-key evil-normal-state-map (kbd "C-a") nil)
+      (define-key evil-insert-state-map (kbd "C-a") nil)
 
-    (define-key evil-visual-state-map (kbd "C-e") nil)
-    (define-key evil-normal-state-map (kbd "C-e") nil)
-    (define-key evil-insert-state-map (kbd "C-e") nil)
+      (define-key evil-visual-state-map (kbd "C-e") nil)
+      (define-key evil-normal-state-map (kbd "C-e") nil)
+      (define-key evil-insert-state-map (kbd "C-e") nil)
 
-    (define-key evil-visual-state-map (kbd "C-d") nil)
-    (define-key evil-normal-state-map (kbd "C-d") nil)
-    (define-key evil-insert-state-map (kbd "C-d") nil)
+      (define-key evil-visual-state-map (kbd "C-d") nil)
+      (define-key evil-normal-state-map (kbd "C-d") nil)
+      (define-key evil-insert-state-map (kbd "C-d") nil)
 
-    (evil-set-initial-state 'messages-buffer-mode 'normal)
-    (evil-set-initial-state 'dashboard-mode 'normal))
-
-  ;; Add evil-keybindings to more modes inside of emacs
-(use-package evil-collection
-    :after evil
-    :config
-    (evil-collection-init))
+      (evil-set-initial-state 'messages-buffer-mode 'normal)
+      (evil-set-initial-state 'dashboard-mode 'normal))
 
 
-(use-package evil-surround
-    :ensure t
-    :config
-    (global-evil-surround-mode 1))
+;; Add evil-keybindings to more modes inside of emacs
+  (use-package evil-collection
+      :after evil
+      :config
+      (evil-collection-init))
+
+
+  (use-package evil-surround
+      :ensure t
+      :config
+      (global-evil-surround-mode 1))
 
 (use-package doom-themes
-  :init (load-theme 'doom-monokai-classic t))
+  :init (load-theme 'manoj-dark t))
 
 (use-package all-the-icons)
 
@@ -546,6 +547,8 @@
       (org-babel-tangle))))
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'smv/org-babel-tangle-config)))
+
+(global-set-key (kbd "C-M-;") 'comment-region)
 
 (defun efs/lsp-mode-setup ()
 (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
