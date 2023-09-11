@@ -59,6 +59,59 @@
 (use-package undo-tree)
 (global-undo-tree-mode)
 
+(require 'em-smart)
+  (setq eshell-where-to-jump 'begin)
+  (setq eshell-review-quick-commands nil)
+  (setq eshell-smart-space-goes-to-end t)
+  (setq eshell-list-files-after-cd t)
+
+;; Watch out you should have fish installed on your computer
+  (setq shell-file-name "/usr/bin/fish")
+  (setq eshell-aliases-file "~/.emacs.d/aliases")
+
+  (use-package eshell-toggle
+  :bind ("C-x C-z" . eshell-toggle))
+
+(use-package vterm)
+(use-package vterm-toggle
+:bind ("C-x C-y" . vterm-toggle))
+
+
+(use-package multi-vterm
+      :config
+      (add-hook 'vterm-mode-hook
+		      (lambda ()
+		      (setq-local evil-insert-state-cursor 'box)
+		      (evil-insert-state)))
+      (define-key vterm-mode-map [return]                      #'vterm-send-return)
+
+      (setq vterm-keymap-exceptions nil)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-e")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-f")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-a")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-v")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-b")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-w")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-u")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-n")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-m")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-p")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-j")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-k")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-r")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-t")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-g")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-c")      #'vterm--self-insert)
+      (evil-define-key 'insert vterm-mode-map (kbd "C-SPC")    #'vterm--self-insert)
+      (evil-define-key 'normal vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
+      (evil-define-key 'normal vterm-mode-map (kbd ",c")       #'multi-vterm)
+      (evil-define-key 'normal vterm-mode-map (kbd ",n")       #'multi-vterm-next)
+      (evil-define-key 'normal vterm-mode-map (kbd ",p")       #'multi-vterm-prev)
+      (evil-define-key 'normal vterm-mode-map (kbd "i")        #'evil-insert-resume)
+      (evil-define-key 'normal vterm-mode-map (kbd "o")        #'evil-insert-resume)
+      (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume))
+
 (defun kill-all-buffers ()
   "Kill all buffers without asking for confirmation."
   (interactive)
@@ -189,7 +242,7 @@
       (global-evil-surround-mode 1))
 
 (use-package doom-themes
-  :init (load-theme 'manoj-dark t))
+  :init (load-theme 'uwu t))
 
 (use-package all-the-icons)
 
@@ -732,6 +785,13 @@
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
+
+(use-package docker
+    :ensure t
+    :bind ("C-c d" . docker))
+
+(use-package dockerfile-mode)
+(use-package docker-compose-mode)
 
 (defun rk/copilot-complete-or-accept ()
   "Command that either triggers a completion or accepts one if one
