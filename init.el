@@ -84,33 +84,7 @@
 		      (setq-local evil-insert-state-cursor 'box)
 		      (evil-insert-state)))
       (define-key vterm-mode-map [return]                      #'vterm-send-return)
-
-      (setq vterm-keymap-exceptions nil)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-e")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-f")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-a")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-v")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-b")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-w")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-u")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-n")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-m")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-p")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-j")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-k")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-r")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-t")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-g")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-c")      #'vterm--self-insert)
-      (evil-define-key 'insert vterm-mode-map (kbd "C-SPC")    #'vterm--self-insert)
-      (evil-define-key 'normal vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
-      (evil-define-key 'normal vterm-mode-map (kbd ",c")       #'multi-vterm)
-      (evil-define-key 'normal vterm-mode-map (kbd ",n")       #'multi-vterm-next)
-      (evil-define-key 'normal vterm-mode-map (kbd ",p")       #'multi-vterm-prev)
-      (evil-define-key 'normal vterm-mode-map (kbd "i")        #'evil-insert-resume)
-      (evil-define-key 'normal vterm-mode-map (kbd "o")        #'evil-insert-resume)
-      (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume))
+      )
 
 (defun kill-all-buffers ()
   "Kill all buffers without asking for confirmation."
@@ -140,7 +114,7 @@
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 ;; Set frame font
-(add-to-list 'default-frame-alist '(font . "JetBrainsMono Nerd Font"))
+(add-to-list 'default-frame-alist '(font . "Anonymice Nerd Font"))
 
 ;; some modes doesn't have to start with lines enable
 (dolist (mode '(org-mode-hook
@@ -149,13 +123,13 @@
             eshell-mode-hook))
 (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-(set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height smv/default-font-size)
+(set-face-attribute 'default nil :font "Anonymice Nerd Font" :height smv/default-font-size)
 
 ;; Set the fixed pitch face
-(set-face-attribute 'fixed-pitch nil :font "JetBrainsMono Nerd Font" :height smv/default-font-size)
+(set-face-attribute 'fixed-pitch nil :font "Anonymice Nerd Font" :height smv/default-font-size)
 
 ;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "Roboto Condensed" :height smv/default-variable-font-size :weight 'light)
+(set-face-attribute 'variable-pitch nil :font "Anonymice Nerd Font" :height smv/default-variable-font-size :weight 'light)
 
 (use-package ligature
     :config
@@ -197,7 +171,11 @@
       :init
       (setq evil-want-integration t)
       (setq evil-want-keybinding nil)
-      (setq evil-want-C-u-scroll t)
+      (setq evil-want-C-u-scroll nil)
+      (setq evil-want-C-d-scroll nil)
+      (setq evil-v$-excludes-newline t)
+      (setq evil-respect-visual-line-mode t)
+      (setq evil-undo-system 'undo-tree)
       (setq evil-want-C-i-jump nil)
       :config
       (evil-mode 1)
@@ -209,6 +187,8 @@
 
       (define-key evil-normal-state-map (kbd "C-n") nil)
       (define-key evil-normal-state-map (kbd "C-p") nil)
+
+      (define-key evil-normal-state-map (kbd "C-u") 'evil-jump-forward)
 
       (define-key evil-visual-state-map (kbd "C-n") nil)
       (define-key evil-visual-state-map (kbd "C-p") nil)
@@ -242,13 +222,14 @@
       (global-evil-surround-mode 1))
 
 (use-package doom-themes
-  :init (load-theme 'uwu t))
+  :init (load-theme 'doom-badger t))
 
-(use-package all-the-icons)
+(use-package all-the-icons
+    :if (display-graphic-p))
 
 (use-package doom-modeline
-  :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 15)))
+    :init (doom-modeline-mode 1)
+    :custom ((doom-modeline-height 15)))
 
 (use-package which-key ;; print next keybindings
 	     :init (which-key-mode) ;; happens before the package is loaded
@@ -298,65 +279,65 @@
   (ivy-prescient-mode 1))
 
 (use-package treemacs
-  :ensure t
-  :defer t
-  :init
-  (with-eval-after-load 'winum
+:ensure t
+:defer t
+:init
+(with-eval-after-load 'winum
     (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
-  :config
-  (progn
+:config
+(progn
     (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
-          treemacs-deferred-git-apply-delay        0.5
-          treemacs-directory-name-transformer      #'identity
-          treemacs-display-in-side-window          t
-          treemacs-eldoc-display                   'simple
-          treemacs-file-event-delay                2000
-          treemacs-file-extension-regex            treemacs-last-period-regex-value
-          treemacs-file-follow-delay               0.2
-          treemacs-file-name-transformer           #'identity
-          treemacs-follow-after-init               t
-          treemacs-expand-after-init               t
-          treemacs-find-workspace-method           'find-for-file-or-pick-first
-          treemacs-git-command-pipe                ""
-          treemacs-goto-tag-strategy               'refetch-index
-          treemacs-header-scroll-indicators        '(nil . "^^^^^^")
-          treemacs-hide-dot-git-directory          t
-          treemacs-indentation                     2
-          treemacs-indentation-string              " "
-          treemacs-is-never-other-window           nil
-          treemacs-max-git-entries                 5000
-          treemacs-missing-project-action          'ask
-          treemacs-move-forward-on-expand          nil
-          treemacs-no-png-images                   nil
-          treemacs-no-delete-other-windows         t
-          treemacs-project-follow-cleanup          nil
-          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-          treemacs-position                        'left
-          treemacs-read-string-input               'from-child-frame
-          treemacs-recenter-distance               0.1
-          treemacs-recenter-after-file-follow      nil
-          treemacs-recenter-after-tag-follow       nil
-          treemacs-recenter-after-project-jump     'always
-          treemacs-recenter-after-project-expand   'on-distance
-          treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
-          treemacs-project-follow-into-home        nil
-          treemacs-show-cursor                     nil
-          treemacs-show-hidden-files               t
-          treemacs-silent-filewatch                nil
-          treemacs-silent-refresh                  nil
-          treemacs-sorting                         'alphabetic-asc
-          treemacs-select-when-already-in-treemacs 'move-back
-          treemacs-space-between-root-nodes        t
-          treemacs-tag-follow-cleanup              t
-          treemacs-tag-follow-delay                1.5
-          treemacs-text-scale                      nil
-          treemacs-user-mode-line-format           nil
-          treemacs-user-header-line-format         nil
-          treemacs-wide-toggle-width               70
-          treemacs-width                           35
-          treemacs-width-increment                 1
-          treemacs-width-is-initially-locked       t
-          treemacs-workspace-switch-cleanup        nil)
+        treemacs-deferred-git-apply-delay        0.5
+        treemacs-directory-name-transformer      #'identity
+        treemacs-display-in-side-window          t
+        treemacs-eldoc-display                   'simple
+        treemacs-file-event-delay                2000
+        treemacs-file-extension-regex            treemacs-last-period-regex-value
+        treemacs-file-follow-delay               0.2
+        treemacs-file-name-transformer           #'identity
+        treemacs-follow-after-init               t
+        treemacs-expand-after-init               t
+        treemacs-find-workspace-method           'find-for-file-or-pick-first
+        treemacs-git-command-pipe                ""
+        treemacs-goto-tag-strategy               'refetch-index
+        treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+        treemacs-hide-dot-git-directory          t
+        treemacs-indentation                     2
+        treemacs-indentation-string              " "
+        treemacs-is-never-other-window           nil
+        treemacs-max-git-entries                 5000
+        treemacs-missing-project-action          'ask
+        treemacs-move-forward-on-expand          nil
+        treemacs-no-png-images                   nil
+        treemacs-no-delete-other-windows         t
+        treemacs-project-follow-cleanup          nil
+        treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+        treemacs-position                        'left
+        treemacs-read-string-input               'from-child-frame
+        treemacs-recenter-distance               0.1
+        treemacs-recenter-after-file-follow      nil
+        treemacs-recenter-after-tag-follow       nil
+        treemacs-recenter-after-project-jump     'always
+        treemacs-recenter-after-project-expand   'on-distance
+        treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+        treemacs-project-follow-into-home        nil
+        treemacs-show-cursor                     nil
+        treemacs-show-hidden-files               t
+        treemacs-silent-filewatch                nil
+        treemacs-silent-refresh                  nil
+        treemacs-sorting                         'alphabetic-asc
+        treemacs-select-when-already-in-treemacs 'move-back
+        treemacs-space-between-root-nodes        t
+        treemacs-tag-follow-cleanup              t
+        treemacs-tag-follow-delay                1.5
+        treemacs-text-scale                      nil
+        treemacs-user-mode-line-format           nil
+        treemacs-user-header-line-format         nil
+        treemacs-wide-toggle-width               70
+        treemacs-width                           35
+        treemacs-width-increment                 1
+        treemacs-width-is-initially-locked       t
+        treemacs-workspace-switch-cleanup        nil)
 
     ;; The default width and height of the icons is 22 pixels. If you are
     ;; using a Hi-DPI display, uncomment this to double the icon size.
@@ -366,51 +347,53 @@
     (treemacs-filewatch-mode t)
     (treemacs-fringe-indicator-mode 'always)
     (when treemacs-python-executable
-      (treemacs-git-commit-diff-mode t))
+    (treemacs-git-commit-diff-mode t))
 
     (pcase (cons (not (null (executable-find "git")))
-                 (not (null treemacs-python-executable)))
-      (`(t . t)
-       (treemacs-git-mode 'deferred))
-      (`(t . _)
-       (treemacs-git-mode 'simple)))
+                (not (null treemacs-python-executable)))
+    (`(t . t)
+        (treemacs-git-mode 'deferred))
+    (`(t . _)
+        (treemacs-git-mode 'simple)))
 
     (treemacs-hide-gitignored-files-mode nil))
-  :bind
-  (:map global-map
-        ("M-0"       . treemacs-select-window)
-        ("C-x t 1"   . treemacs-delete-other-windows)
-        ("C-x t t"   . treemacs)
-        ("C-x t d"   . treemacs-select-directory)
-        ("C-x t B"   . treemacs-bookmark)
-        ("C-x t C-t" . treemacs-find-file)
-        ("C-x t M-t" . treemacs-find-tag)))
+    :bind
+    (:map global-map
+            ("M-0"       . treemacs-select-window)
+            ("C-x t 1"   . treemacs-delete-other-windows)
+            ("C-x t t"   . treemacs)
+            ("C-x t d"   . treemacs-select-directory)
+            ("C-x t B"   . treemacs-bookmark)
+            ("C-x t C-t" . treemacs-find-file)
+            ("C-x t M-t" . treemacs-find-tag)))
 
 (use-package treemacs-evil
-  :after (treemacs evil)
-  :ensure t)
+:after (treemacs evil)
+:ensure t)
 
 (use-package treemacs-projectile
-  :after (treemacs projectile)
-  :ensure t)
+:after (treemacs projectile)
+:ensure t)
+
+(use-package treemacs-all-the-icons)
 
 (use-package treemacs-icons-dired
-  :hook (dired-mode . treemacs-icons-dired-enable-once)
-  :ensure t)
+:hook (dired-mode . treemacs-icons-dired-enable-once)
+:ensure t)
 
 (use-package treemacs-magit
-  :after (treemacs magit)
-  :ensure t)
+:after (treemacs magit)
+:ensure t)
 
 (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
-  :after (treemacs persp-mode) ;;or perspective vs. persp-mode
-  :ensure t
-  :config (treemacs-set-scope-type 'Perspectives))
+:after (treemacs persp-mode) ;;or perspective vs. persp-mode
+:ensure t
+:config (treemacs-set-scope-type 'Perspectives))
 
 (use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
-  :after (treemacs)
-  :ensure t
-  :config (treemacs-set-scope-type 'Tabs))
+:after (treemacs)
+:ensure t
+:config (treemacs-set-scope-type 'Tabs))
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
@@ -568,9 +551,11 @@
 
 ;; Outline numbering for org mode
 (use-package org-num
-  :load-path "lisp/"
-  :after org
-  :hook (org-mode . org-num-mode))
+:load-path "lisp/"
+:after org
+:hook (org-mode . org-num-mode))
+
+(use-package org-projectile)
 
 (use-package olivetti) ;; use to stretch the page on the center to be able to focus on document writing
 
@@ -738,14 +723,12 @@
   :mode "\\.php\\'"
   )
 
-(use-package lsp-java
-    :config
-    (add-hook 'java-mode-hook 'lsp)
-    ;; current VSCode defaults for quick load
-    (setq lsp-java-vmargs '("-XX:+UseParallelGC" "-XX:GCTimeRatio=4" "-XX:AdaptiveSizePolicyWeight=90" "-Dsun.zip.disableMemoryMapping=true" "-Xmx2G" "-Xms100m"))
-)
+;; (use-package lsp-java
+;;     :config
+;;     (add-hook 'java-mode-hook 'lsp)
+;;     ;; current VSCode defaults for quick load
+;; )
 
-(use-package ess)
 (use-package markdown-mode)
 (use-package poly-R)
 
@@ -913,14 +896,14 @@ cleared, make sure the overlay doesn't come back too soon."
      (require 'company)
      (global-copilot-mode)))
 
-(defun smv/gptel-api-key ()
-  "Retrieve my OpenAI API key from a secure location."
-  (with-temp-buffer
-    (insert-file-contents-literally "~/.open_api_key")
-    (string-trim (buffer-string))))
+;; (defun smv/gptel-api-key ()
+;;   "Retrieve my OpenAI API key from a secure location."
+;;   (with-temp-buffer
+;;     (insert-file-contents-literally "~/.open_api_key")
+;;     (string-trim (buffer-string))))
 
-(use-package gptel)
-(setq gptel-api-key (smv/gptel-api-key))
+;; (use-package gptel)
+;; (setq gptel-api-key (smv/gptel-api-key))
 
 (use-package projectile
   :diminish projectile-mode
