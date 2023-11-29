@@ -14,36 +14,38 @@
 (load custom-file 'noerror 'nomessage)
 
 ;; Initialize package sources
-(require 'package)
-(require 'cl)
-(require 'dired-x)
+  (require 'package)
+  (require 'cl)
+  (require 'dired-x)
 
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-                         ("elpa" . "https://elpa.gnu.org/packages/")))
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                           ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+                           ("elpa" . "https://elpa.gnu.org/packages/")))
 
-(package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
+  (package-initialize)
+  (unless package-archive-contents
+    (package-refresh-contents))
 
-(unless (package-installed-p 'quelpa)
-  (with-temp-buffer
-    (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
-    (eval-buffer)
-    (quelpa-self-upgrade)))
+  (unless (package-installed-p 'quelpa)
+    (with-temp-buffer
+      (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
+      (eval-buffer)
+      (quelpa-self-upgrade)))
 
-(quelpa
- '(quelpa-use-package
-   :fetcher git
-   :url "https://github.com/quelpa/quelpa-use-package.git"))
+  (quelpa
+   '(quelpa-use-package
+     :fetcher git
+     :url "https://github.com/quelpa/quelpa-use-package.git"))
 
-(require 'quelpa-use-package)
+  (require 'quelpa-use-package)
 
-(setq use-package-always-ensure t)
+  (setq use-package-always-ensure t)
 
-(add-hook 'dired-mode-hook 'dired-hide-details-mode)
+  (add-hook 'dired-mode-hook 'dired-hide-details-mode)
 
-(global-set-key [remap dabbrev-expand] 'hippie-expand)
+  (global-set-key [remap dabbrev-expand] 'hippie-expand)
+
+(setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
 
 ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
 ;; reliably, set `user-emacs-directory` before loading no-littering!
@@ -723,11 +725,11 @@
   :mode "\\.php\\'"
   )
 
-;; (use-package lsp-java
-;;     :config
-;;     (add-hook 'java-mode-hook 'lsp)
-;;     ;; current VSCode defaults for quick load
-;; )
+(use-package lsp-java
+    :config
+    (add-hook 'java-mode-hook 'lsp)
+    ;; current VSCode defaults for quick load
+)
 
 (use-package markdown-mode)
 (use-package poly-R)

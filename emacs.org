@@ -61,6 +61,8 @@ Emacs has a built in package manager but it doesn’t make it easy to automatica
   (add-hook 'dired-mode-hook 'dired-hide-details-mode)
 
   (global-set-key [remap dabbrev-expand] 'hippie-expand)
+
+(setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
 #+END_SRC
 
 
@@ -1077,11 +1079,11 @@ To do so just run the ~lsp-install-server~ command in your M-x prompt then insta
 *** JAVA
 
 #+begin_src emacs-lisp
-  ;; (use-package lsp-java
-  ;;     :config
-  ;;     (add-hook 'java-mode-hook 'lsp)
-  ;;     ;; current VSCode defaults for quick load
-  ;; )
+(use-package lsp-java
+    :config
+    (add-hook 'java-mode-hook 'lsp)
+    ;; current VSCode defaults for quick load
+)
 #+end_src
 
 *** R
