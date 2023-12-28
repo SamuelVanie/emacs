@@ -13,37 +13,44 @@
 (setq custom-file (locate-user-emacs-file "custom-vars.el"))
 (load custom-file 'noerror 'nomessage)
 
+(setq-default indent-tabs-mode nil)
+
 ;; Initialize package sources
-  (require 'package)
-  (require 'cl)
-  (require 'dired-x)
+(require 'package)
+(require 'cl)
+(require 'dired-x)
 
-  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                           ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-                           ("elpa" . "https://elpa.gnu.org/packages/")))
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                            ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+                            ("elpa" . "https://elpa.gnu.org/packages/")))
 
-  (package-initialize)
-  (unless package-archive-contents
+(package-initialize)
+(unless package-archive-contents
     (package-refresh-contents))
 
-  (unless (package-installed-p 'quelpa)
+(unless (package-installed-p 'quelpa)
     (with-temp-buffer
-      (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
-      (eval-buffer)
-      (quelpa-self-upgrade)))
+    (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
+    (eval-buffer)
+    (quelpa-self-upgrade)))
 
-  (quelpa
-   '(quelpa-use-package
-     :fetcher git
-     :url "https://github.com/quelpa/quelpa-use-package.git"))
+(quelpa
+    '(quelpa-use-package
+    :fetcher git
+    :url "https://github.com/quelpa/quelpa-use-package.git"))
 
-  (require 'quelpa-use-package)
+(require 'quelpa-use-package)
 
-  (setq use-package-always-ensure t)
+(setq use-package-always-ensure t)
 
-  (add-hook 'dired-mode-hook 'dired-hide-details-mode)
+(add-hook 'dired-mode-hook 'dired-hide-details-mode)
 
-  (global-set-key [remap dabbrev-expand] 'hippie-expand)
+(global-set-key [remap dabbrev-expand] 'hippie-expand)
+
+(use-package dashboard
+    :ensure t
+    :config
+    (dashboard-setup-startup-hook))
 
 (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
 
@@ -87,6 +94,14 @@
 		      (evil-insert-state)))
       (define-key vterm-mode-map [return]                      #'vterm-send-return)
       )
+
+(global-set-key (kbd "M-g f") 'avy-goto-line) ;; go to a line but not with line number
+(global-set-key (kbd "C-c l") 'avy-copy-line) ;; copy a line I'm not on
+
+(global-set-key (kbd "C-c m") 'avy-move-line) ;; move a line I'm not on
+(global-set-key (kbd "M-g w") 'avy-goto-word-1) ;; move to a word inputing 1 character
+(global-set-key (kbd "C-:") 'avy-goto-char-timer) ;; move to a particular character on any window using 1 input character
+(setq avy-timeout 0.7)
 
 (defun kill-all-buffers ()
   "Kill all buffers without asking for confirmation."
