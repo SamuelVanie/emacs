@@ -28,6 +28,8 @@
 (unless package-archive-contents
     (package-refresh-contents))
 
+(setq use-package-always-ensure t)
+
 (unless (package-installed-p 'quelpa)
     (with-temp-buffer
     (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
@@ -40,8 +42,6 @@
     :url "https://github.com/quelpa/quelpa-use-package.git"))
 
 (require 'quelpa-use-package)
-
-(setq use-package-always-ensure t)
 
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
 
@@ -131,7 +131,7 @@
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 ;; Set frame font
-(add-to-list 'default-frame-alist '(font . "Anonymice Nerd Font"))
+(add-to-list 'default-frame-alist '(font . "AnonymicePro Nerd Font"))
 
 ;; some modes doesn't have to start with lines enable
 (dolist (mode '(org-mode-hook
@@ -140,13 +140,13 @@
             eshell-mode-hook))
 (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-(set-face-attribute 'default nil :font "Anonymice Nerd Font" :height smv/default-font-size)
+(set-face-attribute 'default nil :font "AnonymicePro Nerd Font" :height smv/default-font-size)
 
 ;; Set the fixed pitch face
-(set-face-attribute 'fixed-pitch nil :font "Anonymice Nerd Font" :height smv/default-font-size)
+(set-face-attribute 'fixed-pitch nil :font "AnonymicePro Nerd Font" :height smv/default-font-size)
 
 ;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "Anonymice Nerd Font" :height smv/default-variable-font-size :weight 'light)
+(set-face-attribute 'variable-pitch nil :font "AnonymicePro Nerd Font" :height smv/default-variable-font-size :weight 'light)
 
 (use-package ligature
     :config

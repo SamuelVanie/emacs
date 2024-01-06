@@ -29,6 +29,7 @@ Declare some of my variables for my global configuration
 * Package System setup
 
 Emacs has a built in package manager but it doesn’t make it easy to automatically install packages on a new system the first time you pull down your configuration. use-package is a really helpful package used in this configuration to make it a lot easier to automate the installation and configuration of everything else we use.
+I don't know why but quelpa doesn't get install automatically (maybe a problem only on mac ?), you should install it manually by running `M-x package-install` then type quelpa
 
 #+BEGIN_SRC emacs-lisp
 
