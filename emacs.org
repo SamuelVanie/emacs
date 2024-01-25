@@ -1,4 +1,4 @@
-#+title: Samuel Michael Vanie's EMACS Configuration
++title: Samuel Michael Vanie's EMACS Configuration
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el
 
 
@@ -131,7 +131,7 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
   (setq eshell-list-files-after-cd t)
 
 ;; Watch out you should have fish installed on your computer
-  (setq shell-file-name "/usr/bin/fish")
+  (setq-default explicit-shell-file-name "/usr/bin/fish")
   (setq eshell-aliases-file "~/.emacs.d/aliases")
 
   (use-package eshell-toggle
@@ -369,7 +369,6 @@ Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-th
 (use-package doom-themes)
 
 (use-package ef-themes)
-(load-theme ef-melissa-light t)
 #+end_src
 
 ** Better Mode line

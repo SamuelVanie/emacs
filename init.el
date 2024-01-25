@@ -79,7 +79,7 @@
   (setq eshell-list-files-after-cd t)
 
 ;; Watch out you should have fish installed on your computer
-  (setq shell-file-name "/usr/bin/fish")
+  (setq-default explicit-shell-file-name "/usr/bin/fish")
   (setq eshell-aliases-file "~/.emacs.d/aliases")
 
   (use-package eshell-toggle
@@ -245,7 +245,6 @@
 (use-package doom-themes)
 
 (use-package ef-themes)
-(load-theme ef-melissa-light t)
 
 (use-package all-the-icons
     :if (display-graphic-p))
