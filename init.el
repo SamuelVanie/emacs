@@ -28,6 +28,8 @@
 (unless package-archive-contents
     (package-refresh-contents))
 
+(setq use-package-always-ensure t)
+
 (unless (package-installed-p 'quelpa)
     (with-temp-buffer
     (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
@@ -40,8 +42,6 @@
     :url "https://github.com/quelpa/quelpa-use-package.git"))
 
 (require 'quelpa-use-package)
-
-(setq use-package-always-ensure t)
 
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
 
