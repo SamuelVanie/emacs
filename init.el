@@ -68,6 +68,10 @@
 (use-package undo-tree)
 (global-undo-tree-mode)
 
+(use-package format-all)
+
+(use-package tree-sitter)
+
 (require 'em-smart)
   (setq eshell-where-to-jump 'begin)
   (setq eshell-review-quick-commands nil)
@@ -131,7 +135,7 @@
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 ;; Set frame font
-(add-to-list 'default-frame-alist '(font . "Anonymice Nerd Font"))
+(add-to-list 'default-frame-alist '(font . "DaddyTimeMono Nerd Font Mono"))
 
 ;; some modes doesn't have to start with lines enable
 (dolist (mode '(org-mode-hook
@@ -140,13 +144,13 @@
             eshell-mode-hook))
 (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-(set-face-attribute 'default nil :font "Anonymice Nerd Font" :height smv/default-font-size)
+(set-face-attribute 'default nil :font "DaddyTimeMono Nerd Font Mono" :height smv/default-font-size)
 
 ;; Set the fixed pitch face
-(set-face-attribute 'fixed-pitch nil :font "Anonymice Nerd Font" :height smv/default-font-size)
+(set-face-attribute 'fixed-pitch nil :font "DaddyTimeMono Nerd Font Mono" :height smv/default-font-size)
 
 ;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "Anonymice Nerd Font" :height smv/default-variable-font-size :weight 'light)
+(set-face-attribute 'variable-pitch nil :font "DaddyTimeMono Nerd Font Mono" :height smv/default-variable-font-size :weight 'light)
 
 (use-package ligature
     :config
@@ -171,75 +175,77 @@
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
-  (use-package general ;; for setting keybindings
-      :ensure t
-      :config
-      (general-create-definer smv/leader-keys
-          :keymaps '(normal visual emacs)
-          :prefix "SPC"
-          :global-prefix "SPC")
+(use-package general ;; for setting keybindings
+    :ensure t
+    :config
+    (general-create-definer smv/leader-keys
+        :keymaps '(normal visual emacs)
+        :prefix "SPC"
+        :global-prefix "SPC")
 
-      (smv/leader-keys
-          "t" '(:ignore t :which-key "toggles")
-          "tt" '(counsel-load-theme :which-key "choose theme")))
+    (smv/leader-keys
+        "t" '(:ignore t :which-key "toggles")
+        "tt" '(counsel-load-theme :which-key "choose theme")))
 
     ;; Activate vim keybindings inside of emacs
-  (use-package evil
-      :init
-      (setq evil-want-integration t)
-      (setq evil-want-keybinding nil)
-      (setq evil-want-C-u-scroll nil)
-      (setq evil-want-C-d-scroll nil)
-      (setq evil-v$-excludes-newline t)
-      (setq evil-respect-visual-line-mode t)
-      (setq evil-undo-system 'undo-tree)
-      (setq evil-want-C-i-jump nil)
-      :config
-      (evil-mode 1)
-      (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-      (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
+(use-package evil
+    :init
+    (setq evil-want-integration t)
+    (setq evil-want-keybinding nil)
+    (setq evil-want-C-u-scroll nil)
+    (setq evil-want-C-d-scroll nil)
+    (setq evil-v$-excludes-newline t)
+    (setq evil-respect-visual-line-mode t)
+    (setq evil-undo-system 'undo-tree)
+    (setq evil-want-C-i-jump nil)
+    :config
+    (evil-mode 1)
+    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+    (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
 
-      (define-key evil-insert-state-map (kbd "C-n") nil)
-      (define-key evil-insert-state-map (kbd "C-p") nil)
+    (define-key evil-insert-state-map (kbd "C-n") nil)
+    (define-key evil-insert-state-map (kbd "C-p") nil)
 
-      (define-key evil-normal-state-map (kbd "C-n") nil)
-      (define-key evil-normal-state-map (kbd "C-p") nil)
+    (define-key evil-normal-state-map (kbd "C-n") nil)
+    (define-key evil-normal-state-map (kbd "C-p") nil)
 
-      (define-key evil-normal-state-map (kbd "C-u") 'evil-jump-forward)
+    (define-key evil-normal-state-map (kbd "C-u") 'evil-jump-forward)
 
-      (define-key evil-visual-state-map (kbd "C-n") nil)
-      (define-key evil-visual-state-map (kbd "C-p") nil)
+    (define-key evil-visual-state-map (kbd "C-n") nil)
+    (define-key evil-visual-state-map (kbd "C-p") nil)
 
-      (define-key evil-visual-state-map (kbd "C-a") nil)
-      (define-key evil-normal-state-map (kbd "C-a") nil)
-      (define-key evil-insert-state-map (kbd "C-a") nil)
+    (define-key evil-visual-state-map (kbd "C-a") nil)
+    (define-key evil-normal-state-map (kbd "C-a") nil)
+    (define-key evil-insert-state-map (kbd "C-a") nil)
 
-      (define-key evil-visual-state-map (kbd "C-e") nil)
-      (define-key evil-normal-state-map (kbd "C-e") nil)
-      (define-key evil-insert-state-map (kbd "C-e") nil)
+    (define-key evil-visual-state-map (kbd "C-e") nil)
+    (define-key evil-normal-state-map (kbd "C-e") nil)
+    (define-key evil-insert-state-map (kbd "C-e") nil)
 
-      (define-key evil-visual-state-map (kbd "C-d") nil)
-      (define-key evil-normal-state-map (kbd "C-d") nil)
-      (define-key evil-insert-state-map (kbd "C-d") nil)
+    (define-key evil-visual-state-map (kbd "C-d") nil)
+    (define-key evil-normal-state-map (kbd "C-d") nil)
+    (define-key evil-insert-state-map (kbd "C-d") nil)
 
-      (evil-set-initial-state 'messages-buffer-mode 'normal)
-      (evil-set-initial-state 'dashboard-mode 'normal))
+    (evil-set-initial-state 'messages-buffer-mode 'normal)
+    (evil-set-initial-state 'dashboard-mode 'normal))
 
 
 ;; Add evil-keybindings to more modes inside of emacs
-  (use-package evil-collection
-      :after evil
-      :config
-      (evil-collection-init))
+(use-package evil-collection
+    :after evil
+    :config
+    (evil-collection-init))
 
 
-  (use-package evil-surround
-      :ensure t
-      :config
-      (global-evil-surround-mode 1))
+(use-package evil-surround
+    :ensure t
+    :config
+    (global-evil-surround-mode 1))
 
-(use-package doom-themes
-  :init (load-theme 'doom-badger t))
+(use-package doom-themes)
+
+(use-package ef-themes)
+(load-theme ef-melissa-light t)
 
 (use-package all-the-icons
     :if (display-graphic-p))
@@ -791,7 +797,6 @@
     :bind ("C-c d" . docker))
 
 (use-package dockerfile-mode)
-(use-package docker-compose-mode)
 
 (defun rk/copilot-complete-or-accept ()
   "Command that either triggers a completion or accepts one if one
@@ -801,7 +806,7 @@ is available. Useful if you tend to hammer your keys like I do."
       (progn
         (copilot-accept-completion)
         (open-line 1)
-        (next-line))
+        )
     (copilot-complete)))
 
 (defun rk/copilot-quit ()
@@ -888,10 +893,10 @@ cleared, make sure the overlay doesn't come back too soon."
 (define-key copilot-mode-map (kbd "C-M-<next>") #'copilot-next-completion)
 (define-key copilot-mode-map (kbd "C-M-<prior>") #'copilot-previous-completion)
 (define-key copilot-mode-map (kbd "C-M-<right>") #'copilot-accept-completion-by-word)
-(define-key copilot-mode-map (kbd "C-M-<down>") #'copilot-accept-completion-by-line)
+(define-key copilot-mode-map (kbd "C-M-<return>") #'copilot-accept-completion-by-line)
 
 ;; global keybindings
-(define-key global-map (kbd "C-M-<return>") #'rk/copilot-complete-or-accept)
+(define-key global-map (kbd "C-M-<down>") #'rk/copilot-complete-or-accept)
 (define-key global-map (kbd "C-M-<escape>") #'rk/copilot-change-activation)
 
 ;; Do copilot-quit when pressing C-g
