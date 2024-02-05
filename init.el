@@ -15,6 +15,18 @@
 
 (setq-default indent-tabs-mode nil)
 
+;; to scroll down inside the popup
+(define-key global-map (kbd "C-M-'")
+    (lambda ()
+    (interactive)
+    (scroll-other-window 2)))
+
+;; to scroll up side the popup
+(define-key global-map (kbd "C-M-\"")
+ (lambda ()
+  (interactive)
+  (scroll-other-window-down 2)))
+
 ;; Initialize package sources
 (require 'package)
 (require 'cl)
@@ -28,8 +40,6 @@
 (unless package-archive-contents
     (package-refresh-contents))
 
-(setq use-package-always-ensure t)
-
 (unless (package-installed-p 'quelpa)
     (with-temp-buffer
     (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
@@ -42,6 +52,8 @@
     :url "https://github.com/quelpa/quelpa-use-package.git"))
 
 (require 'quelpa-use-package)
+
+(setq use-package-always-ensure t)
 
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
 
@@ -70,7 +82,10 @@
 
 (use-package format-all)
 
-(use-package tree-sitter)
+(use-package tree-sitter
+    :preface
+    (dolist (mapping '((yaml-mode . yaml-ts-mode)))
+        (add-to-list 'major-mode-remap-alist mapping)))
 
 (require 'em-smart)
   (setq eshell-where-to-jump 'begin)
@@ -86,18 +101,43 @@
   :bind ("C-x C-z" . eshell-toggle))
 
 (use-package vterm)
-(use-package vterm-toggle
-:bind ("C-x C-y" . vterm-toggle))
-
 
 (use-package multi-vterm
-      :config
-      (add-hook 'vterm-mode-hook
-		      (lambda ()
-		      (setq-local evil-insert-state-cursor 'box)
-		      (evil-insert-state)))
-      (define-key vterm-mode-map [return]                      #'vterm-send-return)
-      )
+        :config
+        (add-hook 'vterm-mode-hook
+                        (lambda ()
+                        (setq-local evil-insert-state-cursor 'box)
+                        (evil-insert-state)))
+        (define-key vterm-mode-map [return]                      #'vterm-send-return)
+
+        (setq vterm-keymap-exceptions nil)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-e")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-f")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-a")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-v")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-b")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-w")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-u")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-n")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-m")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-p")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-j")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-k")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-r")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-t")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-g")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-c")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-SPC")    #'vterm--self-insert)
+        (evil-define-key 'normal vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
+        (evil-define-key 'normal vterm-mode-map (kbd "SPC c")       #'multi-vterm)
+        (evil-define-key 'normal vterm-mode-map (kbd "SPC n")       #'multi-vterm-next)
+        (evil-define-key 'normal vterm-mode-map (kbd "SPC p")       #'multi-vterm-prev)
+        (evil-define-key 'normal vterm-mode-map (kbd "i")        #'evil-insert-resume)
+        (evil-define-key 'normal vterm-mode-map (kbd "o")        #'evil-insert-resume)
+        (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume))
+
+ (global-set-key (kbd "C-x C-y") 'multi-vterm)
 
 (global-set-key (kbd "M-g f") 'avy-goto-line) ;; go to a line but not with line number
 (global-set-key (kbd "C-c l") 'avy-copy-line) ;; copy a line I'm not on
@@ -750,6 +790,18 @@
     (add-hook 'java-mode-hook 'lsp)
     ;; current VSCode defaults for quick load
 )
+
+(require 'lsp-java-boot)
+
+;; to enable the lenses
+(add-hook 'lsp-mode-hook #'lsp-lens-mode)
+(add-hook 'java-mode-hook #'lsp-java-boot-lens-mode)
+
+(setq lsp-java-configuration-runtimes '[(:name "openjdk-17"
+                    :path "/usr/lib/jvm/java-17-openjdk/")
+                (:name "openjdk-21"
+                    :path "/usr/lib/jvm/java-21-openjdk/"
+                    :default t)])
 
 (use-package markdown-mode)
 (use-package poly-R)

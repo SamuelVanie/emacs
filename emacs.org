@@ -26,6 +26,23 @@ Declare some of my variables for my global configuration
 #+END_SRC
 
 
+* Scrolling inside popup view
+
+#+begin_src emacs-lisp
+;; to scroll down inside the popup
+(define-key global-map (kbd "C-M-'")
+    (lambda ()
+    (interactive)
+    (scroll-other-window 2)))
+
+;; to scroll up side the popup
+(define-key global-map (kbd "C-M-\"")
+ (lambda ()
+  (interactive)
+  (scroll-other-window-down 2)))
+
+#+end_src
+
 * Package System setup
 
 Emacs has a built in package manager but it doesn’t make it easy to automatically install packages on a new system the first time you pull down your configuration. use-package is a really helpful package used in this configuration to make it a lot easier to automate the installation and configuration of everything else we use.
@@ -115,7 +132,10 @@ Convenient way of switching between the different versions of your project. No m
 * Tree-sitter
 
 #+begin_src emacs-lisp
-(use-package tree-sitter)
+(use-package tree-sitter
+    :preface
+    (dolist (mapping '((yaml-mode . yaml-ts-mode)))
+        (add-to-list 'major-mode-remap-alist mapping)))
 #+end_src
 
 * Shell
@@ -144,19 +164,44 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
 Vterm is a better terminal emulator that will permit good rendering of all terminal commands
 
 #+begin_src emacs-lisp
-  (use-package vterm)
-  (use-package vterm-toggle
-  :bind ("C-x C-y" . vterm-toggle))
+(use-package vterm)
 
+(use-package multi-vterm
+        :config
+        (add-hook 'vterm-mode-hook
+                        (lambda ()
+                        (setq-local evil-insert-state-cursor 'box)
+                        (evil-insert-state)))
+        (define-key vterm-mode-map [return]                      #'vterm-send-return)
 
-  (use-package multi-vterm
-	:config
-	(add-hook 'vterm-mode-hook
-			(lambda ()
-			(setq-local evil-insert-state-cursor 'box)
-			(evil-insert-state)))
-	(define-key vterm-mode-map [return]                      #'vterm-send-return)
-	)
+        (setq vterm-keymap-exceptions nil)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-e")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-f")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-a")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-v")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-b")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-w")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-u")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-n")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-m")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-p")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-j")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-k")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-r")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-t")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-g")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-c")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-SPC")    #'vterm--self-insert)
+        (evil-define-key 'normal vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
+        (evil-define-key 'normal vterm-mode-map (kbd "SPC c")       #'multi-vterm)
+        (evil-define-key 'normal vterm-mode-map (kbd "SPC n")       #'multi-vterm-next)
+        (evil-define-key 'normal vterm-mode-map (kbd "SPC p")       #'multi-vterm-prev)
+        (evil-define-key 'normal vterm-mode-map (kbd "i")        #'evil-insert-resume)
+        (evil-define-key 'normal vterm-mode-map (kbd "o")        #'evil-insert-resume)
+        (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume))
+
+ (global-set-key (kbd "C-x C-y") 'multi-vterm)
 #+end_src
 
 * Moving around screen
@@ -1120,6 +1165,18 @@ To do so just run the ~lsp-install-server~ command in your M-x prompt then insta
     (add-hook 'java-mode-hook 'lsp)
     ;; current VSCode defaults for quick load
 )
+
+(require 'lsp-java-boot)
+
+;; to enable the lenses
+(add-hook 'lsp-mode-hook #'lsp-lens-mode)
+(add-hook 'java-mode-hook #'lsp-java-boot-lens-mode)
+
+(setq lsp-java-configuration-runtimes '[(:name "openjdk-17"
+                    :path "/usr/lib/jvm/java-17-openjdk/")
+                (:name "openjdk-21"
+                    :path "/usr/lib/jvm/java-21-openjdk/"
+                    :default t)])
 #+end_src
 
 *** R
