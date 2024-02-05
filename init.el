@@ -100,45 +100,6 @@
   (use-package eshell-toggle
   :bind ("C-x C-z" . eshell-toggle))
 
-(use-package vterm)
-
-(use-package multi-vterm
-        :config
-        (add-hook 'vterm-mode-hook
-                        (lambda ()
-                        (setq-local evil-insert-state-cursor 'box)
-                        (evil-insert-state)))
-        (define-key vterm-mode-map [return]                      #'vterm-send-return)
-
-        (setq vterm-keymap-exceptions nil)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-e")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-f")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-a")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-v")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-b")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-w")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-u")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-n")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-m")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-p")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-j")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-k")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-r")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-t")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-g")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-c")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-SPC")    #'vterm--self-insert)
-        (evil-define-key 'normal vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
-        (evil-define-key 'normal vterm-mode-map (kbd "SPC c")       #'multi-vterm)
-        (evil-define-key 'normal vterm-mode-map (kbd "SPC n")       #'multi-vterm-next)
-        (evil-define-key 'normal vterm-mode-map (kbd "SPC p")       #'multi-vterm-prev)
-        (evil-define-key 'normal vterm-mode-map (kbd "i")        #'evil-insert-resume)
-        (evil-define-key 'normal vterm-mode-map (kbd "o")        #'evil-insert-resume)
-        (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume))
-
- (global-set-key (kbd "C-x C-y") 'multi-vterm)
-
 (global-set-key (kbd "M-g f") 'avy-goto-line) ;; go to a line but not with line number
 (global-set-key (kbd "C-c l") 'avy-copy-line) ;; copy a line I'm not on
 
@@ -281,6 +242,45 @@
     :ensure t
     :config
     (global-evil-surround-mode 1))
+
+(use-package vterm)
+
+(use-package multi-vterm
+        :config
+        (add-hook 'vterm-mode-hook
+                        (lambda ()
+                        (setq-local evil-insert-state-cursor 'box)
+                        (evil-insert-state)))
+        (define-key vterm-mode-map [return]                      #'vterm-send-return)
+
+        (setq vterm-keymap-exceptions nil)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-e")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-f")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-a")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-v")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-b")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-w")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-u")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-n")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-m")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-p")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-j")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-k")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-r")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-t")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-g")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-c")      #'vterm--self-insert)
+        (evil-define-key 'insert vterm-mode-map (kbd "C-SPC")    #'vterm--self-insert)
+        (evil-define-key 'normal vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
+        (evil-define-key 'normal vterm-mode-map (kbd "SPC c")       #'multi-vterm)
+        (evil-define-key 'normal vterm-mode-map (kbd "SPC n")       #'multi-vterm-next)
+        (evil-define-key 'normal vterm-mode-map (kbd "SPC p")       #'multi-vterm-prev)
+        (evil-define-key 'normal vterm-mode-map (kbd "i")        #'evil-insert-resume)
+        (evil-define-key 'normal vterm-mode-map (kbd "o")        #'evil-insert-resume)
+        (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume))
+
+ (global-set-key (kbd "C-x C-y") 'multi-vterm)
 
 (use-package doom-themes)
 
