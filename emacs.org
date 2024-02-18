@@ -936,7 +936,7 @@ I use some useful lsp packages with downloaded languages server for my programmi
 (lsp-enable-which-key-integration t))
 
 ;; only watch over the current project directory files
-(setq lsp-file-watch-ignored (list (rx-to-string `(and (or bos "/" (and "/home" (* any)) "/") (not (any ".")))
+(setq lsp-file-watch-ignored-directories (list (rx-to-string `(and (or bos "/" (and "/home" (* any)) "/") (not (any ".")))
                                                'no-group)))
 
 #+end_src
@@ -997,8 +997,8 @@ Mode for yaml configuration files editing.
 
 #+begin_src emacs-lisp
 (use-package yaml-mode
-:mode (("\\.yml\\'" . web-mode)
-            ("\\.yaml\\'" . web-mode)
+:mode (("\\.yml\\'" . yaml-mode)
+            ("\\.yaml\\'" . yaml-mode)
             ))
 #+end_src
 
@@ -1401,6 +1401,15 @@ Using chatgpt directly in emacs so that I will not be obliged to switch to the w
   ;; (setq gptel-api-key (smv/gptel-api-key))
 #+end_src
 
+
+** Youdotcom
+
+This is my own package to make web search and chat directly inside emacs
+
+#+begin_src emacs-lisp
+(use-package youdotcom
+    :bind ("C-c y" . youdotcom-enter))
+#+end_src
 
 ** Projectile
 
