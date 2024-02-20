@@ -1,8 +1,8 @@
 (setq gc-const-threshold (* 50 1000 1000))
 
 ;; You will most likely need to adjust this font size for your system!
-(defvar smv/default-font-size 112)
-(defvar smv/default-variable-font-size 112)
+(defvar smv/default-font-size 147)
+(defvar smv/default-variable-font-size 147)
 
 ;; remove noise for not non allowed command in emacs if your system make them
 (setq ring-bell-function 'ignore)
@@ -234,6 +234,7 @@
 ;; Add evil-keybindings to more modes inside of emacs
 (use-package evil-collection
     :after evil
+    :ensure t
     :config
     (evil-collection-init))
 
@@ -276,11 +277,12 @@
         (evil-define-key 'normal vterm-mode-map (kbd "SPC c")       #'multi-vterm)
         (evil-define-key 'normal vterm-mode-map (kbd "SPC n")       #'multi-vterm-next)
         (evil-define-key 'normal vterm-mode-map (kbd "SPC p")       #'multi-vterm-prev)
+        (evil-define-key 'normal vterm-mode-map (kbd "SPC r")       #'multi-vterm-rename-buffer)
         (evil-define-key 'normal vterm-mode-map (kbd "i")        #'evil-insert-resume)
         (evil-define-key 'normal vterm-mode-map (kbd "o")        #'evil-insert-resume)
         (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume))
 
- (global-set-key (kbd "C-x C-y") 'multi-vterm)
+(global-set-key (kbd "C-x C-y") 'multi-vterm)
 
 (use-package doom-themes)
 
@@ -663,7 +665,7 @@
 (lsp-enable-which-key-integration t))
 
 ;; only watch over the current project directory files
-(setq lsp-file-watch-ignored (list (rx-to-string `(and (or bos "/" (and "/home" (* any)) "/") (not (any ".")))
+(setq lsp-file-watch-ignored-directories (list (rx-to-string `(and (or bos "/" (and "/home" (* any)) "/") (not (any ".")))
                                                'no-group)))
 
 (use-package lsp-ui
@@ -685,8 +687,8 @@
     :config (yas-global-mode))
 
 (use-package yaml-mode
-:mode (("\\.yml\\'" . web-mode)
-            ("\\.yaml\\'" . web-mode)
+:mode (("\\.yml\\'" . yaml-mode)
+            ("\\.yaml\\'" . yaml-mode)
             ))
 
 (use-package dap-mode
@@ -803,15 +805,6 @@
                     :path "/usr/lib/jvm/java-21-openjdk/"
                     :default t)])
 
-(use-package markdown-mode)
-(use-package poly-R)
-
-(add-to-list 'auto-mode-alist
-            '("\\.[rR]md\\'" . poly-gfm+r-mode))
-
-;; use braces around code block language strings:
-(setq markdown-code-block-braces t)
-
 (use-package rust-mode
     :hook (rust-mode . lsp-deferred)
     :config
@@ -850,11 +843,11 @@
 (use-package dockerfile-mode)
 
 (defun rk/copilot-complete-or-accept ()
-  "Command that either triggers a completion or accepts one if one
+    "Command that either triggers a completion or accepts one if one
 is available. Useful if you tend to hammer your keys like I do."
-  (interactive)
-  (if (copilot--overlay-visible)
-      (progn
+    (interactive)
+    (if (copilot--overlay-visible)
+        (progn
         (copilot-accept-completion)
         (open-line 1)
         )
@@ -866,108 +859,110 @@ cleared, make sure the overlay doesn't come back too soon."
 (interactive)
 (condition-case err
     (when copilot--overlay
-      (lexical-let ((pre-copilot-disable-predicates copilot-disable-predicates))
+        (lexical-let ((pre-copilot-disable-predicates copilot-disable-predicates))
         (setq copilot-disable-predicates (list (lambda () t)))
         (copilot-clear-overlay)
         (run-with-idle-timer
-          1.0
-          nil
-          (lambda ()
+            1.0
+            nil
+            (lambda ()
             (setq copilot-disable-predicates pre-copilot-disable-predicates)))))
-  (error handler)))
+    (error handler)))
 
 (defun rk/no-copilot-mode ()
 "Helper for `rk/no-copilot-modes'."
 (copilot-mode -1))
 
 (defvar rk/no-copilot-modes '(shell-mode
-                              inferior-python-mode
-                              eshell-mode
-                              term-mode
-                              vterm-mode
-                              comint-mode
-                              compilation-mode
-                              debugger-mode
-                              dired-mode-hook
-                              compilation-mode-hook
-                              flutter-mode-hook
-                              minibuffer-mode-hook)
-  "Modes in which copilot is inconvenient.")
+                                inferior-python-mode
+                                eshell-mode
+                                term-mode
+                                vterm-mode
+                                comint-mode
+                                compilation-mode
+                                debugger-mode
+                                dired-mode-hook
+                                compilation-mode-hook
+                                flutter-mode-hook
+                                minibuffer-mode-hook)
+    "Modes in which copilot is inconvenient.")
 
 (defvar rk/copilot-manual-mode nil
-  "When `t' will only show completions when manually triggered, e.g. via M-C-<return>.")
+    "When `t' will only show completions when manually triggered, e.g. via M-C-<return>.")
 
 (defvar rk/copilot-enable-for-org nil
-  "Should copilot be enabled for org-mode buffers?")
+    "Should copilot be enabled for org-mode buffers?")
 
 
 
 (defun rk/copilot-enable-predicate ()
-  ""
-  (and
+    ""
+    (and
     (eq (get-buffer-window) (selected-window))))
 
 (defun rk/copilot-disable-predicate ()
-  "When copilot should not automatically show completions."
-  (or rk/copilot-manual-mode
-      (member major-mode rk/no-copilot-modes)
-      (and (not rk/copilot-enable-for-org) (eq major-mode 'org-mode))
-      (company--active-p)))
+    "When copilot should not automatically show completions."
+    (or rk/copilot-manual-mode
+        (member major-mode rk/no-copilot-modes)
+        (and (not rk/copilot-enable-for-org) (eq major-mode 'org-mode))
+        (company--active-p)))
 
 (defun rk/copilot-change-activation ()
     "Switch between three activation modes:
-  - automatic: copilot will automatically overlay completions
-  - manual: you need to press a key (C-M-<return>) to trigger completions
-  - off: copilot is completely disabled."
-  (interactive)
-  (if (and copilot-mode rk/copilot-manual-mode)
-      (progn
+    - automatic: copilot will automatically overlay completions
+    - manual: you need to press a key (C-M-<return>) to trigger completions
+    - off: copilot is completely disabled."
+    (interactive)
+    (if (and copilot-mode rk/copilot-manual-mode)
+        (progn
         (message "deactivating copilot")
         (global-copilot-mode -1)
         (setq rk/copilot-manual-mode nil))
     (if copilot-mode
         (progn
-          (message "activating copilot manual mode")
-          (setq rk/copilot-manual-mode t))
-      (message "activating copilot mode")
-      (global-copilot-mode))))
+            (message "activating copilot manual mode")
+            (setq rk/copilot-manual-mode t))
+        (message "activating copilot mode")
+        (global-copilot-mode))))
 
 
-(use-package copilot
-:quelpa (copilot :fetcher github
-                  :repo "zerolfx/copilot.el"
-                  :diminish
-                  :branch "main"
-                  :files ("dist" "*.el")
-))
+;; (use-package copilot
+;;   :quelpa (copilot :fetcher github
+;;                    :repo "copilot-emacs/copilot.el"
+;;                    :branch "main"
+;;                    :files ("dist" "*.el")))
+
+(add-to-list 'load-path "~/.emacs.d/pkg/copilot.el")
+(require 'copilot)
+
 ;; keybindings that are active when copilot shows completions
-(define-key copilot-mode-map (kbd "C-M-<next>") #'copilot-next-completion)
-(define-key copilot-mode-map (kbd "C-M-<prior>") #'copilot-previous-completion)
-(define-key copilot-mode-map (kbd "C-M-<right>") #'copilot-accept-completion-by-word)
-(define-key copilot-mode-map (kbd "C-M-<return>") #'copilot-accept-completion-by-line)
+;;(define-key copilot-mode-map (kbd "C-M-<next>") #'copilot-next-completion)
+;; (define-key copilot-mode-map (kbd "C-M-<prior>") #'copilot-previous-completion)
+;; (define-key copilot-mode-map (kbd "C-M-<right>") #'copilot-accept-completion-by-word)
+;; (define-key copilot-mode-map (kbd "C-M-<return>") #'copilot-accept-completion-by-line)
 
 ;; global keybindings
-(define-key global-map (kbd "C-M-<down>") #'rk/copilot-complete-or-accept)
-(define-key global-map (kbd "C-M-<escape>") #'rk/copilot-change-activation)
+;; (define-key global-map (kbd "C-M-<down>") #'rk/copilot-complete-or-accept)
+;; (define-key global-map (kbd "C-M-<escape>") #'rk/copilot-change-activation)
 
 ;; Do copilot-quit when pressing C-g
-(advice-add 'keyboard-quit :before #'rk/copilot-quit)
+;; (advice-add 'keyboard-quit :before #'rk/copilot-quit)
 
 ;; complete by pressing right or tab but only when copilot completions are
 ;; shown. This means we leave the normal functionality intact.
-(advice-add 'right-char :around #'rk/copilot-complete-if-active)
+;; (advice-add 'right-char :around #'rk/copilot-complete-if-active)
 
 ;; deactivate copilot for certain modes
-(add-to-list 'copilot-enable-predicates #'rk/copilot-enable-predicate)
-(add-to-list 'copilot-disable-predicates #'rk/copilot-disable-predicate)
+;;(add-to-list 'copilot-enable-predicates #'rk/copilot-enable-predicate)
+;;(add-to-list 'copilot-disable-predicates #'rk/copilot-disable-predicate)
 
-(eval-after-load 'copilot
-  '(progn
-     ;; Note company is optional but given we use some company commands above
-     ;; we'll require it here. If you don't use it, you can remove all company
-     ;; related code from this file, copilot does not need it.
-     (require 'company)
-     (global-copilot-mode)))
+;; (eval-after-load 'copilot
+;;     '(progn
+;;         ;; Note company is optional but given we use some company commands above
+;;         ;; we'll require it here. If you don't use it, you can remove all company
+;;         ;; related code from this file, copilot does not need it.
+;;         (require 'company)
+;;         (global-copilot-mode)))
 
 ;; (defun smv/gptel-api-key ()
 ;;   "Retrieve my OpenAI API key from a secure location."
@@ -977,6 +972,10 @@ cleared, make sure the overlay doesn't come back too soon."
 
 ;; (use-package gptel)
 ;; (setq gptel-api-key (smv/gptel-api-key))
+
+(use-package youdotcom
+    :bind ("C-c y" . youdotcom-enter))
+(setq youdotcom-rag-api-key "fdb00e3c-da21-4376-b7e7-301f5407fd81<__>1Oegz2ETU8N2v5f4wXun7iGA-PTeHFzZV8nCXQ6")
 
 (use-package projectile
   :diminish projectile-mode
