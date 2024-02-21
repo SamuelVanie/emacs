@@ -100,14 +100,6 @@
   (use-package eshell-toggle
   :bind ("C-x C-z" . eshell-toggle))
 
-(global-set-key (kbd "M-g f") 'avy-goto-line) ;; go to a line but not with line number
-(global-set-key (kbd "C-c l") 'avy-copy-line) ;; copy a line I'm not on
-
-(global-set-key (kbd "C-c m") 'avy-move-line) ;; move a line I'm not on
-(global-set-key (kbd "M-g w") 'avy-goto-word-1) ;; move to a word inputing 1 character
-(global-set-key (kbd "C-:") 'avy-goto-char-timer) ;; move to a particular character on any window using 1 input character
-(setq avy-timeout 0.7)
-
 (defun kill-all-buffers ()
   "Kill all buffers without asking for confirmation."
   (interactive)
@@ -285,8 +277,8 @@
 (global-set-key (kbd "C-x C-y") 'multi-vterm)
 
 (use-package doom-themes)
-
 (use-package ef-themes)
+(load-theme 'ef-bio t)
 
 (use-package all-the-icons
     :if (display-graphic-p))
@@ -383,7 +375,7 @@
         treemacs-recenter-after-tag-follow       nil
         treemacs-recenter-after-project-jump     'always
         treemacs-recenter-after-project-expand   'on-distance
-        treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+        treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask" "/target")
         treemacs-project-follow-into-home        nil
         treemacs-show-cursor                     nil
         treemacs-show-hidden-files               t
@@ -932,37 +924,41 @@ cleared, make sure the overlay doesn't come back too soon."
 ;;                    :branch "main"
 ;;                    :files ("dist" "*.el")))
 
-(add-to-list 'load-path "~/.emacs.d/pkg/copilot.el")
-(require 'copilot)
+;; Uncomment the copilot load line when you will be inside emacs
+;; then evaluate the lines
+;; then install the copilot-server by running the command
+;; M-x copilot-install-server
+;;(add-to-list 'load-path "~/.emacs.d/pkg/copilot.el")
+;;(require 'copilot)
 
 ;; keybindings that are active when copilot shows completions
-;;(define-key copilot-mode-map (kbd "C-M-<next>") #'copilot-next-completion)
-;; (define-key copilot-mode-map (kbd "C-M-<prior>") #'copilot-previous-completion)
-;; (define-key copilot-mode-map (kbd "C-M-<right>") #'copilot-accept-completion-by-word)
-;; (define-key copilot-mode-map (kbd "C-M-<return>") #'copilot-accept-completion-by-line)
+(define-key copilot-mode-map (kbd "C-M-<next>") #'copilot-next-completion)
+(define-key copilot-mode-map (kbd "C-M-<prior>") #'copilot-previous-completion)
+(define-key copilot-mode-map (kbd "C-M-<right>") #'copilot-accept-completion-by-word)
+(define-key copilot-mode-map (kbd "C-M-<return>") #'copilot-accept-completion-by-line)
 
-;; global keybindings
-;; (define-key global-map (kbd "C-M-<down>") #'rk/copilot-complete-or-accept)
-;; (define-key global-map (kbd "C-M-<escape>") #'rk/copilot-change-activation)
+;;global keybindings
+(define-key global-map (kbd "C-M-<down>") #'rk/copilot-complete-or-accept)
+(define-key global-map (kbd "C-M-<escape>") #'rk/copilot-change-activation)
 
-;; Do copilot-quit when pressing C-g
-;; (advice-add 'keyboard-quit :before #'rk/copilot-quit)
+;;Do copilot-quit when pressing C-g
+(advice-add 'keyboard-quit :before #'rk/copilot-quit)
 
 ;; complete by pressing right or tab but only when copilot completions are
-;; shown. This means we leave the normal functionality intact.
-;; (advice-add 'right-char :around #'rk/copilot-complete-if-active)
+;; ;; shown. This means we leave the normal functionality intact.
+(advice-add 'right-char :around #'rk/copilot-complete-if-active)
 
-;; deactivate copilot for certain modes
-;;(add-to-list 'copilot-enable-predicates #'rk/copilot-enable-predicate)
-;;(add-to-list 'copilot-disable-predicates #'rk/copilot-disable-predicate)
+;; ;; deactivate copilot for certain modes
+(add-to-list 'copilot-enable-predicates #'rk/copilot-enable-predicate)
+(add-to-list 'copilot-disable-predicates #'rk/copilot-disable-predicate)
 
-;; (eval-after-load 'copilot
-;;     '(progn
-;;         ;; Note company is optional but given we use some company commands above
-;;         ;; we'll require it here. If you don't use it, you can remove all company
-;;         ;; related code from this file, copilot does not need it.
-;;         (require 'company)
-;;         (global-copilot-mode)))
+(eval-after-load 'copilot
+    '(progn
+        ;; Note company is optional but given we use some company commands above
+        ;; we'll require it here. If you don't use it, you can remove all company
+        ;; related code from this file, copilot does not need it.
+        (require 'company)
+        (global-copilot-mode)))
 
 ;; (defun smv/gptel-api-key ()
 ;;   "Retrieve my OpenAI API key from a secure location."
