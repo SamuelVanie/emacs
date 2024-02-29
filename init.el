@@ -1,8 +1,8 @@
 (setq gc-const-threshold (* 50 1000 1000))
 
 ;; You will most likely need to adjust this font size for your system!
-(defvar smv/default-font-size 147)
-(defvar smv/default-variable-font-size 147)
+(defvar smv/default-font-size 139)
+(defvar smv/default-variable-font-size 139)
 
 ;; remove noise for not non allowed command in emacs if your system make them
 (setq ring-bell-function 'ignore)
@@ -137,13 +137,9 @@
             eshell-mode-hook))
 (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-(set-face-attribute 'default nil :font "DaddyTimeMono Nerd Font Mono" :height smv/default-font-size)
-
-;; Set the fixed pitch face
-(set-face-attribute 'fixed-pitch nil :font "DaddyTimeMono Nerd Font Mono" :height smv/default-font-size)
-
-;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "DaddyTimeMono Nerd Font Mono" :height smv/default-variable-font-size :weight 'light)
+(custom-set-faces
+ '(fixed-pitch ((t (:height smv/default-font-size :family "DaddyTimeMono Nerd Font Mono"))))
+ '(variable-pitch ((t (:weight light :height smv/default-variable-font-size :family "DaddyTimeMono Nerd Font Mono")))))
 
 (use-package ligature
     :config
@@ -490,7 +486,7 @@
                         (org-level-6 . 1.1)
                         (org-level-7 . 1.1)
                         (org-level-8 . 1.1)))
-        (set-face-attribute (car face) nil :font "Roboto Condensed" :weight 'light :height (cdr face)))
+        (set-face-attribute (car face) nil :font "Chalkboard" :weight 'regular :height (cdr face)))
         ;; Ensure that anything that should be fixed-pitch in Org files appears that way
         (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
         (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
@@ -524,7 +520,8 @@
     (variable-pitch-mode 1)
     (auto-fill-mode 0)
     (visual-line-mode 1)
-    (setq evil-auto-indent nil))
+    (setq evil-auto-indent nil)
+    (smv/org-font-setup))
 
 
 (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
@@ -803,6 +800,9 @@
     (require 'dap-cpptools)
     (dap-cpptools-setup))
 
+;; set the linter to clippy
+(setq lsp-rust-analyzer-cargo-wath-command "clippy")
+
 (use-package flutter)
 
 (use-package dart-mode
@@ -928,8 +928,8 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; then evaluate the lines
 ;; then install the copilot-server by running the command
 ;; M-x copilot-install-server
-;;(add-to-list 'load-path "~/.emacs.d/pkg/copilot.el")
-;;(require 'copilot)
+(add-to-list 'load-path "~/.emacs.d/pkg/copilot.el")
+(require 'copilot)
 
 ;; keybindings that are active when copilot shows completions
 (define-key copilot-mode-map (kbd "C-M-<next>") #'copilot-next-completion)
@@ -951,14 +951,6 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; ;; deactivate copilot for certain modes
 (add-to-list 'copilot-enable-predicates #'rk/copilot-enable-predicate)
 (add-to-list 'copilot-disable-predicates #'rk/copilot-disable-predicate)
-
-(eval-after-load 'copilot
-    '(progn
-        ;; Note company is optional but given we use some company commands above
-        ;; we'll require it here. If you don't use it, you can remove all company
-        ;; related code from this file, copilot does not need it.
-        (require 'company)
-        (global-copilot-mode)))
 
 ;; (defun smv/gptel-api-key ()
 ;;   "Retrieve my OpenAI API key from a secure location."
@@ -984,6 +976,7 @@ cleared, make sure the overlay doesn't come back too soon."
   (when (file-directory-p "~/projects")
     (setq projectile-project-search-path '("~/projects")))
   (setq projectile-switch-project-action #'projectile-dired))
+
 
 (use-package counsel-projectile
   :after projectile
