@@ -137,9 +137,10 @@
             eshell-mode-hook))
 (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
+;; Change the font size (139) according to your screen
 (custom-set-faces
- '(fixed-pitch ((t (:height smv/default-font-size :family "DaddyTimeMono Nerd Font Mono"))))
- '(variable-pitch ((t (:weight light :height smv/default-variable-font-size :family "DaddyTimeMono Nerd Font Mono")))))
+ '(fixed-pitch ((t (:height 139 :family "DaddyTimeMono Nerd Font Mono"))))
+ '(variable-pitch ((t (:weight light :height 139 :family "DaddyTimeMono Nerd Font Mono")))))
 
 (use-package ligature
     :config

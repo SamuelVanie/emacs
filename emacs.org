@@ -216,9 +216,10 @@ This section configures basic UI settings that remove unneeded elements to make 
 I use DaddyTimeMono Nerd Font as my main font for both fixed and variable fonts.
 
 #+begin_src emacs-lisp
+;; Change the font size (139) according to your screen
 (custom-set-faces
- '(fixed-pitch ((t (:height smv/default-font-size :family "DaddyTimeMono Nerd Font Mono"))))
- '(variable-pitch ((t (:weight light :height smv/default-variable-font-size :family "DaddyTimeMono Nerd Font Mono")))))
+ '(fixed-pitch ((t (:height 139 :family "DaddyTimeMono Nerd Font Mono"))))
+ '(variable-pitch ((t (:weight light :height 139 :family "DaddyTimeMono Nerd Font Mono")))))
 #+end_src
 
 
