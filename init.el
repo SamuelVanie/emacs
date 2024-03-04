@@ -139,8 +139,8 @@
 
 ;; Change the font size (139) according to your screen
 (custom-set-faces
- '(fixed-pitch ((t (:height 139 :family "DaddyTimeMono Nerd Font Mono"))))
- '(variable-pitch ((t (:weight light :height 139 :family "DaddyTimeMono Nerd Font Mono")))))
+ '(fixed-pitch ((t (:height 139 :family "JetbrainsMono Nerd Font"))))
+ '(variable-pitch ((t (:weight light :height 139 :family "JetbrainsMono Nerd Font")))))
 
 (use-package ligature
     :config
@@ -516,6 +516,11 @@
 		'(:time "3d" :period "1h" :duration 20 :actions -notify))
 )
 
+(use-package org-fragtog)
+(add-hook 'org-mode-hook 'org-fragtog-mode)
+
+(use-package ox-reveal)
+
 (defun smv/org-mode-setup()
     (org-indent-mode)
     (variable-pitch-mode 1)
@@ -612,6 +617,7 @@
 (use-package org-projectile)
 
 (use-package olivetti) ;; use to stretch the page on the center to be able to focus on document writing
+(add-hook 'org-mode-hook 'olivetti-mode-hook)
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
@@ -794,6 +800,8 @@
                 (:name "openjdk-21"
                     :path "/usr/lib/jvm/java-21-openjdk/"
                     :default t)])
+
+(use-package ess)
 
 (use-package rust-mode
     :hook (rust-mode . lsp-deferred)

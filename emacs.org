@@ -218,8 +218,8 @@ I use DaddyTimeMono Nerd Font as my main font for both fixed and variable fonts.
 #+begin_src emacs-lisp
 ;; Change the font size (139) according to your screen
 (custom-set-faces
- '(fixed-pitch ((t (:height 139 :family "DaddyTimeMono Nerd Font Mono"))))
- '(variable-pitch ((t (:weight light :height 139 :family "DaddyTimeMono Nerd Font Mono")))))
+ '(fixed-pitch ((t (:height 139 :family "JetbrainsMono Nerd Font"))))
+ '(variable-pitch ((t (:weight light :height 139 :family "JetbrainsMono Nerd Font")))))
 #+end_src
 
 
@@ -713,6 +713,19 @@ Permit to show notifications for tasks I have to do.
 #+end_src
 
 
+** Auto rendering latex section
+
+#+begin_src emacs-lisp
+(use-package org-fragtog)
+(add-hook 'org-mode-hook 'org-fragtog-mode)
+#+end_src
+
+** Presentation
+
+#+begin_src emacs-lisp
+(use-package ox-reveal)
+#+end_src
+
 ** Basic Config
 
 This section contains the basic configuration for org-mode plus the configuration for Org agendas and capture templates
@@ -832,6 +845,7 @@ To center buffers I use the [[https://github.com/rnkn/olivetti][olivetti]] minor
 
 #+begin_src emacs-lisp
 (use-package olivetti) ;; use to stretch the page on the center to be able to focus on document writing
+(add-hook 'org-mode-hook 'olivetti-mode-hook)
 #+end_src
 
 
@@ -1163,6 +1177,12 @@ To do so just run the ~lsp-install-server~ command in your M-x prompt then insta
                 (:name "openjdk-21"
                     :path "/usr/lib/jvm/java-21-openjdk/"
                     :default t)])
+#+end_src
+
+*** R
+
+#+begin_src emacs-lisp
+(use-package ess)
 #+end_src
 
 *** RUST
