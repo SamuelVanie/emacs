@@ -218,7 +218,7 @@ I use DaddyTimeMono Nerd Font as my main font for both fixed and variable fonts.
 #+begin_src emacs-lisp
 ;; Change the font size (139) according to your screen
 (custom-set-faces
- '(fixed-pitch ((t (:height 139 :family "JetbrainsMono Nerd Font"))))
+ '(fixed-pitch ((t (:height 139 :family "DaddyTimeMono Nerd Font Mono"))))
  '(variable-pitch ((t (:weight light :height 139 :family "JetbrainsMono Nerd Font")))))
 #+end_src
 
