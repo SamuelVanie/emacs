@@ -520,9 +520,9 @@
     (setq org-log-into-drawer t)
 
     (setq org-agenda-files
-            '("/rclone:org_google:/todo.org"
-            "/rclone:org_google:/projects.org"
-            "/rclone:org_google:/journal.org"))
+            '("~/.org/todo.org"
+            "~/.org/projects.org"
+            "~/.org/journal.org"))
 
     (setq org-todo-keywords
             '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
@@ -571,12 +571,12 @@
 
     (setq org-capture-templates ;; quickly add todos entries without going into the file
         `(("t" "Tasks")
-        ("tt" "Task" entry (file+olp "/rclone:org_google:/todo.org" "Inbox")
+        ("tt" "Task" entry (file+olp "~/.org/todo.org" "Inbox")
                 "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
         ("j" "Journal Entries")
         ("jm" "Meeting" entry
-                (file+olp+datetree "/rclone:org_google:/journal.org")
+                (file+olp+datetree "~/.org/journal.org")
                 "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
                 :clock-in :clock-resume
                 :empty-lines 1)))
