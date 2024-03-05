@@ -501,23 +501,6 @@
         (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
         (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
-(use-package org-notify
-    :ensure nil
-    :after org
-    :config
-    (org-notify-start)
-
-    (org-notify-add 'default
-		'(:time "1d" :period "30m" :duration 50 :actions -notify)
-		'(:time "2d" :period "50m" :duration 40 :actions -notify)
-		'(:time "3d" :period "1h" :duration 20 :actions -notify))
-)
-
-(use-package org-fragtog)
-(add-hook 'org-mode-hook 'org-fragtog-mode)
-
-(use-package ox-reveal)
-
 (defun smv/org-mode-setup()
     (org-indent-mode)
     (variable-pitch-mode 1)
@@ -537,9 +520,9 @@
     (setq org-log-into-drawer t)
 
     (setq org-agenda-files
-            '("~/.org/todo.org"
-            "~/.org/projects.org"
-            "~/.org/journal.org"))
+            '("/rclone:org_google:/todo.org"
+            "/rclone:org_google:/projects.org"
+            "/rclone:org_google:/journal.org"))
 
     (setq org-todo-keywords
             '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
@@ -588,17 +571,34 @@
 
     (setq org-capture-templates ;; quickly add todos entries without going into the file
         `(("t" "Tasks")
-        ("tt" "Task" entry (file+olp "~/.org/todo.org" "Inbox")
+        ("tt" "Task" entry (file+olp "/rclone:org_google:/todo.org" "Inbox")
                 "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
         ("j" "Journal Entries")
         ("jm" "Meeting" entry
-                (file+olp+datetree "~/.org/journal.org")
+                (file+olp+datetree "/rclone:org_google:/journal.org")
                 "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
                 :clock-in :clock-resume
                 :empty-lines 1)))
 
     (smv/org-font-setup))
+
+(use-package org-notify
+    :ensure nil
+    :after org
+    :config
+    (org-notify-start)
+
+    (org-notify-add 'default
+		'(:time "1d" :period "30m" :duration 50 :actions -notify)
+		'(:time "2d" :period "50m" :duration 40 :actions -notify)
+		'(:time "3d" :period "1h" :duration 20 :actions -notify))
+)
+
+(use-package org-fragtog)
+(add-hook 'org-mode-hook 'org-fragtog-mode)
+
+(use-package ox-reveal)
 
 (use-package org-bullets ;; change the bullets in my org mode files
     :after org
