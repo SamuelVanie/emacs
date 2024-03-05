@@ -128,7 +128,7 @@
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 ;; Set frame font
-(add-to-list 'default-frame-alist '(font . "DaddyTimeMono Nerd Font Mono"))
+(add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font"))
 
 ;; some modes doesn't have to start with lines enable
 (dolist (mode '(org-mode-hook
@@ -139,7 +139,7 @@
 
 ;; Change the font size (139) according to your screen
 (custom-set-faces
- '(fixed-pitch ((t (:height 139 :family "JetbrainsMono Nerd Font"))))
+ '(fixed-pitch ((t (:height 139 :family "DaddyTimeMono Nerd Font"))))
  '(variable-pitch ((t (:weight light :height 139 :family "JetbrainsMono Nerd Font")))))
 
 (use-package ligature
@@ -487,7 +487,7 @@
                         (org-level-6 . 1.1)
                         (org-level-7 . 1.1)
                         (org-level-8 . 1.1)))
-        (set-face-attribute (car face) nil :font "Chalkboard" :weight 'regular :height (cdr face)))
+        (set-face-attribute (car face) nil :font "VictorMono" :weight 'regular :height (cdr face)))
         ;; Ensure that anything that should be fixed-pitch in Org files appears that way
         (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
         (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
@@ -500,9 +500,6 @@
         (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
         (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
         (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
-
-(use-package org
-    :ensure org-contrib)
 
 (use-package org-notify
     :ensure nil
@@ -531,6 +528,7 @@
 
 
 (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
+    :ensure org-contrib
     :hook (org-mode . smv/org-mode-setup)
     :config
     (setq org-ellipsis " ▼:")
@@ -616,8 +614,9 @@
 
 (use-package org-projectile)
 
-(use-package olivetti) ;; use to stretch the page on the center to be able to focus on document writing
-(add-hook 'org-mode-hook 'olivetti-mode-hook)
+;; use to stretch the page on the center to be able to focus on document writing
+(use-package olivetti
+:hook (org-mode-hook . olivetti-mode))
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
