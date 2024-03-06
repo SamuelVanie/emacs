@@ -489,7 +489,7 @@
                         (org-level-8 . 1.1)))
         (set-face-attribute (car face) nil :font "VictorMono" :weight 'regular :height (cdr face)))
         ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-        (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
+        (set-face-attribute 'org-block nil    :inherit 'fixed-pitch)
         (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
         (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
         (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
@@ -803,6 +803,7 @@
 (use-package ess)
 
 (use-package rust-mode
+    :mode "\\.rs\\'"
     :hook (rust-mode . lsp-deferred)
     :config
     (require 'dap-cpptools)
@@ -971,7 +972,7 @@ cleared, make sure the overlay doesn't come back too soon."
 
 (use-package youdotcom
     :bind ("C-c y" . youdotcom-enter))
-(setq youdotcom-rag-api-key "fdb00e3c-da21-4376-b7e7-301f5407fd81<__>1Oegz2ETU8N2v5f4wXun7iGA-PTeHFzZV8nCXQ6")
+(setq youdotcom-rag-api-key "")
 
 (use-package projectile
   :diminish projectile-mode
