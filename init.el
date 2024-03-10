@@ -15,6 +15,9 @@
 
 (setq-default indent-tabs-mode nil)
 
+;; auto refresh buffers when files changes
+(global-auto-revert-mode t)
+
 ;; to scroll down inside the popup
 (define-key global-map (kbd "C-M-'")
     (lambda ()
@@ -521,8 +524,7 @@
 
     (setq org-agenda-files
             '("~/.org/todo.org"
-            "~/.org/projects.org"
-            "~/.org/journal.org"))
+            "~/.org/projects.org"))
 
     (setq org-todo-keywords
             '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
@@ -542,26 +544,23 @@
             ; Put mutually exclusive tags here
             (:endgroup)
             ("@school" . ?s)
-            ("agenda" . ?a)
-            ("planning" . ?p)
-            ("publish" . ?P)
-            ("batch" . ?b)
+            ("personal" . ?p)
             ("note" . ?n)
             ("idea" . ?i)))
 
     (setq org-agenda-custom-commands
         '(("d" "Dashboard"
         ((agenda "" ((org-deadline-warning-days 7)))
-        (todo "NEXT"
-            ((org-agenda-overriding-header "Next Tasks")))
-        (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+        (todo "TODO"
+            ((org-agenda-overriding-header "All tasks")))))
 
         ("n" "Next Tasks"
         ((todo "NEXT"
             ((org-agenda-overriding-header "Next Tasks")))))
 
-        ("s" "School Tasks" tags-todo "+school")
-        ("P" "Projects" tags-todo "+projects")
+        ("s" "School Tasks" tags-todo "@school+CATEGORY=\"project_task\"")
+
+        ("P" "Projects" tags-todo "+projects/ACTIVE")
 
         ;; Low-effort next actions
         ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
@@ -571,15 +570,10 @@
 
     (setq org-capture-templates ;; quickly add todos entries without going into the file
         `(("t" "Tasks")
-        ("tt" "Task" entry (file+olp "~/.org/todo.org" "Inbox")
-                "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
+        ("tt" "Task" entry (file+olp "~/.org/todo.org" "Tasks")
+                "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
 
-        ("j" "Journal Entries")
-        ("jm" "Meeting" entry
-                (file+olp+datetree "~/.org/journal.org")
-                "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
-                :clock-in :clock-resume
-                :empty-lines 1)))
+    (define-key org-mode-map (kbd "C-c a") 'org-agenda)
 
     (smv/org-font-setup))
 
