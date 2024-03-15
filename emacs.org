@@ -411,7 +411,6 @@ Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-th
 You will have to install the icons on your machine before to get the full functionnalities : ~M-x all-the-icons-install-fonts~ .
 
 #+begin_src emacs-lisp
-
 (use-package all-the-icons
     :if (display-graphic-p))
 
@@ -769,9 +768,10 @@ This section contains the basic configuration for org-mode plus the configuratio
         ("tt" "Task" entry (file+olp "~/.org/todo.org" "Tasks")
                 "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
 
-    (define-key org-mode-map (kbd "C-c a") 'org-agenda)
 
     (smv/org-font-setup))
+
+(global-set-key (kbd "C-c a") 'org-agenda)
 #+end_src
 
 
@@ -1176,7 +1176,7 @@ To do so just run the ~lsp-install-server~ command in your M-x prompt then insta
 *** R
 
 #+begin_src emacs-lisp
-(use-package ess)
+;;(use-package ess)
 #+end_src
 
 *** RUST
@@ -1218,17 +1218,20 @@ To do so just run the ~lsp-install-server~ command in your M-x prompt then insta
 Company Mode provides a nicer in-buffer completion interface than completion-at-point which is more reminiscent of what you would expect from an IDE. We add a simple configuration to make the keybindings a little more useful (TAB now completes the selection and initiates completion at the current location if needed).
 
 #+begin_src emacs-lisp
-
 (use-package company
-  :after lsp-mode
-  :hook (lsp-mode . company-mode)
-  :custom
-  (company-minimum-prefix-length 1)
-  (company-idle-delay 0.0))
+:after lsp-mode
+:hook (lsp-mode . company-mode)
+:custom
+(company-minimum-prefix-length 1)
+(company-idle-delay 0.0))
 
 (use-package company-box
-  :hook (company-mode . company-box-mode))
+:hook (company-mode . company-box-mode))
 
+(use-package company
+:ensure t)
+
+(add-to-list 'company-backends #'company-tabnine)
 #+end_src
 
 

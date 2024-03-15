@@ -573,9 +573,10 @@
         ("tt" "Task" entry (file+olp "~/.org/todo.org" "Tasks")
                 "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
 
-    (define-key org-mode-map (kbd "C-c a") 'org-agenda)
 
     (smv/org-font-setup))
+
+(global-set-key (kbd "C-c a") 'org-agenda)
 
 (use-package org-notify
     :ensure nil
@@ -794,7 +795,7 @@
                     :path "/usr/lib/jvm/java-21-openjdk/"
                     :default t)])
 
-(use-package ess)
+;;(use-package ess)
 
 (use-package rust-mode
     :mode "\\.rs\\'"
@@ -822,14 +823,19 @@
 (setq flutter-sdk-path "/home/vanieb/development/flutter")
 
 (use-package company
-  :after lsp-mode
-  :hook (lsp-mode . company-mode)
-  :custom
-  (company-minimum-prefix-length 1)
-  (company-idle-delay 0.0))
+:after lsp-mode
+:hook (lsp-mode . company-mode)
+:custom
+(company-minimum-prefix-length 1)
+(company-idle-delay 0.0))
 
 (use-package company-box
-  :hook (company-mode . company-box-mode))
+:hook (company-mode . company-box-mode))
+
+(use-package company
+:ensure t)
+
+(add-to-list 'company-backends #'company-tabnine)
 
 (use-package docker
     :ensure t
