@@ -832,7 +832,7 @@
 (use-package company-box
 :hook (company-mode . company-box-mode))
 
-(use-package company
+(use-package company-tabnine
 :ensure t)
 
 (add-to-list 'company-backends #'company-tabnine)
