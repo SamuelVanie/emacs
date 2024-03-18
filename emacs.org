@@ -52,7 +52,6 @@ Emacs has a built in package manager but it doesn’t make it easy to automatica
 I don't know why but quelpa doesn't get install automatically (maybe a problem only on mac ?), you should install it manually by running `M-x package-install` then type quelpa
 
 #+BEGIN_SRC emacs-lisp
-
 ;; Initialize package sources
 (require 'package)
 (require 'cl)
@@ -66,27 +65,29 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
 (unless package-archive-contents
     (package-refresh-contents))
 
-(unless (package-installed-p 'quelpa)
-    (with-temp-buffer
-    (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
-    (eval-buffer)
-    (quelpa-self-upgrade)))
 
-(quelpa
-    '(quelpa-use-package
-    :fetcher git
-    :url "https://github.com/quelpa/quelpa-use-package.git"))
+;; straight.el section
+(defvar bootstrap-version)
+(let ((bootstrap-file
+      (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+        "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+        'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
-(require 'quelpa-use-package)
-
-(setq use-package-always-ensure t)
+(straight-use-package 'use-package)
+(setq straight-use-package-by-default t)
 
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
 
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
 (use-package dashboard
-    :ensure t
     :config
     (dashboard-setup-startup-hook))
 
@@ -114,32 +115,19 @@ We use the no-littering package to keep folders where we edit files and the Emac
 
 #+end_src
 
-* Undo tree
-
-Convenient way of switching between the different versions of your project. No more lose your past history.
-[[https://github.com/apchamberlain/undo-tree.el][undo-tree]]
-
-#+begin_src emacs-lisp
-(use-package undo-tree)
-(global-undo-tree-mode)
-#+end_src
-
-
-* Format buffers easily
-
-#+begin_src emacs-lisp
-(use-package format-all)
-#+end_src
-
 
 * Tree-sitter
 
 #+begin_src emacs-lisp
-(use-package tree-sitter
-    :preface
-    (dolist (mapping '((yaml-mode . yaml-ts-mode)))
-        (add-to-list 'major-mode-remap-alist mapping)))
+(use-package treesit-auto
+    :custom
+    (treesit-auto-install 'prompt)
+    :config
+    (treesit-auto-add-to-auto-mode-alist 'all)
+    (global-treesit-auto-mode))
+
 #+end_src
+
 
 * Shell
 
@@ -148,18 +136,18 @@ Convenient way of switching between the different versions of your project. No m
 User friendly tool that uses Plan9 style interface to show command outputs. These ones are automatically paginates, making it easier to read and analyse them, particularly when dealing with large amouts of data.
 
 #+begin_src emacs-lisp
-  (require 'em-smart)
-  (setq eshell-where-to-jump 'begin)
-  (setq eshell-review-quick-commands nil)
-  (setq eshell-smart-space-goes-to-end t)
-  (setq eshell-list-files-after-cd t)
+(require 'em-smart)
+(setq eshell-where-to-jump 'begin)
+(setq eshell-review-quick-commands nil)
+(setq eshell-smart-space-goes-to-end t)
+(setq eshell-list-files-after-cd t)
 
 ;; Watch out you should have fish installed on your computer
-  (setq-default explicit-shell-file-name "/usr/bin/fish")
-  (setq eshell-aliases-file "~/.emacs.d/aliases")
+(setq-default explicit-shell-file-name "/usr/bin/fish")
+(setq eshell-aliases-file "~/.emacs.d/aliases")
 
-  (use-package eshell-toggle
-  :bind ("C-x C-z" . eshell-toggle))
+(use-package eshell-toggle
+    :bind ("C-x C-z" . eshell-toggle))
 #+end_src
 
 
@@ -275,7 +263,6 @@ evil-collection permit to activate automatically evil-mode in multiple emacs pac
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 (use-package general ;; for setting keybindings
-    :ensure t
     :config
     (general-create-definer smv/leader-keys
         :keymaps '(normal visual emacs)
@@ -286,7 +273,7 @@ evil-collection permit to activate automatically evil-mode in multiple emacs pac
         "t" '(:ignore t :which-key "toggles")
         "tt" '(counsel-load-theme :which-key "choose theme")))
 
-    ;; Activate vim keybindings inside of emacs
+;; Activate vim keybindings inside of emacs
 (use-package evil
     :init
     (setq evil-want-integration t)
@@ -295,7 +282,7 @@ evil-collection permit to activate automatically evil-mode in multiple emacs pac
     (setq evil-want-C-d-scroll nil)
     (setq evil-v$-excludes-newline t)
     (setq evil-respect-visual-line-mode t)
-    (setq evil-undo-system 'undo-tree)
+    (setq evil-undo-system 'undo-redo)
     (setq evil-want-C-i-jump nil)
     :config
     (evil-mode 1)
@@ -332,13 +319,11 @@ evil-collection permit to activate automatically evil-mode in multiple emacs pac
 ;; Add evil-keybindings to more modes inside of emacs
 (use-package evil-collection
     :after evil
-    :ensure t
     :config
     (evil-collection-init))
 
 
 (use-package evil-surround
-    :ensure t
     :config
     (global-evil-surround-mode 1))
 #+end_src
@@ -358,7 +343,7 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
                         (setq-local evil-insert-state-cursor 'box)
                         (evil-insert-state)))
         (define-key vterm-mode-map [return]                      #'vterm-send-return)
-
+        (global-set-key (kbd "C-x C-y") 'multi-vterm)
         (setq vterm-keymap-exceptions nil)
         (evil-define-key 'insert vterm-mode-map (kbd "C-e")      #'vterm--self-insert)
         (evil-define-key 'insert vterm-mode-map (kbd "C-f")      #'vterm--self-insert)
@@ -387,7 +372,6 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
         (evil-define-key 'normal vterm-mode-map (kbd "o")        #'evil-insert-resume)
         (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume))
 
-(global-set-key (kbd "C-x C-y") 'multi-vterm)
 #+end_src
 
 
@@ -401,8 +385,9 @@ Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-th
 
 #+begin_src emacs-lisp
 (use-package doom-themes)
-(use-package ef-themes)
-(load-theme 'ef-bio t)
+(use-package ef-themes
+    :config
+    (load-theme 'ef-bio t))
 #+end_src
 
 ** Better Mode line
@@ -493,7 +478,6 @@ You will have to install the icons on your machine before to get the full functi
 
 #+begin_src emacs-lisp
 (use-package treemacs
-:ensure t
 :defer t
 :init
 (with-eval-after-load 'winum
@@ -560,8 +544,6 @@ You will have to install the icons on your machine before to get the full functi
     (treemacs-follow-mode t)
     (treemacs-filewatch-mode t)
     (treemacs-fringe-indicator-mode 'always)
-    (when treemacs-python-executable
-    (treemacs-git-commit-diff-mode t))
 
     (pcase (cons (not (null (executable-find "git")))
                 (not (null treemacs-python-executable)))
@@ -582,32 +564,26 @@ You will have to install the icons on your machine before to get the full functi
             ("C-x t M-t" . treemacs-find-tag)))
 
 (use-package treemacs-evil
-:after (treemacs evil)
-:ensure t)
+    :after (treemacs evil))
 
 (use-package treemacs-projectile
-:after (treemacs projectile)
-:ensure t)
+    :after (treemacs projectile))
 
 (use-package treemacs-all-the-icons)
 
 (use-package treemacs-icons-dired
-:hook (dired-mode . treemacs-icons-dired-enable-once)
-:ensure t)
+    :hook (dired-mode . treemacs-icons-dired-enable-once))
 
 (use-package treemacs-magit
-:after (treemacs magit)
-:ensure t)
+    :after (treemacs magit))
 
 (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
-:after (treemacs persp-mode) ;;or perspective vs. persp-mode
-:ensure t
-:config (treemacs-set-scope-type 'Perspectives))
+    :after (treemacs persp-mode) ;;or perspective vs. persp-mode
+    :config (treemacs-set-scope-type 'Perspectives))
 
 (use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
-:after (treemacs)
-:ensure t
-:config (treemacs-set-scope-type 'Tabs))
+    :after (treemacs)
+    :config (treemacs-set-scope-type 'Tabs))
 #+end_src
 
 
@@ -709,7 +685,7 @@ This section contains the basic configuration for org-mode plus the configuratio
 
 
 (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
-    :ensure org-contrib
+    :straight org-contrib
     :hook (org-mode . smv/org-mode-setup)
     :config
     (setq org-ellipsis " ▼:")
@@ -769,9 +745,9 @@ This section contains the basic configuration for org-mode plus the configuratio
                 "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
 
 
-    (smv/org-font-setup))
+    (smv/org-font-setup)
+    (global-set-key (kbd "C-c a") 'org-agenda))
 
-(global-set-key (kbd "C-c a") 'org-agenda)
 #+end_src
 
 
@@ -787,18 +763,17 @@ Permit to show notifications for tasks I have to do.
     (org-notify-start)
 
     (org-notify-add 'default
-		'(:time "1d" :period "30m" :duration 50 :actions -notify)
-		'(:time "2d" :period "50m" :duration 40 :actions -notify)
-		'(:time "3d" :period "1h" :duration 20 :actions -notify))
-)
+            '(:time "1d" :period "30m" :duration 50 :actions -notify)
+            '(:time "2d" :period "50m" :duration 40 :actions -notify)
+            '(:time "3d" :period "1h" :duration 20 :actions -notify)))
 #+end_src
 
 
 ** Auto rendering latex section
 
 #+begin_src emacs-lisp
-(use-package org-fragtog)
-(add-hook 'org-mode-hook 'org-fragtog-mode)
+(use-package org-fragtog
+    :hook (org-mode-hook . org-fragtog-mode))
 #+end_src
 
 ** Presentation
@@ -824,9 +799,10 @@ I use also `org-num` to add numbers in front of my different headlines.
 
 ;; Outline numbering for org mode
 (use-package org-num
-:load-path "lisp/"
-:after org
-:hook (org-mode . org-num-mode))
+    :straight nil
+    :load-path "lisp/"
+    :after org
+    :hook (org-mode . org-num-mode))
 
 (use-package org-projectile)
 #+end_src
@@ -839,7 +815,7 @@ To center buffers I use the [[https://github.com/rnkn/olivetti][olivetti]] minor
 #+begin_src emacs-lisp
 ;; use to stretch the page on the center to be able to focus on document writing
 (use-package olivetti
-:hook (org-mode-hook . olivetti-mode))
+    :hook (org-mode-hook . olivetti-mode))
 #+end_src
 
 
@@ -920,31 +896,33 @@ I use some useful lsp packages with downloaded languages server for my programmi
 (lsp-headerline-breadcrumb-mode))
 
 (use-package lsp-mode
-:commands (lsp lsp-deferred)
-:hook (lsp-mode . efs/lsp-mode-setup)
-:init
-(setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
-:config
-(lsp-enable-which-key-integration t))
-
-;; only watch over the current project directory files
-(setq lsp-file-watch-ignored-directories (list (rx-to-string `(and (or bos "/" (and "/home" (* any)) "/") (not (any ".")))
-                                               'no-group)))
+    :commands (lsp lsp-deferred)
+    :hook (lsp-mode . efs/lsp-mode-setup)
+    :init
+    (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+    :config
+    (lsp-enable-which-key-integration t)
+    ;; only watch over the current project directory files
+    (setq lsp-file-watch-ignored-directories (list (rx-to-string `(and (or bos "/" (and "/home" (* any)) "/") (not (any ".")))
+                                            'no-group))))
 
 #+end_src
 
 **** lsp-ui
 
 #+begin_src emacs-lisp
-
 (use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
-  :custom
-  (lsp-ui-doc-position 'at-point)
-  (lsp-ui-doc-enable t)
-  :bind
-  (:map evil-normal-state-map ("H" . lsp-ui-doc-toggle)))
-
+    :hook (lsp-mode . lsp-ui-mode)
+    :custom
+    (lsp-ui-doc-position 'at-point)
+    (lsp-ui-doc-enable t)
+    (lsp-ui-sideline-show-diagnostics t)
+    (lsp-ui-sideline-show-hover t)
+    :bind
+    (:map evil-normal-state-map ("H" . lsp-ui-doc-toggle))
+    :config
+    (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+    (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))
 #+end_src
 
 **** lsp-treemacs
@@ -1003,31 +981,26 @@ Dap-mode is the debugger mode. It goes with lsp-mode
 (use-package dap-mode
     :after
     lsp-mode
+    :bind (:map dap-mode-map
+            ("<f5>" . dap-debug)
+            ("<f9>" . dap-breakpoint-toggle)
+            ("C-<f9>" . dap-breakpoint-condition)
+            ("M-<f9>" . dap-breakpoint-log-message)
+            ("<f10>" . dap-next)
+            ("<f11>" . dap-step-in)
+            ("S-<f11>" . dap-step-out)
+            ("<f12>" . dap-ui-inspect-thing-at-point)
+            ("C-<f5>" . dap-stop-thread)
+            ("S-<f5>" . dap-restart-frame)
+            :map dap-ui-repl-mode-map
+            ("C-<f5>" . dap-stop-thread)
+            ("S-<f5>" . dap-restart-frame)
+            ("<f12>" . dap-ui-inspect-thing-at-point))
     :config
     (dap-auto-configure-mode)
+    (evil-define-key 'normal dap-mode-map (kbd "K") #'dap-tooltip-at-point)
     :hook (dap-stopped . (lambda (arg) (call-interactively #'dap-hydra)))
 )
-
-
-(evil-define-key 'normal dap-mode-map (kbd "K") #'dap-tooltip-at-point)
-
-; Basic dap-mode keybindings (similar to VSCode)
-(define-key dap-mode-map (kbd "<f5>") 'dap-debug)
-(define-key dap-mode-map (kbd "<f9>") 'dap-breakpoint-toggle)
-(define-key dap-mode-map (kbd "C-<f9>") 'dap-breakpoint-condition)
-(define-key dap-mode-map (kbd "M-<f9>") 'dap-breakpoint-log-message)
-(define-key dap-mode-map (kbd "<f10>") 'dap-next)
-(define-key dap-mode-map (kbd "<f11>") 'dap-step-in)
-(define-key dap-mode-map (kbd "S-<f11>") 'dap-step-out)
-(define-key dap-mode-map (kbd "<f12>") 'dap-ui-inspect-thing-at-point)
-(define-key dap-mode-map (kbd "C-<f5>") 'dap-stop-thread)
-(define-key dap-mode-map (kbd "S-<f5>") 'dap-restart-frame)
-
-;; dap-ui keybindings
-(define-key dap-ui-repl-mode-map (kbd "C-<f5>") 'dap-stop-thread)
-(define-key dap-ui-repl-mode-map (kbd "S-<f5>") 'dap-restart-frame)
-(define-key dap-ui-repl-mode-map (kbd "<f12>") 'dap-ui-inspect-thing-at-point)
-
 
 (require 'dap-cpptools)
 #+end_src
@@ -1090,13 +1063,6 @@ Check the documentation for your browser : [[https://emacs-lsp.github.io/dap-mod
 
 #+end_src
 
-**** TailwindCSS
-
-#+begin_src emacs-lisp
-(use-package lsp-tailwindcss
-    :init
-    (setq lsp-tailwindcss-add-on-mode t))
-#+end_src
 
 **** JSX support
 
@@ -1158,19 +1124,17 @@ To do so just run the ~lsp-install-server~ command in your M-x prompt then insta
     :config
     (add-hook 'java-mode-hook 'lsp)
     ;; current VSCode defaults for quick load
-)
+    (setq lsp-java-configuration-runtimes '[(:name "openjdk-17"
+                        :path "/usr/lib/jvm/java-17-openjdk/")
+                    (:name "openjdk-21"
+                        :path "/usr/lib/jvm/java-21-openjdk/"
+                    :default t)]))
 
 (require 'lsp-java-boot)
 
 ;; to enable the lenses
 (add-hook 'lsp-mode-hook #'lsp-lens-mode)
 (add-hook 'java-mode-hook #'lsp-java-boot-lens-mode)
-
-(setq lsp-java-configuration-runtimes '[(:name "openjdk-17"
-                    :path "/usr/lib/jvm/java-17-openjdk/")
-                (:name "openjdk-21"
-                    :path "/usr/lib/jvm/java-21-openjdk/"
-                    :default t)])
 #+end_src
 
 *** R
@@ -1182,9 +1146,13 @@ To do so just run the ~lsp-install-server~ command in your M-x prompt then insta
 *** RUST
 
 #+begin_src emacs-lisp
-(use-package rust-mode
+(use-package rust-mode)
+
+(use-package rust-ts-mode
     :mode "\\.rs\\'"
-    :hook (rust-mode . lsp-deferred)
+    :bind-keymap
+    ("C-c c" . rust-mode-map)
+    :hook (rust-ts-mode . lsp-deferred)
     :config
     (require 'dap-cpptools)
     (dap-cpptools-setup))
@@ -1204,12 +1172,12 @@ To do so just run the ~lsp-install-server~ command in your M-x prompt then insta
 )
 
 (use-package lsp-dart
+    :hook
+    (dart-mode . lsp)
     :config
-    (add-hook 'dart-mode-hook 'lsp))
-
-(setq lsp-dart-sdk-dir "/home/vanieb/development/flutter/bin/cache/dart-sdk")
-(setq lsp-dart-flutter-sdk "/home/vanieb/development/flutter")
-(setq flutter-sdk-path "/home/vanieb/development/flutter")
+    (setq lsp-dart-sdk-dir "/home/vanieb/development/flutter/bin/cache/dart-sdk")
+    (setq lsp-dart-flutter-sdk "/home/vanieb/development/flutter")
+    (setq flutter-sdk-path "/home/vanieb/development/flutter"))
 #+end_src
 
 
@@ -1219,19 +1187,19 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
 
 #+begin_src emacs-lisp
 (use-package company
-:after lsp-mode
-:hook (lsp-mode . company-mode)
-:custom
-(company-minimum-prefix-length 1)
-(company-idle-delay 0.0))
+    :after lsp-mode
+    :hook (lsp-mode . company-mode)
+    :custom
+    (company-minimum-prefix-length 1)
+    (company-idle-delay 0.0))
 
 (use-package company-box
-:hook (company-mode . company-box-mode))
+    :hook
+    (company-mode . company-box-mode))
 
 (use-package company-tabnine
-:ensure t)
-
-(add-to-list 'company-backends #'company-tabnine)
+    :config
+    (add-to-list 'company-backends #'company-tabnine))
 #+end_src
 
 
@@ -1241,7 +1209,6 @@ Quickly manages [[https://github.com/Silex/docker.el][docker]] container directl
 
 #+begin_src emacs-lisp
 (use-package docker
-    :ensure t
     :bind ("C-c d" . docker))
 
 (use-package dockerfile-mode)
@@ -1254,123 +1221,115 @@ Using github copilot has my pair programming assistant to finish my tasks more q
 Uncomment the commented parts only when you will finish installing copilot.
 
 #+begin_src emacs-lisp
-  (defun rk/copilot-complete-or-accept ()
-      "Command that either triggers a completion or accepts one if one
-  is available. Useful if you tend to hammer your keys like I do."
-      (interactive)
-      (if (copilot--overlay-visible)
-          (progn
-          (copilot-accept-completion)
-          (open-line 1)
-          )
-      (copilot-complete)))
+(defun rk/copilot-complete-or-accept ()
+    "Command that either triggers a completion or accepts one if one
+is available. Useful if you tend to hammer your keys like I do."
+    (interactive)
+    (if (copilot--overlay-visible)
+        (progn
+        (copilot-accept-completion)
+        (open-line 1)
+        )
+    (copilot-complete)))
 
-  (defun rk/copilot-quit ()
-  "Run `copilot-clear-overlay' or `keyboard-quit'. If copilot is
-  cleared, make sure the overlay doesn't come back too soon."
-  (interactive)
-  (condition-case err
-      (when copilot--overlay
-          (lexical-let ((pre-copilot-disable-predicates copilot-disable-predicates))
-          (setq copilot-disable-predicates (list (lambda () t)))
-          (copilot-clear-overlay)
-          (run-with-idle-timer
-              1.0
-              nil
-              (lambda ()
-              (setq copilot-disable-predicates pre-copilot-disable-predicates)))))
-      (error handler)))
+(defun rk/copilot-quit ()
+"Run `copilot-clear-overlay' or `keyboard-quit'. If copilot is
+cleared, make sure the overlay doesn't come back too soon."
+(interactive)
+(condition-case err
+    (when copilot--overlay
+        (lexical-let ((pre-copilot-disable-predicates copilot-disable-predicates))
+        (setq copilot-disable-predicates (list (lambda () t)))
+        (copilot-clear-overlay)
+        (run-with-idle-timer
+            1.0
+            nil
+            (lambda ()
+            (setq copilot-disable-predicates pre-copilot-disable-predicates)))))
+    (error handler)))
 
-  (defun rk/no-copilot-mode ()
-  "Helper for `rk/no-copilot-modes'."
-  (copilot-mode -1))
+(defun rk/no-copilot-mode ()
+"Helper for `rk/no-copilot-modes'."
+(copilot-mode -1))
 
-  (defvar rk/no-copilot-modes '(shell-mode
-                                  inferior-python-mode
-                                  eshell-mode
-                                  term-mode
-                                  vterm-mode
-                                  comint-mode
-                                  compilation-mode
-                                  debugger-mode
-                                  dired-mode-hook
-                                  compilation-mode-hook
-                                  flutter-mode-hook
-                                  minibuffer-mode-hook)
-      "Modes in which copilot is inconvenient.")
+(defvar rk/no-copilot-modes '(shell-mode
+                                inferior-python-mode
+                                eshell-mode
+                                term-mode
+                                vterm-mode
+                                comint-mode
+                                compilation-mode
+                                debugger-mode
+                                dired-mode-hook
+                                compilation-mode-hook
+                                flutter-mode-hook
+                                minibuffer-mode-hook)
+    "Modes in which copilot is inconvenient.")
 
-  (defvar rk/copilot-manual-mode nil
-      "When `t' will only show completions when manually triggered, e.g. via M-C-<return>.")
+(defvar rk/copilot-manual-mode nil
+    "When `t' will only show completions when manually triggered, e.g. via M-C-<return>.")
 
-  (defvar rk/copilot-enable-for-org nil
-      "Should copilot be enabled for org-mode buffers?")
-
-
-
-  (defun rk/copilot-enable-predicate ()
-      ""
-      (and
-      (eq (get-buffer-window) (selected-window))))
-
-  (defun rk/copilot-disable-predicate ()
-      "When copilot should not automatically show completions."
-      (or rk/copilot-manual-mode
-          (member major-mode rk/no-copilot-modes)
-          (and (not rk/copilot-enable-for-org) (eq major-mode 'org-mode))
-          (company--active-p)))
-
-  (defun rk/copilot-change-activation ()
-      "Switch between three activation modes:
-      - automatic: copilot will automatically overlay completions
-      - manual: you need to press a key (C-M-<return>) to trigger completions
-      - off: copilot is completely disabled."
-      (interactive)
-      (if (and copilot-mode rk/copilot-manual-mode)
-          (progn
-          (message "deactivating copilot")
-          (global-copilot-mode -1)
-          (setq rk/copilot-manual-mode nil))
-      (if copilot-mode
-          (progn
-              (message "activating copilot manual mode")
-              (setq rk/copilot-manual-mode t))
-          (message "activating copilot mode")
-          (global-copilot-mode))))
+(defvar rk/copilot-enable-for-org nil
+    "Should copilot be enabled for org-mode buffers?")
 
 
-  ;; (use-package copilot
-  ;;   :quelpa (copilot :fetcher github
-  ;;                    :repo "copilot-emacs/copilot.el"
-  ;;                    :branch "main"
-  ;;                    :files ("dist" "*.el")))
+(defun rk/copilot-enable-predicate ()
+    ""
+    (and
+    (eq (get-buffer-window) (selected-window))))
 
-  ;; Uncomment the copilot load line when you will be inside emacs
-  ;; then evaluate the lines
-  ;; then install the copilot-server by running the command
-  ;; M-x copilot-install-server
-  (add-to-list 'load-path "~/.emacs.d/pkg/copilot.el")
-  (require 'copilot)
+(defun rk/copilot-disable-predicate ()
+    "When copilot should not automatically show completions."
+    (or rk/copilot-manual-mode
+        (member major-mode rk/no-copilot-modes)
+        (and (not rk/copilot-enable-for-org) (eq major-mode 'org-mode))
+        (company--active-p)))
 
-  ;; keybindings that are active when copilot shows completions
-  (define-key copilot-mode-map (kbd "C-M-<next>") #'copilot-next-completion)
-  (define-key copilot-mode-map (kbd "C-M-<prior>") #'copilot-previous-completion)
-  (define-key copilot-mode-map (kbd "C-M-<right>") #'copilot-accept-completion-by-word)
-  (define-key copilot-mode-map (kbd "C-M-<return>") #'copilot-accept-completion-by-line)
+(defun rk/copilot-change-activation ()
+    "Switch between three activation modes:
+    - automatic: copilot will automatically overlay completions
+    - manual: you need to press a key (C-M-<return>) to trigger completions
+    - off: copilot is completely disabled."
+    (interactive)
+    (if (and copilot-mode rk/copilot-manual-mode)
+        (progn
+        (message "deactivating copilot")
+        (global-copilot-mode -1)
+        (setq rk/copilot-manual-mode nil))
+    (if copilot-mode
+        (progn
+            (message "activating copilot manual mode")
+            (setq rk/copilot-manual-mode t))
+        (message "activating copilot mode")
+        (global-copilot-mode))))
 
-  ;;global keybindings
-  (define-key global-map (kbd "C-M-<down>") #'rk/copilot-complete-or-accept)
-  (define-key global-map (kbd "C-M-<escape>") #'rk/copilot-change-activation)
 
-  ;;Do copilot-quit when pressing C-g
-  (advice-add 'keyboard-quit :before #'rk/copilot-quit)
+(straight-use-package '(copilot :host github
+                            :repo "copilot-emacs/copilot.el"
+                            :branch "main"
+                            :files ("dist" "*.el")))
 
-  ;; complete by pressing right or tab but only when copilot completions are
-  ;; ;; shown. This means we leave the normal functionality intact.
-  (advice-add 'right-char :around #'rk/copilot-complete-if-active)
+(require 'copilot)
+;; keybindings that are active when copilot shows completions
+(define-key copilot-mode-map (kbd "C-M-<next>") #'copilot-next-completion)
+(define-key copilot-mode-map (kbd "C-M-<prior>") #'copilot-previous-completion)
+(define-key copilot-mode-map (kbd "C-M-<right>") #'copilot-accept-completion-by-word)
+(define-key copilot-mode-map (kbd "C-M-<return>") #'copilot-accept-completion-by-line)
 
-  ;; ;; deactivate copilot for certain modes
-  (add-to-list 'copilot-enable-predicates #'rk/copilot-enable-predicate)
-  (add-to-list 'copilot-disable-predicates #'rk/copilot-disable-predicate)
+;;global keybindings
+(define-key global-map (kbd "C-M-<down>") #'rk/copilot-complete-or-accept)
+(define-key global-map (kbd "C-M-<escape>") #'rk/copilot-change-activation)
+
+;;Do copilot-quit when pressing C-g
+(advice-add 'keyboard-quit :before #'rk/copilot-quit)
+
+;; complete by pressing right or tab but only when copilot completions are
+;; ;; shown. This means we leave the normal functionality intact.
+(advice-add 'right-char :around #'rk/copilot-complete-if-active)
+
+;; ;; deactivate copilot for certain modes
+(add-to-list 'copilot-enable-predicates #'rk/copilot-enable-predicate)
+(add-to-list 'copilot-disable-predicates #'rk/copilot-disable-predicate)
 
 #+end_src
 
@@ -1396,8 +1355,10 @@ This is my own package to make web search and chat directly inside emacs
 
 #+begin_src emacs-lisp
 (use-package youdotcom
-    :bind ("C-c y" . youdotcom-enter))
-(setq youdotcom-rag-api-key "")
+    :bind
+    ("C-c y" . youdotcom-enter)
+    :config
+    (setq youdotcom-rag-api-key ""))
 #+end_src
 
 ** Projectile
@@ -1432,9 +1393,9 @@ This is my own package to make web search and chat directly inside emacs
 
 #+begin_src emacs-lisp
 (use-package magit
-:commands magit-status
-:custom
-(magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+    :commands magit-status
+    :custom
+    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
   
 (setq gc-const-threshold (* 2 1000 1000))

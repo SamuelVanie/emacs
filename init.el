@@ -43,27 +43,29 @@
 (unless package-archive-contents
     (package-refresh-contents))
 
-(unless (package-installed-p 'quelpa)
-    (with-temp-buffer
-    (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
-    (eval-buffer)
-    (quelpa-self-upgrade)))
 
-(quelpa
-    '(quelpa-use-package
-    :fetcher git
-    :url "https://github.com/quelpa/quelpa-use-package.git"))
+;; straight.el section
+(defvar bootstrap-version)
+(let ((bootstrap-file
+      (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+        "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+        'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
-(require 'quelpa-use-package)
-
-(setq use-package-always-ensure t)
+(straight-use-package 'use-package)
+(setq straight-use-package-by-default t)
 
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
 
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
 (use-package dashboard
-    :ensure t
     :config
     (dashboard-setup-startup-hook))
 
@@ -80,28 +82,25 @@
 (setq auto-save-file-name-transforms
       `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
 
-(use-package undo-tree)
-(global-undo-tree-mode)
-
-(use-package format-all)
-
-(use-package tree-sitter
-    :preface
-    (dolist (mapping '((yaml-mode . yaml-ts-mode)))
-        (add-to-list 'major-mode-remap-alist mapping)))
+(use-package treesit-auto
+    :custom
+    (treesit-auto-install 'prompt)
+    :config
+    (treesit-auto-add-to-auto-mode-alist 'all)
+    (global-treesit-auto-mode))
 
 (require 'em-smart)
-  (setq eshell-where-to-jump 'begin)
-  (setq eshell-review-quick-commands nil)
-  (setq eshell-smart-space-goes-to-end t)
-  (setq eshell-list-files-after-cd t)
+(setq eshell-where-to-jump 'begin)
+(setq eshell-review-quick-commands nil)
+(setq eshell-smart-space-goes-to-end t)
+(setq eshell-list-files-after-cd t)
 
 ;; Watch out you should have fish installed on your computer
-  (setq-default explicit-shell-file-name "/usr/bin/fish")
-  (setq eshell-aliases-file "~/.emacs.d/aliases")
+(setq-default explicit-shell-file-name "/usr/bin/fish")
+(setq eshell-aliases-file "~/.emacs.d/aliases")
 
-  (use-package eshell-toggle
-  :bind ("C-x C-z" . eshell-toggle))
+(use-package eshell-toggle
+    :bind ("C-x C-z" . eshell-toggle))
 
 (defun kill-all-buffers ()
   "Kill all buffers without asking for confirmation."
@@ -169,7 +168,6 @@
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 (use-package general ;; for setting keybindings
-    :ensure t
     :config
     (general-create-definer smv/leader-keys
         :keymaps '(normal visual emacs)
@@ -180,7 +178,7 @@
         "t" '(:ignore t :which-key "toggles")
         "tt" '(counsel-load-theme :which-key "choose theme")))
 
-    ;; Activate vim keybindings inside of emacs
+;; Activate vim keybindings inside of emacs
 (use-package evil
     :init
     (setq evil-want-integration t)
@@ -189,7 +187,7 @@
     (setq evil-want-C-d-scroll nil)
     (setq evil-v$-excludes-newline t)
     (setq evil-respect-visual-line-mode t)
-    (setq evil-undo-system 'undo-tree)
+    (setq evil-undo-system 'undo-redo)
     (setq evil-want-C-i-jump nil)
     :config
     (evil-mode 1)
@@ -226,13 +224,11 @@
 ;; Add evil-keybindings to more modes inside of emacs
 (use-package evil-collection
     :after evil
-    :ensure t
     :config
     (evil-collection-init))
 
 
 (use-package evil-surround
-    :ensure t
     :config
     (global-evil-surround-mode 1))
 
@@ -245,7 +241,7 @@
                         (setq-local evil-insert-state-cursor 'box)
                         (evil-insert-state)))
         (define-key vterm-mode-map [return]                      #'vterm-send-return)
-
+        (global-set-key (kbd "C-x C-y") 'multi-vterm)
         (setq vterm-keymap-exceptions nil)
         (evil-define-key 'insert vterm-mode-map (kbd "C-e")      #'vterm--self-insert)
         (evil-define-key 'insert vterm-mode-map (kbd "C-f")      #'vterm--self-insert)
@@ -274,11 +270,10 @@
         (evil-define-key 'normal vterm-mode-map (kbd "o")        #'evil-insert-resume)
         (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume))
 
-(global-set-key (kbd "C-x C-y") 'multi-vterm)
-
 (use-package doom-themes)
-(use-package ef-themes)
-(load-theme 'ef-bio t)
+(use-package ef-themes
+    :config
+    (load-theme 'ef-bio t))
 
 (use-package all-the-icons
     :if (display-graphic-p))
@@ -335,7 +330,6 @@
   (ivy-prescient-mode 1))
 
 (use-package treemacs
-:ensure t
 :defer t
 :init
 (with-eval-after-load 'winum
@@ -402,8 +396,6 @@
     (treemacs-follow-mode t)
     (treemacs-filewatch-mode t)
     (treemacs-fringe-indicator-mode 'always)
-    (when treemacs-python-executable
-    (treemacs-git-commit-diff-mode t))
 
     (pcase (cons (not (null (executable-find "git")))
                 (not (null treemacs-python-executable)))
@@ -424,32 +416,26 @@
             ("C-x t M-t" . treemacs-find-tag)))
 
 (use-package treemacs-evil
-:after (treemacs evil)
-:ensure t)
+    :after (treemacs evil))
 
 (use-package treemacs-projectile
-:after (treemacs projectile)
-:ensure t)
+    :after (treemacs projectile))
 
 (use-package treemacs-all-the-icons)
 
 (use-package treemacs-icons-dired
-:hook (dired-mode . treemacs-icons-dired-enable-once)
-:ensure t)
+    :hook (dired-mode . treemacs-icons-dired-enable-once))
 
 (use-package treemacs-magit
-:after (treemacs magit)
-:ensure t)
+    :after (treemacs magit))
 
 (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
-:after (treemacs persp-mode) ;;or perspective vs. persp-mode
-:ensure t
-:config (treemacs-set-scope-type 'Perspectives))
+    :after (treemacs persp-mode) ;;or perspective vs. persp-mode
+    :config (treemacs-set-scope-type 'Perspectives))
 
 (use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
-:after (treemacs)
-:ensure t
-:config (treemacs-set-scope-type 'Tabs))
+    :after (treemacs)
+    :config (treemacs-set-scope-type 'Tabs))
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
@@ -514,7 +500,7 @@
 
 
 (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
-    :ensure org-contrib
+    :straight org-contrib
     :hook (org-mode . smv/org-mode-setup)
     :config
     (setq org-ellipsis " ▼:")
@@ -574,9 +560,8 @@
                 "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
 
 
-    (smv/org-font-setup))
-
-(global-set-key (kbd "C-c a") 'org-agenda)
+    (smv/org-font-setup)
+    (global-set-key (kbd "C-c a") 'org-agenda))
 
 (use-package org-notify
     :ensure nil
@@ -585,13 +570,12 @@
     (org-notify-start)
 
     (org-notify-add 'default
-		'(:time "1d" :period "30m" :duration 50 :actions -notify)
-		'(:time "2d" :period "50m" :duration 40 :actions -notify)
-		'(:time "3d" :period "1h" :duration 20 :actions -notify))
-)
+            '(:time "1d" :period "30m" :duration 50 :actions -notify)
+            '(:time "2d" :period "50m" :duration 40 :actions -notify)
+            '(:time "3d" :period "1h" :duration 20 :actions -notify)))
 
-(use-package org-fragtog)
-(add-hook 'org-mode-hook 'org-fragtog-mode)
+(use-package org-fragtog
+    :hook (org-mode-hook . org-fragtog-mode))
 
 (use-package ox-reveal)
 
@@ -603,15 +587,16 @@
 
 ;; Outline numbering for org mode
 (use-package org-num
-:load-path "lisp/"
-:after org
-:hook (org-mode . org-num-mode))
+    :straight nil
+    :load-path "lisp/"
+    :after org
+    :hook (org-mode . org-num-mode))
 
 (use-package org-projectile)
 
 ;; use to stretch the page on the center to be able to focus on document writing
 (use-package olivetti
-:hook (org-mode-hook . olivetti-mode))
+    :hook (org-mode-hook . olivetti-mode))
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
@@ -647,24 +632,28 @@
 (lsp-headerline-breadcrumb-mode))
 
 (use-package lsp-mode
-:commands (lsp lsp-deferred)
-:hook (lsp-mode . efs/lsp-mode-setup)
-:init
-(setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
-:config
-(lsp-enable-which-key-integration t))
-
-;; only watch over the current project directory files
-(setq lsp-file-watch-ignored-directories (list (rx-to-string `(and (or bos "/" (and "/home" (* any)) "/") (not (any ".")))
-                                               'no-group)))
+    :commands (lsp lsp-deferred)
+    :hook (lsp-mode . efs/lsp-mode-setup)
+    :init
+    (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+    :config
+    (lsp-enable-which-key-integration t)
+    ;; only watch over the current project directory files
+    (setq lsp-file-watch-ignored-directories (list (rx-to-string `(and (or bos "/" (and "/home" (* any)) "/") (not (any ".")))
+                                            'no-group))))
 
 (use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
-  :custom
-  (lsp-ui-doc-position 'at-point)
-  (lsp-ui-doc-enable t)
-  :bind
-  (:map evil-normal-state-map ("H" . lsp-ui-doc-toggle)))
+    :hook (lsp-mode . lsp-ui-mode)
+    :custom
+    (lsp-ui-doc-position 'at-point)
+    (lsp-ui-doc-enable t)
+    (lsp-ui-sideline-show-diagnostics t)
+    (lsp-ui-sideline-show-hover t)
+    :bind
+    (:map evil-normal-state-map ("H" . lsp-ui-doc-toggle))
+    :config
+    (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+    (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))
 
 (use-package lsp-treemacs
   :after lsp)
@@ -684,31 +673,26 @@
 (use-package dap-mode
     :after
     lsp-mode
+    :bind (:map dap-mode-map
+            ("<f5>" . dap-debug)
+            ("<f9>" . dap-breakpoint-toggle)
+            ("C-<f9>" . dap-breakpoint-condition)
+            ("M-<f9>" . dap-breakpoint-log-message)
+            ("<f10>" . dap-next)
+            ("<f11>" . dap-step-in)
+            ("S-<f11>" . dap-step-out)
+            ("<f12>" . dap-ui-inspect-thing-at-point)
+            ("C-<f5>" . dap-stop-thread)
+            ("S-<f5>" . dap-restart-frame)
+            :map dap-ui-repl-mode-map
+            ("C-<f5>" . dap-stop-thread)
+            ("S-<f5>" . dap-restart-frame)
+            ("<f12>" . dap-ui-inspect-thing-at-point))
     :config
     (dap-auto-configure-mode)
+    (evil-define-key 'normal dap-mode-map (kbd "K") #'dap-tooltip-at-point)
     :hook (dap-stopped . (lambda (arg) (call-interactively #'dap-hydra)))
 )
-
-
-(evil-define-key 'normal dap-mode-map (kbd "K") #'dap-tooltip-at-point)
-
-; Basic dap-mode keybindings (similar to VSCode)
-(define-key dap-mode-map (kbd "<f5>") 'dap-debug)
-(define-key dap-mode-map (kbd "<f9>") 'dap-breakpoint-toggle)
-(define-key dap-mode-map (kbd "C-<f9>") 'dap-breakpoint-condition)
-(define-key dap-mode-map (kbd "M-<f9>") 'dap-breakpoint-log-message)
-(define-key dap-mode-map (kbd "<f10>") 'dap-next)
-(define-key dap-mode-map (kbd "<f11>") 'dap-step-in)
-(define-key dap-mode-map (kbd "S-<f11>") 'dap-step-out)
-(define-key dap-mode-map (kbd "<f12>") 'dap-ui-inspect-thing-at-point)
-(define-key dap-mode-map (kbd "C-<f5>") 'dap-stop-thread)
-(define-key dap-mode-map (kbd "S-<f5>") 'dap-restart-frame)
-
-;; dap-ui keybindings
-(define-key dap-ui-repl-mode-map (kbd "C-<f5>") 'dap-stop-thread)
-(define-key dap-ui-repl-mode-map (kbd "S-<f5>") 'dap-restart-frame)
-(define-key dap-ui-repl-mode-map (kbd "<f12>") 'dap-ui-inspect-thing-at-point)
-
 
 (require 'dap-cpptools)
 
@@ -751,10 +735,6 @@
             (setq emmet-use-css-transform t)
         (setq emmet-use-css-transform nil)))))
 
-(use-package lsp-tailwindcss
-    :init
-    (setq lsp-tailwindcss-add-on-mode t))
-
 (use-package rjsx-mode
   :mode (("\\.js\\'" . rjsx-mode)
             ("\\.ts\\'" . rjsx-mode))
@@ -781,7 +761,11 @@
     :config
     (add-hook 'java-mode-hook 'lsp)
     ;; current VSCode defaults for quick load
-)
+    (setq lsp-java-configuration-runtimes '[(:name "openjdk-17"
+                        :path "/usr/lib/jvm/java-17-openjdk/")
+                    (:name "openjdk-21"
+                        :path "/usr/lib/jvm/java-21-openjdk/"
+                    :default t)]))
 
 (require 'lsp-java-boot)
 
@@ -789,17 +773,15 @@
 (add-hook 'lsp-mode-hook #'lsp-lens-mode)
 (add-hook 'java-mode-hook #'lsp-java-boot-lens-mode)
 
-(setq lsp-java-configuration-runtimes '[(:name "openjdk-17"
-                    :path "/usr/lib/jvm/java-17-openjdk/")
-                (:name "openjdk-21"
-                    :path "/usr/lib/jvm/java-21-openjdk/"
-                    :default t)])
-
 ;;(use-package ess)
 
-(use-package rust-mode
+(use-package rust-mode)
+
+(use-package rust-ts-mode
     :mode "\\.rs\\'"
-    :hook (rust-mode . lsp-deferred)
+    :bind-keymap
+    ("C-c c" . rust-mode-map)
+    :hook (rust-ts-mode . lsp-deferred)
     :config
     (require 'dap-cpptools)
     (dap-cpptools-setup))
@@ -815,30 +797,29 @@
 )
 
 (use-package lsp-dart
+    :hook
+    (dart-mode . lsp)
     :config
-    (add-hook 'dart-mode-hook 'lsp))
-
-(setq lsp-dart-sdk-dir "/home/vanieb/development/flutter/bin/cache/dart-sdk")
-(setq lsp-dart-flutter-sdk "/home/vanieb/development/flutter")
-(setq flutter-sdk-path "/home/vanieb/development/flutter")
+    (setq lsp-dart-sdk-dir "/home/vanieb/development/flutter/bin/cache/dart-sdk")
+    (setq lsp-dart-flutter-sdk "/home/vanieb/development/flutter")
+    (setq flutter-sdk-path "/home/vanieb/development/flutter"))
 
 (use-package company
-:after lsp-mode
-:hook (lsp-mode . company-mode)
-:custom
-(company-minimum-prefix-length 1)
-(company-idle-delay 0.0))
+    :after lsp-mode
+    :hook (lsp-mode . company-mode)
+    :custom
+    (company-minimum-prefix-length 1)
+    (company-idle-delay 0.0))
 
 (use-package company-box
-:hook (company-mode . company-box-mode))
+    :hook
+    (company-mode . company-box-mode))
 
 (use-package company-tabnine
-:ensure t)
-
-(add-to-list 'company-backends #'company-tabnine)
+    :config
+    (add-to-list 'company-backends #'company-tabnine))
 
 (use-package docker
-    :ensure t
     :bind ("C-c d" . docker))
 
 (use-package dockerfile-mode)
@@ -895,7 +876,6 @@ cleared, make sure the overlay doesn't come back too soon."
     "Should copilot be enabled for org-mode buffers?")
 
 
-
 (defun rk/copilot-enable-predicate ()
     ""
     (and
@@ -927,19 +907,12 @@ cleared, make sure the overlay doesn't come back too soon."
         (global-copilot-mode))))
 
 
-;; (use-package copilot
-;;   :quelpa (copilot :fetcher github
-;;                    :repo "copilot-emacs/copilot.el"
-;;                    :branch "main"
-;;                    :files ("dist" "*.el")))
+(straight-use-package '(copilot :host github
+                            :repo "copilot-emacs/copilot.el"
+                            :branch "main"
+                            :files ("dist" "*.el")))
 
-;; Uncomment the copilot load line when you will be inside emacs
-;; then evaluate the lines
-;; then install the copilot-server by running the command
-;; M-x copilot-install-server
-(add-to-list 'load-path "~/.emacs.d/pkg/copilot.el")
 (require 'copilot)
-
 ;; keybindings that are active when copilot shows completions
 (define-key copilot-mode-map (kbd "C-M-<next>") #'copilot-next-completion)
 (define-key copilot-mode-map (kbd "C-M-<prior>") #'copilot-previous-completion)
@@ -971,8 +944,10 @@ cleared, make sure the overlay doesn't come back too soon."
 ;; (setq gptel-api-key (smv/gptel-api-key))
 
 (use-package youdotcom
-    :bind ("C-c y" . youdotcom-enter))
-(setq youdotcom-rag-api-key "")
+    :bind
+    ("C-c y" . youdotcom-enter)
+    :config
+    (setq youdotcom-rag-api-key ""))
 
 (use-package projectile
   :diminish projectile-mode
@@ -992,9 +967,9 @@ cleared, make sure the overlay doesn't come back too soon."
   :config (counsel-projectile-mode))
 
 (use-package magit
-:commands magit-status
-:custom
-(magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+    :commands magit-status
+    :custom
+    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
   
 (setq gc-const-threshold (* 2 1000 1000))
