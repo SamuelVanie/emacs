@@ -96,7 +96,9 @@
             :repo "emacs-eaf/emacs-application-framework"           
             :files ("*.el" "*.py" "core" "app" "*.json")
             :includes (eaf-pdf-viewer eaf-browser) ; Straight won't try to search for these packages when we make further use-package invocations for them
-            :init (evil-set-initial-state 'eaf-mode 'emacs)))
+            :init (evil-set-initial-state 'eaf-mode 'emacs))
+:bind
+("C-c n" . eaf-open-browser))
 
 (use-package eaf-browser
     :custom

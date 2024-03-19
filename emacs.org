@@ -92,7 +92,6 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
     (dashboard-setup-startup-hook))
 
 (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
-
 #+END_SRC
 
 
@@ -144,7 +143,9 @@ On arch-linux I did install =python-pyqt6-webengine= and =python-pyqt6= using pa
             :repo "emacs-eaf/emacs-application-framework"           
             :files ("*.el" "*.py" "core" "app" "*.json")
             :includes (eaf-pdf-viewer eaf-browser) ; Straight won't try to search for these packages when we make further use-package invocations for them
-            :init (evil-set-initial-state 'eaf-mode 'emacs)))
+            :init (evil-set-initial-state 'eaf-mode 'emacs))
+:bind
+("C-c n" . eaf-open-browser))
 
 (use-package eaf-browser
     :custom
