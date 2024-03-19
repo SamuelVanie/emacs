@@ -129,6 +129,32 @@ We use the no-littering package to keep folders where we edit files and the Emac
 #+end_src
 
 
+
+* Browser and pdf viewer
+
+To not be disrupted in my workflow I decided to use a built-in browser that has some javascript integration. (never leave emacs)
+If dependency cause problems just check that you don't have any other old version of the dependencies and delete them. And try installing them again.
+On arch-linux I did install =python-pyqt6-webengine= and =python-pyqt6= using pacman.
+
+#+begin_src emacs-lisp
+(use-package eaf
+:straight (eaf
+            :type git
+            :host github
+            :repo "emacs-eaf/emacs-application-framework"           
+            :files ("*.el" "*.py" "core" "app" "*.json")
+            :includes (eaf-pdf-viewer eaf-browser) ; Straight won't try to search for these packages when we make further use-package invocations for them
+            :pre-build (("python" "install-eaf.py" "--install" "pdf-viewer" "browser" "--ignore-sys-deps"))))
+
+(use-package eaf-browser
+    :custom
+    (eaf-browser-continue-where-left-off t)
+    (eaf-browser-enable-adblocker t))
+
+(use-package eaf-pdf-viewer)
+#+end_src
+
+
 * Shell
 
 ** Eshell Ouptut format

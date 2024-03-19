@@ -89,6 +89,22 @@
     (treesit-auto-add-to-auto-mode-alist 'all)
     (global-treesit-auto-mode))
 
+(use-package eaf
+:straight (eaf
+            :type git
+            :host github
+            :repo "emacs-eaf/emacs-application-framework"           
+            :files ("*.el" "*.py" "core" "app" "*.json")
+            :includes (eaf-pdf-viewer eaf-browser) ; Straight won't try to search for these packages when we make further use-package invocations for them
+            :pre-build (("python" "install-eaf.py" "--install" "pdf-viewer" "browser" "--ignore-sys-deps"))))
+
+(use-package eaf-browser
+    :custom
+    (eaf-browser-continue-where-left-off t)
+    (eaf-browser-enable-adblocker t))
+
+(use-package eaf-pdf-viewer)
+
 (require 'em-smart)
 (setq eshell-where-to-jump 'begin)
 (setq eshell-review-quick-commands nil)
