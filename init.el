@@ -96,7 +96,7 @@
             :repo "emacs-eaf/emacs-application-framework"           
             :files ("*.el" "*.py" "core" "app" "*.json")
             :includes (eaf-pdf-viewer eaf-browser) ; Straight won't try to search for these packages when we make further use-package invocations for them
-            :pre-build (("python" "install-eaf.py" "--install" "pdf-viewer" "browser" "--ignore-sys-deps"))))
+            :init (evil-set-initial-state 'eaf-mode 'emacs)))
 
 (use-package eaf-browser
     :custom
@@ -578,17 +578,6 @@
 
     (smv/org-font-setup)
     (global-set-key (kbd "C-c a") 'org-agenda))
-
-(use-package org-notify
-    :ensure nil
-    :after org
-    :config
-    (org-notify-start)
-
-    (org-notify-add 'default
-            '(:time "1d" :period "30m" :duration 50 :actions -notify)
-            '(:time "2d" :period "50m" :duration 40 :actions -notify)
-            '(:time "3d" :period "1h" :duration 20 :actions -notify)))
 
 (use-package org-fragtog
     :hook (org-mode-hook . org-fragtog-mode))
