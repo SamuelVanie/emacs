@@ -20,15 +20,15 @@
 
 ;; to scroll down inside the popup
 (define-key global-map (kbd "C-M-'")
-    (lambda ()
-    (interactive)
-    (scroll-other-window 2)))
+            (lambda ()
+            (interactive)
+            (scroll-other-window 2)))
 
 ;; to scroll up side the popup
 (define-key global-map (kbd "C-M-\"")
- (lambda ()
-  (interactive)
-  (scroll-other-window-down 2)))
+            (lambda ()
+            (interactive)
+            (scroll-other-window-down 2)))
 
 ;; Initialize package sources
 (require 'package)
@@ -36,27 +36,27 @@
 (require 'dired-x)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                            ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-                            ("elpa" . "https://elpa.gnu.org/packages/")))
+                        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+                        ("elpa" . "https://elpa.gnu.org/packages/")))
 
 (package-initialize)
 (unless package-archive-contents
-    (package-refresh-contents))
+(package-refresh-contents))
 
 
 ;; straight.el section
 (defvar bootstrap-version)
 (let ((bootstrap-file
-      (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
-  (unless (file-exists-p bootstrap-file)
+        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+    (bootstrap-version 5))
+(unless (file-exists-p bootstrap-file)
     (with-current-buffer
         (url-retrieve-synchronously
         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
+    (goto-char (point-max))
+    (eval-print-last-sexp)))
+(load bootstrap-file nil 'nomessage))
 
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
@@ -66,14 +66,14 @@
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
 (use-package dashboard
-    :config
-    (dashboard-setup-startup-hook))
+:config
+(dashboard-setup-startup-hook))
 
 (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
 
 ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
 ;; reliably, set `user-emacs-directory` before loading no-littering!
-;(setq user-emacs-directory "~/.cache/emacs")
+                                        ;(setq user-emacs-directory "~/.cache/emacs")
 
 (use-package no-littering)
 
@@ -89,23 +89,21 @@
     (treesit-auto-add-to-auto-mode-alist 'all)
     (global-treesit-auto-mode))
 
-(use-package eaf
-:straight (eaf
-            :type git
-            :host github
-            :repo "emacs-eaf/emacs-application-framework"           
-            :files ("*.el" "*.py" "core" "app" "*.json")
-            :includes (eaf-pdf-viewer eaf-browser) ; Straight won't try to search for these packages when we make further use-package invocations for them
-            :init (evil-set-initial-state 'eaf-mode 'emacs))
-:bind
-("C-c n" . eaf-open-browser))
+(use-package drag-stuff
+  :after hydra
+  :init
+  (drag-stuff-global-mode 1)
+  :config
+  (defhydra hydra-move-around (:timeout 3)
+    "Move things around"
+    ("h" drag-stuff-left "drag-stuff-left")
+    ("l" drag-stuff-right "drag-stuff-right")
+    ("j" drag-stuff-down "drag-stuff-down")
+    ("k" drag-stuff-up "drag-stuff-up")
+    ("f" nil "finished" :exit t))
 
-(use-package eaf-browser
-    :custom
-    (eaf-browser-continue-where-left-off t)
-    (eaf-browser-enable-adblocker t))
-
-(use-package eaf-pdf-viewer)
+  (smv/leader-keys
+    "m" '(hydra-move-around/body :which-key "move around")))
 
 (require 'em-smart)
 (setq eshell-where-to-jump 'begin)
@@ -121,9 +119,9 @@
     :bind ("C-x C-z" . eshell-toggle))
 
 (defun kill-all-buffers ()
-  "Kill all buffers without asking for confirmation."
-  (interactive)
-  (dolist (buffer (buffer-list))
+"Kill all buffers without asking for confirmation."
+(interactive)
+(dolist (buffer (buffer-list))
     (kill-buffer buffer)))
 
 (global-set-key (kbd "C-c k a") 'kill-all-buffers)
@@ -152,9 +150,9 @@
 
 ;; some modes doesn't have to start with lines enable
 (dolist (mode '(org-mode-hook
-            term-mode-hook
-            shell-mode-hook
-            eshell-mode-hook))
+                term-mode-hook
+                shell-mode-hook
+                eshell-mode-hook))
 (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 ;; Change the font size (139) according to your screen
@@ -163,9 +161,9 @@
  '(variable-pitch ((t (:weight light :height 139 :family "JetbrainsMono Nerd Font")))))
 
 (use-package ligature
-    :config
-    ;; Enable all JetBrains Mono ligatures in programming modes
-    (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
+:config
+;; Enable all JetBrains Mono ligatures in programming modes
+(ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
                                         "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
                                         "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
                                         "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
@@ -176,79 +174,105 @@
                                         "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
                                         "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
                                         "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
-    ;; Enables ligature checks globally in all buffers. You can also do it
-    ;; per mode with `ligature-mode'.
-    (global-ligature-mode t))
+;; Enables ligature checks globally in all buffers. You can also do it
+;; per mode with `ligature-mode'.
+(global-ligature-mode t))
 
 (use-package rainbow-delimiters
-	     :hook (prog-mode . rainbow-delimiters-mode))
+    :hook (prog-mode . rainbow-delimiters-mode))
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 (use-package general ;; for setting keybindings
-    :config
-    (general-create-definer smv/leader-keys
-        :keymaps '(normal visual emacs)
-        :prefix "SPC"
-        :global-prefix "SPC")
+:config
+(general-create-definer smv/leader-keys
+    :keymaps '(normal visual emacs)
+    :prefix "SPC"
+    :global-prefix "SPC")
 
-    (smv/leader-keys
-        "t" '(:ignore t :which-key "toggles")
-        "tt" '(counsel-load-theme :which-key "choose theme")))
+(smv/leader-keys
+    "t" '(:ignore t :which-key "toggles")
+    "tt" '(counsel-load-theme :which-key "choose theme")))
+
+;; hydra permit to repeat a command easily without repeating the keybindings multiple times
+(use-package hydra)
 
 ;; Activate vim keybindings inside of emacs
 (use-package evil
-    :init
-    (setq evil-want-integration t)
-    (setq evil-want-keybinding nil)
-    (setq evil-want-C-u-scroll nil)
-    (setq evil-want-C-d-scroll nil)
-    (setq evil-v$-excludes-newline t)
-    (setq evil-respect-visual-line-mode t)
-    (setq evil-undo-system 'undo-redo)
-    (setq evil-want-C-i-jump nil)
-    :config
-    (evil-mode 1)
-    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-    (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
+:init
+(setq evil-want-integration t)
+(setq evil-want-keybinding nil)
+(setq evil-want-C-u-scroll nil)
+(setq evil-want-C-d-scroll nil)
+(setq evil-v$-excludes-newline t)
+(setq evil-respect-visual-line-mode t)
+(setq evil-undo-system 'undo-redo)
+(setq evil-want-C-i-jump nil)
+:config
+(evil-mode 1)
+(define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+(define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
 
-    (define-key evil-insert-state-map (kbd "C-n") nil)
-    (define-key evil-insert-state-map (kbd "C-p") nil)
+(define-key evil-insert-state-map (kbd "C-n") nil)
+(define-key evil-insert-state-map (kbd "C-p") nil)
 
-    (define-key evil-normal-state-map (kbd "C-n") nil)
-    (define-key evil-normal-state-map (kbd "C-p") nil)
+(define-key evil-normal-state-map (kbd "C-n") nil)
+(define-key evil-normal-state-map (kbd "C-p") nil)
 
-    (define-key evil-normal-state-map (kbd "C-u") 'evil-jump-forward)
+(define-key evil-normal-state-map (kbd "C-u") 'evil-jump-forward)
 
-    (define-key evil-visual-state-map (kbd "C-n") nil)
-    (define-key evil-visual-state-map (kbd "C-p") nil)
+(define-key evil-visual-state-map (kbd "C-n") nil)
+(define-key evil-visual-state-map (kbd "C-p") nil)
 
-    (define-key evil-visual-state-map (kbd "C-a") nil)
-    (define-key evil-normal-state-map (kbd "C-a") nil)
-    (define-key evil-insert-state-map (kbd "C-a") nil)
+(define-key evil-visual-state-map (kbd "C-a") nil)
+(define-key evil-normal-state-map (kbd "C-a") nil)
+(define-key evil-insert-state-map (kbd "C-a") nil)
 
-    (define-key evil-visual-state-map (kbd "C-e") nil)
-    (define-key evil-normal-state-map (kbd "C-e") nil)
-    (define-key evil-insert-state-map (kbd "C-e") nil)
+(define-key evil-visual-state-map (kbd "C-e") nil)
+(define-key evil-normal-state-map (kbd "C-e") nil)
+(define-key evil-insert-state-map (kbd "C-e") nil)
 
-    (define-key evil-visual-state-map (kbd "C-d") nil)
-    (define-key evil-normal-state-map (kbd "C-d") nil)
-    (define-key evil-insert-state-map (kbd "C-d") nil)
+(define-key evil-visual-state-map (kbd "C-d") nil)
+(define-key evil-normal-state-map (kbd "C-d") nil)
+(define-key evil-insert-state-map (kbd "C-d") nil)
 
-    (evil-set-initial-state 'messages-buffer-mode 'normal)
-    (evil-set-initial-state 'dashboard-mode 'normal))
+(evil-set-initial-state 'messages-buffer-mode 'normal)
+(evil-set-initial-state 'dashboard-mode 'normal))
 
 
 ;; Add evil-keybindings to more modes inside of emacs
 (use-package evil-collection
-    :after evil
-    :config
-    (evil-collection-init))
+:after evil
+:config
+(evil-collection-init))
 
 
 (use-package evil-surround
-    :config
-    (global-evil-surround-mode 1))
+:config
+(global-evil-surround-mode 1))
+
+(use-package ace-jump-mode
+  :bind
+  ("C-c SPC" . ace-jump-mode))
+
+(use-package eaf
+    :demand t
+    :straight (eaf
+            :type git
+            :host github
+            :repo "emacs-eaf/emacs-application-framework"           
+            :files ("*.el" "*.py" "core" "app" "*.json")
+            :includes (eaf-pdf-viewer eaf-browser))
+    :bind ("C-c n" . eaf-open-browser-with-history))
+
+(add-hook #'eaf-mode-hook #'turn-off-evil-mode nil)
+
+(use-package eaf-browser
+    :custom
+    (eaf-browser-continue-where-left-off t)
+    (eaf-browser-enable-adblocker t))
+
+(use-package eaf-pdf-viewer)
 
 (use-package vterm)
 
@@ -466,8 +490,6 @@
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
 
-(use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple times
-
 (defhydra hydra-text-scale (:timeout 3)
   "scalte text"
   ("j" text-scale-increase "in")
@@ -655,7 +677,6 @@
     (lsp-ui-doc-position 'at-point)
     (lsp-ui-doc-enable t)
     (lsp-ui-sideline-show-diagnostics t)
-    (lsp-ui-sideline-show-hover t)
     :bind
     (:map evil-normal-state-map ("H" . lsp-ui-doc-toggle))
     :config
