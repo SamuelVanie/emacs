@@ -814,6 +814,7 @@
     (require 'dap-cpptools)
     (dap-cpptools-setup))
 
+(require 'dap-gdb-lldb)
 ;; set the linter to clippy
 (setq lsp-rust-analyzer-cargo-wath-command "clippy")
 

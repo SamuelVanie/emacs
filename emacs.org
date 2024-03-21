@@ -1199,6 +1199,7 @@ To do so just run the ~lsp-install-server~ command in your M-x prompt then insta
     (require 'dap-cpptools)
     (dap-cpptools-setup))
 
+(require 'dap-gdb-lldb)
 ;; set the linter to clippy
 (setq lsp-rust-analyzer-cargo-wath-command "clippy")
 #+end_src
