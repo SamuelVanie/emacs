@@ -62,6 +62,7 @@
 (setq straight-use-package-by-default t)
 
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
+(add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
 
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
@@ -89,6 +90,23 @@
     (treesit-auto-add-to-auto-mode-alist 'all)
     (global-treesit-auto-mode))
 
+(use-package drag-stuff
+    :after hydra
+    :init
+    (drag-stuff-global-mode 1)
+    :config
+
+    (defhydra hydra-move-around (:timeout 3)
+        "Move things around"
+        ("h" drag-stuff-left "drag-stuff-left")
+        ("l" drag-stuff-right "drag-stuff-right")
+        ("j" drag-stuff-down "drag-stuff-down")
+        ("k" drag-stuff-up "drag-stuff-up")
+        ("f" nil "finished" :exit t))
+
+    (smv/leader-keys
+        "m" '(hydra-move-around/body :which-key "move around")))
+
 (require 'em-smart)
 (setq eshell-where-to-jump 'begin)
 (setq eshell-review-quick-commands nil)
@@ -96,7 +114,7 @@
 (setq eshell-list-files-after-cd t)
 
 ;; Watch out you should have fish installed on your computer
-(setq-default explicit-shell-file-name "/usr/bin/fish")
+(setq-default explicit-shell-file-name "/opt/homebrew/bin/fish")
 (setq eshell-aliases-file "~/.emacs.d/aliases")
 
 (use-package eshell-toggle
@@ -130,7 +148,7 @@
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 ;; Set frame font
-(add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font"))
+(add-to-list 'default-frame-alist '(font . "DaddyTimeMono Nerd Font Mono"))
 
 ;; some modes doesn't have to start with lines enable
 (dolist (mode '(org-mode-hook
@@ -138,11 +156,6 @@
             shell-mode-hook
             eshell-mode-hook))
 (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
-;; Change the font size (139) according to your screen
-(custom-set-faces
- '(fixed-pitch ((t (:height 139 :family "DaddyTimeMono Nerd Font"))))
- '(variable-pitch ((t (:weight light :height 139 :family "JetbrainsMono Nerd Font")))))
 
 (use-package ligature
     :config
@@ -176,7 +189,14 @@
 
     (smv/leader-keys
         "t" '(:ignore t :which-key "toggles")
-        "tt" '(counsel-load-theme :which-key "choose theme")))
+        "tt" '(counsel-load-theme :which-key "choose theme"))
+    
+)
+
+(use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple times
+
+
+;; hydra demonstration will permit me to move things around 
 
 ;; Activate vim keybindings inside of emacs
 (use-package evil
@@ -232,6 +252,30 @@
     :config
     (global-evil-surround-mode 1))
 
+(use-package ace-jump-mode
+  :bind
+  ("C-c SPC" . ace-jump-mode))
+
+(use-package eaf
+:demand t
+:straight (eaf
+            :type git
+            :host github
+            :repo "emacs-eaf/emacs-application-framework"           
+            :files ("*.el" "*.py" "core" "app" "*.json")
+            :config (add-hook 'eaf-mode-hook #'turn-off-evil-mode nil)
+            :includes (eaf-pdf-viewer eaf-browser))
+:bind
+("C-c n" . eaf-open-browser-with-history)
+("C-c 4 n" . eaf-open-browser-other-window))
+
+(use-package eaf-browser
+    :custom
+    (eaf-browser-continue-where-left-off t)
+    (eaf-browser-enable-adblocker t))
+
+(use-package eaf-pdf-viewer)
+
 (use-package vterm)
 
 (use-package multi-vterm
@@ -277,6 +321,15 @@
 
 (use-package all-the-icons
     :if (display-graphic-p))
+
+(use-package all-the-icons-ivy
+  :after all-the-icons)
+
+(use-package all-the-icons-dired
+  :after all-the-icons)
+
+(use-package all-the-icons-nerd-fonts
+  :after all-the-icons)
 
 (use-package doom-modeline
     :init (doom-modeline-mode 1)
@@ -329,114 +382,6 @@
   ;(prescient-persist-mode 1)
   (ivy-prescient-mode 1))
 
-(use-package treemacs
-:defer t
-:init
-(with-eval-after-load 'winum
-    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
-:config
-(progn
-    (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
-        treemacs-deferred-git-apply-delay        0.5
-        treemacs-directory-name-transformer      #'identity
-        treemacs-display-in-side-window          t
-        treemacs-eldoc-display                   'simple
-        treemacs-file-event-delay                2000
-        treemacs-file-extension-regex            treemacs-last-period-regex-value
-        treemacs-file-follow-delay               0.2
-        treemacs-file-name-transformer           #'identity
-        treemacs-follow-after-init               t
-        treemacs-expand-after-init               t
-        treemacs-find-workspace-method           'find-for-file-or-pick-first
-        treemacs-git-command-pipe                ""
-        treemacs-goto-tag-strategy               'refetch-index
-        treemacs-header-scroll-indicators        '(nil . "^^^^^^")
-        treemacs-hide-dot-git-directory          t
-        treemacs-indentation                     2
-        treemacs-indentation-string              " "
-        treemacs-is-never-other-window           nil
-        treemacs-max-git-entries                 5000
-        treemacs-missing-project-action          'ask
-        treemacs-move-forward-on-expand          nil
-        treemacs-no-png-images                   nil
-        treemacs-no-delete-other-windows         t
-        treemacs-project-follow-cleanup          nil
-        treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-        treemacs-position                        'left
-        treemacs-read-string-input               'from-child-frame
-        treemacs-recenter-distance               0.1
-        treemacs-recenter-after-file-follow      nil
-        treemacs-recenter-after-tag-follow       nil
-        treemacs-recenter-after-project-jump     'always
-        treemacs-recenter-after-project-expand   'on-distance
-        treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask" "/target")
-        treemacs-project-follow-into-home        nil
-        treemacs-show-cursor                     nil
-        treemacs-show-hidden-files               t
-        treemacs-silent-filewatch                nil
-        treemacs-silent-refresh                  nil
-        treemacs-sorting                         'alphabetic-asc
-        treemacs-select-when-already-in-treemacs 'move-back
-        treemacs-space-between-root-nodes        t
-        treemacs-tag-follow-cleanup              t
-        treemacs-tag-follow-delay                1.5
-        treemacs-text-scale                      nil
-        treemacs-user-mode-line-format           nil
-        treemacs-user-header-line-format         nil
-        treemacs-wide-toggle-width               70
-        treemacs-width                           35
-        treemacs-width-increment                 1
-        treemacs-width-is-initially-locked       t
-        treemacs-workspace-switch-cleanup        nil)
-
-    ;; The default width and height of the icons is 22 pixels. If you are
-    ;; using a Hi-DPI display, uncomment this to double the icon size.
-    ;;(treemacs-resize-icons 44)
-
-    (treemacs-follow-mode t)
-    (treemacs-filewatch-mode t)
-    (treemacs-fringe-indicator-mode 'always)
-
-    (pcase (cons (not (null (executable-find "git")))
-                (not (null treemacs-python-executable)))
-    (`(t . t)
-        (treemacs-git-mode 'deferred))
-    (`(t . _)
-        (treemacs-git-mode 'simple)))
-
-    (treemacs-hide-gitignored-files-mode nil))
-    :bind
-    (:map global-map
-            ("M-0"       . treemacs-select-window)
-            ("C-x t 1"   . treemacs-delete-other-windows)
-            ("C-x t t"   . treemacs)
-            ("C-x t d"   . treemacs-select-directory)
-            ("C-x t B"   . treemacs-bookmark)
-            ("C-x t C-t" . treemacs-find-file)
-            ("C-x t M-t" . treemacs-find-tag)))
-
-(use-package treemacs-evil
-    :after (treemacs evil))
-
-(use-package treemacs-projectile
-    :after (treemacs projectile))
-
-(use-package treemacs-all-the-icons)
-
-(use-package treemacs-icons-dired
-    :hook (dired-mode . treemacs-icons-dired-enable-once))
-
-(use-package treemacs-magit
-    :after (treemacs magit))
-
-(use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
-    :after (treemacs persp-mode) ;;or perspective vs. persp-mode
-    :config (treemacs-set-scope-type 'Perspectives))
-
-(use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
-    :after (treemacs)
-    :config (treemacs-set-scope-type 'Tabs))
-
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
   :custom
@@ -447,8 +392,6 @@
   ([remap describe-command] . helpful-command)
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
-
-(use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple times
 
 (defhydra hydra-text-scale (:timeout 3)
   "scalte text"
@@ -476,7 +419,7 @@
                         (org-level-6 . 1.1)
                         (org-level-7 . 1.1)
                         (org-level-8 . 1.1)))
-        (set-face-attribute (car face) nil :font "VictorMono" :weight 'regular :height (cdr face)))
+        (set-face-attribute (car face) nil :font "Chalkboard" :weight 'regular :height (cdr face)))
         ;; Ensure that anything that should be fixed-pitch in Org files appears that way
         (set-face-attribute 'org-block nil    :inherit 'fixed-pitch)
         (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
@@ -563,17 +506,6 @@
     (smv/org-font-setup)
     (global-set-key (kbd "C-c a") 'org-agenda))
 
-(use-package org-notify
-    :ensure nil
-    :after org
-    :config
-    (org-notify-start)
-
-    (org-notify-add 'default
-            '(:time "1d" :period "30m" :duration 50 :actions -notify)
-            '(:time "2d" :period "50m" :duration 40 :actions -notify)
-            '(:time "3d" :period "1h" :duration 20 :actions -notify)))
-
 (use-package org-fragtog
     :hook (org-mode-hook . org-fragtog-mode))
 
@@ -618,7 +550,7 @@
 ;; Automatically tangle our Emacs.org config file when we save it
 (defun smv/org-babel-tangle-config ()
   (when (string-equal (buffer-file-name)
-                      (expand-file-name "~/.emacs.d/emacs.org"))
+                      (expand-file-name "~/.config/emacs/emacs.org"))
     ;; Dynamic scoping to the rescue
     (let ((org-confirm-babel-evaluate nil))
       (org-babel-tangle))))
@@ -648,17 +580,11 @@
     (lsp-ui-doc-position 'at-point)
     (lsp-ui-doc-enable t)
     (lsp-ui-sideline-show-diagnostics t)
-    (lsp-ui-sideline-show-hover t)
     :bind
     (:map evil-normal-state-map ("H" . lsp-ui-doc-toggle))
     :config
     (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
     (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))
-
-(use-package lsp-treemacs
-  :after lsp)
-
-(use-package lsp-ivy)
 
 (use-package flycheck)
 
@@ -762,9 +688,9 @@
     (add-hook 'java-mode-hook 'lsp)
     ;; current VSCode defaults for quick load
     (setq lsp-java-configuration-runtimes '[(:name "openjdk-17"
-                        :path "/usr/lib/jvm/java-17-openjdk/")
+                        :path "/opt/homebrew/Cellar/openjdk@17/17.0.10/libexec/openjdk.jdk/Contents/Home")
                     (:name "openjdk-21"
-                        :path "/usr/lib/jvm/java-21-openjdk/"
+                        :path "/opt/homebrew/Cellar/openjdk/21.0.2/libexec/openjdk.jdk/Contents/Home"
                     :default t)]))
 
 (require 'lsp-java-boot)
@@ -799,13 +725,17 @@
 (use-package lsp-dart
     :hook
     (dart-mode . lsp)
-    :config
-    (setq lsp-dart-sdk-dir "/home/vanieb/development/flutter/bin/cache/dart-sdk")
-    (setq lsp-dart-flutter-sdk "/home/vanieb/development/flutter")
-    (setq flutter-sdk-path "/home/vanieb/development/flutter"))
+    ;;:config
+    ;;(setq lsp-dart-sdk-dir "/home/vanieb/development/flutter/bin/cache/dart-sdk")
+    ;;(setq lsp-dart-flutter-sdk "/home/vanieb/development/flutter")
+    ;;(setq flutter-sdk-path "/home/vanieb/development/flutter")
+)
 
 (use-package company
     :after lsp-mode
+    :bind
+    (:map company-mode
+        ("M-o" . company-manual-begin))
     :hook (lsp-mode . company-mode)
     :custom
     (company-minimum-prefix-length 1)
@@ -817,7 +747,7 @@
 
 (use-package company-tabnine
     :config
-    (add-to-list 'company-backends #'company-tabnine))
+    (add-to-list 'company-backends #'company-tabnine t))
 
 (use-package docker
     :bind ("C-c d" . docker))
@@ -913,6 +843,9 @@ cleared, make sure the overlay doesn't come back too soon."
                             :files ("dist" "*.el")))
 
 (require 'copilot)
+
+(setq copilot-node-executable "/opt/homebrew/bin/node")
+
 ;; keybindings that are active when copilot shows completions
 (define-key copilot-mode-map (kbd "C-M-<next>") #'copilot-next-completion)
 (define-key copilot-mode-map (kbd "C-M-<prior>") #'copilot-previous-completion)
