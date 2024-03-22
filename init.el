@@ -328,9 +328,6 @@
 (use-package all-the-icons-dired
   :after all-the-icons)
 
-(use-package all-the-icons-nerd-fonts
-  :after all-the-icons)
-
 (use-package doom-modeline
     :init (doom-modeline-mode 1)
     :custom ((doom-modeline-height 15)))
@@ -858,10 +855,6 @@ cleared, make sure the overlay doesn't come back too soon."
 
 ;;Do copilot-quit when pressing C-g
 (advice-add 'keyboard-quit :before #'rk/copilot-quit)
-
-;; complete by pressing right or tab but only when copilot completions are
-;; ;; shown. This means we leave the normal functionality intact.
-(advice-add 'right-char :around #'rk/copilot-complete-if-active)
 
 ;; ;; deactivate copilot for certain modes
 (add-to-list 'copilot-enable-predicates #'rk/copilot-enable-predicate)
