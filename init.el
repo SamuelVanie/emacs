@@ -33,7 +33,6 @@
 ;; Initialize package sources
 (require 'package)
 (require 'cl)
-(require 'dired-x)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                             ("nongnu" . "https://elpa.nongnu.org/nongnu/")
@@ -60,6 +59,12 @@
 
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
+
+(use-package dired-x
+  :straight nil
+  :after all-the-icons
+  :hook ((dired-mode-hook . dired-hide-details-mode)
+         (dired-mode-hook . all-the-icons-dired-mode)))
 
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
 (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
@@ -357,7 +362,7 @@
   (ivy-mode 1))
 
 (use-package ivy-rich
-  :after ivy
+  :after (ivy counsel)
   :init
   (ivy-rich-mode 1))
 
