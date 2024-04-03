@@ -7,7 +7,7 @@ Declare some of my variables for my global configuration
 
 #+BEGIN_SRC emacs-lisp
 ;; Making lsp more responsive
-(setq gc-const-threshold 100000000)
+(setq gc-const-threshold (* 80 1000 1000))
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 
 ;; remove noise for not non allowed command in emacs if your system make them
@@ -312,6 +312,7 @@ evil-collection permit to activate automatically evil-mode in multiple emacs pac
 
       (define-key evil-normal-state-map (kbd "C-n") nil)
       (define-key evil-normal-state-map (kbd "C-p") nil)
+      (define-key evil-normal-state-map (kbd "Q") nil)
 
       (define-key evil-normal-state-map (kbd "C-u") 'evil-jump-forward)
 
@@ -352,8 +353,11 @@ Quickly move horizontaly on the screen.
 
 #+begin_src emacs-lisp
 (use-package ace-jump-mode
-  :bind
-  ("C-c SPC" . ace-jump-mode))
+    :after evil
+    :bind
+    ("C-c SPC" . ace-jump-mode)
+    :config
+    (define-key evil-normal-state-map (kbd "Q") 'ace-jump-mode))
 #+end_src
 
 * Browser and pdf viewer
@@ -811,54 +815,18 @@ To help me comment code region quickly I set up this keyboard shortcut. The func
 
 ** Languages
 
-*** IDE Features with lsp-mode
+*** IDE Features with eglot-mode
 
 Language server configuration for programming part.
+eglot is installed by default so just chill and be happy with it.
 I use some useful lsp packages with downloaded languages server for my programming journey.
-
-**** lsp-mode
-
-#+begin_src emacs-lisp
-
-(defun efs/lsp-mode-setup ()
-(setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-(lsp-headerline-breadcrumb-mode))
-
-(use-package lsp-mode
-    :commands (lsp lsp-deferred)
-    :hook (lsp-mode . efs/lsp-mode-setup)
-    :init
-    (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
-    :config
-    (lsp-enable-which-key-integration t)
-    ;; only watch over the current project directory files
-    (setq lsp-file-watch-ignored-directories (list (rx-to-string `(and (or bos "/" (and "/home" (* any)) "/") (not (any ".")))
-                                            'no-group))))
-
-#+end_src
-
-**** lsp-ui
-
-#+begin_src emacs-lisp
-(use-package lsp-ui
-    :hook (lsp-mode . lsp-ui-mode)
-    :custom
-    (lsp-ui-doc-position 'at-point)
-    (lsp-ui-doc-enable t)
-    (lsp-ui-sideline-show-diagnostics t)
-    :bind
-    (:map evil-normal-state-map ("H" . lsp-ui-doc-toggle))
-    :config
-    (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-    (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))
-#+end_src
 
 **** flycheck
 
 Show error on fly with flycheck package
 
 #+begin_src emacs-lisp
-(use-package flycheck)
+(use-package flycheck-eglot)
 #+end_src
 
 
@@ -884,38 +852,6 @@ Mode for yaml configuration files editing.
 #+end_src
 
 
-*** Debugging with dap-mode
-
-Dap-mode is the debugger mode. It goes with lsp-mode
-
-#+begin_src emacs-lisp
-(use-package dap-mode
-    :after
-    lsp-mode
-    :bind (:map dap-mode-map
-            ("<f5>" . dap-debug)
-            ("<f9>" . dap-breakpoint-toggle)
-            ("C-<f9>" . dap-breakpoint-condition)
-            ("M-<f9>" . dap-breakpoint-log-message)
-            ("<f10>" . dap-next)
-            ("<f11>" . dap-step-in)
-            ("S-<f11>" . dap-step-out)
-            ("<f12>" . dap-ui-inspect-thing-at-point)
-            ("C-<f5>" . dap-stop-thread)
-            ("S-<f5>" . dap-restart-frame)
-            :map dap-ui-repl-mode-map
-            ("C-<f5>" . dap-stop-thread)
-            ("S-<f5>" . dap-restart-frame)
-            ("<f12>" . dap-ui-inspect-thing-at-point))
-    :config
-    (dap-auto-configure-mode)
-    (evil-define-key 'normal dap-mode-map (kbd "K") #'dap-tooltip-at-point)
-    :hook (dap-stopped . (lambda (arg) (call-interactively #'dap-hydra)))
-)
-
-(require 'dap-cpptools)
-#+end_src
-
 
 *** Web Programming
 
@@ -930,8 +866,6 @@ Emmet mode allors you to easily expand html and css abbreviations for instance i
 **** Web-mode
 
 The useful web mode for programming.
-I use firefox as my browser so I install dap-firefox to quickly debug my javascript code inside this browser.
-Check the documentation for your browser : [[https://emacs-lsp.github.io/dap-mode/page/configuration/][lsp configuration]]
 
 #+begin_src emacs-lisp
 
@@ -953,13 +887,7 @@ Check the documentation for your browser : [[https://emacs-lsp.github.io/dap-mod
     (web-mode . smv/web-mode-hook)
     (web-mode . emmet-mode)
     (web-mode . prettier-mode)
-    (web-mode . lsp-deferred)
-    :config
-    (require 'dap-firefox)
-    (dap-firefox-setup)
 )
-
-(setq dap-firefox-debug-program '("node" "/home/vanieb/.emacs.d/var/dap/extensions/vscode/firefox-devtools.vscode-firefox-debug/extension/dist/adapter.bundle.js"))
 
 (add-hook 'web-mode-before-auto-complete-hooks
     '(lambda ()
@@ -983,8 +911,7 @@ Check the documentation for your browser : [[https://emacs-lsp.github.io/dap-mod
             ("\\.ts\\'" . rjsx-mode))
   :hook
   (rjsx-mode . emmet-mode)
-  (rjsx-mode . prettier-mode)
-  (rjsx-mode . lsp-deferred))
+  (rjsx-mode . prettier-mode))
 #+end_src
 
 **** prettier
@@ -997,19 +924,14 @@ Prettier automatically formats the code for you. I hate when it's in other modes
 
 *** TypeScript
 
-Typescript configuration in lsp.
 You will need to install typescript-language-server with `npm install -g typescript-language-server typescript` .
 
 #+begin_src emacs-lisp
 
 (use-package typescript-mode
     :mode "\\.ts\\'"
-    :hook (typescript-mode . lsp-deferred)
     :config
-    (setq typescript-indent-level 2)
-    (require 'dap-node)
-    (dap-node-setup))
-
+    (setq typescript-indent-level 2))
 #+end_src
 
 *** PHP
@@ -1018,34 +940,18 @@ Installing PHP
 
 #+begin_src emacs-lisp
 (use-package php-mode
-  :mode "\\.php\\'"
-  )
+:hook (php-mode . eglot-ensure)
+:mode "\\.php\\'")
 #+end_src
 
 
-*** C#
-
-Installing csharp lsp functionnality. The csharp-mode is part of the core emacs.
-To do so just run the ~lsp-install-server~ command in your M-x prompt then install the ~csharp-lsp~ server.
-
 *** JAVA
 
+You would have to set the path to JDTserver
+
 #+begin_src emacs-lisp
-(use-package lsp-java
-    :config
-    (add-hook 'java-mode-hook 'lsp)
-    ;; current VSCode defaults for quick load
-    (setq lsp-java-configuration-runtimes '[(:name "openjdk-17"
-                        :path "/opt/homebrew/Cellar/openjdk@17/17.0.10/libexec/openjdk.jdk/Contents/Home")
-                    (:name "openjdk-21"
-                        :path "/opt/homebrew/Cellar/openjdk/21.0.2/libexec/openjdk.jdk/Contents/Home"
-                    :default t)]))
-
-(require 'lsp-java-boot)
-
-;; to enable the lenses
-(add-hook 'lsp-mode-hook #'lsp-lens-mode)
-(add-hook 'java-mode-hook #'lsp-java-boot-lens-mode)
+(use-package eglot-java
+    :after eglot)
 #+end_src
 
 *** R
@@ -1060,16 +966,11 @@ To do so just run the ~lsp-install-server~ command in your M-x prompt then insta
 (use-package rust-mode)
 
 (use-package rust-ts-mode
-    :mode "\\.rs\\'"
-    :bind-keymap
-    ("C-c c" . rust-mode-map)
-    :hook (rust-ts-mode . lsp-deferred)
-    :config
-    (require 'dap-cpptools)
-    (dap-cpptools-setup))
+  :hook (rust-ts-mode-hook . eglot-ensure)
+  :mode "\\.rs\\'"
+  :bind-keymap
+  ("C-c c" . rust-mode-map))
 
-;; set the linter to clippy
-(setq lsp-rust-analyzer-cargo-wath-command "clippy")
 #+end_src
 
 *** DART & FLUTTER
@@ -1078,20 +979,16 @@ To do so just run the ~lsp-install-server~ command in your M-x prompt then insta
 (use-package flutter)
 
 (use-package dart-mode
-    :mode "\\.dart\\'"
-    :hook (dart-mode . lsp-deferred)
-)
-
-(use-package lsp-dart
-    :hook
-    (dart-mode . lsp)
-    ;;:config
-    ;;(setq lsp-dart-sdk-dir "/home/vanieb/development/flutter/bin/cache/dart-sdk")
-    ;;(setq lsp-dart-flutter-sdk "/home/vanieb/development/flutter")
-    ;;(setq flutter-sdk-path "/home/vanieb/development/flutter")
-)
+    :hook (dart-mode-hook . eglot-ensure)
+    :mode "\\.dart\\'")
 #+end_src
 
+
+** Debugger configuration
+
+#+begin_src emacs-lisp
+(use-package dape)
+#+end_src
 
 ** Company Mode
 
@@ -1099,11 +996,11 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
 
 #+begin_src emacs-lisp
 (use-package company
-    :after lsp-mode
+    :after eglot-mode
     :bind
     (:map company-mode
         ("M-o" . company-manual-begin))
-    :hook (lsp-mode . company-mode)
+    :hook (eglot-mode . company-mode)
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))

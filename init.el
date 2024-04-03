@@ -1,5 +1,5 @@
 ;; Making lsp more responsive
-(setq gc-const-threshold 100000000)
+(setq gc-const-threshold (* 80 1000 1000))
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 
 ;; remove noise for not non allowed command in emacs if your system make them
@@ -223,6 +223,7 @@
 
     (define-key evil-normal-state-map (kbd "C-n") nil)
     (define-key evil-normal-state-map (kbd "C-p") nil)
+    (define-key evil-normal-state-map (kbd "Q") nil)
 
     (define-key evil-normal-state-map (kbd "C-u") 'evil-jump-forward)
 
@@ -257,8 +258,11 @@
     (global-evil-surround-mode 1))
 
 (use-package ace-jump-mode
-  :bind
-  ("C-c SPC" . ace-jump-mode))
+    :after evil
+    :bind
+    ("C-c SPC" . ace-jump-mode)
+    :config
+    (define-key evil-normal-state-map (kbd "Q") 'ace-jump-mode))
 
 (use-package eaf
 :demand t
@@ -560,34 +564,7 @@
 
 (global-set-key (kbd "C-M-;") 'comment-region)
 
-(defun efs/lsp-mode-setup ()
-(setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-(lsp-headerline-breadcrumb-mode))
-
-(use-package lsp-mode
-    :commands (lsp lsp-deferred)
-    :hook (lsp-mode . efs/lsp-mode-setup)
-    :init
-    (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
-    :config
-    (lsp-enable-which-key-integration t)
-    ;; only watch over the current project directory files
-    (setq lsp-file-watch-ignored-directories (list (rx-to-string `(and (or bos "/" (and "/home" (* any)) "/") (not (any ".")))
-                                            'no-group))))
-
-(use-package lsp-ui
-    :hook (lsp-mode . lsp-ui-mode)
-    :custom
-    (lsp-ui-doc-position 'at-point)
-    (lsp-ui-doc-enable t)
-    (lsp-ui-sideline-show-diagnostics t)
-    :bind
-    (:map evil-normal-state-map ("H" . lsp-ui-doc-toggle))
-    :config
-    (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-    (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))
-
-(use-package flycheck)
+(use-package flycheck-eglot)
 
 (use-package yasnippet
     :config (yas-global-mode))
@@ -596,32 +573,6 @@
 :mode (("\\.yml\\'" . yaml-mode)
             ("\\.yaml\\'" . yaml-mode)
             ))
-
-(use-package dap-mode
-    :after
-    lsp-mode
-    :bind (:map dap-mode-map
-            ("<f5>" . dap-debug)
-            ("<f9>" . dap-breakpoint-toggle)
-            ("C-<f9>" . dap-breakpoint-condition)
-            ("M-<f9>" . dap-breakpoint-log-message)
-            ("<f10>" . dap-next)
-            ("<f11>" . dap-step-in)
-            ("S-<f11>" . dap-step-out)
-            ("<f12>" . dap-ui-inspect-thing-at-point)
-            ("C-<f5>" . dap-stop-thread)
-            ("S-<f5>" . dap-restart-frame)
-            :map dap-ui-repl-mode-map
-            ("C-<f5>" . dap-stop-thread)
-            ("S-<f5>" . dap-restart-frame)
-            ("<f12>" . dap-ui-inspect-thing-at-point))
-    :config
-    (dap-auto-configure-mode)
-    (evil-define-key 'normal dap-mode-map (kbd "K") #'dap-tooltip-at-point)
-    :hook (dap-stopped . (lambda (arg) (call-interactively #'dap-hydra)))
-)
-
-(require 'dap-cpptools)
 
 (use-package emmet-mode)
 
@@ -643,13 +594,7 @@
     (web-mode . smv/web-mode-hook)
     (web-mode . emmet-mode)
     (web-mode . prettier-mode)
-    (web-mode . lsp-deferred)
-    :config
-    (require 'dap-firefox)
-    (dap-firefox-setup)
 )
-
-(setq dap-firefox-debug-program '("node" "/home/vanieb/.emacs.d/var/dap/extensions/vscode/firefox-devtools.vscode-firefox-debug/extension/dist/adapter.bundle.js"))
 
 (add-hook 'web-mode-before-auto-complete-hooks
     '(lambda ()
@@ -667,77 +612,46 @@
             ("\\.ts\\'" . rjsx-mode))
   :hook
   (rjsx-mode . emmet-mode)
-  (rjsx-mode . prettier-mode)
-  (rjsx-mode . lsp-deferred))
+  (rjsx-mode . prettier-mode))
 
 (use-package prettier)
 
 (use-package typescript-mode
     :mode "\\.ts\\'"
-    :hook (typescript-mode . lsp-deferred)
     :config
-    (setq typescript-indent-level 2)
-    (require 'dap-node)
-    (dap-node-setup))
+    (setq typescript-indent-level 2))
 
 (use-package php-mode
-  :mode "\\.php\\'"
-  )
+:hook (php-mode . eglot-ensure)
+:mode "\\.php\\'")
 
-(use-package lsp-java
-    :config
-    (add-hook 'java-mode-hook 'lsp)
-    ;; current VSCode defaults for quick load
-    (setq lsp-java-configuration-runtimes '[(:name "openjdk-17"
-                        :path "/opt/homebrew/Cellar/openjdk@17/17.0.10/libexec/openjdk.jdk/Contents/Home")
-                    (:name "openjdk-21"
-                        :path "/opt/homebrew/Cellar/openjdk/21.0.2/libexec/openjdk.jdk/Contents/Home"
-                    :default t)]))
-
-(require 'lsp-java-boot)
-
-;; to enable the lenses
-(add-hook 'lsp-mode-hook #'lsp-lens-mode)
-(add-hook 'java-mode-hook #'lsp-java-boot-lens-mode)
+(use-package eglot-java
+    :after eglot)
 
 ;;(use-package ess)
 
 (use-package rust-mode)
 
 (use-package rust-ts-mode
-    :mode "\\.rs\\'"
-    :bind-keymap
-    ("C-c c" . rust-mode-map)
-    :hook (rust-ts-mode . lsp-deferred)
-    :config
-    (require 'dap-cpptools)
-    (dap-cpptools-setup))
-
-;; set the linter to clippy
-(setq lsp-rust-analyzer-cargo-wath-command "clippy")
+  :hook (rust-ts-mode-hook . eglot-ensure)
+  :mode "\\.rs\\'"
+  :bind-keymap
+  ("C-c c" . rust-mode-map))
 
 (use-package flutter)
 
 (use-package dart-mode
-    :mode "\\.dart\\'"
-    :hook (dart-mode . lsp-deferred)
-)
+    :hook (dart-mode-hook . eglot-ensure)
+    :mode "\\.dart\\'")
 
-(use-package lsp-dart
-    :hook
-    (dart-mode . lsp)
-    ;;:config
-    ;;(setq lsp-dart-sdk-dir "/home/vanieb/development/flutter/bin/cache/dart-sdk")
-    ;;(setq lsp-dart-flutter-sdk "/home/vanieb/development/flutter")
-    ;;(setq flutter-sdk-path "/home/vanieb/development/flutter")
-)
+(use-package dape)
 
 (use-package company
-    :after lsp-mode
+    :after eglot-mode
     :bind
     (:map company-mode
         ("M-o" . company-manual-begin))
-    :hook (lsp-mode . company-mode)
+    :hook (eglot-mode . company-mode)
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))
