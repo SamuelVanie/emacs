@@ -821,12 +821,12 @@ Language server configuration for programming part.
 eglot is installed by default so just chill and be happy with it.
 I use some useful lsp packages with downloaded languages server for my programming journey.
 
-**** flycheck
+**** markdown-mode
 
-Show error on fly with flycheck package
+I use this to make the eglot documentation more pretty
 
 #+begin_src emacs-lisp
-(use-package flycheck-eglot)
+(use-package markdown-mode)
 #+end_src
 
 

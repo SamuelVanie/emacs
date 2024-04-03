@@ -564,7 +564,7 @@
 
 (global-set-key (kbd "C-M-;") 'comment-region)
 
-(use-package flycheck-eglot)
+(use-package markdown-mode)
 
 (use-package yasnippet
     :config (yas-global-mode))
