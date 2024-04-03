@@ -1,8 +1,6 @@
-(setq gc-const-threshold (* 50 1000 1000))
-
-;; You will most likely need to adjust this font size for your system!
-(defvar smv/default-font-size 139)
-(defvar smv/default-variable-font-size 139)
+;; Making lsp more responsive
+(setq gc-const-threshold 100000000)
+(setq read-process-output-max (* 1024 1024)) ;; 1mb
 
 ;; remove noise for not non allowed command in emacs if your system make them
 (setq ring-bell-function 'ignore)
@@ -14,6 +12,7 @@
 (load custom-file 'noerror 'nomessage)
 
 (setq-default indent-tabs-mode nil)
+(set-face-attribute 'default nil :height 159)
 
 ;; auto refresh buffers when files changes
 (global-auto-revert-mode t)
@@ -901,6 +900,3 @@ cleared, make sure the overlay doesn't come back too soon."
     :commands magit-status
     :custom
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
-
-  
-(setq gc-const-threshold (* 2 1000 1000))
