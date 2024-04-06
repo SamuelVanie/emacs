@@ -263,21 +263,20 @@
   (define-key evil-normal-state-map (kbd "Q") 'ace-jump-mode))
 
 (use-package eaf
-    :demand t
-    :straight (eaf
-            :type git
-            :host github
-            :repo "emacs-eaf/emacs-application-framework"           
-            :files ("*.el" "*.py" "core" "app" "*.json")
-            :includes (eaf-pdf-viewer eaf-browser))
-    :bind ("C-c n" . eaf-open-browser-with-history))
-
-(add-hook #'eaf-mode-hook #'turn-off-evil-mode nil)
+   :demand t
+   :hook (eaf-mode . turn-off-evil-mode)
+   :straight (eaf
+           :type git
+           :host github
+           :repo "emacs-eaf/emacs-application-framework"           
+           :files ("*.el" "*.py" "core" "app" "*.json")
+           :includes (eaf-pdf-viewer eaf-browser))
+   :bind ("C-c n" . eaf-open-browser-with-history))
 
 (use-package eaf-browser
-    :custom
-    (eaf-browser-continue-where-left-off t)
-    (eaf-browser-enable-adblocker t))
+   :custom
+   (eaf-browser-continue-where-left-off t)
+   (eaf-browser-enable-adblocker t))
 
 (use-package eaf-pdf-viewer)
 
@@ -526,8 +525,6 @@
     :after org
     :hook (org-mode . org-num-mode))
 
-(use-package org-projectile)
-
 ;; use to stretch the page on the center to be able to focus on document writing
 (use-package olivetti
     :hook (org-mode-hook . olivetti-mode))
@@ -560,18 +557,6 @@
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'smv/org-babel-tangle-config)))
 
 (global-set-key (kbd "C-M-;") 'comment-region)
-
-(defun smv-project-override (dir)
-  (let ((override (locate-dominating-file dir ".project.el")))
-    (if override
-      (cons 'vc override)
-      nil)))
-
-(use-package project
-  :straight nil
-  :ensure nil
-  :config
-  (add-hook 'project-find-functions #'smv-project-override))
 
 (use-package markdown-mode)
 
@@ -802,23 +787,6 @@ cleared, make sure the overlay doesn't come back too soon."
     ("C-c y" . youdotcom-enter)
     :config
     (setq youdotcom-rag-api-key ""))
-
-(use-package projectile
-  :diminish projectile-mode
-  :config (projectile-mode)
-  :custom ((projectile-completion-system 'ivy))
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
-  :init
-  ;; NOTE: Set this to the folder where you keep your Git repos!
-  (when (file-directory-p "~/projects")
-    (setq projectile-project-search-path '("~/projects")))
-  (setq projectile-switch-project-action #'projectile-dired))
-
-
-(use-package counsel-projectile
-  :after projectile
-  :config (counsel-projectile-mode))
 
 (use-package magit
     :commands magit-status

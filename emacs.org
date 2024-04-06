@@ -375,21 +375,20 @@ On arch-linux I did install =python-pyqt6-webengine=, =desktop-notify= and =pyth
 
 #+begin_src emacs-lisp
 (use-package eaf
-    :demand t
-    :straight (eaf
-            :type git
-            :host github
-            :repo "emacs-eaf/emacs-application-framework"           
-            :files ("*.el" "*.py" "core" "app" "*.json")
-            :includes (eaf-pdf-viewer eaf-browser))
-    :bind ("C-c n" . eaf-open-browser-with-history))
-
-(add-hook #'eaf-mode-hook #'turn-off-evil-mode nil)
+   :demand t
+   :hook (eaf-mode . turn-off-evil-mode)
+   :straight (eaf
+           :type git
+           :host github
+           :repo "emacs-eaf/emacs-application-framework"           
+           :files ("*.el" "*.py" "core" "app" "*.json")
+           :includes (eaf-pdf-viewer eaf-browser))
+   :bind ("C-c n" . eaf-open-browser-with-history))
 
 (use-package eaf-browser
-    :custom
-    (eaf-browser-continue-where-left-off t)
-    (eaf-browser-enable-adblocker t))
+   :custom
+   (eaf-browser-continue-where-left-off t)
+   (eaf-browser-enable-adblocker t))
 
 (use-package eaf-pdf-viewer)
 #+end_src
@@ -745,8 +744,6 @@ I use also `org-num` to add numbers in front of my different headlines.
     :load-path "lisp/"
     :after org
     :hook (org-mode . org-num-mode))
-
-(use-package org-projectile)
 #+end_src
 
 
@@ -828,25 +825,6 @@ To help me comment code region quickly I set up this keyboard shortcut. The func
 
 Language server configuration for programming part.
 I use some useful lsp packages with downloaded languages server for my programming journey.
-
-**** Project conf to permit eglot recognize project folder
-
-You can now just add a .project.el file inside any folder and eglot and project.el will recognize this folder as the project root
-
-#+begin_src emacs-lisp
-(defun smv-project-override (dir)
-  (let ((override (locate-dominating-file dir ".project.el")))
-    (if override
-      (cons 'vc override)
-      nil)))
-
-(use-package project
-  :straight nil
-  :ensure nil
-  :config
-  (add-hook 'project-find-functions #'smv-project-override))
-#+end_src
-
 
 **** markdown-mode
 
@@ -1195,31 +1173,6 @@ This is my own package to make web search and chat directly inside emacs
     ("C-c y" . youdotcom-enter)
     :config
     (setq youdotcom-rag-api-key ""))
-#+end_src
-
-** Projectile
-
-[[https://projectile.mx/][Projectile]] is my project management library for Emacs, it makes a lot easier to navigate around code for various languages.
-
-#+begin_src emacs-lisp
-
-(use-package projectile
-  :diminish projectile-mode
-  :config (projectile-mode)
-  :custom ((projectile-completion-system 'ivy))
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
-  :init
-  ;; NOTE: Set this to the folder where you keep your Git repos!
-  (when (file-directory-p "~/projects")
-    (setq projectile-project-search-path '("~/projects")))
-  (setq projectile-switch-project-action #'projectile-dired))
-
-
-(use-package counsel-projectile
-  :after projectile
-  :config (counsel-projectile-mode))
-
 #+end_src
 
 
