@@ -8,6 +8,7 @@ Declare some of my variables for my global configuration
 
 #+BEGIN_SRC emacs-lisp
 (setq gc-const-threshold (* 50 1000 1000))
+(setq read-process-output-max (* 1024 1024))
 
 ;; You will most likely need to adjust this font size for your system!
 (defvar smv/default-font-size 139)
@@ -52,47 +53,49 @@ Emacs has a built in package manager but it doesn’t make it easy to automatica
 I don't know why but quelpa doesn't get install automatically (maybe a problem only on mac ?), you should install it manually by running `M-x package-install` then type quelpa
 
 #+BEGIN_SRC emacs-lisp
-;; Initialize package sources
-(require 'package)
-(require 'cl)
-(require 'dired-x)
+  ;; Initialize package sources
+  (require 'package)
+  (require 'cl)
 
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-                        ("elpa" . "https://elpa.gnu.org/packages/")))
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                          ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+                          ("elpa" . "https://elpa.gnu.org/packages/")))
 
-(package-initialize)
-(unless package-archive-contents
-(package-refresh-contents))
+  (package-initialize)
+  (unless package-archive-contents
+  (package-refresh-contents))
 
 
-;; straight.el section
-(defvar bootstrap-version)
-(let ((bootstrap-file
-        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-    (bootstrap-version 5))
-(unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-        "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-        'silent 'inhibit-cookies)
-    (goto-char (point-max))
-    (eval-print-last-sexp)))
-(load bootstrap-file nil 'nomessage))
+  ;; straight.el section
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+          (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+          "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+          'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
-(straight-use-package 'use-package)
-(setq straight-use-package-by-default t)
+  (straight-use-package 'use-package)
+  (setq straight-use-package-by-default t)
 
-(add-hook 'dired-mode-hook 'dired-hide-details-mode)
-(add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
+  (use-package dired-x
+    :straight nil
+    :after all-the-icons
+    :hook ((dired-mode . dired-hide-details-mode)
+           (dired-mode . all-the-icons-dired-mode)))
 
-(global-set-key [remap dabbrev-expand] 'hippie-expand)
+  (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
-(use-package dashboard
-:config
-(dashboard-setup-startup-hook))
+  (use-package dashboard
+  :config
+  (dashboard-setup-startup-hook))
 
-(setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
+  (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
 #+END_SRC
 
 * Keep Folders clean
@@ -317,6 +320,7 @@ evil-collection permit to activate automatically evil-mode in multiple emacs pac
 
 (define-key evil-normal-state-map (kbd "C-n") nil)
 (define-key evil-normal-state-map (kbd "C-p") nil)
+(define-key evil-normal-state-map (kbd "Q") nil)
 
 (define-key evil-normal-state-map (kbd "C-u") 'evil-jump-forward)
 
@@ -358,7 +362,9 @@ evil-collection permit to activate automatically evil-mode in multiple emacs pac
 #+begin_src emacs-lisp
 (use-package ace-jump-mode
   :bind
-  ("C-c SPC" . ace-jump-mode))
+  ("C-c SPC" . ace-jump-mode)
+  :config
+  (define-key evil-normal-state-map (kbd "Q") 'ace-jump-mode))
 #+end_src
 
 * Browser and pdf viewer
@@ -511,7 +517,7 @@ You will have to install the icons on your machine before to get the full functi
   (ivy-mode 1))
 
 (use-package ivy-rich
-  :after ivy
+  :after (ivy counsel)
   :init
   (ivy-rich-mode 1))
 
@@ -818,71 +824,36 @@ To help me comment code region quickly I set up this keyboard shortcut. The func
 
 ** Languages
 
-*** IDE Features with lsp-mode
+*** IDE Features with eglot-mode
 
 Language server configuration for programming part.
 I use some useful lsp packages with downloaded languages server for my programming journey.
 
-**** lsp-mode
+**** Project conf to permit eglot recognize project folder
+
+You can now just add a .project.el file inside any folder and eglot and project.el will recognize this folder as the project root
 
 #+begin_src emacs-lisp
+(defun smv-project-override (dir)
+  (let ((override (locate-dominating-file dir ".project.el")))
+    (if override
+      (cons 'vc override)
+      nil)))
 
-(defun efs/lsp-mode-setup ()
-(setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-(lsp-headerline-breadcrumb-mode))
-
-(use-package lsp-mode
-    :commands (lsp lsp-deferred)
-    :hook (lsp-mode . efs/lsp-mode-setup)
-    :init
-    (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
-    :config
-    (lsp-enable-which-key-integration t)
-    ;; only watch over the current project directory files
-    (setq lsp-file-watch-ignored-directories (list (rx-to-string `(and (or bos "/" (and "/home" (* any)) "/") (not (any ".")))
-                                            'no-group))))
-
+(use-package project
+  :straight nil
+  :ensure nil
+  :config
+  (add-hook 'project-find-functions #'smv-project-override))
 #+end_src
 
-**** lsp-ui
+
+**** markdown-mode
+
+Use to make eglot documentation more pretty
 
 #+begin_src emacs-lisp
-(use-package lsp-ui
-    :hook (lsp-mode . lsp-ui-mode)
-    :custom
-    (lsp-ui-doc-position 'at-point)
-    (lsp-ui-doc-enable t)
-    (lsp-ui-sideline-show-diagnostics t)
-    :bind
-    (:map evil-normal-state-map ("H" . lsp-ui-doc-toggle))
-    :config
-    (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-    (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))
-#+end_src
-
-**** lsp-treemacs
-
-#+begin_src emacs-lisp
-
-(use-package lsp-treemacs
-  :after lsp)
-
-#+end_src
-
-**** lsp-ivy
-
-lsp-ivy integrates Ivy with lsp-mode to make it easy to search for things by name in your code. When you run these commands, a prompt will appear in the minibuffer allowing you to type part of the name of a symbol in your code. Results will be populated in the minibuffer so that you can find what you’re looking for and jump to that location in the code upon selecting the result.
-
-#+begin_src emacs-lisp
-(use-package lsp-ivy)
-#+end_src
-
-**** flycheck
-
-Show error on fly with flycheck package
-
-#+begin_src emacs-lisp
-(use-package flycheck)
+(use-package markdown-mode)
 #+end_src
 
 
@@ -908,38 +879,6 @@ Mode for yaml configuration files editing.
 #+end_src
 
 
-*** Debugging with dap-mode
-
-Dap-mode is the debugger mode. It goes with lsp-mode
-
-#+begin_src emacs-lisp
-(use-package dap-mode
-    :after
-    lsp-mode
-    :bind (:map dap-mode-map
-            ("<f5>" . dap-debug)
-            ("<f9>" . dap-breakpoint-toggle)
-            ("C-<f9>" . dap-breakpoint-condition)
-            ("M-<f9>" . dap-breakpoint-log-message)
-            ("<f10>" . dap-next)
-            ("<f11>" . dap-step-in)
-            ("S-<f11>" . dap-step-out)
-            ("<f12>" . dap-ui-inspect-thing-at-point)
-            ("C-<f5>" . dap-stop-thread)
-            ("S-<f5>" . dap-restart-frame)
-            :map dap-ui-repl-mode-map
-            ("C-<f5>" . dap-stop-thread)
-            ("S-<f5>" . dap-restart-frame)
-            ("<f12>" . dap-ui-inspect-thing-at-point))
-    :config
-    (dap-auto-configure-mode)
-    (evil-define-key 'normal dap-mode-map (kbd "K") #'dap-tooltip-at-point)
-    :hook (dap-stopped . (lambda (arg) (call-interactively #'dap-hydra)))
-)
-
-(require 'dap-cpptools)
-#+end_src
-
 
 *** Web Programming
 
@@ -954,8 +893,6 @@ Emmet mode allors you to easily expand html and css abbreviations for instance i
 **** Web-mode
 
 The useful web mode for programming.
-I use firefox as my browser so I install dap-firefox to quickly debug my javascript code inside this browser.
-Check the documentation for your browser : [[https://emacs-lsp.github.io/dap-mode/page/configuration/][lsp configuration]]
 
 #+begin_src emacs-lisp
 
@@ -977,13 +914,7 @@ Check the documentation for your browser : [[https://emacs-lsp.github.io/dap-mod
     (web-mode . smv/web-mode-hook)
     (web-mode . emmet-mode)
     (web-mode . prettier-mode)
-    (web-mode . lsp-deferred)
-    :config
-    (require 'dap-firefox)
-    (dap-firefox-setup)
 )
-
-(setq dap-firefox-debug-program '("node" "/home/vanieb/.emacs.d/var/dap/extensions/vscode/firefox-devtools.vscode-firefox-debug/extension/dist/adapter.bundle.js"))
 
 (add-hook 'web-mode-before-auto-complete-hooks
     '(lambda ()
@@ -1007,8 +938,7 @@ Check the documentation for your browser : [[https://emacs-lsp.github.io/dap-mod
             ("\\.ts\\'" . rjsx-mode))
   :hook
   (rjsx-mode . emmet-mode)
-  (rjsx-mode . prettier-mode)
-  (rjsx-mode . lsp-deferred))
+  (rjsx-mode . prettier-mode))
 #+end_src
 
 **** prettier
@@ -1028,12 +958,9 @@ You will need to install typescript-language-server with `npm install -g typescr
 
 (use-package typescript-mode
     :mode "\\.ts\\'"
-    :hook (typescript-mode . lsp-deferred)
+    :hook (typescript-mode . eglot-ensure)
     :config
-    (setq typescript-indent-level 2)
-    (require 'dap-node)
-    (dap-node-setup))
-
+    (setq typescript-indent-level 2))
 #+end_src
 
 *** PHP
@@ -1047,35 +974,11 @@ Installing PHP
 #+end_src
 
 
-*** C#
-
-Installing csharp lsp functionnality. The csharp-mode is part of the core emacs.
-To do so just run the ~lsp-install-server~ command in your M-x prompt then install the ~csharp-lsp~ server.
-
 *** JAVA
 
 #+begin_src emacs-lisp
-(use-package lsp-java
-    :config
-    (add-hook 'java-mode-hook 'lsp)
-    ;; current VSCode defaults for quick load
-    (setq lsp-java-configuration-runtimes '[(:name "openjdk-17"
-                        :path "/usr/lib/jvm/java-17-openjdk/")
-                    (:name "openjdk-21"
-                        :path "/usr/lib/jvm/java-21-openjdk/"
-                    :default t)]))
-
-(require 'lsp-java-boot)
-
-;; to enable the lenses
-(add-hook 'lsp-mode-hook #'lsp-lens-mode)
-(add-hook 'java-mode-hook #'lsp-java-boot-lens-mode)
-#+end_src
-
-*** R
-
-#+begin_src emacs-lisp
-;;(use-package ess)
+(use-package eglot-java
+  :after eglot)
 #+end_src
 
 *** RUST
@@ -1087,14 +990,7 @@ To do so just run the ~lsp-install-server~ command in your M-x prompt then insta
     :mode "\\.rs\\'"
     :bind-keymap
     ("C-c c" . rust-mode-map)
-    :hook (rust-ts-mode . lsp-deferred)
-    :config
-    (require 'dap-cpptools)
-    (dap-cpptools-setup))
-
-(require 'dap-gdb-lldb)
-;; set the linter to clippy
-(setq lsp-rust-analyzer-cargo-wath-command "clippy")
+    :hook (rust-ts-mode . eglot-ensure))
 #+end_src
 
 *** DART & FLUTTER
@@ -1104,17 +1000,9 @@ To do so just run the ~lsp-install-server~ command in your M-x prompt then insta
 
 (use-package dart-mode
     :mode "\\.dart\\'"
-    :hook (dart-mode . lsp-deferred)
-)
-
-(use-package lsp-dart
-    :hook
-    (dart-mode . lsp)
-    :config
-    (setq lsp-dart-sdk-dir "/home/vanieb/development/flutter/bin/cache/dart-sdk")
-    (setq lsp-dart-flutter-sdk "/home/vanieb/development/flutter")
-    (setq flutter-sdk-path "/home/vanieb/development/flutter"))
+    :hook (dart-mode . eglot-ensure))
 #+end_src
+
 
 
 ** Company Mode
@@ -1123,8 +1011,11 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
 
 #+begin_src emacs-lisp
 (use-package company
-    :after lsp-mode
-    :hook (lsp-mode . company-mode)
+    :after eglot-mode
+    :hook (eglot-mode . company-mode)
+    :bind
+    (:map company-mode
+          ("M-o" . company-manual-begin))
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))
@@ -1135,9 +1026,18 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
 
 (use-package company-tabnine
     :config
-    (add-to-list 'company-backends #'company-tabnine))
+    (add-to-list 'company-backends #'company-tabnine t))
 #+end_src
 
+
+** Debugger configuration
+
+I use dape for the philosophy of emacs and because it's more manageable with the built-in packages of emacs like eglot.
+
+#+begin_src emacs-lisp
+(use-package dape
+ :after eglot)
+#+end_src
 
 ** Docker Mode
 
@@ -1332,8 +1232,5 @@ This is my own package to make web search and chat directly inside emacs
     :commands magit-status
     :custom
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
-
-  
-(setq gc-const-threshold (* 2 1000 1000))
 #+end_src
 

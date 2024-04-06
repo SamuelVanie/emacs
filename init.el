@@ -1,4 +1,5 @@
 (setq gc-const-threshold (* 50 1000 1000))
+(setq read-process-output-max (* 1024 1024))
 
 ;; You will most likely need to adjust this font size for your system!
 (defvar smv/default-font-size 139)
@@ -33,7 +34,6 @@
 ;; Initialize package sources
 (require 'package)
 (require 'cl)
-(require 'dired-x)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
@@ -61,8 +61,11 @@
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
 
-(add-hook 'dired-mode-hook 'dired-hide-details-mode)
-(add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
+(use-package dired-x
+  :straight nil
+  :after all-the-icons
+  :hook ((dired-mode . dired-hide-details-mode)
+         (dired-mode . all-the-icons-dired-mode)))
 
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
@@ -219,6 +222,7 @@
 
 (define-key evil-normal-state-map (kbd "C-n") nil)
 (define-key evil-normal-state-map (kbd "C-p") nil)
+(define-key evil-normal-state-map (kbd "Q") nil)
 
 (define-key evil-normal-state-map (kbd "C-u") 'evil-jump-forward)
 
@@ -254,7 +258,9 @@
 
 (use-package ace-jump-mode
   :bind
-  ("C-c SPC" . ace-jump-mode))
+  ("C-c SPC" . ace-jump-mode)
+  :config
+  (define-key evil-normal-state-map (kbd "Q") 'ace-jump-mode))
 
 (use-package eaf
     :demand t
@@ -356,7 +362,7 @@
   (ivy-mode 1))
 
 (use-package ivy-rich
-  :after ivy
+  :after (ivy counsel)
   :init
   (ivy-rich-mode 1))
 
@@ -555,39 +561,19 @@
 
 (global-set-key (kbd "C-M-;") 'comment-region)
 
-(defun efs/lsp-mode-setup ()
-(setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-(lsp-headerline-breadcrumb-mode))
+(defun smv-project-override (dir)
+  (let ((override (locate-dominating-file dir ".project.el")))
+    (if override
+      (cons 'vc override)
+      nil)))
 
-(use-package lsp-mode
-    :commands (lsp lsp-deferred)
-    :hook (lsp-mode . efs/lsp-mode-setup)
-    :init
-    (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
-    :config
-    (lsp-enable-which-key-integration t)
-    ;; only watch over the current project directory files
-    (setq lsp-file-watch-ignored-directories (list (rx-to-string `(and (or bos "/" (and "/home" (* any)) "/") (not (any ".")))
-                                            'no-group))))
+(use-package project
+  :straight nil
+  :ensure nil
+  :config
+  (add-hook 'project-find-functions #'smv-project-override))
 
-(use-package lsp-ui
-    :hook (lsp-mode . lsp-ui-mode)
-    :custom
-    (lsp-ui-doc-position 'at-point)
-    (lsp-ui-doc-enable t)
-    (lsp-ui-sideline-show-diagnostics t)
-    :bind
-    (:map evil-normal-state-map ("H" . lsp-ui-doc-toggle))
-    :config
-    (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-    (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))
-
-(use-package lsp-treemacs
-  :after lsp)
-
-(use-package lsp-ivy)
-
-(use-package flycheck)
+(use-package markdown-mode)
 
 (use-package yasnippet
     :config (yas-global-mode))
@@ -596,32 +582,6 @@
 :mode (("\\.yml\\'" . yaml-mode)
             ("\\.yaml\\'" . yaml-mode)
             ))
-
-(use-package dap-mode
-    :after
-    lsp-mode
-    :bind (:map dap-mode-map
-            ("<f5>" . dap-debug)
-            ("<f9>" . dap-breakpoint-toggle)
-            ("C-<f9>" . dap-breakpoint-condition)
-            ("M-<f9>" . dap-breakpoint-log-message)
-            ("<f10>" . dap-next)
-            ("<f11>" . dap-step-in)
-            ("S-<f11>" . dap-step-out)
-            ("<f12>" . dap-ui-inspect-thing-at-point)
-            ("C-<f5>" . dap-stop-thread)
-            ("S-<f5>" . dap-restart-frame)
-            :map dap-ui-repl-mode-map
-            ("C-<f5>" . dap-stop-thread)
-            ("S-<f5>" . dap-restart-frame)
-            ("<f12>" . dap-ui-inspect-thing-at-point))
-    :config
-    (dap-auto-configure-mode)
-    (evil-define-key 'normal dap-mode-map (kbd "K") #'dap-tooltip-at-point)
-    :hook (dap-stopped . (lambda (arg) (call-interactively #'dap-hydra)))
-)
-
-(require 'dap-cpptools)
 
 (use-package emmet-mode)
 
@@ -643,13 +603,7 @@
     (web-mode . smv/web-mode-hook)
     (web-mode . emmet-mode)
     (web-mode . prettier-mode)
-    (web-mode . lsp-deferred)
-    :config
-    (require 'dap-firefox)
-    (dap-firefox-setup)
 )
-
-(setq dap-firefox-debug-program '("node" "/home/vanieb/.emacs.d/var/dap/extensions/vscode/firefox-devtools.vscode-firefox-debug/extension/dist/adapter.bundle.js"))
 
 (add-hook 'web-mode-before-auto-complete-hooks
     '(lambda ()
@@ -667,40 +621,22 @@
             ("\\.ts\\'" . rjsx-mode))
   :hook
   (rjsx-mode . emmet-mode)
-  (rjsx-mode . prettier-mode)
-  (rjsx-mode . lsp-deferred))
+  (rjsx-mode . prettier-mode))
 
 (use-package prettier)
 
 (use-package typescript-mode
     :mode "\\.ts\\'"
-    :hook (typescript-mode . lsp-deferred)
+    :hook (typescript-mode . eglot-ensure)
     :config
-    (setq typescript-indent-level 2)
-    (require 'dap-node)
-    (dap-node-setup))
+    (setq typescript-indent-level 2))
 
 (use-package php-mode
   :mode "\\.php\\'"
   )
 
-(use-package lsp-java
-    :config
-    (add-hook 'java-mode-hook 'lsp)
-    ;; current VSCode defaults for quick load
-    (setq lsp-java-configuration-runtimes '[(:name "openjdk-17"
-                        :path "/usr/lib/jvm/java-17-openjdk/")
-                    (:name "openjdk-21"
-                        :path "/usr/lib/jvm/java-21-openjdk/"
-                    :default t)]))
-
-(require 'lsp-java-boot)
-
-;; to enable the lenses
-(add-hook 'lsp-mode-hook #'lsp-lens-mode)
-(add-hook 'java-mode-hook #'lsp-java-boot-lens-mode)
-
-;;(use-package ess)
+(use-package eglot-java
+  :after eglot)
 
 (use-package rust-mode)
 
@@ -708,33 +644,20 @@
     :mode "\\.rs\\'"
     :bind-keymap
     ("C-c c" . rust-mode-map)
-    :hook (rust-ts-mode . lsp-deferred)
-    :config
-    (require 'dap-cpptools)
-    (dap-cpptools-setup))
-
-(require 'dap-gdb-lldb)
-;; set the linter to clippy
-(setq lsp-rust-analyzer-cargo-wath-command "clippy")
+    :hook (rust-ts-mode . eglot-ensure))
 
 (use-package flutter)
 
 (use-package dart-mode
     :mode "\\.dart\\'"
-    :hook (dart-mode . lsp-deferred)
-)
-
-(use-package lsp-dart
-    :hook
-    (dart-mode . lsp)
-    :config
-    (setq lsp-dart-sdk-dir "/home/vanieb/development/flutter/bin/cache/dart-sdk")
-    (setq lsp-dart-flutter-sdk "/home/vanieb/development/flutter")
-    (setq flutter-sdk-path "/home/vanieb/development/flutter"))
+    :hook (dart-mode . eglot-ensure))
 
 (use-package company
-    :after lsp-mode
-    :hook (lsp-mode . company-mode)
+    :after eglot-mode
+    :hook (eglot-mode . company-mode)
+    :bind
+    (:map company-mode
+          ("M-o" . company-manual-begin))
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))
@@ -745,7 +668,10 @@
 
 (use-package company-tabnine
     :config
-    (add-to-list 'company-backends #'company-tabnine))
+    (add-to-list 'company-backends #'company-tabnine t))
+
+(use-package dape
+ :after eglot)
 
 (use-package docker
     :bind ("C-c d" . docker))
@@ -898,6 +824,3 @@ cleared, make sure the overlay doesn't come back too soon."
     :commands magit-status
     :custom
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
-
-  
-(setq gc-const-threshold (* 2 1000 1000))
