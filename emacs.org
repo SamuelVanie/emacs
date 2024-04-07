@@ -86,8 +86,9 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
   (use-package dired-x
     :straight nil
     :after all-the-icons
-    :hook ((dired-mode . dired-hide-details-mode)
-           (dired-mode . all-the-icons-dired-mode)))
+    :config
+    (add-hook 'dired-mode-hook 'dired-hide-details-mode)
+    (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
 
   (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
@@ -174,7 +175,17 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
 #+end_src
 
 
-* Kill buffers
+* Buffers
+
+** Managing buffers easily
+
+#+begin_src emacs-lisp
+  ;; this will make emacs ibuffer the default used to list buffers
+  (defalias 'list-buffers 'ibuffer)
+#+end_src
+
+
+** Kill buffers
 
 I'm writing this function to kill all the buffers because it is really boring to get the confirmation prompt every time you want to kill all the buffers with kill-some-buffers
 

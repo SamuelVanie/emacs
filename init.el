@@ -64,8 +64,9 @@
 (use-package dired-x
   :straight nil
   :after all-the-icons
-  :hook ((dired-mode . dired-hide-details-mode)
-         (dired-mode . all-the-icons-dired-mode)))
+  :config
+  (add-hook 'dired-mode-hook 'dired-hide-details-mode)
+  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
 
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
@@ -121,6 +122,9 @@
 
 (use-package eshell-toggle
     :bind ("C-x C-z" . eshell-toggle))
+
+;; this will make emacs ibuffer the default used to list buffers
+(defalias 'list-buffers 'ibuffer)
 
 (defun kill-all-buffers ()
 "Kill all buffers without asking for confirmation."
