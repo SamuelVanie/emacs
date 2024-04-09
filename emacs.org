@@ -84,11 +84,9 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
 (use-package dired-x
   :straight nil
   :after all-the-icons
-  :hook ((dired-mode-hook . dired-hide-details-mode)
-         (dired-mode-hook . all-the-icons-dired-mode)))
-
-(add-hook 'dired-mode-hook 'dired-hide-details-mode)
-(add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
+  :config
+  (add-hook 'dired-mode-hook 'dired-hide-details-mode)
+  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
 
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
@@ -97,7 +95,6 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
     (dashboard-setup-startup-hook))
 
 (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
-
 #+END_SRC
 
 
@@ -736,8 +733,6 @@ I use also `org-num` to add numbers in front of my different headlines.
     :load-path "lisp/"
     :after org
     :hook (org-mode . org-num-mode))
-
-(use-package org-projectile)
 #+end_src
 
 
@@ -1170,31 +1165,6 @@ This is my own package to make web search and chat directly inside emacs
     ("C-c y" . youdotcom-enter)
     :config
     (setq youdotcom-rag-api-key ""))
-#+end_src
-
-** Projectile
-
-[[https://projectile.mx/][Projectile]] is my project management library for Emacs, it makes a lot easier to navigate around code for various languages.
-
-#+begin_src emacs-lisp
-
-(use-package projectile
-  :diminish projectile-mode
-  :config (projectile-mode)
-  :custom ((projectile-completion-system 'ivy))
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
-  :init
-  ;; NOTE: Set this to the folder where you keep your Git repos!
-  (when (file-directory-p "~/projects")
-    (setq projectile-project-search-path '("~/projects")))
-  (setq projectile-switch-project-action #'projectile-dired))
-
-
-(use-package counsel-projectile
-  :after projectile
-  :config (counsel-projectile-mode))
-
 #+end_src
 
 

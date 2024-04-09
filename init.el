@@ -62,11 +62,9 @@
 (use-package dired-x
   :straight nil
   :after all-the-icons
-  :hook ((dired-mode-hook . dired-hide-details-mode)
-         (dired-mode-hook . all-the-icons-dired-mode)))
-
-(add-hook 'dired-mode-hook 'dired-hide-details-mode)
-(add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
+  :config
+  (add-hook 'dired-mode-hook 'dired-hide-details-mode)
+  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
 
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
@@ -529,8 +527,6 @@
     :after org
     :hook (org-mode . org-num-mode))
 
-(use-package org-projectile)
-
 ;; use to stretch the page on the center to be able to focus on document writing
 (use-package olivetti
     :hook (org-mode-hook . olivetti-mode))
@@ -792,23 +788,6 @@ cleared, make sure the overlay doesn't come back too soon."
     ("C-c y" . youdotcom-enter)
     :config
     (setq youdotcom-rag-api-key ""))
-
-(use-package projectile
-  :diminish projectile-mode
-  :config (projectile-mode)
-  :custom ((projectile-completion-system 'ivy))
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
-  :init
-  ;; NOTE: Set this to the folder where you keep your Git repos!
-  (when (file-directory-p "~/projects")
-    (setq projectile-project-search-path '("~/projects")))
-  (setq projectile-switch-project-action #'projectile-dired))
-
-
-(use-package counsel-projectile
-  :after projectile
-  :config (counsel-projectile-mode))
 
 (use-package magit
     :commands magit-status
