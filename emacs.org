@@ -171,7 +171,15 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
     :bind ("C-x C-z" . eshell-toggle))
 #+end_src
 
-* Kill buffers
+* Buffers
+
+** Managing buffers easily
+
+#+begin_src emacs-lisp
+(defalias 'list-buffers 'ibuffer)
+#+end_src
+
+** Kill buffers
 
 I'm writing this function to kill all the buffers because it is really boring to get the confirmation prompt every time you want to kill all the buffers with kill-some-buffers
 

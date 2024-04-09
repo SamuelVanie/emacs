@@ -122,6 +122,8 @@
 (use-package eshell-toggle
     :bind ("C-x C-z" . eshell-toggle))
 
+(defalias 'list-buffers 'ibuffer)
+
 (defun kill-all-buffers ()
   "Kill all buffers without asking for confirmation."
   (interactive)
