@@ -132,27 +132,6 @@ We use the no-littering package to keep folders where we edit files and the Emac
 
 
 
-
-* Move stuff around the screen
-
-#+begin_src emacs-lisp
-(use-package drag-stuff
-  :after hydra
-  :init
-  (drag-stuff-global-mode 1)
-  :config
-  (defhydra hydra-move-around (:timeout 3)
-    "Move things around"
-    ("h" drag-stuff-left "drag-stuff-left")
-    ("l" drag-stuff-right "drag-stuff-right")
-    ("j" drag-stuff-down "drag-stuff-down")
-    ("k" drag-stuff-up "drag-stuff-up")
-    ("f" nil "finished" :exit t))
-
-  (smv/leader-keys
-    "m" '(hydra-move-around/body :which-key "move around")))
-#+end_src
-
 * Shell
 
 ** Eshell Ouptut format
@@ -465,7 +444,7 @@ Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-th
 (use-package doom-themes)
 (use-package ef-themes
     :config
-    (load-theme 'ef-bio t))
+    (load-theme 'doom-1337 t))
 #+end_src
 
 ** Better Mode line
@@ -829,6 +808,19 @@ To help me comment code region quickly I set up this keyboard shortcut. The func
 #+begin_src emacs-lisp
 (global-set-key (kbd "C-M-;") 'comment-region)
 #+end_src
+
+
+** Search project wide
+
+wgrep will permit to make grep buffers editable so that you can just modify the occurences of what you're looking for.
+
+I use the built-in rgrep to do my search and replace so I'm binding it to =C-c r=.
+
+#+begin_src emacs-lisp
+  (use-package wgrep)
+  (global-set-key (kbd "C-c r") 'rgrep)
+#+end_src
+
 
 ** Languages
 

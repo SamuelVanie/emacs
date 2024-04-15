@@ -94,22 +94,6 @@
     (treesit-auto-add-to-auto-mode-alist 'all)
     (global-treesit-auto-mode))
 
-(use-package drag-stuff
-  :after hydra
-  :init
-  (drag-stuff-global-mode 1)
-  :config
-  (defhydra hydra-move-around (:timeout 3)
-    "Move things around"
-    ("h" drag-stuff-left "drag-stuff-left")
-    ("l" drag-stuff-right "drag-stuff-right")
-    ("j" drag-stuff-down "drag-stuff-down")
-    ("k" drag-stuff-up "drag-stuff-up")
-    ("f" nil "finished" :exit t))
-
-  (smv/leader-keys
-    "m" '(hydra-move-around/body :which-key "move around")))
-
 (require 'em-smart)
 (setq eshell-where-to-jump 'begin)
 (setq eshell-review-quick-commands nil)
@@ -325,7 +309,7 @@
 (use-package doom-themes)
 (use-package ef-themes
     :config
-    (load-theme 'ef-bio t))
+    (load-theme 'doom-1337 t))
 
 (use-package all-the-icons
     :if (display-graphic-p))
@@ -561,6 +545,9 @@
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'smv/org-babel-tangle-config)))
 
 (global-set-key (kbd "C-M-;") 'comment-region)
+
+(use-package wgrep)
+(global-set-key (kbd "C-c r") 'rgrep)
 
 (use-package markdown-mode)
 
