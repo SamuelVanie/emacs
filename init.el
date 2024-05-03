@@ -250,27 +250,10 @@
   :config
   (define-key evil-normal-state-map (kbd "Q") 'ace-jump-mode))
 
-(use-package eaf
-   :demand t
-   :hook (eaf-mode . turn-off-evil-mode)
-   :straight (eaf
-           :type git
-           :host github
-           :repo "emacs-eaf/emacs-application-framework"           
-           :files ("*.el" "*.py" "core" "app" "*.json")
-           :includes (eaf-pdf-viewer eaf-browser))
-   :bind ("C-c n" . eaf-open-browser-with-history))
-
-(use-package eaf-browser
-   :custom
-   (eaf-browser-continue-where-left-off t)
-   (eaf-browser-enable-adblocker t))
-
-(use-package eaf-pdf-viewer)
-
 (use-package vterm)
 
 (use-package multi-vterm
+        :ensure t
         :config
         (add-hook 'vterm-mode-hook
                         (lambda ()
@@ -549,6 +532,10 @@
 (use-package wgrep)
 (global-set-key (kbd "C-c r") 'rgrep)
 
+(use-package flymake
+  :bind
+  ("C-c e l" . flymake-show-project-diagnostics))
+
 (use-package markdown-mode)
 
 (use-package yasnippet
@@ -755,10 +742,6 @@ cleared, make sure the overlay doesn't come back too soon."
 
 ;;Do copilot-quit when pressing C-g
 (advice-add 'keyboard-quit :before #'rk/copilot-quit)
-
-;; complete by pressing right or tab but only when copilot completions are
-;; ;; shown. This means we leave the normal functionality intact.
-(advice-add 'right-char :around #'rk/copilot-complete-if-active)
 
 ;; ;; deactivate copilot for certain modes
 (add-to-list 'copilot-enable-predicates #'rk/copilot-enable-predicate)

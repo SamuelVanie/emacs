@@ -357,34 +357,6 @@ evil-collection permit to activate automatically evil-mode in multiple emacs pac
   (define-key evil-normal-state-map (kbd "Q") 'ace-jump-mode))
 #+end_src
 
-* Browser and pdf viewer
-
-To not be disrupted in my workflow I decided to use a built-in browser that has some javascript integration. (never leave emacs)
-If dependency cause problems just check that you don't have any other old version of the dependencies and delete them. And try installing them again.
-On arch-linux I did install =python-pyqt6-webengine=, =desktop-notify= and =python-pyqt6= using pacman.
-
-#+begin_src emacs-lisp
-(use-package eaf
-   :demand t
-   :hook (eaf-mode . turn-off-evil-mode)
-   :straight (eaf
-           :type git
-           :host github
-           :repo "emacs-eaf/emacs-application-framework"           
-           :files ("*.el" "*.py" "core" "app" "*.json")
-           :includes (eaf-pdf-viewer eaf-browser))
-   :bind ("C-c n" . eaf-open-browser-with-history))
-
-(use-package eaf-browser
-   :custom
-   (eaf-browser-continue-where-left-off t)
-   (eaf-browser-enable-adblocker t))
-
-(use-package eaf-pdf-viewer)
-#+end_src
-
-
-
 
 * vterm
 
@@ -394,6 +366,7 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
 (use-package vterm)
 
 (use-package multi-vterm
+        :ensure t
         :config
         (add-hook 'vterm-mode-hook
                         (lambda ()
@@ -829,6 +802,15 @@ I use the built-in rgrep to do my search and replace so I'm binding it to =C-c r
 Language server configuration for programming part.
 I use some useful lsp packages with downloaded languages server for my programming journey.
 
+
+**** Flymake
+
+#+begin_src emacs-lisp
+  (use-package flymake
+    :bind
+    ("C-c e l" . flymake-show-project-diagnostics))
+#+end_src
+
 **** markdown-mode
 
 Use to make eglot documentation more pretty
@@ -1139,10 +1121,6 @@ cleared, make sure the overlay doesn't come back too soon."
 
 ;;Do copilot-quit when pressing C-g
 (advice-add 'keyboard-quit :before #'rk/copilot-quit)
-
-;; complete by pressing right or tab but only when copilot completions are
-;; ;; shown. This means we leave the normal functionality intact.
-(advice-add 'right-char :around #'rk/copilot-complete-if-active)
 
 ;; ;; deactivate copilot for certain modes
 (add-to-list 'copilot-enable-predicates #'rk/copilot-enable-predicate)
