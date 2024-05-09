@@ -22,41 +22,41 @@
 ;; to scroll down inside the popup
 (define-key global-map (kbd "C-M-'")
             (lambda ()
-            (interactive)
-            (scroll-other-window 2)))
+              (interactive)
+              (scroll-other-window 2)))
 
 ;; to scroll up side the popup
 (define-key global-map (kbd "C-M-\"")
             (lambda ()
-            (interactive)
-            (scroll-other-window-down 2)))
+              (interactive)
+              (scroll-other-window-down 2)))
 
 ;; Initialize package sources
 (require 'package)
 (require 'cl)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-                        ("elpa" . "https://elpa.gnu.org/packages/")))
+                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")))
 
 (package-initialize)
 (unless package-archive-contents
-(package-refresh-contents))
+  (package-refresh-contents))
 
 
 ;; straight.el section
 (defvar bootstrap-version)
 (let ((bootstrap-file
-        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-    (bootstrap-version 5))
-(unless (file-exists-p bootstrap-file)
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
     (with-current-buffer
         (url-retrieve-synchronously
-        "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-        'silent 'inhibit-cookies)
-    (goto-char (point-max))
-    (eval-print-last-sexp)))
-(load bootstrap-file nil 'nomessage))
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
@@ -71,8 +71,8 @@
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
 (use-package dashboard
-:config
-(dashboard-setup-startup-hook))
+  :config
+  (dashboard-setup-startup-hook))
 
 (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
 
@@ -88,11 +88,11 @@
       `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
 
 (use-package treesit-auto
-    :custom
-    (treesit-auto-install 'prompt)
-    :config
-    (treesit-auto-add-to-auto-mode-alist 'all)
-    (global-treesit-auto-mode))
+  :custom
+  (treesit-auto-install 'prompt)
+  :config
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode))
 
 (require 'em-smart)
 (setq eshell-where-to-jump 'begin)
@@ -105,15 +105,15 @@
 (setq eshell-aliases-file "~/.emacs.d/aliases")
 
 (use-package eshell-toggle
-    :bind ("C-x C-z" . eshell-toggle))
+  :bind ("C-x C-z" . eshell-toggle))
 
 ;; this will make emacs ibuffer the default used to list buffers
 (defalias 'list-buffers 'ibuffer)
 
 (defun kill-all-buffers ()
-"Kill all buffers without asking for confirmation."
-(interactive)
-(dolist (buffer (buffer-list))
+  "Kill all buffers without asking for confirmation."
+  (interactive)
+  (dolist (buffer (buffer-list))
     (kill-buffer buffer)))
 
 (global-set-key (kbd "C-c k a") 'kill-all-buffers)
@@ -145,7 +145,7 @@
                 term-mode-hook
                 shell-mode-hook
                 eshell-mode-hook))
-(add-hook mode (lambda () (display-line-numbers-mode 0))))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 ;; Change the font size (139) according to your screen
 (custom-set-faces
@@ -153,36 +153,36 @@
  '(variable-pitch ((t (:weight light :height 139 :family "JetbrainsMono Nerd Font")))))
 
 (use-package ligature
-:config
-;; Enable all JetBrains Mono ligatures in programming modes
-(ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
-                                        "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
-                                        "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
-                                        "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
-                                        "<*>" "<->" "<!--" ":>" ":<" ":::" "::" ":?" ":?>" ":=" "::=" "=>>"
-                                        "==>" "=/=" "=!=" "=>" "===" "=:=" "==" "!==" "!!" "!=" ">]" ">:"
-                                        ">>-" ">>=" ">=>" ">>>" ">-" ">=" "&&&" "&&" "|||>" "||>" "|>" "|]"
-                                        "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||" ".." ".?" ".=" ".-" "..<"
-                                        "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
-                                        "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
-                                        "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
-;; Enables ligature checks globally in all buffers. You can also do it
-;; per mode with `ligature-mode'.
-(global-ligature-mode t))
+  :config
+  ;; Enable all JetBrains Mono ligatures in programming modes
+  (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
+                                       "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
+                                       "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
+                                       "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
+                                       "<*>" "<->" "<!--" ":>" ":<" ":::" "::" ":?" ":?>" ":=" "::=" "=>>"
+                                       "==>" "=/=" "=!=" "=>" "===" "=:=" "==" "!==" "!!" "!=" ">]" ">:"
+                                       ">>-" ">>=" ">=>" ">>>" ">-" ">=" "&&&" "&&" "|||>" "||>" "|>" "|]"
+                                       "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||" ".." ".?" ".=" ".-" "..<"
+                                       "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
+                                       "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
+                                       "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
+  ;; Enables ligature checks globally in all buffers. You can also do it
+  ;; per mode with `ligature-mode'.
+  (global-ligature-mode t))
 
 (use-package rainbow-delimiters
-    :hook (prog-mode . rainbow-delimiters-mode))
+  :hook (prog-mode . rainbow-delimiters-mode))
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 (use-package general ;; for setting keybindings
-:config
-(general-create-definer smv/leader-keys
+  :config
+  (general-create-definer smv/leader-keys
     :keymaps '(normal visual emacs)
     :prefix "SPC"
     :global-prefix "SPC")
 
-(smv/leader-keys
+  (smv/leader-keys
     "t" '(:ignore t :which-key "toggles")
     "tt" '(counsel-load-theme :which-key "choose theme")))
 
@@ -191,58 +191,58 @@
 
 ;; Activate vim keybindings inside of emacs
 (use-package evil
-:init
-(setq evil-want-integration t)
-(setq evil-want-keybinding nil)
-(setq evil-want-C-u-scroll nil)
-(setq evil-want-C-d-scroll nil)
-(setq evil-v$-excludes-newline t)
-(setq evil-respect-visual-line-mode t)
-(setq evil-undo-system 'undo-redo)
-(setq evil-want-C-i-jump nil)
-:config
-(evil-mode 1)
-(define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-(define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
+  :init
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-want-C-u-scroll nil)
+  (setq evil-want-C-d-scroll nil)
+  (setq evil-v$-excludes-newline t)
+  (setq evil-respect-visual-line-mode t)
+  (setq evil-undo-system 'undo-redo)
+  (setq evil-want-C-i-jump nil)
+  :config
+  (evil-mode 1)
+  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+  (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
 
-(define-key evil-insert-state-map (kbd "C-n") nil)
-(define-key evil-insert-state-map (kbd "C-p") nil)
+  (define-key evil-insert-state-map (kbd "C-n") nil)
+  (define-key evil-insert-state-map (kbd "C-p") nil)
 
-(define-key evil-normal-state-map (kbd "C-n") nil)
-(define-key evil-normal-state-map (kbd "C-p") nil)
-(define-key evil-normal-state-map (kbd "Q") nil)
+  (define-key evil-normal-state-map (kbd "C-n") nil)
+  (define-key evil-normal-state-map (kbd "C-p") nil)
+  (define-key evil-normal-state-map (kbd "Q") nil)
 
-(define-key evil-normal-state-map (kbd "C-u") 'evil-jump-forward)
+  (define-key evil-normal-state-map (kbd "C-u") 'evil-jump-forward)
 
-(define-key evil-visual-state-map (kbd "C-n") nil)
-(define-key evil-visual-state-map (kbd "C-p") nil)
+  (define-key evil-visual-state-map (kbd "C-n") nil)
+  (define-key evil-visual-state-map (kbd "C-p") nil)
 
-(define-key evil-visual-state-map (kbd "C-a") nil)
-(define-key evil-normal-state-map (kbd "C-a") nil)
-(define-key evil-insert-state-map (kbd "C-a") nil)
+  (define-key evil-visual-state-map (kbd "C-a") nil)
+  (define-key evil-normal-state-map (kbd "C-a") nil)
+  (define-key evil-insert-state-map (kbd "C-a") nil)
 
-(define-key evil-visual-state-map (kbd "C-e") nil)
-(define-key evil-normal-state-map (kbd "C-e") nil)
-(define-key evil-insert-state-map (kbd "C-e") nil)
+  (define-key evil-visual-state-map (kbd "C-e") nil)
+  (define-key evil-normal-state-map (kbd "C-e") nil)
+  (define-key evil-insert-state-map (kbd "C-e") nil)
 
-(define-key evil-visual-state-map (kbd "C-d") nil)
-(define-key evil-normal-state-map (kbd "C-d") nil)
-(define-key evil-insert-state-map (kbd "C-d") nil)
+  (define-key evil-visual-state-map (kbd "C-d") nil)
+  (define-key evil-normal-state-map (kbd "C-d") nil)
+  (define-key evil-insert-state-map (kbd "C-d") nil)
 
-(evil-set-initial-state 'messages-buffer-mode 'normal)
-(evil-set-initial-state 'dashboard-mode 'normal))
+  (evil-set-initial-state 'messages-buffer-mode 'normal)
+  (evil-set-initial-state 'dashboard-mode 'normal))
 
 
 ;; Add evil-keybindings to more modes inside of emacs
 (use-package evil-collection
-:after evil
-:config
-(evil-collection-init))
+  :after evil
+  :config
+  (evil-collection-init))
 
 
 (use-package evil-surround
-:config
-(global-evil-surround-mode 1))
+  :config
+  (global-evil-surround-mode 1))
 
 (use-package ace-jump-mode
   :bind
@@ -253,53 +253,53 @@
 (use-package vterm)
 
 (use-package multi-vterm
-        :ensure t
-        :config
-        (add-hook 'vterm-mode-hook
-                        (lambda ()
-                        (setq-local evil-insert-state-cursor 'box)
-                        (evil-insert-state)))
-        (define-key vterm-mode-map [return]                      #'vterm-send-return)
-        (global-set-key (kbd "C-x C-y") 'multi-vterm)
-        (setq vterm-keymap-exceptions nil)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-e")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-f")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-a")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-v")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-b")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-w")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-u")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-n")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-m")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-p")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-j")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-k")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-r")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-t")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-g")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-c")      #'vterm--self-insert)
-        (evil-define-key 'insert vterm-mode-map (kbd "C-SPC")    #'vterm--self-insert)
-        (evil-define-key 'normal vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
-        (evil-define-key 'normal vterm-mode-map (kbd "SPC c")       #'multi-vterm)
-        (evil-define-key 'normal vterm-mode-map (kbd "SPC n")       #'multi-vterm-next)
-        (evil-define-key 'normal vterm-mode-map (kbd "SPC p")       #'multi-vterm-prev)
-        (evil-define-key 'normal vterm-mode-map (kbd "SPC r")       #'multi-vterm-rename-buffer)
-        (evil-define-key 'normal vterm-mode-map (kbd "i")        #'evil-insert-resume)
-        (evil-define-key 'normal vterm-mode-map (kbd "o")        #'evil-insert-resume)
-        (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume))
+  :ensure t
+  :config
+  (add-hook 'vterm-mode-hook
+            (lambda ()
+              (setq-local evil-insert-state-cursor 'box)
+              (evil-insert-state)))
+  (define-key vterm-mode-map [return]                      #'vterm-send-return)
+  (global-set-key (kbd "C-x C-y") 'multi-vterm)
+  (setq vterm-keymap-exceptions nil)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-e")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-f")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-a")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-v")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-b")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-w")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-u")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-n")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-m")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-p")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-j")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-k")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-r")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-t")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-g")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-c")      #'vterm--self-insert)
+  (evil-define-key 'insert vterm-mode-map (kbd "C-SPC")    #'vterm--self-insert)
+  (evil-define-key 'normal vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
+  (evil-define-key 'normal vterm-mode-map (kbd "SPC c")       #'multi-vterm)
+  (evil-define-key 'normal vterm-mode-map (kbd "SPC n")       #'multi-vterm-next)
+  (evil-define-key 'normal vterm-mode-map (kbd "SPC p")       #'multi-vterm-prev)
+  (evil-define-key 'normal vterm-mode-map (kbd "SPC r")       #'multi-vterm-rename-buffer)
+  (evil-define-key 'normal vterm-mode-map (kbd "i")        #'evil-insert-resume)
+  (evil-define-key 'normal vterm-mode-map (kbd "o")        #'evil-insert-resume)
+  (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume))
 
 (use-package doom-themes)
 (use-package ef-themes
-    :config
-    (load-theme 'doom-1337 t))
+  :config
+  (load-theme 'doom-1337 t))
 
 (use-package all-the-icons
-    :if (display-graphic-p))
+  :if (display-graphic-p))
 
 (use-package doom-modeline
-    :init (doom-modeline-mode 1)
-    :custom ((doom-modeline-height 15)))
+  :init (doom-modeline-mode 1)
+  :custom ((doom-modeline-height 15)))
 
 (use-package all-the-icons-ivy
   :after all-the-icons)
@@ -308,26 +308,26 @@
   :after all-the-icons)
 
 (use-package which-key ;; print next keybindings
-	     :init (which-key-mode) ;; happens before the package is loaded
-	     :diminish which-key-mode
-	     :config ;; only runs after the mode is loaded
-	     (setq which-key-idle-delay 0.3))
+  :init (which-key-mode) ;; happens before the package is loaded
+  :diminish which-key-mode
+  :config ;; only runs after the mode is loaded
+  (setq which-key-idle-delay 0.3))
 
 (use-package ivy
   :diminish
   :bind (("C-s" . swiper)
-          :map ivy-minibuffer-map
-          ("TAB" . ivy-alt-done)
-          ("C-l" . ivy-alt-done)
-          ("C-j" . ivy-next-line)
-          ("C-k" . ivy-previous-line)
-          :map ivy-switch-buffer-map
-          ("C-k" . ivy-previous-line)
-          ("C-l" . ivy-done)
-          ("C-d" . ivy-switch-buffer-kill)
-          :map ivy-reverse-i-search-map
-          ("C-k" . ivy-previous-line)
-          ("C-d" . ivy-reverse-i-search-kill))
+         :map ivy-minibuffer-map
+         ("<tab>" . ivy-alt-done)
+         ("C-l" . ivy-alt-done)
+         ("C-j" . ivy-next-line)
+         ("C-k" . ivy-previous-line)
+         :map ivy-switch-buffer-map
+         ("C-k" . ivy-previous-line)
+         ("C-l" . ivy-done)
+         ("C-d" . ivy-switch-buffer-kill)
+         :map ivy-reverse-i-search-map
+         ("C-k" . ivy-previous-line)
+         ("C-d" . ivy-reverse-i-search-kill))
   :config
   (ivy-mode 1))
 
@@ -338,8 +338,8 @@
 
 (use-package counsel
   :bind (("C-M-j" . 'counsel-switch-buffer)
-          :map minibuffer-local-map
-          ("C-r" . 'counsel-minibuffer-history))
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history))
   :custom
   (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
   :config
@@ -540,6 +540,18 @@
 
 (use-package yasnippet
     :config (yas-global-mode))
+
+(use-package auto-yasnippet
+  :bind
+  ("C-c C-y w" . aya-create)
+  ("C-c C-y TA". aya-expand)
+  ("C-c C-y SP". aya-expand-from-history)
+  ("C-c C-y d" . aya-delete-from-history)
+  ("C-c C-y c" . aya-clear-history)
+  ("C-c C-y n" . aya-next-in-history)
+  ("C-c C-y p" . aya-previous-in-history)
+  ("C-c C-y s" . aya-persist-snippet)
+  ("C-c C-y o" . aya-open-line))
 
 (use-package yaml-mode
 :mode (("\\.yml\\'" . yaml-mode)
