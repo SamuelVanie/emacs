@@ -860,6 +860,12 @@ Mode for yaml configuration files editing.
 #+end_src
 
 
+*** Nix for dev environment
+
+#+begin_src emacs-lisp
+(use-package nix-ts-mode
+:mode ("\\.nix\\'" . nix-ts-mode))
+#+end_src
 
 *** Web Programming
 
