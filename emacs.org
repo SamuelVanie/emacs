@@ -748,6 +748,8 @@ Org mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
 (add-to-list 'org-structure-template-alist '("py" . "src python"))
 (add-to-list 'org-structure-template-alist '("ru" . "src rust")))
+  
+(add-to-list 'org-structure-template-alist '("cpp" . "src cpp"))
 #+end_src
 
 
