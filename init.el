@@ -538,6 +538,9 @@
   :bind
   ("C-c e l" . flymake-show-project-diagnostics))
 
+;; set global keybinding for quickfix
+(global-set-key (kbd "C-c e f") 'eglot-code-actions)
+
 (use-package markdown-mode)
 
 (use-package yasnippet

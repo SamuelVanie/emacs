@@ -810,6 +810,9 @@ I use some useful lsp packages with downloaded languages server for my programmi
   (use-package flymake
     :bind
     ("C-c e l" . flymake-show-project-diagnostics))
+
+  ;; set global keybinding for quickfix
+  (global-set-key (kbd "C-c e f") 'eglot-code-actions)
 #+end_src
 
 **** markdown-mode
