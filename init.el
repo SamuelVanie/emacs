@@ -304,6 +304,8 @@
 (use-package all-the-icons-ivy
   :after all-the-icons)
 
+(use-package nerd-icons)
+
 (use-package all-the-icons-dired
   :after all-the-icons)
 

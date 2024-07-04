@@ -422,8 +422,8 @@ Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-th
 
 ** Better Mode line
 
-[[https://github.com/seagle0128/doom-modeline][doom-modeline]] is a very attractive and rich mode line configuration for emacs. I use all-the-icons packages to add to it some cool icons.
-You will have to install the icons on your machine before to get the full functionnalities : ~M-x all-the-icons-install-fonts~ .
+[[https://github.com/seagle0128/doom-modeline][doom-modeline]] is a very attractive and rich mode line configuration for emacs. I use nerd-icons packages to add to it some cool icons.
+You will have to install the icons on your machine before to get the full functionnalities : ~M-x all-the-icons-install-fonts~ , ~M-x nerd-icons-install-fonts~
 
 #+begin_src emacs-lisp
   (use-package all-the-icons
@@ -435,6 +435,8 @@ You will have to install the icons on your machine before to get the full functi
 
   (use-package all-the-icons-ivy
     :after all-the-icons)
+
+  (use-package nerd-icons)
 
   (use-package all-the-icons-dired
     :after all-the-icons)
