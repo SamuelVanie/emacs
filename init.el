@@ -247,26 +247,6 @@
     :config
     (define-key evil-normal-state-map (kbd "Q") 'ace-jump-mode))
 
-(use-package eaf
-:demand t
-:straight (eaf
-            :type git
-            :host github
-            :repo "emacs-eaf/emacs-application-framework"           
-            :files ("*.el" "*.py" "core" "app" "*.json")
-            :config (add-hook 'eaf-mode-hook #'turn-off-evil-mode nil)
-            :includes (eaf-pdf-viewer eaf-browser))
-:bind
-("C-c n" . eaf-open-browser-with-history)
-("C-c 4 n" . eaf-open-browser-other-window))
-
-(use-package eaf-browser
-    :custom
-    (eaf-browser-continue-where-left-off t)
-    (eaf-browser-enable-adblocker t))
-
-(use-package eaf-pdf-viewer)
-
 (require 'ansi-color)
 (require 'eshell)
 (defun eshell-handle-ansi-color ()
@@ -317,7 +297,7 @@
 (use-package doom-themes)
 (use-package ef-themes
     :config
-    (load-theme 'ef-bio t))
+    (load-theme 'doom-1337 t))
 
 (use-package all-the-icons
     :if (display-graphic-p))
@@ -327,6 +307,8 @@
 
 (use-package all-the-icons-dired
   :after all-the-icons)
+
+(use-package nerd-icons)
 
 (use-package doom-modeline
     :init (doom-modeline-mode 1)
@@ -557,15 +539,34 @@
 (use-package wgrep)
 (global-set-key (kbd "C-c r") 'rgrep)
 
+(use-package flymake
+  :bind
+  ("C-c e l" . flymake-show-project-diagnostics))
+
 (use-package markdown-mode)
 
 (use-package yasnippet
     :config (yas-global-mode))
 
+(use-package auto-yasnippet
+  :bind
+  ("C-c C-y w" . aya-create)
+  ("C-c C-y TA". aya-expand)
+  ("C-c C-y SP". aya-expand-from-history)
+  ("C-c C-y d" . aya-delete-from-history)
+  ("C-c C-y c" . aya-clear-history)
+  ("C-c C-y n" . aya-next-in-history)
+  ("C-c C-y p" . aya-previous-in-history)
+  ("C-c C-y s" . aya-persist-snippet)
+  ("C-c C-y o" . aya-open-line))
+
 (use-package yaml-mode
 :mode (("\\.yml\\'" . yaml-mode)
             ("\\.yaml\\'" . yaml-mode)
             ))
+
+(use-package nix-ts-mode
+  :mode ("\\.nix\\'" . nix-ts-mode))
 
 (use-package emmet-mode)
 

@@ -344,35 +344,6 @@ Quickly move horizontaly on the screen.
     (define-key evil-normal-state-map (kbd "Q") 'ace-jump-mode))
 #+end_src
 
-* Browser and pdf viewer
-
-To not be disrupted in my workflow I decided to use a built-in browser that has some javascript integration. (never leave emacs) If dependency cause problems just check that you don’t have any other old version of the dependencies and delete them. And try installing them again. On arch-linux I did install =python-pyqt6-webengine= and =python-pyqt6= using pacman.
-
-On macos you should also install =mac-app-frontmost= then, if the window if not correctly placed inside the emacs frame, just move the frame with the mouse it will be replaced.
-
-#+begin_src emacs-lisp
-(use-package eaf
-:demand t
-:straight (eaf
-            :type git
-            :host github
-            :repo "emacs-eaf/emacs-application-framework"           
-            :files ("*.el" "*.py" "core" "app" "*.json")
-            :config (add-hook 'eaf-mode-hook #'turn-off-evil-mode nil)
-            :includes (eaf-pdf-viewer eaf-browser))
-:bind
-("C-c n" . eaf-open-browser-with-history)
-("C-c 4 n" . eaf-open-browser-other-window))
-
-(use-package eaf-browser
-    :custom
-    (eaf-browser-continue-where-left-off t)
-    (eaf-browser-enable-adblocker t))
-
-(use-package eaf-pdf-viewer)
-#+end_src
-
-
 
 * Terminal
 
@@ -447,27 +418,29 @@ Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-th
 (use-package doom-themes)
 (use-package ef-themes
     :config
-    (load-theme 'ef-bio t))
+    (load-theme 'doom-1337 t))
 #+end_src
 
 ** Better Mode line
 
-[[https://github.com/seagle0128/doom-modeline][doom-modeline]] is a very attractive and rich mode line configuration for emacs. I use all-the-icons packages to add to it some cool icons.
-You will have to install the icons on your machine before to get the full functionnalities : ~M-x all-the-icons-install-fonts~ .
+[[https://github.com/seagle0128/doom-modeline][doom-modeline]] is a very attractive and rich mode line configuration for emacs. I use nerd-icons packages to add to it some cool icons.
+You will have to install the icons on your machine before to get the full functionnalities : ~M-x all-the-icons-install-fonts~ and ~M-x nerd-icons-install~.
 
 #+begin_src emacs-lisp
-(use-package all-the-icons
-    :if (display-graphic-p))
+  (use-package all-the-icons
+      :if (display-graphic-p))
 
-(use-package all-the-icons-ivy
-  :after all-the-icons)
+  (use-package all-the-icons-ivy
+    :after all-the-icons)
 
-(use-package all-the-icons-dired
-  :after all-the-icons)
+  (use-package all-the-icons-dired
+    :after all-the-icons)
 
-(use-package doom-modeline
-    :init (doom-modeline-mode 1)
-    :custom ((doom-modeline-height 15)))
+  (use-package nerd-icons)
+  
+  (use-package doom-modeline
+      :init (doom-modeline-mode 1)
+      :custom ((doom-modeline-height 15)))
 #+end_src
 
 ** Which Key
@@ -831,6 +804,18 @@ Language server configuration for programming part.
 eglot is installed by default so just chill and be happy with it.
 I use some useful lsp packages with downloaded languages server for my programming journey.
 
+
+**** Flymake
+
+Flymake is the built-in inline diagnostic tool used by eglot.
+
+#+begin_src emacs-lisp
+  (use-package flymake
+    :bind
+    ("C-c e l" . flymake-show-project-diagnostics))
+#+end_src
+
+
 **** markdown-mode
 
 I use this to make the eglot documentation more pretty
@@ -845,8 +830,21 @@ I use this to make the eglot documentation more pretty
 Useful snippets for quick programming
 
 #+begin_src emacs-lisp
-(use-package yasnippet
-    :config (yas-global-mode))
+  (use-package yasnippet
+      :config (yas-global-mode))
+
+  (use-package auto-yasnippet
+    :bind
+    ("C-c C-y w" . aya-create)
+    ("C-c C-y TA". aya-expand)
+    ("C-c C-y SP". aya-expand-from-history)
+    ("C-c C-y d" . aya-delete-from-history)
+    ("C-c C-y c" . aya-clear-history)
+    ("C-c C-y n" . aya-next-in-history)
+    ("C-c C-y p" . aya-previous-in-history)
+    ("C-c C-y s" . aya-persist-snippet)
+    ("C-c C-y o" . aya-open-line))
+
 #+end_src
 
 
@@ -861,6 +859,16 @@ Mode for yaml configuration files editing.
             ))
 #+end_src
 
+
+
+*** Nix mode
+
+You know about nix ? This package manager... This mode permit to write file in the nix programming language.
+
+#+begin_src emacs-lisp
+  (use-package nix-ts-mode
+    :mode ("\\.nix\\'" . nix-ts-mode))
+#+end_src
 
 
 *** Web Programming
