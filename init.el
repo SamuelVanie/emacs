@@ -165,88 +165,6 @@
 (use-package rainbow-delimiters
 	     :hook (prog-mode . rainbow-delimiters-mode))
 
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
-(use-package general ;; for setting keybindings
-    :config
-    (general-create-definer smv/leader-keys
-        :keymaps '(normal visual emacs)
-        :prefix "SPC"
-        :global-prefix "SPC")
-
-    (smv/leader-keys
-        "t" '(:ignore t :which-key "toggles")
-        "tt" '(counsel-load-theme :which-key "choose theme"))
-    
-)
-
-(use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple times
-
-
-;; hydra demonstration will permit me to move things around 
-
-;; Activate vim keybindings inside of emacs
-(use-package evil
-    :init
-    (setq evil-want-integration t)
-    (setq evil-want-keybinding nil)
-    (setq evil-want-C-u-scroll nil)
-    (setq evil-want-C-d-scroll nil)
-    (setq evil-v$-excludes-newline t)
-    (setq evil-respect-visual-line-mode t)
-    (setq evil-undo-system 'undo-redo)
-    (setq evil-want-C-i-jump nil)
-    :config
-    (evil-mode 1)
-    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-    (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
-
-    (define-key evil-insert-state-map (kbd "C-n") nil)
-    (define-key evil-insert-state-map (kbd "C-p") nil)
-
-    (define-key evil-normal-state-map (kbd "C-n") nil)
-    (define-key evil-normal-state-map (kbd "C-p") nil)
-    (define-key evil-normal-state-map (kbd "Q") nil)
-
-    (define-key evil-normal-state-map (kbd "C-u") 'evil-jump-forward)
-
-    (define-key evil-visual-state-map (kbd "C-n") nil)
-    (define-key evil-visual-state-map (kbd "C-p") nil)
-
-    (define-key evil-visual-state-map (kbd "C-a") nil)
-    (define-key evil-normal-state-map (kbd "C-a") nil)
-    (define-key evil-insert-state-map (kbd "C-a") nil)
-
-    (define-key evil-visual-state-map (kbd "C-e") nil)
-    (define-key evil-normal-state-map (kbd "C-e") nil)
-    (define-key evil-insert-state-map (kbd "C-e") nil)
-
-    (define-key evil-visual-state-map (kbd "C-d") nil)
-    (define-key evil-normal-state-map (kbd "C-d") nil)
-    (define-key evil-insert-state-map (kbd "C-d") nil)
-
-    (evil-set-initial-state 'messages-buffer-mode 'normal)
-    (evil-set-initial-state 'dashboard-mode 'normal))
-
-
-;; Add evil-keybindings to more modes inside of emacs
-(use-package evil-collection
-    :after evil
-    :config
-    (evil-collection-init))
-
-
-(use-package evil-surround
-    :config
-    (global-evil-surround-mode 1))
-
-(use-package ace-jump-mode
-    :after evil
-    :bind
-    ("C-c SPC" . ace-jump-mode)
-    :config
-    (define-key evil-normal-state-map (kbd "Q") 'ace-jump-mode))
-
 (require 'ansi-color)
 (require 'eshell)
 (defun eshell-handle-ansi-color ()
@@ -260,39 +178,33 @@
        :after vterm 
        :ensure t
        :config
-       (add-hook 'vterm-mode-hook
-                       (lambda ()
-                       (setq-local evil-insert-state-cursor 'box)
-                       (evil-insert-state)))
        (define-key vterm-mode-map [return]                      #'vterm-send-return)
-       (global-set-key (kbd "C-x C-y") 'multi-vterm)
-       (setq vterm-keymap-exceptions nil)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-e")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-f")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-a")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-v")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-b")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-w")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-u")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-n")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-m")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-p")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-j")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-k")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-r")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-t")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-g")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-c")      #'vterm--self-insert)
-       (evil-define-key 'insert vterm-mode-map (kbd "C-SPC")    #'vterm--self-insert)
-       (evil-define-key 'normal vterm-mode-map (kbd "C-d")      #'vterm--self-insert)
-       (evil-define-key 'normal vterm-mode-map (kbd "SPC c")       #'multi-vterm)
-       (evil-define-key 'normal vterm-mode-map (kbd "SPC n")       #'multi-vterm-next)
-       (evil-define-key 'normal vterm-mode-map (kbd "SPC p")       #'multi-vterm-prev)
-       (evil-define-key 'normal vterm-mode-map (kbd "SPC r")       #'multi-vterm-rename-buffer)
-       (evil-define-key 'normal vterm-mode-map (kbd "i")        #'evil-insert-resume)
-       (evil-define-key 'normal vterm-mode-map (kbd "o")        #'evil-insert-resume)
-       (evil-define-key 'normal vterm-mode-map (kbd "<return>") #'evil-insert-resume))
+       (global-set-key (kbd "C-x C-y") 'multi-vterm))
+
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+(use-package general ;; for setting keybindings
+    :config
+    (general-create-definer smv/leader-keys
+        :keymaps '(normal visual emacs)
+        :prefix "SPC"
+        :global-prefix "SPC")
+
+    (smv/leader-keys
+        "t" '(:ignore t :which-key "toggles")
+        "tt" '(counsel-load-theme :which-key "choose theme")))
+    
+(use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
+
+(use-package xah-fly-keys
+  :config
+  (xah-fly-keys t)
+  (xah-fly-keys-set-layout "colemak")
+  (define-key xah-fly-command-map (kbd "k") 'swiper))
+
+(use-package ace-jump-mode
+    :bind
+    ("C-c SPC" . ace-jump-mode))
 
 (use-package doom-themes)
 (use-package ef-themes
@@ -417,7 +329,6 @@
     (variable-pitch-mode 1)
     (auto-fill-mode 0)
     (visual-line-mode 1)
-    (setq evil-auto-indent nil)
     (smv/org-font-setup))
 
 
