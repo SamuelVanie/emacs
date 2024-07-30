@@ -200,7 +200,8 @@
   :config
   (xah-fly-keys t)
   (xah-fly-keys-set-layout "colemak")
-  (define-key xah-fly-command-map (kbd "k") 'swiper))
+  (define-key xah-fly-command-map (kbd "k") 'swiper)
+  (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
 
 (use-package ace-jump-mode
     :bind
