@@ -192,7 +192,8 @@
   :config
   (xah-fly-keys t)
   (xah-fly-keys-set-layout "colemak")
-  (define-key xah-fly-command-map (kbd "k") 'swiper))
+  (define-key xah-fly-command-map (kbd "k") 'swiper)
+  (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
 
 (use-package ace-jump-mode
   :bind
@@ -298,10 +299,10 @@
                         (org-level-2 . 1.1)
                         (org-level-3 . 1.05)
                         (org-level-4 . 1.0)
-                        (org-level-5 . 1.1)
-                        (org-level-6 . 1.1)
-                        (org-level-7 . 1.1)
-                        (org-level-8 . 1.1)))
+                        (org-level-5 . 1.0)
+                        (org-level-6 . 1.0)
+                        (org-level-7 . 1.0)
+                        (org-level-8 . 1.0)))
         (set-face-attribute (car face) nil :font "VictorMono" :weight 'regular :height (cdr face)))
         ;; Ensure that anything that should be fixed-pitch in Org files appears that way
         (set-face-attribute 'org-block nil    :inherit 'fixed-pitch)
