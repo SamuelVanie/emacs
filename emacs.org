@@ -285,19 +285,6 @@ Rainbow permits to match pairs delimiters with the same color.
 #+end_src
 
 
-
-** Xah-fly keys
-
-#+begin_src emacs-lisp
-(use-package xah-fly-keys
-  :config
-  (xah-fly-keys t)
-  (xah-fly-keys-set-layout "colemak")
-  (define-key xah-fly-command-map (kbd "k") 'swiper)
-  (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
-#+end_src
-
-
 ** Ace-jump mode
 
 #+begin_src emacs-lisp
