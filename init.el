@@ -524,10 +524,10 @@
 
 (use-package flymake
   :bind
-  ("C-c e l" . flymake-show-project-diagnostics))
+  ("M-g f l" . flymake-show-project-diagnostics))
 
 ;; set global keybinding for quickfix
-(global-set-key (kbd "C-c e f") 'eglot-code-actions)
+(global-set-key (kbd "M-g e a") 'eglot-code-actions)
 
 (use-package markdown-mode)
 
