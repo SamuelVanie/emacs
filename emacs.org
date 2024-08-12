@@ -29,7 +29,6 @@ Declare some of my variables for my global configuration
 (global-auto-revert-mode t)
 #+END_SRC
 
-
 * Scrolling inside popup view
 
 #+begin_src emacs-lisp
@@ -90,6 +89,8 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
     (add-hook 'dired-mode-hook 'dired-hide-details-mode)
     (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
 
+  (add-hook 'dired-x-mode-hook 'all-the-icons-dired-mode)
+
   (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
   (use-package dashboard
@@ -118,7 +119,6 @@ We use the no-littering package to keep folders where we edit files and the Emac
 
 #+end_src
 
-
 * Tree-sitter
 
 #+begin_src emacs-lisp
@@ -129,8 +129,6 @@ We use the no-littering package to keep folders where we edit files and the Emac
     (treesit-auto-add-to-auto-mode-alist 'all)
     (global-treesit-auto-mode))
 #+end_src
-
-
 
 * Shell
 
@@ -152,7 +150,6 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
   (use-package eshell-toggle
     :bind ("C-x C-z" . eshell-toggle))
 #+end_src
-
 
 * Buffers
 
@@ -259,7 +256,6 @@ Rainbow permits to match pairs delimiters with the same color.
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
-
 
 * Keybindings Configuration
 
@@ -401,7 +397,6 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
 #+end_src
 
 
-
 * UI Configuration
 
 ** Color Theme
@@ -413,7 +408,7 @@ Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-th
   (use-package doom-themes)
   (use-package ef-themes
     :config
-    (load-theme 'doom-1337 t))
+    (load-theme 'doom-oksolar-dark t))
 #+end_src
 
 ** Better Mode line
@@ -525,7 +520,6 @@ You will have to install the icons on your machine before to get the full functi
     ([remap describe-key] . helpful-key))
 
 #+end_src
-
 
 
 * Org Mode
@@ -751,7 +745,6 @@ This snippets adds a hook to `org-mode` buffers so that efs/org-babel-tangle-con
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'smv/org-babel-tangle-config)))
 
 #+end_src
-
 
 
 * Development

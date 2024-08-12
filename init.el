@@ -68,6 +68,8 @@
   (add-hook 'dired-mode-hook 'dired-hide-details-mode)
   (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
 
+(add-hook 'dired-x-mode-hook 'all-the-icons-dired-mode)
+
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
 (use-package dashboard
@@ -288,7 +290,7 @@
 (use-package doom-themes)
 (use-package ef-themes
   :config
-  (load-theme 'doom-1337 t))
+  (load-theme 'doom-oksolar-dark t))
 
 (use-package all-the-icons
   :if (display-graphic-p))
