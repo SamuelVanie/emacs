@@ -474,9 +474,6 @@
             ("\\.yaml\\'" . yaml-mode)
             ))
 
-(use-package nix-ts-mode
-:mode ("\\.nix\\'" . nix-ts-mode))
-
 (use-package emmet-mode)
 
 (defun smv/web-mode-hook ()
