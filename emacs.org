@@ -330,7 +330,7 @@ Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-th
   (use-package doom-themes)
   (use-package ef-themes
     :config
-    (load-theme 'modus-vivendi t))
+    (load-theme 'ef-trio-light t))
 #+end_src
 
 ** Better Mode line
@@ -670,6 +670,16 @@ This snippets adds a hook to `org-mode` buffers so that efs/org-babel-tangle-con
 
 
 * Development
+
+** Undo tree
+
+Some day undo tree saved my self from losing my progress.
+
+#+begin_src emacs-lisp
+(use-package undo-tree
+      :config
+      (global-undo-tree-mode))
+#+end_src
 
 ** Commenting Code
 

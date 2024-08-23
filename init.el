@@ -211,7 +211,7 @@
 (use-package doom-themes)
 (use-package ef-themes
   :config
-  (load-theme 'modus-vivendi t))
+  (load-theme 'ef-trio-light t))
 
 (use-package all-the-icons
   :if (display-graphic-p))
@@ -439,6 +439,10 @@
       (org-babel-tangle))))
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'smv/org-babel-tangle-config)))
+
+(use-package undo-tree
+      :config
+      (global-undo-tree-mode))
 
 (global-set-key (kbd "C-M-;") 'comment-region)
 
