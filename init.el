@@ -192,6 +192,8 @@
   :config
   (xah-fly-keys t)
   (xah-fly-keys-set-layout "colemak")
+  (setq xah-fly-use-control-key nil)
+  (setq xah-fly-use-meta-key nil)
   (define-key xah-fly-command-map (kbd "k") 'swiper)
   (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
 
@@ -211,14 +213,10 @@
 (use-package doom-themes)
 (use-package ef-themes
   :config
-  (load-theme 'ef-trio-light t))
+  (load-theme 'doom-gruvbox-light t))
 
 (use-package all-the-icons
   :if (display-graphic-p))
-
-(use-package doom-modeline
-  :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 15)))
 
 (use-package all-the-icons-ivy
   :after all-the-icons)
@@ -448,6 +446,10 @@
 
 (use-package wgrep)
 (global-set-key (kbd "C-c r") 'rgrep)
+
+(use-package direnv
+  :config
+  (direnv-mode))
 
 (use-package flymake
   :bind

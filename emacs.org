@@ -284,12 +284,14 @@ Rainbow permits to match pairs delimiters with the same color.
 ** Xah-fly keys
 
 #+begin_src emacs-lisp
-(use-package xah-fly-keys
-  :config
-  (xah-fly-keys t)
-  (xah-fly-keys-set-layout "colemak")
-  (define-key xah-fly-command-map (kbd "k") 'swiper)
-  (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
+  (use-package xah-fly-keys
+    :config
+    (xah-fly-keys t)
+    (xah-fly-keys-set-layout "colemak")
+    (setq xah-fly-use-control-key nil)
+    (setq xah-fly-use-meta-key nil)
+    (define-key xah-fly-command-map (kbd "k") 'swiper)
+    (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
 #+end_src
 
 
@@ -330,21 +332,16 @@ Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-th
   (use-package doom-themes)
   (use-package ef-themes
     :config
-    (load-theme 'ef-trio-light t))
+    (load-theme 'doom-gruvbox-light t))
 #+end_src
 
-** Better Mode line
+** Adding icons to emacs
 
-[[https://github.com/seagle0128/doom-modeline][doom-modeline]] is a very attractive and rich mode line configuration for emacs. I use nerd-icons packages to add to it some cool icons.
 You will have to install the icons on your machine before to get the full functionnalities : ~M-x all-the-icons-install-fonts~ , ~M-x nerd-icons-install-fonts~
 
 #+begin_src emacs-lisp
   (use-package all-the-icons
     :if (display-graphic-p))
-
-  (use-package doom-modeline
-    :init (doom-modeline-mode 1)
-    :custom ((doom-modeline-height 15)))
 
   (use-package all-the-icons-ivy
     :after all-the-icons)
@@ -699,6 +696,19 @@ I use the built-in rgrep to do my search and replace so I'm binding it to =C-c r
 #+begin_src emacs-lisp
   (use-package wgrep)
   (global-set-key (kbd "C-c r") 'rgrep)
+#+end_src
+
+
+** Direnv
+
+direnv permit to load environment on fly. You will need to have a .direnv file, you could generate it with =lorri init= command.
+To use this plugin you must install lorri and direnv using : =nix-env -i lorri= and =nix-env -i direnv=.
+You should then go to the lorri website to configure its daemon [[https://github.com/nix-community/lorri][lorri website]]
+
+#+begin_src emacs-lisp
+(use-package direnv
+  :config
+  (direnv-mode))
 #+end_src
 
 
