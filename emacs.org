@@ -298,9 +298,12 @@ Rainbow permits to match pairs delimiters with the same color.
 ** Ace-jump mode
 
 #+begin_src emacs-lisp
-  (use-package ace-jump-mode
-    :bind
-    ("C-c SPC" . ace-jump-mode))
+(use-package ace-jump-mode
+  :bind (
+         ("C-c SPC" . ace-jump-mode)
+         :map xah-fly-command-map
+         ("SPC z" . ace-jump-mode)
+         ))
 #+end_src
 
 

@@ -198,8 +198,11 @@
   (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
 
 (use-package ace-jump-mode
-  :bind
-  ("C-c SPC" . ace-jump-mode))
+  :bind (
+         ("C-c SPC" . ace-jump-mode)
+         :map xah-fly-command-map
+         ("SPC z" . ace-jump-mode)
+         ))
 
 (use-package vterm)
 
