@@ -200,6 +200,8 @@
   :config
   (xah-fly-keys t)
   (xah-fly-keys-set-layout "colemak")
+  (setq xah-fly-use-control-key nil)
+  (setq xah-fly-use-meta-key nil)
   (define-key xah-fly-command-map (kbd "k") 'swiper)
   (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
 
@@ -210,7 +212,7 @@
 (use-package doom-themes)
 (use-package ef-themes
     :config
-    (load-theme 'doom-1337 t))
+    (load-theme 'doom-gruvbox-light t))
 
 (use-package all-the-icons
     :if (display-graphic-p))
@@ -222,10 +224,6 @@
   :after all-the-icons)
 
 (use-package nerd-icons)
-
-(use-package doom-modeline
-    :init (doom-modeline-mode 1)
-    :custom ((doom-modeline-height 15)))
 
 (use-package which-key ;; print next keybindings
 	     :init (which-key-mode) ;; happens before the package is loaded
@@ -446,14 +444,24 @@
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'smv/org-babel-tangle-config)))
 
+(use-package undo-tree
+  :config
+  (global-undo-tree-mode))
+
 (global-set-key (kbd "C-M-;") 'comment-region)
 
 (use-package wgrep)
 (global-set-key (kbd "C-c r") 'rgrep)
 
+(use-package direnv
+  :config
+  (direnv-mode))
+
 (use-package flymake
   :bind
-  ("C-c e l" . flymake-show-project-diagnostics))
+  ("M-g f l" . flymake-show-project-diagnostics))
+
+(global-set-key (kbd "M-g e a") 'eglot-code-actions)
 
 (use-package markdown-mode)
 

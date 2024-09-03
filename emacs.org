@@ -302,12 +302,14 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
 Xah-fly keys is an insane modal editing tools exclusively reserve to emacs users.
 
 #+begin_src emacs-lisp
-(use-package xah-fly-keys
-  :config
-  (xah-fly-keys t)
-  (xah-fly-keys-set-layout "colemak")
-  (define-key xah-fly-command-map (kbd "k") 'swiper)
-  (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
+  (use-package xah-fly-keys
+    :config
+    (xah-fly-keys t)
+    (xah-fly-keys-set-layout "colemak")
+    (setq xah-fly-use-control-key nil)
+    (setq xah-fly-use-meta-key nil)
+    (define-key xah-fly-command-map (kbd "k") 'swiper)
+    (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
 #+end_src
 
 ** Ace-jump mode
@@ -333,7 +335,7 @@ Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-th
 (use-package doom-themes)
 (use-package ef-themes
     :config
-    (load-theme 'doom-1337 t))
+    (load-theme 'doom-gruvbox-light t))
 #+end_src
 
 ** Better Mode line
@@ -352,10 +354,6 @@ You will have to install the icons on your machine before to get the full functi
     :after all-the-icons)
 
   (use-package nerd-icons)
-  
-  (use-package doom-modeline
-      :init (doom-modeline-mode 1)
-      :custom ((doom-modeline-height 15)))
 #+end_src
 
 ** Which Key
@@ -691,6 +689,16 @@ This snippets adds a hook to `org-mode` buffers so that efs/org-babel-tangle-con
 
 * Development
 
+** Undo tree
+
+Some day undo tree saved my self from losing my progress. It shows the changes history as a tree that you can freely explore
+
+#+begin_src emacs-lisp
+(use-package undo-tree
+  :config
+  (global-undo-tree-mode))
+#+end_src
+
 ** Commenting Code
 
 To help me comment code region quickly I set up this keyboard shortcut. The function used is a native emacs function.
@@ -710,6 +718,19 @@ I use the built-in rgrep to do my search and replace so I'm binding it to =C-c r
 #+end_src
 
 
+** Direnv
+
+direnv permit to load environment on fly. You will need to have a .direnv file, you could generate it with =lorri init= command.
+To use this plugin you must install lorri and direnv using : =nix-env -i lorri= and =nix-env -i direnv=.
+You should then go to the lorri website to configure its daemon [[https://github.com/nix-community/lorri][lorri website]]
+
+#+begin_src emacs-lisp
+(use-package direnv
+  :config
+  (direnv-mode))
+#+end_src
+
+
 ** Languages
 
 *** IDE Features with eglot-mode
@@ -726,7 +747,9 @@ Flymake is the built-in inline diagnostic tool used by eglot.
 #+begin_src emacs-lisp
   (use-package flymake
     :bind
-    ("C-c e l" . flymake-show-project-diagnostics))
+    ("M-g f l" . flymake-show-project-diagnostics))
+
+  (global-set-key (kbd "M-g e a") 'eglot-code-actions)
 #+end_src
 
 
