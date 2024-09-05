@@ -720,9 +720,11 @@ I use the built-in rgrep to do my search and replace so I'm binding it to =C-c r
 
 ** Direnv
 
-direnv permit to load environment on fly. You will need to have a .direnv file, you could generate it with =lorri init= command.
-To use this plugin you must install lorri and direnv using : =nix-env -i lorri= and =nix-env -i direnv=.
-You should then go to the lorri website to configure its daemon [[https://github.com/nix-community/lorri][lorri website]]
+direnv permit to load environment on fly. You will need to have a .envrc file, you could generate it with =lorri init= command or you can create one with the =use flake= command in it if you're using flakes.
+
+To use this plugin you must install direnv using :  =nix-env -i direnv=. You can also install lorri the same way.
+
+You could go to the lorri's website to grab some info [[https://github.com/nix-community/lorri][lorri website]]
 
 #+begin_src emacs-lisp
 (use-package direnv
