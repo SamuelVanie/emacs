@@ -335,7 +335,7 @@ Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-th
 (use-package doom-themes)
 (use-package ef-themes
     :config
-    (load-theme 'doom-gruvbox-light t))
+    (load-theme 'manoj-dark t))
 #+end_src
 
 ** Better Mode line
@@ -466,6 +466,14 @@ I use hydra to build a trasient that will permit me to quickly adjust the scale 
 * Org Mode
 
 [[https://orgmode.org/][OrgMode]] is a rich document editor, project planner, task and time tracker, blogging engine, and literate coding utility all wrapped up in one package.
+
+
+** Setting env for pdf export
+
+#+begin_src emacs-lisp
+(setenv "PATH" (concat (getenv "PATH") ":/Library/TeX/texbin"))
+#+end_src
+
 
 ** Better Font Faces
 

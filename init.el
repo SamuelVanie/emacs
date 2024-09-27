@@ -212,7 +212,7 @@
 (use-package doom-themes)
 (use-package ef-themes
     :config
-    (load-theme 'doom-gruvbox-light t))
+    (load-theme 'manoj-dark t))
 
 (use-package all-the-icons
     :if (display-graphic-p))
@@ -291,6 +291,8 @@
 
 (smv/leader-keys ;; use general to set a keybinding to quickly change text size
   "ts" '(hydra-text-scale/body :which-key "scale text"))
+
+(setenv "PATH" (concat (getenv "PATH") ":/Library/TeX/texbin"))
 
 (defun smv/org-font-setup ()
     (font-lock-add-keywords 'org-mode ;; Change the list icon style from "-" to "."
