@@ -389,7 +389,8 @@
 
 
     (smv/org-font-setup)
-    (global-set-key (kbd "C-c a") 'org-agenda))
+    (global-set-key (kbd "C-c a") 'org-agenda)
+    (global-set-key (kbd "M-i") 'org-insert-item))
 
 (use-package org-fragtog
     :hook (org-mode-hook . org-fragtog-mode))
