@@ -216,7 +216,7 @@
 (use-package doom-themes)
 (use-package ef-themes
   :config
-  (load-theme 'doom-gruvbox-light t))
+  (load-theme 'manoj-dark t))
 
 (use-package all-the-icons
   :if (display-graphic-p))
@@ -334,6 +334,7 @@
     (setq org-agenda-start-with-log-mode t)
     (setq org-log-done 'time)
     (setq org-log-into-drawer t)
+    (setq org-startup-folded 'content)
 
     (setq org-agenda-files
             '("~/.org/todo.org"
@@ -371,9 +372,9 @@
         ((todo "NEXT"
             ((org-agenda-overriding-header "Next Tasks")))))
 
-        ("s" "School Tasks" tags-todo "@school+CATEGORY=\"project_task\"")
+        ("s" "School Projects" tags-todo "@school")
 
-        ("P" "Projects" tags-todo "+projects/ACTIVE")
+        ("P" "Personal Projects" tags-todo "personal")
 
         ;; Low-effort next actions
         ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"

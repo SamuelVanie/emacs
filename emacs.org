@@ -160,7 +160,6 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
   (defalias 'list-buffers 'ibuffer)
 #+end_src
 
-
 ** Kill buffers
 
 I'm writing this function to kill all the buffers because it is really boring to get the confirmation prompt every time you want to kill all the buffers with kill-some-buffers
@@ -223,7 +222,6 @@ I use DaddyTimeMono Nerd Font as my main font for both fixed and variable fonts.
    '(variable-pitch ((t (:weight light :height 139 :family "JetbrainsMono Nerd Font")))))
 #+end_src
 
-
 ** Ligatures
 
 You will need to install the package ligature, because it cannot be installed automatically. Use the command ~package-install~ and search for ligature.
@@ -259,7 +257,6 @@ Rainbow permits to match pairs delimiters with the same color.
 
 * Keybindings Configuration
 
-
 ** Hydra and general
 
 #+begin_src emacs-lisp
@@ -279,8 +276,6 @@ Rainbow permits to match pairs delimiters with the same color.
 
 #+end_src
 
-
-
 ** Xah-fly keys
 
 #+begin_src emacs-lisp
@@ -294,7 +289,6 @@ Rainbow permits to match pairs delimiters with the same color.
     (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
 #+end_src
 
-
 ** Ace-jump mode
 
 #+begin_src emacs-lisp
@@ -305,7 +299,6 @@ Rainbow permits to match pairs delimiters with the same color.
          ("SPC z" . ace-jump-mode)
          ))
 #+end_src
-
 
 * vterm
 
@@ -323,7 +316,6 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
 
 #+end_src
 
-
 * UI Configuration
 
 ** Color Theme
@@ -335,7 +327,7 @@ Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-th
   (use-package doom-themes)
   (use-package ef-themes
     :config
-    (load-theme 'doom-gruvbox-light t))
+    (load-theme 'manoj-dark t))
 #+end_src
 
 ** Adding icons to emacs
@@ -443,7 +435,6 @@ You will have to install the icons on your machine before to get the full functi
 
 #+end_src
 
-
 * Org Mode
 
 [[https://orgmode.org/][OrgMode]] is a rich document editor, project planner, task and time tracker, blogging engine, and literate coding utility all wrapped up in one package.
@@ -487,87 +478,86 @@ I create a function called `smv/org-font-setup` to configure various text faces 
 
 #+end_src
 
-
 ** Basic Config
 
 This section contains the basic configuration for org-mode plus the configuration for Org agendas and capture templates
 
 #+begin_src emacs-lisp
 
-(defun smv/org-mode-setup()
-    (org-indent-mode)
-    (variable-pitch-mode 1)
-    (auto-fill-mode 0)
-    (visual-line-mode 1)
-    (smv/org-font-setup))
+  (defun smv/org-mode-setup()
+      (org-indent-mode)
+      (variable-pitch-mode 1)
+      (auto-fill-mode 0)
+      (visual-line-mode 1)
+      (smv/org-font-setup))
 
 
-(use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
-    :straight org-contrib
-    :hook (org-mode . smv/org-mode-setup)
-    :config
-    (setq org-ellipsis " ▼:")
-    (setq org-agenda-start-with-log-mode t)
-    (setq org-log-done 'time)
-    (setq org-log-into-drawer t)
+  (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
+      :straight org-contrib
+      :hook (org-mode . smv/org-mode-setup)
+      :config
+      (setq org-ellipsis " ▼:")
+      (setq org-agenda-start-with-log-mode t)
+      (setq org-log-done 'time)
+      (setq org-log-into-drawer t)
+      (setq org-startup-folded 'content)
 
-    (setq org-agenda-files
-            '("~/.org/todo.org"
-            "~/.org/projects.org"))
+      (setq org-agenda-files
+              '("~/.org/todo.org"
+              "~/.org/projects.org"))
 
-    (setq org-todo-keywords
-            '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-            (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+      (setq org-todo-keywords
+              '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+              (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
-    ;; easily move task to another header
-    (setq org-refile-targets
-            '(("archive.org" :maxlevel . 1)
-            ("todo.org" :maxlevel . 1)
-            ("projects.org" :maxlevel . 1)))
+      ;; easily move task to another header
+      (setq org-refile-targets
+              '(("archive.org" :maxlevel . 1)
+              ("todo.org" :maxlevel . 1)
+              ("projects.org" :maxlevel . 1)))
 
-    ;; Save Org buffers after refiling!
-    (advice-add 'org-refile :after 'org-save-all-org-buffers)
+      ;; Save Org buffers after refiling!
+      (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
-    (setq org-tag-alist
-        '((:startgroup)
-            ; Put mutually exclusive tags here
-            (:endgroup)
-            ("@school" . ?s)
-            ("personal" . ?p)
-            ("note" . ?n)
-            ("idea" . ?i)))
+      (setq org-tag-alist
+          '((:startgroup)
+              ; Put mutually exclusive tags here
+              (:endgroup)
+              ("@school" . ?s)
+              ("personal" . ?p)
+              ("note" . ?n)
+              ("idea" . ?i)))
 
-    (setq org-agenda-custom-commands
-        '(("d" "Dashboard"
-        ((agenda "" ((org-deadline-warning-days 7)))
-        (todo "TODO"
-            ((org-agenda-overriding-header "All tasks")))))
+      (setq org-agenda-custom-commands
+          '(("d" "Dashboard"
+          ((agenda "" ((org-deadline-warning-days 7)))
+          (todo "TODO"
+              ((org-agenda-overriding-header "All tasks")))))
 
-        ("n" "Next Tasks"
-        ((todo "NEXT"
-            ((org-agenda-overriding-header "Next Tasks")))))
+          ("n" "Next Tasks"
+          ((todo "NEXT"
+              ((org-agenda-overriding-header "Next Tasks")))))
 
-        ("s" "School Tasks" tags-todo "@school+CATEGORY=\"project_task\"")
+          ("s" "School Projects" tags-todo "@school")
 
-        ("P" "Projects" tags-todo "+projects/ACTIVE")
+          ("P" "Personal Projects" tags-todo "personal")
 
-        ;; Low-effort next actions
-        ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-        ((org-agenda-overriding-header "Low Effort Tasks")
-        (org-agenda-max-todos 20)
-        (org-agenda-files org-agenda-files)))))
+          ;; Low-effort next actions
+          ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+          ((org-agenda-overriding-header "Low Effort Tasks")
+          (org-agenda-max-todos 20)
+          (org-agenda-files org-agenda-files)))))
 
-    (setq org-capture-templates ;; quickly add todos entries without going into the file
-        `(("t" "Tasks")
-        ("tt" "Task" entry (file+olp "~/.org/todo.org" "Tasks")
-                "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
+      (setq org-capture-templates ;; quickly add todos entries without going into the file
+          `(("t" "Tasks")
+          ("tt" "Task" entry (file+olp "~/.org/todo.org" "Tasks")
+                  "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
 
 
-    (smv/org-font-setup)
-    (global-set-key (kbd "C-c a") 'org-agenda))
+      (smv/org-font-setup)
+      (global-set-key (kbd "C-c a") 'org-agenda))
 
 #+end_src
-
 
 ** Auto rendering latex section
 
@@ -581,7 +571,6 @@ This section contains the basic configuration for org-mode plus the configuratio
 #+begin_src emacs-lisp
 (use-package ox-reveal)
 #+end_src
-
 
 ** Nicer Heading
 
@@ -605,7 +594,6 @@ I use also `org-num` to add numbers in front of my different headlines.
     :hook (org-mode . org-num-mode))
 #+end_src
 
-
 ** Center buffers
 
 To center buffers I use the [[https://github.com/rnkn/olivetti][olivetti]] minor-mode. It is more easy and pratical and doesn't only serve in org-mode.
@@ -615,7 +603,6 @@ To center buffers I use the [[https://github.com/rnkn/olivetti][olivetti]] minor
 (use-package olivetti
     :hook (org-mode-hook . olivetti-mode))
 #+end_src
-
 
 ** Configure Babel Languages
 
@@ -630,7 +617,6 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 
   (push '("conf-unix" . conf-unix) org-src-lang-modes))
 #+end_src
-
 
 ** Structure Templates
 
@@ -649,7 +635,6 @@ Org mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
 (add-to-list 'org-structure-template-alist '("cpp" . "src cpp"))
 #+end_src
 
-
 ** Auto-tangle Configuration files
 
 This snippets adds a hook to `org-mode` buffers so that efs/org-babel-tangle-config gets executed each time such a buffer gets saved. This function checks to see if the file being saved is the Emacs.org file you’re looking at right now, and if so, automatically exports the configuration here to the associated output files. Tangle is use to export org mode files into the configuration init.el file.
@@ -667,7 +652,6 @@ This snippets adds a hook to `org-mode` buffers so that efs/org-babel-tangle-con
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'smv/org-babel-tangle-config)))
 
 #+end_src
-
 
 * Development
 
@@ -689,7 +673,6 @@ To help me comment code region quickly I set up this keyboard shortcut. The func
 (global-set-key (kbd "C-M-;") 'comment-region)
 #+end_src
 
-
 ** Search project wide
 
 wgrep will permit to make grep buffers editable so that you can just modify the occurences of what you're looking for.
@@ -701,11 +684,13 @@ I use the built-in rgrep to do my search and replace so I'm binding it to =C-c r
   (global-set-key (kbd "C-c r") 'rgrep)
 #+end_src
 
-
 ** Direnv
 
-direnv permit to load environment on fly. You will need to have a .direnv file, you could generate it with =lorri init= command.
-To use this plugin you must install lorri and direnv using : =nix-env -i lorri= and =nix-env -i direnv=.
+direnv permit to load environment on fly. You will need to have a .direnv file that should contain =use flake= if you are using flakes. Otherwise you can generate the file with program like lorri.
+
+To use this plugin you must install direnv using : =nix-env -i direnv=.
+
+You could install lorri also if necessary.
 You should then go to the lorri website to configure its daemon [[https://github.com/nix-community/lorri][lorri website]]
 
 #+begin_src emacs-lisp
@@ -714,14 +699,12 @@ You should then go to the lorri website to configure its daemon [[https://github
   (direnv-mode))
 #+end_src
 
-
 ** Languages
 
 *** IDE Features with eglot-mode
 
 Language server configuration for programming part.
 I use some useful lsp packages with downloaded languages server for my programming journey.
-
 
 **** Flymake
 
@@ -742,7 +725,6 @@ Use to make eglot documentation more pretty
 (use-package markdown-mode)
 #+end_src
 
-
 **** yasnippet
 
 Useful snippets for quick programming
@@ -751,7 +733,6 @@ Useful snippets for quick programming
 (use-package yasnippet
     :config (yas-global-mode))
 #+end_src
-
 
 **** auto-yasnippet
 
@@ -771,7 +752,6 @@ A way to create temporary snippet to prevent rewriting code
     ("C-c C-y o" . aya-open-line))
 #+end_src
 
-
 *** Yaml-mode
 
 Mode for yaml configuration files editing.
@@ -782,7 +762,6 @@ Mode for yaml configuration files editing.
             ("\\.yaml\\'" . yaml-mode)
             ))
 #+end_src
-
 
 *** Web Programming
 
@@ -833,7 +812,6 @@ The useful web mode for programming.
 
 #+end_src
 
-
 **** JSX support
 
 #+begin_src emacs-lisp
@@ -877,7 +855,6 @@ Installing PHP
   )
 #+end_src
 
-
 *** JAVA
 
 #+begin_src emacs-lisp
@@ -908,7 +885,6 @@ Installing PHP
 #+end_src
 
 
-
 ** Company Mode
 
 Company Mode provides a nicer in-buffer completion interface than completion-at-point which is more reminiscent of what you would expect from an IDE. We add a simple configuration to make the keybindings a little more useful (TAB now completes the selection and initiates completion at the current location if needed).
@@ -933,7 +909,6 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
     (add-to-list 'company-backends #'company-tabnine t))
 #+end_src
 
-
 ** Debugger configuration
 
 I use dape for the philosophy of emacs and because it's more manageable with the built-in packages of emacs like eglot.
@@ -953,7 +928,6 @@ Quickly manages [[https://github.com/Silex/docker.el][docker]] container directl
 
 (use-package dockerfile-mode)
 #+end_src
-
 
 ** Github Copilot
 
@@ -1084,7 +1058,6 @@ Using chatgpt directly in emacs so that I will not be obliged to switch to the w
   ;; (setq gptel-api-key (smv/gptel-api-key))
 #+end_src
 
-
 ** Youdotcom
 
 This is my own package to make web search and chat directly inside emacs
@@ -1096,7 +1069,6 @@ This is my own package to make web search and chat directly inside emacs
     :config
     (setq youdotcom-rag-api-key ""))
 #+end_src
-
 
 ** Magit
 
