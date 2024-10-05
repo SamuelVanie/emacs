@@ -372,10 +372,14 @@
         ((todo "NEXT"
             ((org-agenda-overriding-header "Next Tasks")))))
 
-        ("s" "School Projects" tags-todo "@school")
-
-        ("P" "Personal Projects" tags-todo "personal")
-
+        ("st" "School todos" tags-todo "+@school/TODO")
+        
+        ("sp" "School Projects" tags-todo "+@school/ACTIVE")
+        
+        ("pt" "Personal todos" tags-todo "+personal/TODO")
+        
+        ("pl" "Personal Projects" tags-todo "+personal/ACTIVE")
+        
         ;; Low-effort next actions
         ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
         ((org-agenda-overriding-header "Low Effort Tasks")
