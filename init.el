@@ -205,10 +205,6 @@
   (define-key xah-fly-command-map (kbd "k") 'swiper)
   (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
 
-(use-package ace-jump-mode
-    :bind
-    ("C-c SPC" . ace-jump-mode))
-
 (use-package doom-themes)
 (use-package ef-themes
     :config
@@ -378,10 +374,12 @@
         ((todo "NEXT"
             ((org-agenda-overriding-header "Next Tasks")))))
 
-        ("s" "School Tasks" tags-todo "@school+CATEGORY=\"project_task\"")
-
-        ("P" "Projects" tags-todo "+projects/ACTIVE")
-
+        ("st" "School Todos" tags-todo "+@school/TODO")
+        ("sp" "School Projects" tags-todo "+@school/ACTIVE")
+        
+        ("pt" "Personal Todos" tags-todo "+personal/TODO")
+        ("pl" "Personal Projects" tags-todo "+personal/ACTIVE")
+        
         ;; Low-effort next actions
         ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
         ((org-agenda-overriding-header "Low Effort Tasks")
@@ -395,12 +393,14 @@
 
 
     (smv/org-font-setup)
-    (global-set-key (kbd "C-c a") 'org-agenda))
+    (global-set-key (kbd "C-c a") 'org-agenda)
+    (global-set-key (kbd "M-i") 'org-insert-item))
 
 (use-package org-fragtog
     :hook (org-mode-hook . org-fragtog-mode))
 
 (use-package ox-reveal)
+(setq Org-Reveal-root "~/.config/emacs/reveal-js")
 
 (use-package org-bullets ;; change the bullets in my org mode files
     :after org
@@ -417,7 +417,7 @@
 
 ;; use to stretch the page on the center to be able to focus on document writing
 (use-package olivetti
-    :hook (org-mode-hook . olivetti-mode))
+    :hook (org-mode . olivetti-mode))
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
@@ -549,7 +549,7 @@
 (use-package rust-mode)
 
 (use-package rust-ts-mode
-  :hook (rust-ts-mode-hook . eglot-ensure)
+  :hook (rust-ts-mode . eglot-ensure)
   :mode "\\.rs\\'"
   :bind-keymap
   ("C-c c" . rust-mode-map))
@@ -557,7 +557,7 @@
 (use-package flutter)
 
 (use-package dart-mode
-    :hook (dart-mode-hook . eglot-ensure)
+    :hook (dart-mode . eglot-ensure)
     :mode "\\.dart\\'")
 
 (use-package dape)

@@ -312,18 +312,6 @@ Xah-fly keys is an insane modal editing tools exclusively reserve to emacs users
     (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
 #+end_src
 
-** Ace-jump mode
-
-Quickly move horizontaly on the screen.
-
-#+begin_src emacs-lisp
-(use-package ace-jump-mode
-    :bind
-    ("C-c SPC" . ace-jump-mode))
-#+end_src
-
-
-
 * UI Configuration
 
 ** Color Theme
@@ -521,77 +509,80 @@ This section contains the basic configuration for org-mode plus the configuratio
 
 #+begin_src emacs-lisp
 
-(defun smv/org-mode-setup()
-    (org-indent-mode)
-    (variable-pitch-mode 1)
-    (auto-fill-mode 0)
-    (visual-line-mode 1)
-    (smv/org-font-setup))
+    (defun smv/org-mode-setup()
+        (org-indent-mode)
+        (variable-pitch-mode 1)
+        (auto-fill-mode 0)
+        (visual-line-mode 1)
+        (smv/org-font-setup))
 
 
-(use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
-    :straight org-contrib
-    :hook (org-mode . smv/org-mode-setup)
-    :config
-    (setq org-ellipsis " ▼:")
-    (setq org-agenda-start-with-log-mode t)
-    (setq org-log-done 'time)
-    (setq org-log-into-drawer t)
+    (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
+        :straight org-contrib
+        :hook (org-mode . smv/org-mode-setup)
+        :config
+        (setq org-ellipsis " ▼:")
+        (setq org-agenda-start-with-log-mode t)
+        (setq org-log-done 'time)
+        (setq org-log-into-drawer t)
 
-    (setq org-agenda-files
-            '("~/.org/todo.org"
-            "~/.org/projects.org"))
+        (setq org-agenda-files
+                '("~/.org/todo.org"
+                "~/.org/projects.org"))
 
-    (setq org-todo-keywords
-            '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-            (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+        (setq org-todo-keywords
+                '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+                (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
-    ;; easily move task to another header
-    (setq org-refile-targets
-            '(("archive.org" :maxlevel . 1)
-            ("todo.org" :maxlevel . 1)
-            ("projects.org" :maxlevel . 1)))
+        ;; easily move task to another header
+        (setq org-refile-targets
+                '(("archive.org" :maxlevel . 1)
+                ("todo.org" :maxlevel . 1)
+                ("projects.org" :maxlevel . 1)))
 
-    ;; Save Org buffers after refiling!
-    (advice-add 'org-refile :after 'org-save-all-org-buffers)
+        ;; Save Org buffers after refiling!
+        (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
-    (setq org-tag-alist
-        '((:startgroup)
-            ; Put mutually exclusive tags here
-            (:endgroup)
-            ("@school" . ?s)
-            ("personal" . ?p)
-            ("note" . ?n)
-            ("idea" . ?i)))
+        (setq org-tag-alist
+            '((:startgroup)
+                ; Put mutually exclusive tags here
+                (:endgroup)
+                ("@school" . ?s)
+                ("personal" . ?p)
+                ("note" . ?n)
+                ("idea" . ?i)))
 
-    (setq org-agenda-custom-commands
-        '(("d" "Dashboard"
-        ((agenda "" ((org-deadline-warning-days 7)))
-        (todo "TODO"
-            ((org-agenda-overriding-header "All tasks")))))
+        (setq org-agenda-custom-commands
+            '(("d" "Dashboard"
+            ((agenda "" ((org-deadline-warning-days 7)))
+            (todo "TODO"
+                ((org-agenda-overriding-header "All tasks")))))
 
-        ("n" "Next Tasks"
-        ((todo "NEXT"
-            ((org-agenda-overriding-header "Next Tasks")))))
+            ("n" "Next Tasks"
+            ((todo "NEXT"
+                ((org-agenda-overriding-header "Next Tasks")))))
 
-        ("s" "School Tasks" tags-todo "@school+CATEGORY=\"project_task\"")
+            ("st" "School Todos" tags-todo "+@school/TODO")
+            ("sp" "School Projects" tags-todo "+@school/ACTIVE")
+            
+            ("pt" "Personal Todos" tags-todo "+personal/TODO")
+            ("pl" "Personal Projects" tags-todo "+personal/ACTIVE")
+            
+            ;; Low-effort next actions
+            ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+            ((org-agenda-overriding-header "Low Effort Tasks")
+            (org-agenda-max-todos 20)
+            (org-agenda-files org-agenda-files)))))
 
-        ("P" "Projects" tags-todo "+projects/ACTIVE")
-
-        ;; Low-effort next actions
-        ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-        ((org-agenda-overriding-header "Low Effort Tasks")
-        (org-agenda-max-todos 20)
-        (org-agenda-files org-agenda-files)))))
-
-    (setq org-capture-templates ;; quickly add todos entries without going into the file
-        `(("t" "Tasks")
-        ("tt" "Task" entry (file+olp "~/.org/todo.org" "Tasks")
-                "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
+        (setq org-capture-templates ;; quickly add todos entries without going into the file
+            `(("t" "Tasks")
+            ("tt" "Task" entry (file+olp "~/.org/todo.org" "Tasks")
+                    "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
 
 
-    (smv/org-font-setup)
-    (global-set-key (kbd "C-c a") 'org-agenda))
+        (smv/org-font-setup)
+        (global-set-key (kbd "C-c a") 'org-agenda)
+        (global-set-key (kbd "M-i") 'org-insert-item))
 
 #+end_src
 
@@ -607,6 +598,7 @@ This section contains the basic configuration for org-mode plus the configuratio
 
 #+begin_src emacs-lisp
 (use-package ox-reveal)
+(setq Org-Reveal-root "~/.config/emacs/reveal-js")
 #+end_src
 
 
@@ -640,7 +632,7 @@ To center buffers I use the [[https://github.com/rnkn/olivetti][olivetti]] minor
 #+begin_src emacs-lisp
 ;; use to stretch the page on the center to be able to focus on document writing
 (use-package olivetti
-    :hook (org-mode-hook . olivetti-mode))
+    :hook (org-mode . olivetti-mode))
 #+end_src
 
 
@@ -931,7 +923,7 @@ You would have to set the path to JDTserver
 (use-package rust-mode)
 
 (use-package rust-ts-mode
-  :hook (rust-ts-mode-hook . eglot-ensure)
+  :hook (rust-ts-mode . eglot-ensure)
   :mode "\\.rs\\'"
   :bind-keymap
   ("C-c c" . rust-mode-map))
@@ -944,7 +936,7 @@ You would have to set the path to JDTserver
 (use-package flutter)
 
 (use-package dart-mode
-    :hook (dart-mode-hook . eglot-ensure)
+    :hook (dart-mode . eglot-ensure)
     :mode "\\.dart\\'")
 #+end_src
 
