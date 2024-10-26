@@ -373,12 +373,12 @@
             ((org-agenda-overriding-header "Next Tasks")))))
 
         ("st" "School todos" tags-todo "+@school/TODO")
-        
         ("sp" "School Projects" tags-todo "+@school/ACTIVE")
+        ("sr" "School Review" tags-todo "+@school/REVIEW")
         
         ("pt" "Personal todos" tags-todo "+personal/TODO")
-        
         ("pl" "Personal Projects" tags-todo "+personal/ACTIVE")
+        ("pr" "Personal Review" tags-todo "+personal/REVIEW")
         
         ;; Low-effort next actions
         ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
@@ -397,7 +397,7 @@
     (global-set-key (kbd "M-i") 'org-insert-item))
 
 (use-package org-fragtog
-    :hook (org-mode-hook . org-fragtog-mode))
+    :hook (org-mode . org-fragtog-mode))
 
 (use-package ox-reveal)
 
@@ -413,10 +413,6 @@
     :load-path "lisp/"
     :after org
     :hook (org-mode . org-num-mode))
-
-;; use to stretch the page on the center to be able to focus on document writing
-(use-package olivetti
-    :hook (org-mode-hook . olivetti-mode))
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
@@ -462,10 +458,10 @@
 
 (use-package flymake
   :bind
-  ("M-g f l" . flymake-show-project-diagnostics))
+  ("SPC c l" . flymake-show-project-diagnostics))
 
 ;; set global keybinding for quickfix
-(global-set-key (kbd "M-g e a") 'eglot-code-actions)
+(global-set-key (kbd "SPC c a") 'eglot-code-actions)
 
 (use-package markdown-mode)
 

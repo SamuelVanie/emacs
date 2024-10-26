@@ -539,12 +539,12 @@ This section contains the basic configuration for org-mode plus the configuratio
               ((org-agenda-overriding-header "Next Tasks")))))
 
           ("st" "School todos" tags-todo "+@school/TODO")
-          
           ("sp" "School Projects" tags-todo "+@school/ACTIVE")
+          ("sr" "School Review" tags-todo "+@school/REVIEW")
           
           ("pt" "Personal todos" tags-todo "+personal/TODO")
-          
           ("pl" "Personal Projects" tags-todo "+personal/ACTIVE")
+          ("pr" "Personal Review" tags-todo "+personal/REVIEW")
           
           ;; Low-effort next actions
           ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
@@ -568,7 +568,7 @@ This section contains the basic configuration for org-mode plus the configuratio
 
 #+begin_src emacs-lisp
 (use-package org-fragtog
-    :hook (org-mode-hook . org-fragtog-mode))
+    :hook (org-mode . org-fragtog-mode))
 #+end_src
 
 ** Presentation
@@ -597,16 +597,6 @@ I use also `org-num` to add numbers in front of my different headlines.
     :load-path "lisp/"
     :after org
     :hook (org-mode . org-num-mode))
-#+end_src
-
-** Center buffers
-
-To center buffers I use the [[https://github.com/rnkn/olivetti][olivetti]] minor-mode. It is more easy and pratical and doesn't only serve in org-mode.
-
-#+begin_src emacs-lisp
-;; use to stretch the page on the center to be able to focus on document writing
-(use-package olivetti
-    :hook (org-mode-hook . olivetti-mode))
 #+end_src
 
 ** Configure Babel Languages
@@ -716,10 +706,10 @@ I use some useful lsp packages with downloaded languages server for my programmi
 #+begin_src emacs-lisp
   (use-package flymake
     :bind
-    ("M-g f l" . flymake-show-project-diagnostics))
+    ("SPC c l" . flymake-show-project-diagnostics))
 
   ;; set global keybinding for quickfix
-  (global-set-key (kbd "M-g e a") 'eglot-code-actions)
+  (global-set-key (kbd "SPC c a") 'eglot-code-actions)
 #+end_src
 
 **** markdown-mode
