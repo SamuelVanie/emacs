@@ -4,29 +4,31 @@
 
 * Declare some global variables
 
+
 Declare some of my variables for my global configuration
 
 #+BEGIN_SRC emacs-lisp
-(setq gc-const-threshold (* 50 1000 1000))
-(setq read-process-output-max (* 1024 1024))
+  (setq gc-const-threshold (* 10 1000 1000))
+  (setq gc-const-percentage (* 70 1000 1000))  
+  (setq read-process-output-max (* 512 1024))
 
-;; You will most likely need to adjust this font size for your system!
-(defvar smv/default-font-size 139)
-(defvar smv/default-variable-font-size 139)
+  ;; You will most likely need to adjust this font size for your system!
+  (defvar smv/default-font-size 139)
+  (defvar smv/default-variable-font-size 139)
 
-;; remove noise for not non allowed command in emacs if your system make them
-(setq ring-bell-function 'ignore)
+  ;; remove noise for not non allowed command in emacs if your system make them
+  (setq ring-bell-function 'ignore)
 
-;; Make frame transparency overridable
-(defvar smv/frame-transparency '(90 . 90))
+  ;; Make frame transparency overridable
+  (defvar smv/frame-transparency '(90 . 90))
 
-(setq custom-file (locate-user-emacs-file "custom-vars.el"))
-(load custom-file 'noerror 'nomessage)
+  (setq custom-file (locate-user-emacs-file "custom-vars.el"))
+  (load custom-file 'noerror 'nomessage)
 
-(setq-default indent-tabs-mode nil)
+  (setq-default indent-tabs-mode nil)
 
-;; auto refresh buffers when files changes
-(global-auto-revert-mode t)
+  ;; auto refresh buffers when files changes
+  (global-auto-revert-mode t)
 #+END_SRC
 
 * Scrolling inside popup view
@@ -706,10 +708,10 @@ I use some useful lsp packages with downloaded languages server for my programmi
 #+begin_src emacs-lisp
   (use-package flymake
     :bind
-    ("SPC c l" . flymake-show-project-diagnostics))
+    ("<space> c l" . flymake-show-project-diagnostics))
 
   ;; set global keybinding for quickfix
-  (global-set-key (kbd "SPC c a") 'eglot-code-actions)
+  (global-set-key (kbd "<space> c a") 'eglot-code-actions)
 #+end_src
 
 **** markdown-mode
@@ -879,29 +881,39 @@ Installing PHP
     :hook (dart-mode . eglot-ensure))
 #+end_src
 
+*** Clojure
 
+clojure-lsp should be installed to use the lsp with eglot for this package.
+
+#+begin_src emacs-lisp
+  (use-package clojure-ts-mode
+    :mode "\\.clj\\'"
+    :hook (clojure-ts-mode . eglot-ensure))
+
+  (use-package cider)
+#+end_src
 ** Company Mode
 
 Company Mode provides a nicer in-buffer completion interface than completion-at-point which is more reminiscent of what you would expect from an IDE. We add a simple configuration to make the keybindings a little more useful (TAB now completes the selection and initiates completion at the current location if needed).
 
 #+begin_src emacs-lisp
-(use-package company
-    :after eglot-mode
-    :hook (eglot-mode . company-mode)
-    :bind
-    (:map company-mode
-          ("M-o" . company-manual-begin))
-    :custom
-    (company-minimum-prefix-length 1)
-    (company-idle-delay 0.0))
+  (use-package company
+      :after eglot
+      :hook (eglot-managed-mode . company-mode)
+      :bind
+      (:map company-mode
+            ("M-o" . company-manual-begin))
+      :custom
+      (company-minimum-prefix-length 1)
+      (company-idle-delay 0.0))
 
-(use-package company-box
-    :hook
-    (company-mode . company-box-mode))
+  (use-package company-box
+      :hook
+      (company-mode . company-box-mode))
 
-(use-package company-tabnine
-    :config
-    (add-to-list 'company-backends #'company-tabnine t))
+  (use-package company-tabnine
+      :config
+      (add-to-list 'company-backends #'company-tabnine t))
 #+end_src
 
 ** Debugger configuration

@@ -1,5 +1,6 @@
-(setq gc-const-threshold (* 50 1000 1000))
-(setq read-process-output-max (* 1024 1024))
+(setq gc-const-threshold (* 10 1000 1000))
+(setq gc-const-percentage (* 70 1000 1000))  
+(setq read-process-output-max (* 512 1024))
 
 ;; You will most likely need to adjust this font size for your system!
 (defvar smv/default-font-size 139)
@@ -458,10 +459,10 @@
 
 (use-package flymake
   :bind
-  ("SPC c l" . flymake-show-project-diagnostics))
+  ("<space> c l" . flymake-show-project-diagnostics))
 
 ;; set global keybinding for quickfix
-(global-set-key (kbd "SPC c a") 'eglot-code-actions)
+(global-set-key (kbd "<space> c a") 'eglot-code-actions)
 
 (use-package markdown-mode)
 
@@ -554,9 +555,15 @@
     :mode "\\.dart\\'"
     :hook (dart-mode . eglot-ensure))
 
+(use-package clojure-ts-mode
+  :mode "\\.clj\\'"
+  :hook (clojure-ts-mode . eglot-ensure))
+
+(use-package cider)
+
 (use-package company
-    :after eglot-mode
-    :hook (eglot-mode . company-mode)
+    :after eglot
+    :hook (eglot-managed-mode . company-mode)
     :bind
     (:map company-mode
           ("M-o" . company-manual-begin))
