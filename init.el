@@ -1,6 +1,7 @@
 ;; Making lsp more responsive
-(setq gc-const-threshold (* 80 1000 1000))
-(setq read-process-output-max (* 1024 1024)) ;; 1mb
+(setq gc-const-threshold (* 25 1000 1000))
+(setq gc-const-percentage (* 70 1000 1000))
+(setq read-process-output-max (* 512 1024)) ;; 1mb
 
 ;; remove noise for not non allowed command in emacs if your system make them
 (setq ring-bell-function 'ignore)
@@ -396,6 +397,11 @@
     (global-set-key (kbd "C-c a") 'org-agenda)
     (global-set-key (kbd "M-i") 'org-insert-item))
 
+
+;; Install htmlize for source block hightlighting
+(use-package htmlize
+  :after org)
+
 (use-package org-fragtog
     :hook (org-mode-hook . org-fragtog-mode))
 
@@ -414,10 +420,6 @@
     :load-path "lisp/"
     :after org
     :hook (org-mode . org-num-mode))
-
-;; use to stretch the page on the center to be able to focus on document writing
-(use-package olivetti
-    :hook (org-mode . olivetti-mode))
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
@@ -489,6 +491,11 @@
 
 (use-package nix-ts-mode
   :mode ("\\.nix\\'" . nix-ts-mode))
+
+(use-package cider)
+(use-package clojure-ts-mode
+  :mode ("\\.clj\\'" . clojure-ts-mode)
+  :hook (clojure-ts-mode . eglot-ensure))
 
 (use-package emmet-mode)
 
@@ -564,10 +571,10 @@
 
 (use-package company
     :after eglot-mode
+    :hook (eglot-managed-mode . company-mode)
     :bind
     (:map company-mode
         ("M-o" . company-manual-begin))
-    :hook (eglot-mode . company-mode)
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))

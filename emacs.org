@@ -6,24 +6,25 @@
 Declare some of my variables for my global configuration
 
 #+BEGIN_SRC emacs-lisp
-;; Making lsp more responsive
-(setq gc-const-threshold (* 80 1000 1000))
-(setq read-process-output-max (* 1024 1024)) ;; 1mb
+  ;; Making lsp more responsive
+  (setq gc-const-threshold (* 25 1000 1000))
+  (setq gc-const-percentage (* 70 1000 1000))
+  (setq read-process-output-max (* 512 1024)) ;; 1mb
 
-;; remove noise for not non allowed command in emacs if your system make them
-(setq ring-bell-function 'ignore)
+  ;; remove noise for not non allowed command in emacs if your system make them
+  (setq ring-bell-function 'ignore)
 
-;; Make frame transparency overridable
-(defvar smv/frame-transparency '(90 . 90))
+  ;; Make frame transparency overridable
+  (defvar smv/frame-transparency '(90 . 90))
 
-(setq custom-file (locate-user-emacs-file "custom-vars.el"))
-(load custom-file 'noerror 'nomessage)
+  (setq custom-file (locate-user-emacs-file "custom-vars.el"))
+  (load custom-file 'noerror 'nomessage)
 
-(setq-default indent-tabs-mode nil)
-(set-face-attribute 'default nil :height 159)
+  (setq-default indent-tabs-mode nil)
+  (set-face-attribute 'default nil :height 159)
 
-;; auto refresh buffers when files changes
-(global-auto-revert-mode t)
+  ;; auto refresh buffers when files changes
+  (global-auto-revert-mode t)
 
 #+END_SRC
 
@@ -509,81 +510,85 @@ This section contains the basic configuration for org-mode plus the configuratio
 
 #+begin_src emacs-lisp
 
-    (defun smv/org-mode-setup()
-        (org-indent-mode)
-        (variable-pitch-mode 1)
-        (auto-fill-mode 0)
-        (visual-line-mode 1)
-        (smv/org-font-setup))
+  (defun smv/org-mode-setup()
+      (org-indent-mode)
+      (variable-pitch-mode 1)
+      (auto-fill-mode 0)
+      (visual-line-mode 1)
+      (smv/org-font-setup))
 
 
-    (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
-        :straight org-contrib
-        :hook (org-mode . smv/org-mode-setup)
-        :config
-        (setq org-ellipsis " ▼:")
-        (setq org-agenda-start-with-log-mode t)
-        (setq org-log-done 'time)
-        (setq org-log-into-drawer t)
+  (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
+      :straight org-contrib
+      :hook (org-mode . smv/org-mode-setup)
+      :config
+      (setq org-ellipsis " ▼:")
+      (setq org-agenda-start-with-log-mode t)
+      (setq org-log-done 'time)
+      (setq org-log-into-drawer t)
 
-        (setq org-agenda-files
-                '("~/.org/todo.org"
-                "~/.org/projects.org"))
+      (setq org-agenda-files
+              '("~/.org/todo.org"
+              "~/.org/projects.org"))
 
-        (setq org-todo-keywords
-                '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-                (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+      (setq org-todo-keywords
+              '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+              (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
-        ;; easily move task to another header
-        (setq org-refile-targets
-                '(("archive.org" :maxlevel . 1)
-                ("todo.org" :maxlevel . 1)
-                ("projects.org" :maxlevel . 1)))
+      ;; easily move task to another header
+      (setq org-refile-targets
+              '(("archive.org" :maxlevel . 1)
+              ("todo.org" :maxlevel . 1)
+              ("projects.org" :maxlevel . 1)))
 
-        ;; Save Org buffers after refiling!
-        (advice-add 'org-refile :after 'org-save-all-org-buffers)
+      ;; Save Org buffers after refiling!
+      (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
-        (setq org-tag-alist
-            '((:startgroup)
-                ; Put mutually exclusive tags here
-                (:endgroup)
-                ("@school" . ?s)
-                ("personal" . ?p)
-                ("note" . ?n)
-                ("idea" . ?i)))
+      (setq org-tag-alist
+          '((:startgroup)
+              ; Put mutually exclusive tags here
+              (:endgroup)
+              ("@school" . ?s)
+              ("personal" . ?p)
+              ("note" . ?n)
+              ("idea" . ?i)))
 
-        (setq org-agenda-custom-commands
-            '(("d" "Dashboard"
-            ((agenda "" ((org-deadline-warning-days 7)))
-            (todo "TODO"
-                ((org-agenda-overriding-header "All tasks")))))
+      (setq org-agenda-custom-commands
+          '(("d" "Dashboard"
+          ((agenda "" ((org-deadline-warning-days 7)))
+          (todo "TODO"
+              ((org-agenda-overriding-header "All tasks")))))
 
-            ("n" "Next Tasks"
-            ((todo "NEXT"
-                ((org-agenda-overriding-header "Next Tasks")))))
+          ("n" "Next Tasks"
+          ((todo "NEXT"
+              ((org-agenda-overriding-header "Next Tasks")))))
 
-            ("st" "School Todos" tags-todo "+@school/TODO")
-            ("sp" "School Projects" tags-todo "+@school/ACTIVE")
-            
-            ("pt" "Personal Todos" tags-todo "+personal/TODO")
-            ("pl" "Personal Projects" tags-todo "+personal/ACTIVE")
-            
-            ;; Low-effort next actions
-            ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-            ((org-agenda-overriding-header "Low Effort Tasks")
-            (org-agenda-max-todos 20)
-            (org-agenda-files org-agenda-files)))))
+          ("st" "School Todos" tags-todo "+@school/TODO")
+          ("sp" "School Projects" tags-todo "+@school/ACTIVE")
+          
+          ("pt" "Personal Todos" tags-todo "+personal/TODO")
+          ("pl" "Personal Projects" tags-todo "+personal/ACTIVE")
+          
+          ;; Low-effort next actions
+          ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+          ((org-agenda-overriding-header "Low Effort Tasks")
+          (org-agenda-max-todos 20)
+          (org-agenda-files org-agenda-files)))))
 
-        (setq org-capture-templates ;; quickly add todos entries without going into the file
-            `(("t" "Tasks")
-            ("tt" "Task" entry (file+olp "~/.org/todo.org" "Tasks")
-                    "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
+      (setq org-capture-templates ;; quickly add todos entries without going into the file
+          `(("t" "Tasks")
+          ("tt" "Task" entry (file+olp "~/.org/todo.org" "Tasks")
+                  "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
 
 
-        (smv/org-font-setup)
-        (global-set-key (kbd "C-c a") 'org-agenda)
-        (global-set-key (kbd "M-i") 'org-insert-item))
+      (smv/org-font-setup)
+      (global-set-key (kbd "C-c a") 'org-agenda)
+      (global-set-key (kbd "M-i") 'org-insert-item))
 
+
+  ;; Install htmlize for source block hightlighting
+  (use-package htmlize
+    :after org)
 #+end_src
 
 
@@ -622,17 +627,6 @@ I use also `org-num` to add numbers in front of my different headlines.
     :load-path "lisp/"
     :after org
     :hook (org-mode . org-num-mode))
-#+end_src
-
-
-** Center buffers
-
-To center buffers I use the [[https://github.com/rnkn/olivetti][olivetti]] minor-mode. It is more easy and pratical and doesn't only serve in org-mode.
-
-#+begin_src emacs-lisp
-;; use to stretch the page on the center to be able to focus on document writing
-(use-package olivetti
-    :hook (org-mode . olivetti-mode))
 #+end_src
 
 
@@ -810,6 +804,18 @@ You know about nix ? This package manager... This mode permit to write file in t
 #+end_src
 
 
+
+*** Clojure
+
+I love this programming language, just started to learn it.
+
+#+begin_src emacs-lisp
+(use-package cider)
+(use-package clojure-ts-mode
+  :mode ("\\.clj\\'" . clojure-ts-mode)
+  :hook (clojure-ts-mode . eglot-ensure))
+#+end_src
+
 *** Web Programming
 
 **** Emmet-mode
@@ -954,10 +960,10 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
 #+begin_src emacs-lisp
 (use-package company
     :after eglot-mode
+    :hook (eglot-managed-mode . company-mode)
     :bind
     (:map company-mode
         ("M-o" . company-manual-begin))
-    :hook (eglot-mode . company-mode)
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))
