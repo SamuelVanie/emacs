@@ -407,6 +407,7 @@
 
 (use-package ox-reveal)
 (setq Org-Reveal-root "~/.config/emacs/reveal-js")
+(setq Org-Reveal-title-slide nil)
 
 (use-package org-bullets ;; change the bullets in my org mode files
     :after org

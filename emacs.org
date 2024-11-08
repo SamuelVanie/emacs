@@ -601,9 +601,14 @@ This section contains the basic configuration for org-mode plus the configuratio
 
 ** Presentation
 
+Permet de faire des slides de presentation stylees dans le web sous emacs.
+
+Apparemment il est possible de set la variable =(setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")= au lieu de telecharger le CDN.
+
 #+begin_src emacs-lisp
 (use-package ox-reveal)
 (setq Org-Reveal-root "~/.config/emacs/reveal-js")
+(setq Org-Reveal-title-slide nil)
 #+end_src
 
 
