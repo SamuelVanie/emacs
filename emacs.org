@@ -1,35 +1,33 @@
-+title: Samuel Michael Vanie's EMACS Configuration
+#+title: Samuel Michael Vanie's EMACS Configuration
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el
 
 
 * Declare some global variables
 
+#+begin_src emacs-lisp
+(setq gc-const-threshold (* 10 1000 1000))
+(setq gc-const-percentage (* 70 1000 1000))  
+(setq read-process-output-max (* 512 1024))
 
-Declare some of my variables for my global configuration
+;; You will most likely need to adjust this font size for your system!
+(defvar smv/default-font-size 139)
+(defvar smv/default-variable-font-size 139)
 
-#+BEGIN_SRC emacs-lisp
-  (setq gc-const-threshold (* 10 1000 1000))
-  (setq gc-const-percentage (* 70 1000 1000))  
-  (setq read-process-output-max (* 512 1024))
+;; remove noise for not non allowed command in emacs if your system make them
+(setq ring-bell-function 'ignore)
 
-  ;; You will most likely need to adjust this font size for your system!
-  (defvar smv/default-font-size 139)
-  (defvar smv/default-variable-font-size 139)
+;; Make frame transparency overridable
+(defvar smv/frame-transparency '(90 . 90))
 
-  ;; remove noise for not non allowed command in emacs if your system make them
-  (setq ring-bell-function 'ignore)
+(setq custom-file (locate-user-emacs-file "custom-vars.el"))
+(load custom-file 'noerror 'nomessage)
 
-  ;; Make frame transparency overridable
-  (defvar smv/frame-transparency '(90 . 90))
+(setq-default indent-tabs-mode nil)
 
-  (setq custom-file (locate-user-emacs-file "custom-vars.el"))
-  (load custom-file 'noerror 'nomessage)
+;; auto refresh buffers when files changes
+(global-auto-revert-mode t)
+#+end_src
 
-  (setq-default indent-tabs-mode nil)
-
-  ;; auto refresh buffers when files changes
-  (global-auto-revert-mode t)
-#+END_SRC
 
 * Scrolling inside popup view
 
@@ -278,28 +276,37 @@ Rainbow permits to match pairs delimiters with the same color.
 
 #+end_src
 
-** Xah-fly keys
+** Repeat Mode
+
+Allows me te repeat bindings by typing the last character multiple times.
 
 #+begin_src emacs-lisp
-  (use-package xah-fly-keys
-    :config
-    (xah-fly-keys t)
-    (xah-fly-keys-set-layout "colemak")
-    (setq xah-fly-use-control-key nil)
-    (setq xah-fly-use-meta-key nil)
-    (define-key xah-fly-command-map (kbd "k") 'swiper)
-    (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
+  (use-package repeat
+    :ensure nil
+    :hook (after-init . repeat-mode)
+    :custom
+    (repeat-too-dangerous '(kill-this-buffer))
+    (repeat-exit-timeout 5))
 #+end_src
+** Xah-fly keys
+
+# #+begin_src emacs-lisp
+#   (use-package xah-fly-keys
+#     :config
+#     (xah-fly-keys t)
+#     (xah-fly-keys-set-layout "colemak")
+#     (setq xah-fly-use-control-key nil)
+#     (setq xah-fly-use-meta-key nil)
+#     (define-key xah-fly-command-map (kbd "k") 'swiper)
+#     (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
+# #+end_src
 
 ** Ace-jump mode
 
 #+begin_src emacs-lisp
 (use-package ace-jump-mode
-  :bind (
-         ("C-c SPC" . ace-jump-mode)
-         :map xah-fly-command-map
-         ("SPC z" . ace-jump-mode)
-         ))
+  :bind
+  ("C-c SPC" . ace-jump-mode))
 #+end_src
 
 * vterm
@@ -329,7 +336,7 @@ Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-th
   (use-package doom-themes)
   (use-package ef-themes
     :config
-    (load-theme 'manoj-dark t))
+    (load-theme 'doom-gruvbox t))
 #+end_src
 
 ** Adding icons to emacs
@@ -681,6 +688,20 @@ I use the built-in rgrep to do my search and replace so I'm binding it to =C-c r
   (global-set-key (kbd "C-c r") 'rgrep)
 #+end_src
 
+
+** Nix
+
+Nix is a package manager and a language that I use to setup devshell or to build my packages in a predictable way.
+
+
+#+begin_src emacs-lisp
+  (use-package nix-mode
+    :mode "\\.nix\\'"
+    :config
+    :hook (nix-mode . eglot-ensure))
+#+end_src
+
+
 ** Direnv
 
 direnv permit to load environment on fly. You will need to have a .direnv file that should contain =use flake= if you are using flakes. Otherwise you can generate the file with program like lorri.
@@ -841,7 +862,6 @@ You will need to install typescript-language-server with `npm install -g typescr
     :config
     (setq typescript-indent-level 2))
 #+end_src
-
 *** PHP
 
 Installing PHP
@@ -892,6 +912,16 @@ clojure-lsp should be installed to use the lsp with eglot for this package.
 
   (use-package cider)
 #+end_src
+
+*** Julia
+
+Temporarily using Julia.
+
+#+begin_src emacs-lisp
+  (use-package julia-mode
+    :mode "\\.jl\\'")
+#+end_src
+
 ** Company Mode
 
 Company Mode provides a nicer in-buffer completion interface than completion-at-point which is more reminiscent of what you would expect from an IDE. We add a simple configuration to make the keybindings a little more useful (TAB now completes the selection and initiates completion at the current location if needed).
@@ -942,112 +972,12 @@ Using github copilot has my pair programming assistant to finish my tasks more q
 Uncomment the commented parts only when you will finish installing copilot.
 
 #+begin_src emacs-lisp
-(defun rk/copilot-complete-or-accept ()
-    "Command that either triggers a completion or accepts one if one
-is available. Useful if you tend to hammer your keys like I do."
-    (interactive)
-    (if (copilot--overlay-visible)
-        (progn
-        (copilot-accept-completion)
-        (open-line 1)
-        )
-    (copilot-complete)))
-
-(defun rk/copilot-quit ()
-"Run `copilot-clear-overlay' or `keyboard-quit'. If copilot is
-cleared, make sure the overlay doesn't come back too soon."
-(interactive)
-(condition-case err
-    (when copilot--overlay
-        (lexical-let ((pre-copilot-disable-predicates copilot-disable-predicates))
-        (setq copilot-disable-predicates (list (lambda () t)))
-        (copilot-clear-overlay)
-        (run-with-idle-timer
-            1.0
-            nil
-            (lambda ()
-            (setq copilot-disable-predicates pre-copilot-disable-predicates)))))
-    (error handler)))
-
-(defun rk/no-copilot-mode ()
-"Helper for `rk/no-copilot-modes'."
-(copilot-mode -1))
-
-(defvar rk/no-copilot-modes '(shell-mode
-                                inferior-python-mode
-                                eshell-mode
-                                term-mode
-                                vterm-mode
-                                comint-mode
-                                compilation-mode
-                                debugger-mode
-                                dired-mode-hook
-                                compilation-mode-hook
-                                flutter-mode-hook
-                                minibuffer-mode-hook)
-    "Modes in which copilot is inconvenient.")
-
-(defvar rk/copilot-manual-mode nil
-    "When `t' will only show completions when manually triggered, e.g. via M-C-<return>.")
-
-(defvar rk/copilot-enable-for-org nil
-    "Should copilot be enabled for org-mode buffers?")
-
-
-(defun rk/copilot-enable-predicate ()
-    ""
-    (and
-    (eq (get-buffer-window) (selected-window))))
-
-(defun rk/copilot-disable-predicate ()
-    "When copilot should not automatically show completions."
-    (or rk/copilot-manual-mode
-        (member major-mode rk/no-copilot-modes)
-        (and (not rk/copilot-enable-for-org) (eq major-mode 'org-mode))
-        (company--active-p)))
-
-(defun rk/copilot-change-activation ()
-    "Switch between three activation modes:
-    - automatic: copilot will automatically overlay completions
-    - manual: you need to press a key (C-M-<return>) to trigger completions
-    - off: copilot is completely disabled."
-    (interactive)
-    (if (and copilot-mode rk/copilot-manual-mode)
-        (progn
-        (message "deactivating copilot")
-        (global-copilot-mode -1)
-        (setq rk/copilot-manual-mode nil))
-    (if copilot-mode
-        (progn
-            (message "activating copilot manual mode")
-            (setq rk/copilot-manual-mode t))
-        (message "activating copilot mode")
-        (global-copilot-mode))))
-
-
-(straight-use-package '(copilot :host github
-                            :repo "copilot-emacs/copilot.el"
-                            :branch "main"
-                            :files ("dist" "*.el")))
-
-(require 'copilot)
-;; keybindings that are active when copilot shows completions
-(define-key copilot-mode-map (kbd "C-M-<next>") #'copilot-next-completion)
-(define-key copilot-mode-map (kbd "C-M-<prior>") #'copilot-previous-completion)
-(define-key copilot-mode-map (kbd "C-M-<right>") #'copilot-accept-completion-by-word)
-(define-key copilot-mode-map (kbd "C-M-<return>") #'copilot-accept-completion-by-line)
-
-;;global keybindings
-(define-key global-map (kbd "C-M-<down>") #'rk/copilot-complete-or-accept)
-(define-key global-map (kbd "C-M-<escape>") #'rk/copilot-change-activation)
-
-;;Do copilot-quit when pressing C-g
-(advice-add 'keyboard-quit :before #'rk/copilot-quit)
-
-;; ;; deactivate copilot for certain modes
-(add-to-list 'copilot-enable-predicates #'rk/copilot-enable-predicate)
-(add-to-list 'copilot-disable-predicates #'rk/copilot-disable-predicate)
-
+  (use-package copilot
+    :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
+    :ensure t)
+    
+  (define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
+  (define-key copilot-completion-map (kbd "TAB") 'copilot-accept-completion)
 #+end_src
 
 ** Gptel
