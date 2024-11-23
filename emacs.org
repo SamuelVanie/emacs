@@ -288,18 +288,6 @@ Allows me te repeat bindings by typing the last character multiple times.
     (repeat-too-dangerous '(kill-this-buffer))
     (repeat-exit-timeout 5))
 #+end_src
-** Xah-fly keys
-
-# #+begin_src emacs-lisp
-#   (use-package xah-fly-keys
-#     :config
-#     (xah-fly-keys t)
-#     (xah-fly-keys-set-layout "colemak")
-#     (setq xah-fly-use-control-key nil)
-#     (setq xah-fly-use-meta-key nil)
-#     (define-key xah-fly-command-map (kbd "k") 'swiper)
-#     (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
-# #+end_src
 
 ** Ace-jump mode
 
@@ -307,6 +295,26 @@ Allows me te repeat bindings by typing the last character multiple times.
 (use-package ace-jump-mode
   :bind
   ("C-c SPC" . ace-jump-mode))
+#+end_src
+
+** Surround
+
+I really loved working with evil-surround or surround of vim. This package mimics that.
+
+#+begin_src emacs-lisp
+  (use-package surround
+    :ensure t
+    :bind-keymap ("C-c s" . surround-keymap))
+#+end_
+** Windmove
+
+This package permits to quickly move between windows in emacs with easy and intuitive bindings. It's built-in to emacs, but you should configure its default bindings by calling the windmove
+
+#+begin_src emacs-lisp
+  (use-package windmove
+    :ensure nil
+    :config
+    (windmove-default-keybindings))
 #+end_src
 
 * vterm
@@ -335,8 +343,7 @@ Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-th
 #+begin_src emacs-lisp
   (use-package doom-themes)
   (use-package ef-themes
-    :config
-    (load-theme 'doom-gruvbox t))
+    :config (ef-themes-load-random))
 #+end_src
 
 ** Adding icons to emacs

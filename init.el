@@ -211,8 +211,7 @@
 
 (use-package doom-themes)
 (use-package ef-themes
-  :config
-  (load-theme 'doom-gruvbox t))
+  :config (ef-themes-load-random))
 
 (use-package all-the-icons
   :if (display-graphic-p))
