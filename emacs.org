@@ -298,20 +298,65 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
 #+end_src
 
 
-** Xah-fly keys
-
-Xah-fly keys is an insane modal editing tools exclusively reserve to emacs users.
+** Repeat-mode
 
 #+begin_src emacs-lisp
-  (use-package xah-fly-keys
-    :config
-    (xah-fly-keys t)
-    (xah-fly-keys-set-layout "colemak")
-    (setq xah-fly-use-control-key nil)
-    (setq xah-fly-use-meta-key nil)
-    (define-key xah-fly-command-map (kbd "k") 'swiper)
-    (define-key xah-fly-command-map (kbd "SPC b") 'copilot-complete))
+(use-package repeat
+    :ensure nil
+    :hook (after-init . repeat-mode)
+    :custom
+    (repeat-too-dangerous '(kill-this-buffer))
+    (repeat-exit-timeout 5))
 #+end_src
+
+
+** Ace-jump mode
+
+Permit to quickly go to a character in emacs
+
+#+begin_src emacs-lisp
+  (use-package ace-jump-mode
+    :bind
+    ("C-c SPC" . ace-jump-mode))
+#+end_src
+
+
+** Surround
+
+I really loved working with evil-surround or surround of vim. This package mimics that.
+
+#+begin_src emacs-lisp
+  (use-package surround
+    :ensure t
+    :bind-keymap ("C-c s" . surround-keymap))
+#+end_src
+
+
+** Windmove
+
+This package permits to quickly move between windows in emacs with easy and intuitive bindings. It's built-in to emacs, but you should configure its default bindings by calling the windmove-default-keybinds function.
+
+
+#+begin_src emacs-lisp
+  (use-package windmove
+    :ensure nil
+    :config
+    (windmove-default-keybindings))
+#+end_src
+
+
+
+
+** Expand-region
+
+Permits to quickly expand to portions of texts by semantic blocks.
+
+
+#+begin_src emacs-lisp
+  (use-package expand-region
+    :bind ("C-=" . er/expand-region))
+#+end_src
+
 
 * UI Configuration
 
@@ -1001,143 +1046,19 @@ Using github copilot has my pair programming assistant to finish my tasks more q
 Uncomment the commented parts only when you will finish installing copilot.
 
 #+begin_src emacs-lisp
-(defun rk/copilot-complete-or-accept ()
-    "Command that either triggers a completion or accepts one if one
-is available. Useful if you tend to hammer your keys like I do."
-    (interactive)
-    (if (copilot--overlay-visible)
-        (progn
-        (copilot-accept-completion)
-        (open-line 1)
-        )
-    (copilot-complete)))
+  (use-package copilot
+    :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
+    :ensure t)
 
-(defun rk/copilot-quit ()
-"Run `copilot-clear-overlay' or `keyboard-quit'. If copilot is
-cleared, make sure the overlay doesn't come back too soon."
-(interactive)
-(condition-case err
-    (when copilot--overlay
-        (lexical-let ((pre-copilot-disable-predicates copilot-disable-predicates))
-        (setq copilot-disable-predicates (list (lambda () t)))
-        (copilot-clear-overlay)
-        (run-with-idle-timer
-            1.0
-            nil
-            (lambda ()
-            (setq copilot-disable-predicates pre-copilot-disable-predicates)))))
-    (error handler)))
+  (setq copilot-node-executable "/opt/homebrew/bin/node")
 
-(defun rk/no-copilot-mode ()
-"Helper for `rk/no-copilot-modes'."
-(copilot-mode -1))
+  ;; keybindings that are active when copilot shows completions
+  (define-key copilot-mode-map (kbd "C-M-<next>") #'copilot-next-completion)
+  (define-key copilot-mode-map (kbd "C-M-<prior>") #'copilot-previous-completion)
+  (define-key copilot-mode-map (kbd "C-M-<right>") #'copilot-accept-completion-by-word)
+  (define-key copilot-mode-map (kbd "C-M-<return>") #'copilot-accept-completion-by-line)
+  (define-key copilot-mode-map (kbd "C-M-<down>") 'copilot-accept-completion)
 
-(defvar rk/no-copilot-modes '(shell-mode
-                                inferior-python-mode
-                                eshell-mode
-                                term-mode
-                                vterm-mode
-                                comint-mode
-                                compilation-mode
-                                debugger-mode
-                                dired-mode-hook
-                                compilation-mode-hook
-                                flutter-mode-hook
-                                minibuffer-mode-hook)
-    "Modes in which copilot is inconvenient.")
-
-(defvar rk/copilot-manual-mode nil
-    "When `t' will only show completions when manually triggered, e.g. via M-C-<return>.")
-
-(defvar rk/copilot-enable-for-org nil
-    "Should copilot be enabled for org-mode buffers?")
-
-
-(defun rk/copilot-enable-predicate ()
-    ""
-    (and
-    (eq (get-buffer-window) (selected-window))))
-
-(defun rk/copilot-disable-predicate ()
-    "When copilot should not automatically show completions."
-    (or rk/copilot-manual-mode
-        (member major-mode rk/no-copilot-modes)
-        (and (not rk/copilot-enable-for-org) (eq major-mode 'org-mode))
-        (company--active-p)))
-
-(defun rk/copilot-change-activation ()
-    "Switch between three activation modes:
-    - automatic: copilot will automatically overlay completions
-    - manual: you need to press a key (C-M-<return>) to trigger completions
-    - off: copilot is completely disabled."
-    (interactive)
-    (if (and copilot-mode rk/copilot-manual-mode)
-        (progn
-        (message "deactivating copilot")
-        (global-copilot-mode -1)
-        (setq rk/copilot-manual-mode nil))
-    (if copilot-mode
-        (progn
-            (message "activating copilot manual mode")
-            (setq rk/copilot-manual-mode t))
-        (message "activating copilot mode")
-        (global-copilot-mode))))
-
-
-(straight-use-package '(copilot :host github
-                            :repo "copilot-emacs/copilot.el"
-                            :branch "main"
-                            :files ("dist" "*.el")))
-
-(require 'copilot)
-
-(setq copilot-node-executable "/opt/homebrew/bin/node")
-
-;; keybindings that are active when copilot shows completions
-(define-key copilot-mode-map (kbd "C-M-<next>") #'copilot-next-completion)
-(define-key copilot-mode-map (kbd "C-M-<prior>") #'copilot-previous-completion)
-(define-key copilot-mode-map (kbd "C-M-<right>") #'copilot-accept-completion-by-word)
-(define-key copilot-mode-map (kbd "C-M-<return>") #'copilot-accept-completion-by-line)
-
-;;global keybindings
-(define-key global-map (kbd "C-M-<down>") #'rk/copilot-complete-or-accept)
-(define-key global-map (kbd "C-M-<escape>") #'rk/copilot-change-activation)
-
-;;Do copilot-quit when pressing C-g
-(advice-add 'keyboard-quit :before #'rk/copilot-quit)
-
-;; ;; deactivate copilot for certain modes
-(add-to-list 'copilot-enable-predicates #'rk/copilot-enable-predicate)
-(add-to-list 'copilot-disable-predicates #'rk/copilot-disable-predicate)
-
-#+end_src
-
-** Gptel
-
-Using chatgpt directly in emacs so that I will not be obliged to switch to the web browser when coding.
-
-#+begin_src emacs-lisp
-  ;; (defun smv/gptel-api-key ()
-  ;;   "Retrieve my OpenAI API key from a secure location."
-  ;;   (with-temp-buffer
-  ;;     (insert-file-contents-literally "~/.open_api_key")
-  ;;     (string-trim (buffer-string))))
-
-  ;; (use-package gptel)
-  ;; (setq gptel-api-key (smv/gptel-api-key))
-#+end_src
-
-
-** Youdotcom
-
-This is my own package to make web search and chat directly inside emacs
-
-#+begin_src emacs-lisp
-(use-package youdotcom
-    :bind
-    ("C-c y" . youdotcom-enter)
-    :config
-    (setq youdotcom-rag-api-key ""))
 #+end_src
 
 
@@ -1152,4 +1073,3 @@ This is my own package to make web search and chat directly inside emacs
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
 #+end_src
-
