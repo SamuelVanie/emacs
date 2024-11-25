@@ -204,10 +204,6 @@
   (xah-fly-keys-set-layout "colemak")
   (xah-fly-keys 1))
 
-(use-package surround
-:ensure t
-:bind-keymap ("C-c s" . surround-keymap))
-
 (use-package windmove
   :ensure nil
   :config

@@ -309,17 +309,6 @@ A modal editing tool that permits to avoid emacs' pinky.
 #+end_src
 
 
-** Surround
-
-I really loved working with evil-surround or surround of vim. This package mimics that.
-
-#+begin_src emacs-lisp
-(use-package surround
-:ensure t
-:bind-keymap ("C-c s" . surround-keymap))
-#+end_src
-
-
 ** Windmove
 
 This package permits to quickly move between windows in emacs with easy and intuitive bindings. It's built-in to emacs, but you should configure its default bindings by calling the windmove
