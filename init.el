@@ -19,15 +19,15 @@
 
 ;; to scroll down inside the popup
 (define-key global-map (kbd "C-M-'")
-    (lambda ()
-    (interactive)
-    (scroll-other-window 2)))
+            (lambda ()
+              (interactive)
+              (scroll-other-window 2)))
 
 ;; to scroll up side the popup
 (define-key global-map (kbd "C-M-\"")
- (lambda ()
-  (interactive)
-  (scroll-other-window-down 2)))
+            (lambda ()
+              (interactive)
+              (scroll-other-window-down 2)))
 
 ;; Initialize package sources
 (require 'package)
@@ -75,7 +75,7 @@
 
 ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
 ;; reliably, set `user-emacs-directory` before loading no-littering!
-;(setq user-emacs-directory "~/.cache/emacs")
+                                        ;(setq user-emacs-directory "~/.cache/emacs")
 
 (use-package no-littering)
 
@@ -85,11 +85,11 @@
       `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
 
 (use-package treesit-auto
-    :custom
-    (treesit-auto-install 'prompt)
-    :config
-    (treesit-auto-add-to-auto-mode-alist 'all)
-    (global-treesit-auto-mode))
+  :custom
+  (treesit-auto-install 'prompt)
+  :config
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode))
 
 (require 'em-smart)
 (setq eshell-where-to-jump 'begin)
@@ -102,7 +102,7 @@
 (setq eshell-aliases-file "~/.emacs.d/aliases")
 
 (use-package eshell-toggle
-    :bind ("C-x C-z" . eshell-toggle))
+  :bind ("C-x C-z" . eshell-toggle))
 
 (defalias 'list-buffers 'ibuffer)
 
@@ -138,31 +138,31 @@
 
 ;; some modes doesn't have to start with lines enable
 (dolist (mode '(org-mode-hook
-            term-mode-hook
-            shell-mode-hook
-            eshell-mode-hook))
-(add-hook mode (lambda () (display-line-numbers-mode 0))))
+                term-mode-hook
+                shell-mode-hook
+                eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 (use-package ligature
-    :config
-    ;; Enable all JetBrains Mono ligatures in programming modes
-    (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
-                                        "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
-                                        "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
-                                        "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
-                                        "<*>" "<->" "<!--" ":>" ":<" ":::" "::" ":?" ":?>" ":=" "::=" "=>>"
-                                        "==>" "=/=" "=!=" "=>" "===" "=:=" "==" "!==" "!!" "!=" ">]" ">:"
-                                        ">>-" ">>=" ">=>" ">>>" ">-" ">=" "&&&" "&&" "|||>" "||>" "|>" "|]"
-                                        "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||" ".." ".?" ".=" ".-" "..<"
-                                        "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
-                                        "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
-                                        "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
-    ;; Enables ligature checks globally in all buffers. You can also do it
-    ;; per mode with `ligature-mode'.
-    (global-ligature-mode t))
+  :config
+  ;; Enable all JetBrains Mono ligatures in programming modes
+  (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
+                                       "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
+                                       "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
+                                       "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
+                                       "<*>" "<->" "<!--" ":>" ":<" ":::" "::" ":?" ":?>" ":=" "::=" "=>>"
+                                       "==>" "=/=" "=!=" "=>" "===" "=:=" "==" "!==" "!!" "!=" ">]" ">:"
+                                       ">>-" ">>=" ">=>" ">>>" ">-" ">=" "&&&" "&&" "|||>" "||>" "|>" "|]"
+                                       "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||" ".." ".?" ".=" ".-" "..<"
+                                       "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
+                                       "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
+                                       "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
+  ;; Enables ligature checks globally in all buffers. You can also do it
+  ;; per mode with `ligature-mode'.
+  (global-ligature-mode t))
 
 (use-package rainbow-delimiters
-	     :hook (prog-mode . rainbow-delimiters-mode))
+  :hook (prog-mode . rainbow-delimiters-mode))
 
 (require 'ansi-color)
 (require 'eshell)
@@ -181,32 +181,38 @@
          ("C-x C-y" . multi-vterm-dedicated-toggle))
   :config
   (define-key vterm-mode-map [return]                      #'vterm-send-return)
-  ;; dedicated terminal height of 50 rows
-  (setq multi-vterm-dedicated-window-height 50)
   ;; dedicated terminal height of 30%
   (setq multi-vterm-dedicated-window-height-percent 30))
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 (use-package general ;; for setting keybindings
-    :config
-    (general-create-definer smv/leader-keys
-        :keymaps '(normal visual emacs)
-        :prefix "SPC"
-        :global-prefix "SPC")
+  :config
+  (general-create-definer smv/leader-keys
+    :keymaps '(normal visual emacs)
+    :prefix "SPC"
+    :global-prefix "SPC")
 
-    (smv/leader-keys
-        "t" '(:ignore t :which-key "toggles")
-        "tt" '(counsel-load-theme :which-key "choose theme")))
-    
+  (smv/leader-keys
+    "t" '(:ignore t :which-key "toggles")
+    "tt" '(counsel-load-theme :which-key "choose theme")))
+
 (use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
 
 (use-package repeat
-    :ensure nil
-    :hook (after-init . repeat-mode)
-    :custom
-    (repeat-too-dangerous '(kill-this-buffer))
-    (repeat-exit-timeout 5))
+  :ensure nil
+  :hook (after-init . repeat-mode)
+  :custom
+  (repeat-too-dangerous '(kill-this-buffer))
+  (repeat-exit-timeout 5))
+
+(use-package xah-fly-keys
+  :init
+  (setq xah-fly-use-control-key nil)
+  (setq xah-fly-use-meta-key nil)
+  :config
+  (xah-fly-keys-set-layout "colemak")
+  (xah-fly-keys 1))
 
 (use-package ace-jump-mode
   :bind
@@ -220,9 +226,6 @@
   :straight nil
   :config
   (windmove-default-keybindings))
-
-(use-package expand-region
-  :bind ("C-=" . er/expand-region))
 
 (use-package doom-themes)
 (use-package ef-themes

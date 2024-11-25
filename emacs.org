@@ -31,17 +31,17 @@ Declare some of my variables for my global configuration
 * Scrolling inside popup view
 
 #+begin_src emacs-lisp
-;; to scroll down inside the popup
-(define-key global-map (kbd "C-M-'")
-    (lambda ()
-    (interactive)
-    (scroll-other-window 2)))
+  ;; to scroll down inside the popup
+  (define-key global-map (kbd "C-M-'")
+              (lambda ()
+                (interactive)
+                (scroll-other-window 2)))
 
-;; to scroll up side the popup
-(define-key global-map (kbd "C-M-\"")
- (lambda ()
-  (interactive)
-  (scroll-other-window-down 2)))
+  ;; to scroll up side the popup
+  (define-key global-map (kbd "C-M-\"")
+              (lambda ()
+                (interactive)
+                (scroll-other-window-down 2)))
 
 #+end_src
 
@@ -103,16 +103,16 @@ We use the no-littering package to keep folders where we edit files and the Emac
 
 #+begin_src emacs-lisp
 
-;; NOTE: If you want to move everything out of the ~/.emacs.d folder
-;; reliably, set `user-emacs-directory` before loading no-littering!
-;(setq user-emacs-directory "~/.cache/emacs")
+  ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
+  ;; reliably, set `user-emacs-directory` before loading no-littering!
+                                          ;(setq user-emacs-directory "~/.cache/emacs")
 
-(use-package no-littering)
+  (use-package no-littering)
 
-;; no-littering doesn't set this by default so we must place
-;; auto save files in the same path as it uses for sessions
-(setq auto-save-file-name-transforms
-      `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+  ;; no-littering doesn't set this by default so we must place
+  ;; auto save files in the same path as it uses for sessions
+  (setq auto-save-file-name-transforms
+        `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
 
 #+end_src
 z
@@ -120,7 +120,7 @@ z
 * Tree-sitter
 
 #+begin_src emacs-lisp
-(use-package treesit-auto
+  (use-package treesit-auto
     :custom
     (treesit-auto-install 'prompt)
     :config
@@ -135,17 +135,17 @@ z
 User friendly tool that uses Plan9 style interface to show command outputs. These ones are automatically paginates, making it easier to read and analyse them, particularly when dealing with large amouts of data.
 
 #+begin_src emacs-lisp
-(require 'em-smart)
-(setq eshell-where-to-jump 'begin)
-(setq eshell-review-quick-commands nil)
-(setq eshell-smart-space-goes-to-end t)
-(setq eshell-list-files-after-cd t)
+  (require 'em-smart)
+  (setq eshell-where-to-jump 'begin)
+  (setq eshell-review-quick-commands nil)
+  (setq eshell-smart-space-goes-to-end t)
+  (setq eshell-list-files-after-cd t)
 
-;; Watch out you should have fish installed on your computer
-(setq-default explicit-shell-file-name "/opt/homebrew/bin/fish")
-(setq eshell-aliases-file "~/.emacs.d/aliases")
+  ;; Watch out you should have fish installed on your computer
+  (setq-default explicit-shell-file-name "/opt/homebrew/bin/fish")
+  (setq eshell-aliases-file "~/.emacs.d/aliases")
 
-(use-package eshell-toggle
+  (use-package eshell-toggle
     :bind ("C-x C-z" . eshell-toggle))
 #+end_src
 
@@ -162,14 +162,14 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
 I'm writing this function to kill all the buffers because it is really boring to get the confirmation prompt every time you want to kill all the buffers with kill-some-buffers
 
 #+begin_src emacs-lisp
-(defun kill-all-buffers ()
-  "Kill all buffers without asking for confirmation."
-  (interactive)
-  (dolist (buffer (buffer-list))
-    (kill-buffer buffer)))
+  (defun kill-all-buffers ()
+    "Kill all buffers without asking for confirmation."
+    (interactive)
+    (dolist (buffer (buffer-list))
+      (kill-buffer buffer)))
 
-(global-set-key (kbd "C-c k a") 'kill-all-buffers)
-(global-set-key (kbd "C-k") 'kill-line)
+  (global-set-key (kbd "C-c k a") 'kill-all-buffers)
+  (global-set-key (kbd "C-k") 'kill-line)
 #+end_src
 
 * Basic UI Configuration
@@ -178,33 +178,33 @@ This section configures basic UI settings that remove unneeded elements to make 
 
 #+begin_src emacs-lisp
 
-(scroll-bar-mode -1) ; Disable visible scroll bar
-(tool-bar-mode -1) ; Disable the toolbar
-(tooltip-mode -1) ; Disable tooltips
-(set-fringe-mode 10) ; Give some breathing room
-(menu-bar-mode -1) ; Disable menu bar
+  (scroll-bar-mode -1) ; Disable visible scroll bar
+  (tool-bar-mode -1) ; Disable the toolbar
+  (tooltip-mode -1) ; Disable tooltips
+  (set-fringe-mode 10) ; Give some breathing room
+  (menu-bar-mode -1) ; Disable menu bar
 
 
-(column-number-mode)
-(setq display-line-numbers-type 'relative)
-(global-display-line-numbers-mode t) ;; print line numbers for files
+  (column-number-mode)
+  (setq display-line-numbers-type 'relative)
+  (global-display-line-numbers-mode t) ;; print line numbers for files
 
 
-;; Set frame transparency
-(set-frame-parameter (selected-frame) 'alpha smv/frame-transparency)
-(add-to-list 'default-frame-alist `(alpha . ,smv/frame-transparency))
-(set-frame-parameter (selected-frame) 'fullscreen 'maximized)
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
+  ;; Set frame transparency
+  (set-frame-parameter (selected-frame) 'alpha smv/frame-transparency)
+  (add-to-list 'default-frame-alist `(alpha . ,smv/frame-transparency))
+  (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-;; Set frame font
-(add-to-list 'default-frame-alist '(font . "DaddyTimeMono Nerd Font Mono"))
+  ;; Set frame font
+  (add-to-list 'default-frame-alist '(font . "DaddyTimeMono Nerd Font Mono"))
 
-;; some modes doesn't have to start with lines enable
-(dolist (mode '(org-mode-hook
-            term-mode-hook
-            shell-mode-hook
-            eshell-mode-hook))
-(add-hook mode (lambda () (display-line-numbers-mode 0))))
+  ;; some modes doesn't have to start with lines enable
+  (dolist (mode '(org-mode-hook
+                  term-mode-hook
+                  shell-mode-hook
+                  eshell-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 #+end_src
 
@@ -215,20 +215,20 @@ This section configures basic UI settings that remove unneeded elements to make 
 You will need to install the package ligature, because it cannot be installed automatically. Use the command ~package-install~ and search for ligature.
 
 #+begin_src emacs-lisp
-(use-package ligature
+  (use-package ligature
     :config
     ;; Enable all JetBrains Mono ligatures in programming modes
     (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
-                                        "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
-                                        "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
-                                        "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
-                                        "<*>" "<->" "<!--" ":>" ":<" ":::" "::" ":?" ":?>" ":=" "::=" "=>>"
-                                        "==>" "=/=" "=!=" "=>" "===" "=:=" "==" "!==" "!!" "!=" ">]" ">:"
-                                        ">>-" ">>=" ">=>" ">>>" ">-" ">=" "&&&" "&&" "|||>" "||>" "|>" "|]"
-                                        "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||" ".." ".?" ".=" ".-" "..<"
-                                        "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
-                                        "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
-                                        "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
+                                         "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
+                                         "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
+                                         "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
+                                         "<*>" "<->" "<!--" ":>" ":<" ":::" "::" ":?" ":?>" ":=" "::=" "=>>"
+                                         "==>" "=/=" "=!=" "=>" "===" "=:=" "==" "!==" "!!" "!=" ">]" ">:"
+                                         ">>-" ">>=" ">=>" ">>>" ">-" ">=" "&&&" "&&" "|||>" "||>" "|>" "|]"
+                                         "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||" ".." ".?" ".=" ".-" "..<"
+                                         "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
+                                         "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
+                                         "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
     ;; Enables ligature checks globally in all buffers. You can also do it
     ;; per mode with `ligature-mode'.
     (global-ligature-mode t))
@@ -239,8 +239,8 @@ You will need to install the package ligature, because it cannot be installed au
 Rainbow permits to match pairs delimiters with the same color.
 
 #+begin_src emacs-lisp
-(use-package rainbow-delimiters
-	     :hook (prog-mode . rainbow-delimiters-mode))
+  (use-package rainbow-delimiters
+    :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
 
 
@@ -249,12 +249,12 @@ Rainbow permits to match pairs delimiters with the same color.
 ** Eshell
 
 #+begin_src emacs-lisp
-(require 'ansi-color)
-(require 'eshell)
-(defun eshell-handle-ansi-color ()
-  (ansi-color-apply-on-region eshell-last-output-start
-                              eshell-last-output-end))
-(add-to-list 'eshell-output-filter-functions 'eshell-handle-ansi-color)
+  (require 'ansi-color)
+  (require 'eshell)
+  (defun eshell-handle-ansi-color ()
+    (ansi-color-apply-on-region eshell-last-output-start
+                                eshell-last-output-end))
+  (add-to-list 'eshell-output-filter-functions 'eshell-handle-ansi-color)
 #+end_src
 
 ** vterm
@@ -272,8 +272,6 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
            ("C-x C-y" . multi-vterm-dedicated-toggle))
     :config
     (define-key vterm-mode-map [return]                      #'vterm-send-return)
-    ;; dedicated terminal height of 50 rows
-    (setq multi-vterm-dedicated-window-height 50)
     ;; dedicated terminal height of 30%
     (setq multi-vterm-dedicated-window-height-percent 30))
 #+end_src
@@ -284,32 +282,50 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
 ** hydra and general
 
 #+begin_src emacs-lisp
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
-(use-package general ;; for setting keybindings
+  (use-package general ;; for setting keybindings
     :config
     (general-create-definer smv/leader-keys
-        :keymaps '(normal visual emacs)
-        :prefix "SPC"
-        :global-prefix "SPC")
+      :keymaps '(normal visual emacs)
+      :prefix "SPC"
+      :global-prefix "SPC")
 
     (smv/leader-keys
-        "t" '(:ignore t :which-key "toggles")
-        "tt" '(counsel-load-theme :which-key "choose theme")))
-    
-(use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
+      "t" '(:ignore t :which-key "toggles")
+      "tt" '(counsel-load-theme :which-key "choose theme")))
+
+  (use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
 #+end_src
 
 
 ** Repeat-mode
 
 #+begin_src emacs-lisp
-(use-package repeat
+  (use-package repeat
     :ensure nil
     :hook (after-init . repeat-mode)
     :custom
     (repeat-too-dangerous '(kill-this-buffer))
     (repeat-exit-timeout 5))
+#+end_src
+
+
+
+
+
+** xah-fly-keys
+
+A modal editing binding tool that permits to avoid emacs' pinky
+
+#+begin_src emacs-lisp
+  (use-package xah-fly-keys
+    :init
+    (setq xah-fly-use-control-key nil)
+    (setq xah-fly-use-meta-key nil)
+    :config
+    (xah-fly-keys-set-layout "colemak")
+    (xah-fly-keys 1))
 #+end_src
 
 
@@ -322,6 +338,9 @@ Permit to quickly go to a character in emacs
     :bind
     ("C-c SPC" . ace-jump-mode))
 #+end_src
+
+
+
 
 
 ** Surround
@@ -345,19 +364,6 @@ This package permits to quickly move between windows in emacs with easy and intu
     :straight nil
     :config
     (windmove-default-keybindings))
-#+end_src
-
-
-
-
-** Expand-region
-
-Permits to quickly expand to portions of texts by semantic blocks.
-
-
-#+begin_src emacs-lisp
-  (use-package expand-region
-    :bind ("C-=" . er/expand-region))
 #+end_src
 
 
