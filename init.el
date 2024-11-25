@@ -35,24 +35,24 @@
 (require 'cl)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                            ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-                            ("elpa" . "https://elpa.gnu.org/packages/")))
+                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")))
 
 (package-initialize)
 (unless package-archive-contents
-    (package-refresh-contents))
+  (package-refresh-contents))
 
 
 ;; straight.el section
 (defvar bootstrap-version)
 (let ((bootstrap-file
-      (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
       (bootstrap-version 5))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
         (url-retrieve-synchronously
-        "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-        'silent 'inhibit-cookies)
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
@@ -62,16 +62,15 @@
 
 (use-package dired-x
   :straight nil
-  :after all-the-icons
   :config
-  (add-hook 'dired-mode-hook 'dired-hide-details-mode)
-  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
+  (add-hook 'dired-mode-hook #'dired-hide-details-mode)
+  (add-hook 'dired-mode-hook #'all-the-icons-dired-mode))
 
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
 (use-package dashboard
-    :config
-    (dashboard-setup-startup-hook))
+  :config
+  (dashboard-setup-startup-hook))
 
 (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
 
@@ -180,9 +179,13 @@
   :ensure t
   :bind (("C-c v n" . multi-vterm-project)
          ("C-c v r" . multi-vterm-rename-buffer)
-         ("C-c v d" . multi-vterm-dedicated-toggle))
+         ("C-x C-y" . multi-vterm-dedicated-toggle))
   :config
-  (define-key vterm-mode-map [return]                      #'vterm-send-return))
+  (define-key vterm-mode-map [return]                      #'vterm-send-return)
+  ;; dedicated terminal height of 50 rows
+  (setq multi-vterm-dedicated-window-height 50)
+  ;; dedicated terminal height of 30%
+  (setq multi-vterm-dedicated-window-height-percent 30))
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
