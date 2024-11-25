@@ -218,10 +218,6 @@
   :bind
   ("C-c SPC" . ace-jump-mode))
 
-(use-package surround
-  :ensure t
-  :bind-keymap ("C-c s" . surround-keymap))
-
 (use-package windmove
   :straight nil
   :config
