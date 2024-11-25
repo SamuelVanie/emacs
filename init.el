@@ -1,6 +1,5 @@
-(setq gc-const-threshold (* 10 1000 1000))
-(setq gc-const-percentage (* 70 1000 1000))  
-(setq read-process-output-max (* 512 1024))
+(setq gc-const-threshold (* 80 1000 1000))
+(setq read-process-output-max (* 1024 1024))
 
 ;; You will most likely need to adjust this font size for your system!
 (defvar smv/default-font-size 139)
@@ -64,12 +63,9 @@
 
 (use-package dired-x
   :straight nil
-  :after all-the-icons
   :config
-  (add-hook 'dired-mode-hook 'dired-hide-details-mode)
-  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
-
-(add-hook 'dired-x-mode-hook 'all-the-icons-dired-mode)
+  (add-hook 'dired-mode-hook #'dired-hide-details-mode)
+  (add-hook 'dired-mode-hook #'all-the-icons-dired-mode))
 
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
@@ -179,13 +175,13 @@
 (use-package general ;; for setting keybindings
   :config
   (general-create-definer smv/leader-keys
-                          :keymaps '(normal visual emacs)
-                          :prefix "SPC"
-                          :global-prefix "SPC")
+    :keymaps '(normal visual emacs)
+    :prefix "SPC"
+    :global-prefix "SPC")
 
   (smv/leader-keys
-   "t" '(:ignore t :which-key "toggles")
-   "tt" '(counsel-load-theme :which-key "choose theme")))
+    "t" '(:ignore t :which-key "toggles")
+    "tt" '(counsel-load-theme :which-key "choose theme")))
 
 (use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
 
@@ -200,14 +196,34 @@
   :bind
   ("C-c SPC" . ace-jump-mode))
 
+(use-package xah-fly-keys
+  :init
+  (setq xah-fly-use-control-key nil)
+  (setq xah-fly-use-meta-key nil)
+  :config
+  (xah-fly-keys-set-layout "colemak")
+  (xah-fly-keys 1))
+
+(use-package surround
+:ensure t
+:bind-keymap ("C-c s" . surround-keymap))
+
+(use-package windmove
+  :ensure nil
+  :config
+  (windmove-default-keybindings))
+
 (use-package vterm)
 
 (use-package multi-vterm
   :ensure t
+  :bind (("C-c v n" . multi-vterm-project)
+         ("C-c v r" . multi-vterm-rename-buffer)
+         ("C-x C-y" . multi-vterm-dedicated-toggle))
   :config
   (define-key vterm-mode-map [return]                      #'vterm-send-return)
-  (global-set-key (kbd "C-x C-y") 'multi-vterm)
-  (setq vterm-keymap-exceptions nil))
+  ;; terminal height percent of 30
+  (setq multi-vterm-dedicated-window-height-percent 30))
 
 (use-package doom-themes)
 (use-package ef-themes
