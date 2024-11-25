@@ -7,9 +7,8 @@ Declare some of my variables for my global configuration
 
 #+BEGIN_SRC emacs-lisp
   ;; Making lsp more responsive
-  (setq gc-const-threshold (* 25 1000 1000))
-  (setq gc-const-percentage (* 70 1000 1000))
-  (setq read-process-output-max (* 512 1024)) ;; 1mb
+  (setq gc-const-threshold (* 80 1000 1000))
+  (setq read-process-output-max (* 64 1024)) ;; 64kb
 
   ;; remove noise for not non allowed command in emacs if your system make them
   (setq ring-bell-function 'ignore)
@@ -155,7 +154,7 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
 ** Managing buffers easily
 
 #+begin_src emacs-lisp
-(defalias 'list-buffers 'ibuffer)
+  (defalias 'list-buffers 'ibuffer)
 #+end_src
 
 ** Kill buffers
@@ -343,7 +342,7 @@ This package permits to quickly move between windows in emacs with easy and intu
 
 #+begin_src emacs-lisp
   (use-package windmove
-    :ensure nil
+    :straight nil
     :config
     (windmove-default-keybindings))
 #+end_src

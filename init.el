@@ -1,7 +1,6 @@
 ;; Making lsp more responsive
-(setq gc-const-threshold (* 25 1000 1000))
-(setq gc-const-percentage (* 70 1000 1000))
-(setq read-process-output-max (* 512 1024)) ;; 1mb
+(setq gc-const-threshold (* 80 1000 1000))
+(setq read-process-output-max (* 64 1024)) ;; 64kb
 
 ;; remove noise for not non allowed command in emacs if your system make them
 (setq ring-bell-function 'ignore)
@@ -218,7 +217,7 @@
   :bind-keymap ("C-c s" . surround-keymap))
 
 (use-package windmove
-  :ensure nil
+  :straight nil
   :config
   (windmove-default-keybindings))
 
