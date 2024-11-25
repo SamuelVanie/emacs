@@ -176,11 +176,13 @@
 (use-package vterm)
 
 (use-package multi-vterm
-       :after vterm 
-       :ensure t
-       :config
-       (define-key vterm-mode-map [return]                      #'vterm-send-return)
-       (global-set-key (kbd "C-x C-y") 'multi-vterm))
+  :after vterm 
+  :ensure t
+  :bind (("C-c v n" . multi-vterm-project)
+         ("C-c v r" . multi-vterm-rename-buffer)
+         ("C-c v d" . multi-vterm-dedicated-toggle))
+  :config
+  (define-key vterm-mode-map [return]                      #'vterm-send-return))
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 

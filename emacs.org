@@ -264,15 +264,16 @@ Rainbow permits to match pairs delimiters with the same color.
 Vterm is a better terminal emulator that will permit good rendering of all terminal commands
 
 #+begin_src emacs-lisp
-(use-package vterm)
+  (use-package vterm)
 
-(use-package multi-vterm
-       :after vterm 
-       :ensure t
-       :config
-       (define-key vterm-mode-map [return]                      #'vterm-send-return)
-       (global-set-key (kbd "C-x C-y") 'multi-vterm))
-
+  (use-package multi-vterm
+    :after vterm 
+    :ensure t
+    :bind (("C-c v n" . multi-vterm-project)
+           ("C-c v r" . multi-vterm-rename-buffer)
+           ("C-c v d" . multi-vterm-dedicated-toggle))
+    :config
+    (define-key vterm-mode-map [return]                      #'vterm-send-return))
 #+end_src
 
 
@@ -332,7 +333,7 @@ I really loved working with evil-surround or surround of vim. This package mimic
 #+end_src
 
 
-** Windmove
+** Windmonve
 
 This package permits to quickly move between windows in emacs with easy and intuitive bindings. It's built-in to emacs, but you should configure its default bindings by calling the windmove-default-keybinds function.
 
