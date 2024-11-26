@@ -225,11 +225,11 @@
 
 (use-package doom-themes)
 (use-package ef-themes
-    :config
-    (load-theme 'manoj-dark t))
+  :config
+  (load-theme 'manoj-dark t))
 
 (use-package all-the-icons
-    :if (display-graphic-p))
+  :if (display-graphic-p))
 
 (use-package all-the-icons-ivy
   :after all-the-icons)
@@ -240,26 +240,26 @@
 (use-package nerd-icons)
 
 (use-package which-key ;; print next keybindings
-	     :init (which-key-mode) ;; happens before the package is loaded
-	     :diminish which-key-mode
-	     :config ;; only runs after the mode is loaded
-	     (setq which-key-idle-delay 0.3))
+  :init (which-key-mode) ;; happens before the package is loaded
+  :diminish which-key-mode
+  :config ;; only runs after the mode is loaded
+  (setq which-key-idle-delay 0.3))
 
 (use-package ivy
   :diminish
   :bind (("C-s" . swiper)
-          :map ivy-minibuffer-map
-          ("TAB" . ivy-alt-done)
-          ("C-l" . ivy-alt-done)
-          ("C-j" . ivy-next-line)
-          ("C-k" . ivy-previous-line)
-          :map ivy-switch-buffer-map
-          ("C-k" . ivy-previous-line)
-          ("C-l" . ivy-done)
-          ("C-d" . ivy-switch-buffer-kill)
-          :map ivy-reverse-i-search-map
-          ("C-k" . ivy-previous-line)
-          ("C-d" . ivy-reverse-i-search-kill))
+         :map ivy-minibuffer-map
+         ("TAB" . ivy-alt-done)
+         ("C-l" . ivy-alt-done)
+         ("C-j" . ivy-next-line)
+         ("C-k" . ivy-previous-line)
+         :map ivy-switch-buffer-map
+         ("C-k" . ivy-previous-line)
+         ("C-l" . ivy-done)
+         ("C-d" . ivy-switch-buffer-kill)
+         :map ivy-reverse-i-search-map
+         ("C-k" . ivy-previous-line)
+         ("C-d" . ivy-reverse-i-search-kill))
   :config
   (ivy-mode 1))
 
@@ -270,8 +270,8 @@
 
 (use-package counsel
   :bind (("C-M-j" . 'counsel-switch-buffer)
-          :map minibuffer-local-map
-          ("C-r" . 'counsel-minibuffer-history))
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history))
   :custom
   (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
   :config
@@ -283,7 +283,7 @@
   (ivy-prescient-enable-filtering nil)
   :config
   ;; Uncomment the following line to have sorting remembered across sessions!
-  ;(prescient-persist-mode 1)
+                                        ;(prescient-persist-mode 1)
   (ivy-prescient-mode 1))
 
 (use-package helpful
@@ -309,110 +309,110 @@
 (setenv "PATH" (concat (getenv "PATH") ":/Library/TeX/texbin"))
 
 (defun smv/org-font-setup ()
-    (font-lock-add-keywords 'org-mode ;; Change the list icon style from "-" to "."
-                            '(("^ *\\([-]\\) "
-                            (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
-    (font-lock-add-keywords 'org-mode
-                            '(("^ *\\([+]\\) "
-                            (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "◦"))))))
+  (font-lock-add-keywords 'org-mode ;; Change the list icon style from "-" to "."
+                          '(("^ *\\([-]\\) "
+                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+  (font-lock-add-keywords 'org-mode
+                          '(("^ *\\([+]\\) "
+                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "◦"))))))
 
-    ;; configuration of heading levels size
-    (dolist (face '((org-level-1 . 1.2)
-                        (org-level-2 . 1.1)
-                        (org-level-3 . 1.05)
-                        (org-level-4 . 1.0)
-                        (org-level-5 . 1.0)
-                        (org-level-6 . 1.0)
-                        (org-level-7 . 1.0)
-                        (org-level-8 . 1.0)))
-        (set-face-attribute (car face) nil :font "Chalkboard" :weight 'regular :height (cdr face)))
-        ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-        (set-face-attribute 'org-block nil    :inherit 'fixed-pitch)
-        (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
-        (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
-        (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
-        (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
-        (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-        (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-        (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-        (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
-        (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
-        (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
+  ;; configuration of heading levels size
+  (dolist (face '((org-level-1 . 1.2)
+                  (org-level-2 . 1.1)
+                  (org-level-3 . 1.05)
+                  (org-level-4 . 1.0)
+                  (org-level-5 . 1.0)
+                  (org-level-6 . 1.0)
+                  (org-level-7 . 1.0)
+                  (org-level-8 . 1.0)))
+    (set-face-attribute (car face) nil :font "Chalkboard" :weight 'regular :height (cdr face)))
+  ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+  (set-face-attribute 'org-block nil    :inherit 'fixed-pitch)
+  (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
+  (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
+  (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
+  (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
+  (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
 (defun smv/org-mode-setup()
-    (org-indent-mode)
-    (variable-pitch-mode 1)
-    (auto-fill-mode 0)
-    (visual-line-mode 1)
-    (smv/org-font-setup))
+  (org-indent-mode)
+  (variable-pitch-mode 1)
+  (auto-fill-mode 0)
+  (visual-line-mode 1)
+  (smv/org-font-setup))
 
 
 (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
-    :straight org-contrib
-    :hook (org-mode . smv/org-mode-setup)
-    :config
-    (setq org-ellipsis " ▼:")
-    (setq org-agenda-start-with-log-mode t)
-    (setq org-log-done 'time)
-    (setq org-log-into-drawer t)
+  :straight org-contrib
+  :hook (org-mode . smv/org-mode-setup)
+  :config
+  (setq org-ellipsis " ▼:")
+  (setq org-agenda-start-with-log-mode t)
+  (setq org-log-done 'time)
+  (setq org-log-into-drawer t)
 
-    (setq org-agenda-files
-            '("~/.org/todo.org"
-            "~/.org/projects.org"))
+  (setq org-agenda-files
+        '("~/.org/todo.org"
+          "~/.org/projects.org"))
 
-    (setq org-todo-keywords
-            '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-            (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+          (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
-    ;; easily move task to another header
-    (setq org-refile-targets
-            '(("archive.org" :maxlevel . 1)
-            ("todo.org" :maxlevel . 1)
-            ("projects.org" :maxlevel . 1)))
+  ;; easily move task to another header
+  (setq org-refile-targets
+        '(("archive.org" :maxlevel . 1)
+          ("todo.org" :maxlevel . 1)
+          ("projects.org" :maxlevel . 1)))
 
-    ;; Save Org buffers after refiling!
-    (advice-add 'org-refile :after 'org-save-all-org-buffers)
+  ;; Save Org buffers after refiling!
+  (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
-    (setq org-tag-alist
+  (setq org-tag-alist
         '((:startgroup)
-            ; Put mutually exclusive tags here
-            (:endgroup)
-            ("@school" . ?s)
-            ("personal" . ?p)
-            ("note" . ?n)
-            ("idea" . ?i)))
+                                        ; Put mutually exclusive tags here
+          (:endgroup)
+          ("@school" . ?s)
+          ("personal" . ?p)
+          ("note" . ?n)
+          ("idea" . ?i)))
 
-    (setq org-agenda-custom-commands
+  (setq org-agenda-custom-commands
         '(("d" "Dashboard"
-        ((agenda "" ((org-deadline-warning-days 7)))
-        (todo "TODO"
-            ((org-agenda-overriding-header "All tasks")))))
+           ((agenda "" ((org-deadline-warning-days 7)))
+            (todo "TODO"
+                  ((org-agenda-overriding-header "All tasks")))))
 
-        ("n" "Next Tasks"
-        ((todo "NEXT"
-            ((org-agenda-overriding-header "Next Tasks")))))
+          ("n" "Next Tasks"
+           ((todo "NEXT"
+                  ((org-agenda-overriding-header "Next Tasks")))))
 
-        ("st" "School Todos" tags-todo "+@school/TODO")
-        ("sp" "School Projects" tags-todo "+@school/ACTIVE")
-        
-        ("pt" "Personal Todos" tags-todo "+personal/TODO")
-        ("pl" "Personal Projects" tags-todo "+personal/ACTIVE")
-        
-        ;; Low-effort next actions
-        ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-        ((org-agenda-overriding-header "Low Effort Tasks")
-        (org-agenda-max-todos 20)
-        (org-agenda-files org-agenda-files)))))
+          ("st" "School Todos" tags-todo "+@school/TODO")
+          ("sp" "School Projects" tags-todo "+@school/ACTIVE")
+          
+          ("pt" "Personal Todos" tags-todo "+personal/TODO")
+          ("pl" "Personal Projects" tags-todo "+personal/ACTIVE")
+          
+          ;; Low-effort next actions
+          ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+           ((org-agenda-overriding-header "Low Effort Tasks")
+            (org-agenda-max-todos 20)
+            (org-agenda-files org-agenda-files)))))
 
-    (setq org-capture-templates ;; quickly add todos entries without going into the file
+  (setq org-capture-templates ;; quickly add todos entries without going into the file
         `(("t" "Tasks")
-        ("tt" "Task" entry (file+olp "~/.org/todo.org" "Tasks")
-                "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
+          ("tt" "Task" entry (file+olp "~/.org/todo.org" "Tasks")
+           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
 
 
-    (smv/org-font-setup)
-    (global-set-key (kbd "C-c a") 'org-agenda)
-    (global-set-key (kbd "M-i") 'org-insert-item))
+  (smv/org-font-setup)
+  (global-set-key (kbd "C-c a") 'org-agenda)
+  (global-set-key (kbd "M-i") 'org-insert-item))
 
 
 ;; Install htmlize for source block hightlighting
@@ -420,41 +420,41 @@
   :after org)
 
 (use-package org-fragtog
-    :hook (org-mode-hook . org-fragtog-mode))
+  :hook (org-mode-hook . org-fragtog-mode))
 
 (use-package ox-reveal)
 (setq Org-Reveal-root "~/.config/emacs/reveal-js")
 (setq Org-Reveal-title-slide nil)
 
 (use-package org-bullets ;; change the bullets in my org mode files
-    :after org
-    :hook (org-mode . org-bullets-mode)
-    :custom
-    (org-bullets-bullet-list '("◉" "☯" "○" "☯" "✸" "☯" "✿" "☯" "✜" "☯" "◆" "☯" "▶")))
+  :after org
+  :hook (org-mode . org-bullets-mode)
+  :custom
+  (org-bullets-bullet-list '("◉" "☯" "○" "☯" "✸" "☯" "✿" "☯" "✜" "☯" "◆" "☯" "▶")))
 
 ;; Outline numbering for org mode
 (use-package org-num
-    :straight nil
-    :load-path "lisp/"
-    :after org
-    :hook (org-mode . org-num-mode))
+  :straight nil
+  :load-path "lisp/"
+  :after org
+  :hook (org-mode . org-num-mode))
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
-      'org-babel-load-languages
-      '((emacs-lisp . t)
-      (python . t)))
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (python . t)))
 
   (push '("conf-unix" . conf-unix) org-src-lang-modes))
 
 (with-eval-after-load 'org
-;; This is needed as of Org 9.2
-(require 'org-tempo)
+  ;; This is needed as of Org 9.2
+  (require 'org-tempo)
 
-(add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-(add-to-list 'org-structure-template-alist '("py" . "src python"))
-(add-to-list 'org-structure-template-alist '("ru" . "src rust")))
+  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("py" . "src python"))
+  (add-to-list 'org-structure-template-alist '("ru" . "src rust")))
 
 ;; Automatically tangle our Emacs.org config file when we save it
 (defun smv/org-babel-tangle-config ()
@@ -488,7 +488,7 @@
 (use-package markdown-mode)
 
 (use-package yasnippet
-    :config (yas-global-mode))
+  :config (yas-global-mode))
 
 (use-package auto-yasnippet
   :bind
@@ -503,9 +503,9 @@
   ("C-c C-y o" . aya-open-line))
 
 (use-package yaml-mode
-:mode (("\\.yml\\'" . yaml-mode)
-            ("\\.yaml\\'" . yaml-mode)
-            ))
+  :mode (("\\.yml\\'" . yaml-mode)
+         ("\\.yaml\\'" . yaml-mode)
+         ))
 
 (use-package nix-ts-mode
   :mode ("\\.nix\\'" . nix-ts-mode))
@@ -518,39 +518,39 @@
 (use-package emmet-mode)
 
 (defun smv/web-mode-hook ()
-"Hooks for Web mode."
-(setq web-mode-markup-indent-offset 2)
-(setq web-mode-css-indent-offset 2)
-(setq web-mode-code-indent-offset 2)
-(setq web-mode-enable-current-column-highlight t)
-(setq web-mode-enable-current-element-highlight t)
-(set (make-local-variable 'company-backends) '(company-css company-web-html company-yasnippet company-files))
-)
+  "Hooks for Web mode."
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2)
+  (setq web-mode-enable-current-column-highlight t)
+  (setq web-mode-enable-current-element-highlight t)
+  (set (make-local-variable 'company-backends) '(company-css company-web-html company-yasnippet company-files))
+  )
 
 (use-package web-mode
-    :mode (("\\.html?\\'" . web-mode)
-            ("\\.css?\\'" . web-mode)
-            )
-    :hook
-    (web-mode . smv/web-mode-hook)
-    (web-mode . emmet-mode)
-    (web-mode . prettier-mode)
-)
+  :mode (("\\.html?\\'" . web-mode)
+         ("\\.css?\\'" . web-mode)
+         )
+  :hook
+  (web-mode . smv/web-mode-hook)
+  (web-mode . emmet-mode)
+  (web-mode . prettier-mode)
+  )
 
 (add-hook 'web-mode-before-auto-complete-hooks
-    '(lambda ()
-    (let ((web-mode-cur-language
-            (web-mode-language-at-pos)))
-                (if (string= web-mode-cur-language "php")
-            (yas-activate-extra-mode 'php-mode)
-        (yas-deactivate-extra-mode 'php-mode))
-                (if (string= web-mode-cur-language "css")
-            (setq emmet-use-css-transform t)
-        (setq emmet-use-css-transform nil)))))
+          '(lambda ()
+             (let ((web-mode-cur-language
+                    (web-mode-language-at-pos)))
+               (if (string= web-mode-cur-language "php")
+                   (yas-activate-extra-mode 'php-mode)
+                 (yas-deactivate-extra-mode 'php-mode))
+               (if (string= web-mode-cur-language "css")
+                   (setq emmet-use-css-transform t)
+                 (setq emmet-use-css-transform nil)))))
 
 (use-package rjsx-mode
   :mode (("\\.js\\'" . rjsx-mode)
-            ("\\.ts\\'" . rjsx-mode))
+         ("\\.ts\\'" . rjsx-mode))
   :hook
   (rjsx-mode . emmet-mode)
   (rjsx-mode . prettier-mode))
@@ -558,16 +558,16 @@
 (use-package prettier)
 
 (use-package typescript-mode
-    :mode "\\.ts\\'"
-    :config
-    (setq typescript-indent-level 2))
+  :mode "\\.ts\\'"
+  :config
+  (setq typescript-indent-level 2))
 
 (use-package php-mode
-:hook (php-mode . eglot-ensure)
-:mode "\\.php\\'")
+  :hook (php-mode . eglot-ensure)
+  :mode "\\.php\\'")
 
 (use-package eglot-java
-    :after eglot)
+  :after eglot)
 
 ;;(use-package ess)
 
@@ -582,31 +582,33 @@
 (use-package flutter)
 
 (use-package dart-mode
-    :hook (dart-mode . eglot-ensure)
-    :mode "\\.dart\\'")
+  :hook (dart-mode . eglot-ensure)
+  :mode "\\.dart\\'")
 
 (use-package dape)
 
 (use-package company
-    :after eglot-mode
-    :hook (eglot-managed-mode . company-mode)
-    :bind
-    (:map company-mode
-        ("M-o" . company-manual-begin))
-    :custom
-    (company-minimum-prefix-length 1)
-    (company-idle-delay 0.0))
+  :hook (eglot-managed-mode . company-mode)
+  :bind(
+        :map company-mode
+        ("M-o" . company-manual-begin)
+        :map xah-fly-command-map
+        ("H" . eldoc)
+        )
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
 
 (use-package company-box
-    :hook
-    (company-mode . company-box-mode))
+  :hook
+  (company-mode . company-box-mode))
 
 (use-package company-tabnine
-    :config
-    (add-to-list 'company-backends #'company-tabnine t))
+  :config
+  (add-to-list 'company-backends #'company-tabnine t))
 
 (use-package docker
-    :bind ("C-c d" . docker))
+  :bind ("C-c d" . docker))
 
 (use-package dockerfile-mode)
 
@@ -624,6 +626,6 @@
 (define-key copilot-mode-map (kbd "C-M-<down>") 'copilot-accept-completion)
 
 (use-package magit
-    :commands magit-status
-    :custom
-    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+  :commands magit-status
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
