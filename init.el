@@ -142,14 +142,15 @@
 ;; some modes doesn't have to start with lines enable
 (dolist (mode '(org-mode-hook
                 term-mode-hook
+                doc-view-minor-mode-hook
                 shell-mode-hook
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 ;; Change the font size (139) according to your screen
 (custom-set-faces
- '(fixed-pitch ((t (:height 139 :family "DaddyTimeMono Nerd Font"))))
- '(variable-pitch ((t (:weight light :height 139 :family "JetbrainsMono Nerd Font")))))
+ '(fixed-pitch ((t (:height 139 :family "JetbrainsMono Nerd Font"))))
+ '(variable-pitch ((t (:weight light :height 139 :family "DaddyTimeMono Nerd Font")))))
 
 (use-package ligature
   :config
@@ -295,149 +296,149 @@
   ([remap describe-key] . helpful-key))
 
 (defun smv/org-font-setup ()
-    (font-lock-add-keywords 'org-mode ;; Change the list icon style from "-" to "."
-                            '(("^ *\\([-]\\) "
-                            (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
-    (font-lock-add-keywords 'org-mode
-                            '(("^ *\\([+]\\) "
-                            (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "◦"))))))
+  (font-lock-add-keywords 'org-mode ;; Change the list icon style from "-" to "."
+                          '(("^ *\\([-]\\) "
+                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+  (font-lock-add-keywords 'org-mode
+                          '(("^ *\\([+]\\) "
+                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "◦"))))))
 
-    ;; configuration of heading levels size
-    (dolist (face '((org-level-1 . 1.2)
-                        (org-level-2 . 1.1)
-                        (org-level-3 . 1.05)
-                        (org-level-4 . 1.0)
-                        (org-level-5 . 1.0)
-                        (org-level-6 . 1.0)
-                        (org-level-7 . 1.0)
-                        (org-level-8 . 1.0)))
-        (set-face-attribute (car face) nil :font "VictorMono" :weight 'regular :height (cdr face)))
-        ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-        (set-face-attribute 'org-block nil    :inherit 'fixed-pitch)
-        (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
-        (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
-        (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
-        (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
-        (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-        (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-        (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-        (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
-        (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
-        (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
+  ;; configuration of heading levels size
+  (dolist (face '((org-level-1 . 1.2)
+                  (org-level-2 . 1.1)
+                  (org-level-3 . 1.05)
+                  (org-level-4 . 1.0)
+                  (org-level-5 . 1.0)
+                  (org-level-6 . 1.0)
+                  (org-level-7 . 1.0)
+                  (org-level-8 . 1.0)))
+    (set-face-attribute (car face) nil :font "VictorMono" :weight 'regular :height (cdr face)))
+  ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+  (set-face-attribute 'org-block nil    :inherit 'fixed-pitch)
+  (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
+  (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
+  (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+  (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
+  (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
+  (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
 (defun smv/org-mode-setup()
-    (org-indent-mode)
-    (variable-pitch-mode 1)
-    (auto-fill-mode 0)
-    (visual-line-mode 1)
-    (smv/org-font-setup))
+  (org-indent-mode)
+  (variable-pitch-mode 1)
+  (auto-fill-mode 0)
+  (visual-line-mode 1)
+  (smv/org-font-setup))
 
 
 (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
-    :straight org-contrib
-    :hook (org-mode . smv/org-mode-setup)
-    :config
-    (setq org-ellipsis " ▼:")
-    (setq org-agenda-start-with-log-mode t)
-    (setq org-log-done 'time)
-    (setq org-log-into-drawer t)
-    (setq org-startup-folded 'content)
+  :straight org-contrib
+  :hook (org-mode . smv/org-mode-setup)
+  :config
+  (setq org-ellipsis " ▼:")
+  (setq org-agenda-start-with-log-mode t)
+  (setq org-log-done 'time)
+  (setq org-log-into-drawer t)
+  (setq org-startup-folded 'content)
 
-    (setq org-agenda-files
-            '("~/.org/todo.org"
-            "~/.org/projects.org"))
+  (setq org-agenda-files
+        '("~/.org/todo.org"
+          "~/.org/projects.org"))
 
-    (setq org-todo-keywords
-            '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-            (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+          (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
-    ;; easily move task to another header
-    (setq org-refile-targets
-            '(("archive.org" :maxlevel . 1)
-            ("todo.org" :maxlevel . 1)
-            ("projects.org" :maxlevel . 1)))
+  ;; easily move task to another header
+  (setq org-refile-targets
+        '(("archive.org" :maxlevel . 1)
+          ("todo.org" :maxlevel . 1)
+          ("projects.org" :maxlevel . 1)))
 
-    ;; Save Org buffers after refiling!
-    (advice-add 'org-refile :after 'org-save-all-org-buffers)
+  ;; Save Org buffers after refiling!
+  (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
-    (setq org-tag-alist
+  (setq org-tag-alist
         '((:startgroup)
-            ; Put mutually exclusive tags here
-            (:endgroup)
-            ("@school" . ?s)
-            ("personal" . ?p)
-            ("note" . ?n)
-            ("idea" . ?i)))
+                                        ; Put mutually exclusive tags here
+          (:endgroup)
+          ("@school" . ?s)
+          ("personal" . ?p)
+          ("note" . ?n)
+          ("idea" . ?i)))
 
-    (setq org-agenda-custom-commands
+  (setq org-agenda-custom-commands
         '(("d" "Dashboard"
-        ((agenda "" ((org-deadline-warning-days 7)))
-        (todo "TODO"
-            ((org-agenda-overriding-header "All tasks")))))
+           ((agenda "" ((org-deadline-warning-days 7)))
+            (todo "TODO"
+                  ((org-agenda-overriding-header "All tasks")))))
 
-        ("n" "Next Tasks"
-        ((todo "NEXT"
-            ((org-agenda-overriding-header "Next Tasks")))))
+          ("n" "Next Tasks"
+           ((todo "NEXT"
+                  ((org-agenda-overriding-header "Next Tasks")))))
 
-        ("st" "School todos" tags-todo "+@school/TODO")
-        ("sp" "School Projects" tags-todo "+@school/ACTIVE")
-        ("sr" "School Review" tags-todo "+@school/REVIEW")
-        
-        ("pt" "Personal todos" tags-todo "+personal/TODO")
-        ("pl" "Personal Projects" tags-todo "+personal/ACTIVE")
-        ("pr" "Personal Review" tags-todo "+personal/REVIEW")
-        
-        ;; Low-effort next actions
-        ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-        ((org-agenda-overriding-header "Low Effort Tasks")
-        (org-agenda-max-todos 20)
-        (org-agenda-files org-agenda-files)))))
+          ("st" "School todos" tags-todo "+@school/TODO")
+          ("sp" "School Projects" tags-todo "+@school/ACTIVE")
+          ("sr" "School Review" tags-todo "+@school/REVIEW")
+          
+          ("pt" "Personal todos" tags-todo "+personal/TODO")
+          ("pl" "Personal Projects" tags-todo "+personal/ACTIVE")
+          ("pr" "Personal Review" tags-todo "+personal/REVIEW")
+          
+          ;; Low-effort next actions
+          ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+           ((org-agenda-overriding-header "Low Effort Tasks")
+            (org-agenda-max-todos 20)
+            (org-agenda-files org-agenda-files)))))
 
-    (setq org-capture-templates ;; quickly add todos entries without going into the file
+  (setq org-capture-templates ;; quickly add todos entries without going into the file
         `(("t" "Tasks")
-        ("tt" "Task" entry (file+olp "~/.org/todo.org" "Tasks")
-                "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
+          ("tt" "Task" entry (file+olp "~/.org/todo.org" "Tasks")
+           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
 
 
-    (smv/org-font-setup)
-    (global-set-key (kbd "C-c a") 'org-agenda)
-    (global-set-key (kbd "M-i") 'org-insert-item))
+  (smv/org-font-setup)
+  (global-set-key (kbd "C-c a") 'org-agenda)
+  (global-set-key (kbd "M-i") 'org-insert-item))
 
 (use-package org-fragtog
-    :hook (org-mode . org-fragtog-mode))
+  :hook (org-mode . org-fragtog-mode))
 
 (use-package ox-reveal)
 
 (use-package org-bullets ;; change the bullets in my org mode files
-    :after org
-    :hook (org-mode . org-bullets-mode)
-    :custom
-    (org-bullets-bullet-list '("◉" "☯" "○" "☯" "✸" "☯" "✿" "☯" "✜" "☯" "◆" "☯" "▶")))
+  :after org
+  :hook (org-mode . org-bullets-mode)
+  :custom
+  (org-bullets-bullet-list '("◉" "☯" "○" "☯" "✸" "☯" "✿" "☯" "✜" "☯" "◆" "☯" "▶")))
 
 ;; Outline numbering for org mode
 (use-package org-num
-    :straight nil
-    :load-path "lisp/"
-    :after org
-    :hook (org-mode . org-num-mode))
+  :straight nil
+  :load-path "lisp/"
+  :after org
+  :hook (org-mode . org-num-mode))
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
-      'org-babel-load-languages
-      '((emacs-lisp . t)
-      (python . t)))
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (python . t)))
 
   (push '("conf-unix" . conf-unix) org-src-lang-modes))
 
 (with-eval-after-load 'org
-;; This is needed as of Org 9.2
-(require 'org-tempo)
+  ;; This is needed as of Org 9.2
+  (require 'org-tempo)
 
-(add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-(add-to-list 'org-structure-template-alist '("py" . "src python"))
-(add-to-list 'org-structure-template-alist '("ru" . "src rust")))
-  
+  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("py" . "src python"))
+  (add-to-list 'org-structure-template-alist '("ru" . "src rust")))
+
 (add-to-list 'org-structure-template-alist '("cpp" . "src cpp"))
 
 ;; Automatically tangle our Emacs.org config file when we save it
@@ -451,34 +452,80 @@
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'smv/org-babel-tangle-config)))
 
 (use-package undo-tree
-      :config
-      (global-undo-tree-mode))
+  :config
+  (global-undo-tree-mode))
 
 (global-set-key (kbd "C-M-;") 'comment-region)
 
 (use-package wgrep)
 (global-set-key (kbd "C-c r") 'rgrep)
 
+(use-package lsp-mode
+  :init
+  (setq lsp-keymap-prefix "C-l")
+  :commands (lsp lsp-deferred)
+  :config
+  (lsp-enable-which-key-integration t))
+
+(use-package lsp-ui
+  :commands lsp-ui-mode
+  :hook (lsp-mode . lsp-ui-mode))
+
+(use-package lsp-treemacs
+  :after lsp)
+
+(use-package lsp-ivy
+  :commands lsp-ivy-workspace-symbol
+  :config
+  (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+  (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))
+
+(defun lsp-booster--advice-json-parse (old-fn &rest args)
+  "Try to parse bytecode instead of json."
+  (or
+   (when (equal (following-char) ?#)
+     (let ((bytecode (read (current-buffer))))
+       (when (byte-code-function-p bytecode)
+         (funcall bytecode))))
+   (apply old-fn args)))
+(advice-add (if (progn (require 'json)
+                       (fboundp 'json-parse-buffer))
+                'json-parse-buffer
+              'json-read)
+            :around
+            #'lsp-booster--advice-json-parse)
+
+(defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+  "Prepend emacs-lsp-booster command to lsp CMD."
+  (let ((orig-result (funcall old-fn cmd test?)))
+    (if (and (not test?)                             ;; for check lsp-server-present?
+             (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+             lsp-use-plists
+             (not (functionp 'json-rpc-connection))  ;; native json-rpc
+             (executable-find "emacs-lsp-booster"))
+        (progn
+          (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
+            (setcar orig-result command-from-exec-path))
+          (message "Using emacs-lsp-booster for %s!" orig-result)
+          (cons "emacs-lsp-booster" orig-result))
+      orig-result)))
+(advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
+
 (use-package nix-mode
   :mode "\\.nix\\'"
   :config
-  :hook (nix-mode . eglot-ensure))
+  :hook (nix-mode . lsp-deferred))
 
 (use-package direnv
   :config
   (direnv-mode))
 
-(use-package flymake
-  :bind
-  ("<space> c l" . flymake-show-project-diagnostics))
-
-;; set global keybinding for quickfix
-(global-set-key (kbd "<space> c a") 'eglot-code-actions)
+(use-package flymake)
 
 (use-package markdown-mode)
 
 (use-package yasnippet
-    :config (yas-global-mode))
+  :config (yas-global-mode))
 
 (use-package auto-yasnippet
   :bind
@@ -493,108 +540,85 @@
   ("C-c C-y o" . aya-open-line))
 
 (use-package yaml-mode
-:mode (("\\.yml\\'" . yaml-mode)
-            ("\\.yaml\\'" . yaml-mode)
-            ))
+  :mode (("\\.yml\\'" . yaml-mode)
+         ("\\.yaml\\'" . yaml-mode)
+         ))
 
 (use-package emmet-mode)
 
 (defun smv/web-mode-hook ()
-"Hooks for Web mode."
-(setq web-mode-markup-indent-offset 2)
-(setq web-mode-css-indent-offset 2)
-(setq web-mode-code-indent-offset 2)
-(setq web-mode-enable-current-column-highlight t)
-(setq web-mode-enable-current-element-highlight t)
-(set (make-local-variable 'company-backends) '(company-css company-web-html company-yasnippet company-files))
-)
+  "Hooks for Web mode."
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2)
+  (setq web-mode-enable-current-column-highlight t)
+  (setq web-mode-enable-current-element-highlight t)
+  (set (make-local-variable 'company-backends) '(company-css company-web-html company-yasnippet company-files))
+  )
 
 (use-package web-mode
-    :mode (("\\.html?\\'" . web-mode)
-            ("\\.css?\\'" . web-mode)
-            )
-    :hook
-    (web-mode . smv/web-mode-hook)
-    (web-mode . emmet-mode)
-    (web-mode . prettier-mode)
-)
+  :mode (("\\.html?\\'" . web-mode)
+         ("\\.css?\\'" . web-mode)
+         )
+  :hook
+  (web-mode . smv/web-mode-hook)
+  (web-mode . emmet-mode)
+  (web-mode . prettier-mode)
+  )
 
 (add-hook 'web-mode-before-auto-complete-hooks
-    '(lambda ()
-    (let ((web-mode-cur-language
-            (web-mode-language-at-pos)))
-                (if (string= web-mode-cur-language "php")
-            (yas-activate-extra-mode 'php-mode)
-        (yas-deactivate-extra-mode 'php-mode))
-                (if (string= web-mode-cur-language "css")
-            (setq emmet-use-css-transform t)
-        (setq emmet-use-css-transform nil)))))
+          '(lambda ()
+             (let ((web-mode-cur-language
+                    (web-mode-language-at-pos)))
+               (if (string= web-mode-cur-language "php")
+                   (yas-activate-extra-mode 'php-mode)
+                 (yas-deactivate-extra-mode 'php-mode))
+               (if (string= web-mode-cur-language "css")
+                   (setq emmet-use-css-transform t)
+                 (setq emmet-use-css-transform nil)))))
 
 (use-package rjsx-mode
   :mode (("\\.js\\'" . rjsx-mode)
-            ("\\.ts\\'" . rjsx-mode))
+         ("\\.ts\\'" . rjsx-mode))
   :hook
   (rjsx-mode . emmet-mode)
   (rjsx-mode . prettier-mode))
 
 (use-package prettier)
 
-(use-package typescript-mode
-    :mode "\\.ts\\'"
-    :hook (typescript-mode . eglot-ensure)
-    :config
-    (setq typescript-indent-level 2))
-
-(use-package php-mode
-  :mode "\\.php\\'"
-  )
-
-(use-package eglot-java
-  :after eglot)
-
 (use-package rust-mode)
 
 (use-package rust-ts-mode
-    :mode "\\.rs\\'"
-    :bind-keymap
-    ("C-c c" . rust-mode-map)
-    :hook (rust-ts-mode . eglot-ensure))
-
-(use-package flutter)
-
-(use-package dart-mode
-    :mode "\\.dart\\'"
-    :hook (dart-mode . eglot-ensure))
+  :mode "\\.rs\\'"
+  :bind-keymap
+  ("C-c c" . rust-mode-map)
+  :hook (rust-ts-mode . lsp-deferred))
 
 (use-package clojure-ts-mode
   :mode "\\.clj\\'"
-  :hook (clojure-ts-mode . eglot-ensure))
+  :hook (clojure-ts-mode . lsp-deferred))
 
 (use-package cider)
 
-(use-package julia-mode
-  :mode "\\.jl\\'")
-
 (use-package company
-    :after eglot
-    :hook (eglot-managed-mode . company-mode)
-    :bind
-    (:map company-mode
-          ("M-o" . company-manual-begin))
-    :custom
-    (company-minimum-prefix-length 1)
-    (company-idle-delay 0.0))
+  :after lsp-mode
+  :hook (lsp-mode . company-mode)
+  :bind
+  (:map company-mode
+        ("M-o" . company-manual-begin))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
 
 (use-package company-box
-    :hook
-    (company-mode . company-box-mode))
+  :hook
+  (company-mode . company-box-mode))
 
 (use-package company-tabnine
-    :config
-    (add-to-list 'company-backends #'company-tabnine t))
+  :config
+  (add-to-list 'company-backends #'company-tabnine t))
 
-(use-package dape
- :after eglot)
+(use-package dap-mode)
 
 (use-package docker
     :bind ("C-c d" . docker))
