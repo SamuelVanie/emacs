@@ -140,6 +140,7 @@
 (dolist (mode '(org-mode-hook
                 term-mode-hook
                 shell-mode-hook
+                doc-view-minor-mode-hook
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
@@ -479,11 +480,57 @@
   :config
   (direnv-mode))
 
+(use-package lsp-mode
+  :init
+  (setq lsp-keymap-prefix "C-l")
+  :commands (lsp lsp-deferred)
+  :config
+  (lsp-enable-which-key-integration t))
+
+(use-package lsp-ui
+  :commands lsp-ui-mode
+  :hook (lsp-mode . lsp-ui-mode))
+
+(use-package lsp-ivy
+  :commands lsp-ivy-workspace-symbol
+  :config
+  (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+  (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))
+
+(defun lsp-booster--advice-json-parse (old-fn &rest args)
+  "Try to parse bytecode instead of json."
+  (or
+   (when (equal (following-char) ?#)
+     (let ((bytecode (read (current-buffer))))
+       (when (byte-code-function-p bytecode)
+         (funcall bytecode))))
+   (apply old-fn args)))
+(advice-add (if (progn (require 'json)
+                       (fboundp 'json-parse-buffer))
+                'json-parse-buffer
+              'json-read)
+            :around
+            #'lsp-booster--advice-json-parse)
+
+(defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+  "Prepend emacs-lsp-booster command to lsp CMD."
+  (let ((orig-result (funcall old-fn cmd test?)))
+    (if (and (not test?)                             ;; for check lsp-server-present?
+             (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+             lsp-use-plists
+             (not (functionp 'json-rpc-connection))  ;; native json-rpc
+             (executable-find "emacs-lsp-booster"))
+        (progn
+          (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
+            (setcar orig-result command-from-exec-path))
+          (message "Using emacs-lsp-booster for %s!" orig-result)
+          (cons "emacs-lsp-booster" orig-result))
+      orig-result)))
+(advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
+
 (use-package flymake
   :bind
   ("M-g f l" . flymake-show-project-diagnostics))
-
-(global-set-key (kbd "M-g e a") 'eglot-code-actions)
 
 (use-package markdown-mode)
 
@@ -513,7 +560,7 @@
 (use-package cider)
 (use-package clojure-ts-mode
   :mode ("\\.clj\\'" . clojure-ts-mode)
-  :hook (clojure-ts-mode . eglot-ensure))
+  :hook (clojure-ts-mode . lsp-deferred))
 
 (use-package emmet-mode)
 
@@ -536,6 +583,8 @@
   (web-mode . emmet-mode)
   (web-mode . prettier-mode)
   )
+
+(use-package company-web)
 
 (add-hook 'web-mode-before-auto-complete-hooks
           '(lambda ()
@@ -563,18 +612,15 @@
   (setq typescript-indent-level 2))
 
 (use-package php-mode
-  :hook (php-mode . eglot-ensure)
+  :hook (php-mode . lsp-deferred)
   :mode "\\.php\\'")
-
-(use-package eglot-java
-  :after eglot)
 
 ;;(use-package ess)
 
 (use-package rust-mode)
 
 (use-package rust-ts-mode
-  :hook (rust-ts-mode . eglot-ensure)
+  :hook (rust-ts-mode . lsp-deferred)
   :mode "\\.rs\\'"
   :bind-keymap
   ("C-c c" . rust-mode-map))
@@ -582,18 +628,17 @@
 (use-package flutter)
 
 (use-package dart-mode
-  :hook (dart-mode . eglot-ensure)
+  :hook (dart-mode . lsp-deferred)
   :mode "\\.dart\\'")
 
-(use-package dape)
+(use-package dap-mode)
 
 (use-package company
-  :hook (eglot-managed-mode . company-mode)
+  :after lsp-mode
+  :hook (lsp-mode . company-mode)
   :bind(
         :map company-mode
         ("M-o" . company-manual-begin)
-        :map xah-fly-command-map
-        ("H" . eldoc)
         )
   :custom
   (company-minimum-prefix-length 1)
