@@ -476,10 +476,6 @@
 (use-package wgrep)
 (global-set-key (kbd "C-c r") 'rgrep)
 
-(use-package direnv
-  :config
-  (direnv-mode))
-
 (use-package lsp-mode
   :init
   (setq lsp-keymap-prefix "C-l")
@@ -490,6 +486,9 @@
 (use-package lsp-ui
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
+
+(use-package lsp-treemacs
+  :after lsp)
 
 (use-package lsp-ivy
   :commands lsp-ivy-workspace-symbol
@@ -624,12 +623,6 @@
   :mode "\\.rs\\'"
   :bind-keymap
   ("C-c c" . rust-mode-map))
-
-(use-package flutter)
-
-(use-package dart-mode
-  :hook (dart-mode . lsp-deferred)
-  :mode "\\.dart\\'")
 
 (use-package dap-mode)
 
