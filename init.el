@@ -516,10 +516,6 @@
   :config
   :hook (nix-mode . lsp-deferred))
 
-(use-package direnv
-  :config
-  (direnv-mode))
-
 (use-package flymake)
 
 (use-package markdown-mode)

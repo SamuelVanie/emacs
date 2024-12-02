@@ -700,7 +700,6 @@ I use the built-in rgrep to do my search and replace so I'm binding it to =C-c r
   (global-set-key (kbd "C-c r") 'rgrep)
 #+end_src
 
-
 ** Lsp-mode
 
 Switching to lsp-mode instead of the default emacs. Lsp-mode has more features than eglot.
@@ -729,10 +728,10 @@ Switching to lsp-mode instead of the default emacs. Lsp-mode has more features t
     #+end_src
 
 
-
 ** lsp-booster
 
-This package permit to make the lsp faster in emacs
+This package permit to make the lsp faster in emacs.
+You can install the binary by running =nix-env -iA nixpkgs.emacs-lsp-booster=
 
 #+begin_src emacs-lisp
 (defun lsp-booster--advice-json-parse (old-fn &rest args)
@@ -779,21 +778,6 @@ Nix is a package manager and a language that I use to setup devshell or to build
     :hook (nix-mode . lsp-deferred))
 #+end_src
 
-
-** Direnv
-
-direnv permit to load environment on fly. You will need to have a .direnv file that should contain =use flake= if you are using flakes. Otherwise you can generate the file with program like lorri.
-
-To use this plugin you must install direnv using : =nix-env -i direnv=.
-
-You could install lorri also if necessary.
-You should then go to the lorri website to configure its daemon [[https://github.com/nix-community/lorri][lorri website]]
-
-#+begin_src emacs-lisp
-  (use-package direnv
-    :config
-    (direnv-mode))
-#+end_src
 
 ** Languages
 
