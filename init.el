@@ -12,7 +12,7 @@
 (load custom-file 'noerror 'nomessage)
 
 (setq-default indent-tabs-mode nil)
-(set-face-attribute 'default nil :height 159)
+(set-face-attribute 'default nil :height 180)
 
 ;; auto refresh buffers when files changes
 (global-auto-revert-mode t)
@@ -97,8 +97,8 @@
 (setq eshell-smart-space-goes-to-end t)
 (setq eshell-list-files-after-cd t)
 
-;; Watch out you should have fish installed on your computer
-(setq-default explicit-shell-file-name "/opt/homebrew/bin/fish")
+(setq-default explicit-shell-file-name "/bin/zsh")
+;; Watch out you should have installed on your computer
 (setq eshell-aliases-file "~/.emacs.d/aliases")
 
 (use-package eshell-toggle
@@ -134,11 +134,13 @@
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 ;; Set frame font
-(add-to-list 'default-frame-alist '(font . "DaddyTimeMono Nerd Font Mono"))
+(add-to-list 'default-frame-alist '((font . "DaddyTimeMono Nerd Font Mono")
+                                    (height . 180)))
 
 ;; some modes doesn't have to start with lines enable
 (dolist (mode '(org-mode-hook
                 term-mode-hook
+                vterm-mode-hook
                 shell-mode-hook
                 doc-view-minor-mode-hook
                 eshell-mode-hook))
@@ -178,6 +180,7 @@
   :after vterm 
   :ensure t
   :bind (("C-c v n" . multi-vterm-project)
+         ("C-c v f" . multi-vterm)
          ("C-c v r" . multi-vterm-rename-buffer)
          ("C-x C-y" . multi-vterm-dedicated-toggle))
   :config
@@ -195,8 +198,8 @@
     :global-prefix "SPC")
 
   (smv/leader-keys
-    "t" '(:ignore t :which-key "toggles")
-    "tt" '(counsel-load-theme :which-key "choose theme")))
+    "g" '(:ignore t :which-key "toggles")
+    "gt" '(counsel-load-theme :which-key "choose theme")))
 
 (use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
 
@@ -271,6 +274,7 @@
 
 (use-package counsel
   :bind (("C-M-j" . 'counsel-switch-buffer)
+         ("C-x C-f" . 'counsel-fzf)
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history))
   :custom
@@ -305,7 +309,7 @@
   ("f" nil "finished" :exit t))
 
 (smv/leader-keys ;; use general to set a keybinding to quickly change text size
-  "ts" '(hydra-text-scale/body :which-key "scale text"))
+  "gs" '(hydra-text-scale/body :which-key "scale text"))
 
 (setenv "PATH" (concat (getenv "PATH") ":/Library/TeX/texbin"))
 
@@ -527,9 +531,7 @@
       orig-result)))
 (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
 
-(use-package flymake
-  :bind
-  ("M-g f l" . flymake-show-project-diagnostics))
+(use-package flycheck)
 
 (use-package markdown-mode)
 
@@ -556,10 +558,9 @@
 (use-package nix-ts-mode
   :mode ("\\.nix\\'" . nix-ts-mode))
 
-(use-package cider)
-(use-package clojure-ts-mode
-  :mode ("\\.clj\\'" . clojure-ts-mode)
-  :hook (clojure-ts-mode . lsp-deferred))
+(use-package ruby-ts-mode
+  :mode ("\\.rb\\'" . ruby-ts-mode)
+  :hook (ruby-ts-mode . lsp-deferred))
 
 (use-package emmet-mode)
 
@@ -624,7 +625,15 @@
   :bind-keymap
   ("C-c c" . rust-mode-map))
 
-(use-package dap-mode)
+(use-package dap-mode
+  :custom
+  (lsp-enable-dap-auto-configure nil)
+  :config
+  (dap-ui-mode 1)
+  (general-define-key
+   :keymaps 'lsp-mode-map
+   :prefix lsp-keymap-prefix
+   "d" '(dap-hydra t :wk "debugger")))
 
 (use-package company
   :after lsp-mode

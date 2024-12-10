@@ -20,7 +20,7 @@ Declare some of my variables for my global configuration
   (load custom-file 'noerror 'nomessage)
 
   (setq-default indent-tabs-mode nil)
-  (set-face-attribute 'default nil :height 159)
+  (set-face-attribute 'default nil :height 180)
 
   ;; auto refresh buffers when files changes
   (global-auto-revert-mode t)
@@ -115,7 +115,7 @@ We use the no-littering package to keep folders where we edit files and the Emac
         `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
 
 #+end_src
-z
+
 
 * Tree-sitter
 
@@ -141,8 +141,8 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
   (setq eshell-smart-space-goes-to-end t)
   (setq eshell-list-files-after-cd t)
 
-  ;; Watch out you should have fish installed on your computer
-  (setq-default explicit-shell-file-name "/opt/homebrew/bin/fish")
+  (setq-default explicit-shell-file-name "/bin/zsh")
+  ;; Watch out you should have installed on your computer
   (setq eshell-aliases-file "~/.emacs.d/aliases")
 
   (use-package eshell-toggle
@@ -197,11 +197,13 @@ This section configures basic UI settings that remove unneeded elements to make 
   (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
   ;; Set frame font
-  (add-to-list 'default-frame-alist '(font . "DaddyTimeMono Nerd Font Mono"))
+  (add-to-list 'default-frame-alist '((font . "DaddyTimeMono Nerd Font Mono")
+                                      (height . 180)))
 
   ;; some modes doesn't have to start with lines enable
   (dolist (mode '(org-mode-hook
                   term-mode-hook
+                  vterm-mode-hook
                   shell-mode-hook
                   doc-view-minor-mode-hook
                   eshell-mode-hook))
@@ -269,6 +271,7 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
     :after vterm 
     :ensure t
     :bind (("C-c v n" . multi-vterm-project)
+           ("C-c v f" . multi-vterm)
            ("C-c v r" . multi-vterm-rename-buffer)
            ("C-x C-y" . multi-vterm-dedicated-toggle))
     :config
@@ -293,8 +296,8 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
       :global-prefix "SPC")
 
     (smv/leader-keys
-      "t" '(:ignore t :which-key "toggles")
-      "tt" '(counsel-load-theme :which-key "choose theme")))
+      "g" '(:ignore t :which-key "toggles")
+      "gt" '(counsel-load-theme :which-key "choose theme")))
 
   (use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
 #+end_src
@@ -430,6 +433,7 @@ You will have to install the icons on your machine before to get the full functi
 
   (use-package counsel
     :bind (("C-M-j" . 'counsel-switch-buffer)
+           ("C-x C-f" . 'counsel-fzf)
            :map minibuffer-local-map
            ("C-r" . 'counsel-minibuffer-history))
     :custom
@@ -488,7 +492,7 @@ I use hydra to build a trasient that will permit me to quickly adjust the scale 
     ("f" nil "finished" :exit t))
 
   (smv/leader-keys ;; use general to set a keybinding to quickly change text size
-    "ts" '(hydra-text-scale/body :which-key "scale text"))
+    "gs" '(hydra-text-scale/body :which-key "scale text"))
 #+end_src
 
 
@@ -777,13 +781,13 @@ lsp mode is a company driven lsp client but with more features built-in than egl
 
   (use-package lsp-treemacs
     :after lsp)
-  
+
   (use-package lsp-ivy
     :commands lsp-ivy-workspace-symbol
     :config
     (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
     (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))
-    #+end_src
+#+end_src
 
 
 ** lsp-booster
@@ -837,9 +841,7 @@ I use some useful lsp packages with downloaded languages server for my programmi
 Flymake is the built-in inline diagnostic tool used by eglot.
 
 #+begin_src emacs-lisp
-  (use-package flymake
-    :bind
-    ("M-g f l" . flymake-show-project-diagnostics))
+  (use-package flycheck)
 #+end_src
 
 
@@ -899,15 +901,14 @@ You know about nix ? This package manager... This mode permit to write file in t
 
 
 
-*** Clojure
+*** Ruby
 
-I love this programming language, just started to learn it.
+For scripting, I hate python
 
 #+begin_src emacs-lisp
-  (use-package cider)
-  (use-package clojure-ts-mode
-    :mode ("\\.clj\\'" . clojure-ts-mode)
-    :hook (clojure-ts-mode . lsp-deferred))
+  (use-package ruby-ts-mode
+    :mode ("\\.rb\\'" . ruby-ts-mode)
+    :hook (ruby-ts-mode . lsp-deferred))
 #+end_src
 
 *** Web Programming
@@ -1026,7 +1027,15 @@ Installing PHP
 ** Debugger configuration
 
 #+begin_src emacs-lisp
-  (use-package dap-mode)
+  (use-package dap-mode
+    :custom
+    (lsp-enable-dap-auto-configure nil)
+    :config
+    (dap-ui-mode 1)
+    (general-define-key
+     :keymaps 'lsp-mode-map
+     :prefix lsp-keymap-prefix
+     "d" '(dap-hydra t :wk "debugger")))
 #+end_src
 
 ** Company Mode
