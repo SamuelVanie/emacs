@@ -100,7 +100,7 @@
 (setq eshell-list-files-after-cd t)
 
 ;; Watch out you should have fish installed on your computer
-(setq-default explicit-shell-file-name "/usr/bin/fish")
+(setq-default explicit-shell-file-name "/usr/bin/zsh")
 (setq eshell-aliases-file "~/.emacs.d/aliases")
 
 (use-package eshell-toggle
@@ -144,13 +144,14 @@
                 term-mode-hook
                 doc-view-minor-mode-hook
                 shell-mode-hook
+                vterm-mode-hook
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 ;; Change the font size (139) according to your screen
 (custom-set-faces
  '(fixed-pitch ((t (:height 139 :family "JetbrainsMono Nerd Font"))))
- '(variable-pitch ((t (:weight light :height 139 :family "DaddyTimeMono Nerd Font")))))
+ '(variable-pitch ((t (:height 139 :family "FiraCode Nerd Font")))))
 
 (use-package ligature
   :config
@@ -172,17 +173,6 @@
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
-
-(use-package general ;; for setting keybindings
-  :config
-  (general-create-definer smv/leader-keys
-    :keymaps '(normal visual emacs)
-    :prefix "SPC"
-    :global-prefix "SPC")
-
-  (smv/leader-keys
-    "t" '(:ignore t :which-key "toggles")
-    "tt" '(counsel-load-theme :which-key "choose theme")))
 
 (use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
 
@@ -215,6 +205,7 @@
 (use-package multi-vterm
   :ensure t
   :bind (("C-c v n" . multi-vterm-project)
+         ("C-c v f" . multi-vterm)
          ("C-c v r" . multi-vterm-rename-buffer)
          ("C-x C-y" . multi-vterm-dedicated-toggle))
   :config
@@ -245,19 +236,6 @@
 
 (use-package ivy
   :diminish
-  :bind (("C-s" . swiper)
-         :map ivy-minibuffer-map
-         ("<tab>" . ivy-alt-done)
-         ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
-         :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
-         ("C-d" . ivy-switch-buffer-kill)
-         :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
   :config
   (ivy-mode 1))
 
@@ -267,7 +245,18 @@
   (ivy-rich-mode 1))
 
 (use-package counsel
-  :bind (("C-M-j" . 'counsel-switch-buffer)
+  :after xah-fly-keys
+  :bind (("C-c b b" . 'counsel-switch-buffer)
+         ("C-c b d" . 'counsel-cd)
+         ("C-s" . 'counsel-grep-or-swiper)
+         ("C-c b r" . 'counsel-mark-ring)
+         ("C-c b f" . 'counsel-fzf)
+         ("C-c b m" . 'counsel-kmacro)
+         :map xah-fly-command-map
+         ("SPC g d" . 'counsel-cd)
+         ("SPC g r" . 'counsel-mark-ring)
+         ("SPC g f" . 'counsel-fzf)
+         ("SPC g m" . 'counsel-kmacro)
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history))
   :custom
@@ -283,6 +272,8 @@
   ;; Uncomment the following line to have sorting remembered across sessions!
                                         ;(prescient-persist-mode 1)
   (ivy-prescient-mode 1))
+
+(use-package consult)
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
@@ -312,7 +303,7 @@
                   (org-level-6 . 1.0)
                   (org-level-7 . 1.0)
                   (org-level-8 . 1.0)))
-    (set-face-attribute (car face) nil :font "VictorMono" :weight 'regular :height (cdr face)))
+    (set-face-attribute (car face) nil :font "JetbrainsMono Nerd Font" :weight 'regular :height (cdr face)))
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
   (set-face-attribute 'org-block nil    :inherit 'fixed-pitch)
   (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
@@ -516,7 +507,7 @@
   :config
   :hook (nix-mode . lsp-deferred))
 
-(use-package flymake)
+(use-package flycheck)
 
 (use-package markdown-mode)
 
@@ -590,11 +581,9 @@
   ("C-c c" . rust-mode-map)
   :hook (rust-ts-mode . lsp-deferred))
 
-(use-package clojure-ts-mode
-  :mode "\\.clj\\'"
-  :hook (clojure-ts-mode . lsp-deferred))
-
-(use-package cider)
+(use-package ruby-ts-mode
+  :mode "\\.rb\\'"
+  :hook (ruby-ts-mode . lsp-deferred))
 
 (use-package company
   :after lsp-mode
