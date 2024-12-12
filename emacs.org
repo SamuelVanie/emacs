@@ -145,7 +145,7 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
 
   (use-package eshell-toggle
     :bind ("C-x C-z" . eshell-toggle))
-#+end_src
+  #+end_src
 
 * Buffers
 
@@ -274,13 +274,6 @@ Allows me te repeat bindings by typing the last character multiple times.
     (repeat-exit-timeout 5))
 #+end_src
 
-** Ace-jump mode
-
-#+begin_src emacs-lisp
-  (use-package ace-jump-mode
-    :bind
-    ("C-c SPC" . ace-jump-mode))
-#+end_src
 
 ** Xah-fly-key
 
@@ -293,19 +286,37 @@ A modal editing tool that permits to avoid emacs' pinky.
     (setq xah-fly-use-meta-key nil)
     :config
     (xah-fly-keys-set-layout "colemak")
-    (xah-fly-keys 1))
+    (xah-fly-keys 1)
+    :bind
+    (:map xah-fly-command-map
+          ("/" . nil)))
 #+end_src
 
-** Windmove
 
-This package permits to quickly move between windows in emacs with easy and intuitive bindings. It's built-in to emacs, but you should configure its default bindings by calling the windmove
+** Ace-jump mode
 
 #+begin_src emacs-lisp
-  (use-package windmove
-    :ensure nil
-    :config
-    (windmove-default-keybindings))
+  (defun smv/custom-ace-jump (mode)
+    (interactive
+     (list (intern (completing-read "Select mode (char/line/window): "
+                                    '("char" "line" "window")
+                                    nil t))))
+    (xah-fly-insert-mode-activate)
+    (pcase mode
+      ('char (call-interactively 'ace-jump-char-mode))
+      ('line (call-interactively 'ace-jump-line-mode))
+      ('window (call-interactively 'ace-window))
+      (_ (message "Unknown mode: %s" mode))))
+
+
+  (use-package ace-jump-mode
+    :bind
+    (:map xah-fly-command-map
+          ("/ a c" . (lambda () (interactive) (smv/custom-ace-jump 'char)))
+          ("/ a w" . (lambda () (interactive) (smv/custom-ace-jump 'window)))
+          ("/ a l" . (lambda () (interactive) (smv/custom-ace-jump 'line)))))
 #+end_src
+
 
 * vterm
 
@@ -395,10 +406,10 @@ You will have to install the icons on your machine before to get the full functi
            ("C-c b f" . 'counsel-fzf)
            ("C-c b m" . 'counsel-kmacro)
            :map xah-fly-command-map
-           ("SPC g d" . 'counsel-cd)
-           ("SPC g r" . 'counsel-mark-ring)
-           ("SPC g f" . 'counsel-fzf)
-           ("SPC g m" . 'counsel-kmacro)
+           ("/ c d" . 'counsel-cd)
+           ("/ c r" . 'counsel-mark-ring)
+           ("/ c f" . 'counsel-fzf)
+           ("/ c m" . 'counsel-kmacro)
            :map minibuffer-local-map
            ("C-r" . 'counsel-minibuffer-history))
     :custom

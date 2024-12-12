@@ -183,22 +183,36 @@
   (repeat-too-dangerous '(kill-this-buffer))
   (repeat-exit-timeout 5))
 
-(use-package ace-jump-mode
-  :bind
-  ("C-c SPC" . ace-jump-mode))
-
 (use-package xah-fly-keys
   :init
   (setq xah-fly-use-control-key nil)
   (setq xah-fly-use-meta-key nil)
   :config
   (xah-fly-keys-set-layout "colemak")
-  (xah-fly-keys 1))
+  (xah-fly-keys 1)
+  :bind
+  (:map xah-fly-command-map
+        ("/" . nil)))
 
-(use-package windmove
-  :ensure nil
-  :config
-  (windmove-default-keybindings))
+(defun smv/custom-ace-jump (mode)
+  (interactive
+   (list (intern (completing-read "Select mode (char/line/window): "
+                                  '("char" "line" "window")
+                                  nil t))))
+  (xah-fly-insert-mode-activate)
+  (pcase mode
+    ('char (call-interactively 'ace-jump-char-mode))
+    ('line (call-interactively 'ace-jump-line-mode))
+    ('window (call-interactively 'ace-window))
+    (_ (message "Unknown mode: %s" mode))))
+
+
+(use-package ace-jump-mode
+  :bind
+  (:map xah-fly-command-map
+        ("/ a c" . (lambda () (interactive) (smv/custom-ace-jump 'char)))
+        ("/ a w" . (lambda () (interactive) (smv/custom-ace-jump 'window)))
+        ("/ a l" . (lambda () (interactive) (smv/custom-ace-jump 'line)))))
 
 (use-package vterm)
 
@@ -253,10 +267,10 @@
          ("C-c b f" . 'counsel-fzf)
          ("C-c b m" . 'counsel-kmacro)
          :map xah-fly-command-map
-         ("SPC g d" . 'counsel-cd)
-         ("SPC g r" . 'counsel-mark-ring)
-         ("SPC g f" . 'counsel-fzf)
-         ("SPC g m" . 'counsel-kmacro)
+         ("/ c d" . 'counsel-cd)
+         ("/ c r" . 'counsel-mark-ring)
+         ("/ c f" . 'counsel-fzf)
+         ("/ c m" . 'counsel-kmacro)
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history))
   :custom
