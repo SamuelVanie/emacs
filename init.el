@@ -189,18 +189,6 @@
   (setq multi-vterm-dedicated-window-height-percent 30))
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
-(use-package general ;; for setting keybindings
-  :config
-  (general-create-definer smv/leader-keys
-    :keymaps '(normal visual emacs)
-    :prefix "SPC"
-    :global-prefix "SPC")
-
-  (smv/leader-keys
-    "g" '(:ignore t :which-key "toggles")
-    "gt" '(counsel-load-theme :which-key "choose theme")))
-
 (use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
 
 (use-package repeat
@@ -216,16 +204,31 @@
   (setq xah-fly-use-meta-key nil)
   :config
   (xah-fly-keys-set-layout "colemak")
-  (xah-fly-keys 1))
+  (xah-fly-keys 1)
+  :bind
+  (:map xah-fly-command-map
+  ("/" . nil)))
+
+(defun smv/custom-ace-jump (mode)
+  (interactive
+   (list (intern (completing-read "Select mode (char/line/window): "
+                                  '("char" "line" "window")
+                                  nil t))))
+  (xah-fly-insert-mode-activate)
+  (pcase mode
+    ('char   (call-interactively 'ace-jump-char-mode))
+    ('line   (call-interactively 'ace-jump-line-mode))
+    ('window (call-interactively 'ace-window))
+    (_ (message "Unknown mode: %s" mode))))
+
 
 (use-package ace-jump-mode
+  :after xah-fly-keys
   :bind
-  ("C-c SPC" . ace-jump-mode))
-
-(use-package windmove
-  :straight nil
-  :config
-  (windmove-default-keybindings))
+  (:map xah-fly-command-map
+  ("/ a c" . (lambda () (interactive) (smv/custom-ace-jump 'char)))
+  ("/ a w" . (lambda () (interactive) (smv/custom-ace-jump 'window)))
+  ("/ a l" . (lambda () (interactive) (smv/custom-ace-jump 'line)))))
 
 (use-package doom-themes)
 (use-package ef-themes
@@ -251,19 +254,6 @@
 
 (use-package ivy
   :diminish
-  :bind (("C-s" . swiper)
-         :map ivy-minibuffer-map
-         ("TAB" . ivy-alt-done)
-         ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
-         :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
-         ("C-d" . ivy-switch-buffer-kill)
-         :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
   :config
   (ivy-mode 1))
 
@@ -273,8 +263,19 @@
   (ivy-rich-mode 1))
 
 (use-package counsel
-  :bind (("C-M-j" . 'counsel-switch-buffer)
-         ("C-x C-f" . 'counsel-fzf)
+  :after xah-fly-keys
+  :bind (("C-s" . 'counsel-grep-or-swiper)
+         ("C-c b b" . 'counsel-switch-buffer)
+         ("C-c b d" . 'counsel-cd)
+         ("C-c b r" . 'counsel-mark-ring)
+         ("C-c b f" . 'counsel-fzf)
+         ("C-c b m" . 'counsel-kmacro)
+         :map xah-fly-command-map
+         ("/ c b" . counsel-switch-buffer)
+         ("/ c d" . 'counsel-cd)
+         ("/ c r" . 'counsel-mark-ring)
+         ("/ c f" . 'counsel-fzf)
+         ("/ c m" . 'counsel-kmacro)
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history))
   :custom
@@ -301,15 +302,6 @@
   ([remap describe-command] . helpful-command)
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
-
-(defhydra hydra-text-scale (:timeout 3)
-  "scalte text"
-  ("j" text-scale-increase "in")
-  ("k" text-scale-decrease "out")
-  ("f" nil "finished" :exit t))
-
-(smv/leader-keys ;; use general to set a keybinding to quickly change text size
-  "gs" '(hydra-text-scale/body :which-key "scale text"))
 
 (setenv "PATH" (concat (getenv "PATH") ":/Library/TeX/texbin"))
 
