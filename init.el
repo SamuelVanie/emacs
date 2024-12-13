@@ -204,7 +204,8 @@
     ('char (call-interactively 'ace-jump-char-mode))
     ('line (call-interactively 'ace-jump-line-mode))
     ('window (call-interactively 'ace-window))
-    (_ (message "Unknown mode: %s" mode))))
+    (_ (message "Unknown mode: %s" mode)))
+  (xah-fly-command-mode-activate))
 
 
 (use-package ace-jump-mode
@@ -527,6 +528,8 @@
 
 (use-package yasnippet
   :config (yas-global-mode))
+
+(use-package yasnippet-snippets)
 
 (use-package auto-yasnippet
   :bind

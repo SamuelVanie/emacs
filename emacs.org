@@ -5,26 +5,26 @@
 * Declare some global variables
 
 #+begin_src emacs-lisp
-(setq gc-const-threshold (* 80 1000 1000))
-(setq read-process-output-max (* 1024 1024))
+  (setq gc-const-threshold (* 80 1000 1000))
+  (setq read-process-output-max (* 1024 1024))
 
-;; You will most likely need to adjust this font size for your system!
-(defvar smv/default-font-size 139)
-(defvar smv/default-variable-font-size 139)
+  ;; You will most likely need to adjust this font size for your system!
+  (defvar smv/default-font-size 139)
+  (defvar smv/default-variable-font-size 139)
 
-;; remove noise for not non allowed command in emacs if your system make them
-(setq ring-bell-function 'ignore)
+  ;; remove noise for not non allowed command in emacs if your system make them
+  (setq ring-bell-function 'ignore)
 
-;; Make frame transparency overridable
-(defvar smv/frame-transparency '(90 . 90))
+  ;; Make frame transparency overridable
+  (defvar smv/frame-transparency '(90 . 90))
 
-(setq custom-file (locate-user-emacs-file "custom-vars.el"))
-(load custom-file 'noerror 'nomessage)
+  (setq custom-file (locate-user-emacs-file "custom-vars.el"))
+  (load custom-file 'noerror 'nomessage)
 
-(setq-default indent-tabs-mode nil)
+  (setq-default indent-tabs-mode nil)
 
-;; auto refresh buffers when files changes
-(global-auto-revert-mode t)
+  ;; auto refresh buffers when files changes
+  (global-auto-revert-mode t)
 #+end_src
 
 
@@ -94,7 +94,7 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
     (dashboard-setup-startup-hook))
 
   (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
-    #+END_SRC
+#+END_SRC
 
 * Keep Folders clean
 
@@ -145,7 +145,7 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
 
   (use-package eshell-toggle
     :bind ("C-x C-z" . eshell-toggle))
-  #+end_src
+#+end_src
 
 * Buffers
 
@@ -306,7 +306,8 @@ A modal editing tool that permits to avoid emacs' pinky.
       ('char (call-interactively 'ace-jump-char-mode))
       ('line (call-interactively 'ace-jump-line-mode))
       ('window (call-interactively 'ace-window))
-      (_ (message "Unknown mode: %s" mode))))
+      (_ (message "Unknown mode: %s" mode)))
+    (xah-fly-command-mode-activate))
 
 
   (use-package ace-jump-mode
@@ -384,7 +385,7 @@ You will have to install the icons on your machine before to get the full functi
 
 [[https://oremacs.com/swiper/][Ivy]]  is an excellent completion framework for Emacs. It provides a minimal yet powerful selection menu that appears when you open files, switch buffers, and for many other tasks in Emacs. Counsel is a customized set of commands to replace `find-file` with `counsel-find-file`, etc which provide useful commands for each of the default completion commands.
 
-[[https://github.com/Yevgnen/ivy-rich][ivy-rich]]  adds extra columns to a few of the Counsel commands to provide more information about each item.
+[[https://github.com/Yevgnen/ivy-rich][ivy-rich]] adds extra columns to a few of the Counsel commands to provide more information about each item.
 
 #+begin_src emacs-lisp
   (use-package ivy
@@ -809,10 +810,11 @@ This is a better flymake, it has many features. That permits to better see the e
 **** yasnippet
 
 Useful snippets for quick programming
-
 #+begin_src emacs-lisp
   (use-package yasnippet
     :config (yas-global-mode))
+  
+  (use-package yasnippet-snippets)
 #+end_src
 
 **** auto-yasnippet
