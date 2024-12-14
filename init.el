@@ -1,9 +1,21 @@
 (setq gc-const-threshold (* 80 1000 1000))
-(setq read-process-output-max (* 1024 1024))
+
+(cond
+ ((eq system-type 'darwin)  ;; macOS
+  (setq read-process-output-max (* 64 1024)))  ;; 64KB
+ ((eq system-type 'gnu/linux)  ;; Linux
+  (setq read-process-output-max (* 1024 1024)))  ;; 1MB
+ )
 
 ;; You will most likely need to adjust this font size for your system!
-(defvar smv/default-font-size 139)
-(defvar smv/default-variable-font-size 139)
+(cond
+ ((eq system-type 'darwin)
+  (defvar smv/default-font-size 180)
+  (defvar smv/default-variable-font-size 180))
+ ((eq system-type 'gnu/linux)
+  (defvar smv/default-font-size 139)
+  (defvar smv/default-variable-font-size 139))
+ )
 
 ;; remove noise for not non allowed command in emacs if your system make them
 (setq ring-bell-function 'ignore)
@@ -100,8 +112,8 @@
 (setq eshell-list-files-after-cd t)
 
 ;; Watch out you should have fish installed on your computer
-(setq-default explicit-shell-file-name "/usr/bin/zsh")
-(setq eshell-aliases-file "~/.emacs.d/aliases")
+(setq eshell-aliases-file (format "%s%s" user-emacs-directory "aliases"))
+(setq explicit-shell-file-name "/bin/zsh")
 
 (use-package eshell-toggle
   :bind ("C-x C-z" . eshell-toggle))
@@ -150,8 +162,8 @@
 
 ;; Change the font size (139) according to your screen
 (custom-set-faces
- '(fixed-pitch ((t (:height 139 :family "JetbrainsMono Nerd Font"))))
- '(variable-pitch ((t (:height 139 :family "FiraCode Nerd Font")))))
+ `(fixed-pitch ((t (:height ,smv/default-font-size :family "JetbrainsMono Nerd Font"))))
+ `(variable-pitch ((t (:height ,smv/default-font-size :family "FiraCode Nerd Font")))))
 
 (use-package ligature
   :config
@@ -175,6 +187,7 @@
   :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
+(use-package general) ;; permit to define bindings under another one easily
 
 (use-package repeat
   :ensure nil
@@ -204,8 +217,7 @@
     ('char (call-interactively 'ace-jump-char-mode))
     ('line (call-interactively 'ace-jump-line-mode))
     ('window (call-interactively 'ace-window))
-    (_ (message "Unknown mode: %s" mode)))
-  (xah-fly-command-mode-activate))
+    (_ (message "Unknown mode: %s" mode))))
 
 
 (use-package ace-jump-mode
@@ -268,9 +280,9 @@
          ("C-c b f" . 'counsel-fzf)
          ("C-c b m" . 'counsel-kmacro)
          :map xah-fly-command-map
-         ("/ c d" . 'counsel-cd)
+         ("/ c d" . 'project-find-dir)
          ("/ c r" . 'counsel-mark-ring)
-         ("/ c f" . 'counsel-fzf)
+         ("/ c f" . 'project-find-file)
          ("/ c m" . 'counsel-kmacro)
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history))
@@ -389,11 +401,11 @@
           ("st" "School todos" tags-todo "+@school/TODO")
           ("sp" "School Projects" tags-todo "+@school/ACTIVE")
           ("sr" "School Review" tags-todo "+@school/REVIEW")
-          
+
           ("pt" "Personal todos" tags-todo "+personal/TODO")
           ("pl" "Personal Projects" tags-todo "+personal/ACTIVE")
           ("pr" "Personal Review" tags-todo "+personal/REVIEW")
-          
+
           ;; Low-effort next actions
           ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
            ((org-agenda-overriding-header "Low Effort Tasks")
@@ -450,7 +462,7 @@
 ;; Automatically tangle our Emacs.org config file when we save it
 (defun smv/org-babel-tangle-config ()
   (when (string-equal (buffer-file-name)
-                      (expand-file-name "~/.emacs.d/emacs.org"))
+                      (expand-file-name (format "%s%s" user-emacs-directory "emacs.org")))
     ;; Dynamic scoping to the rescue
     (let ((org-confirm-babel-evaluate nil))
       (org-babel-tangle))))
@@ -620,7 +632,15 @@
   :config
   (add-to-list 'company-backends #'company-tabnine t))
 
-(use-package dap-mode)
+(use-package dap-mode
+  :custom
+  (lsp-enable-dap-auto-configure nil)
+  :config
+  (dap-ui-mode 1)
+  (general-define-key
+   :keymaps 'lsp-mode-map
+   :prefix lsp-keymap-prefix
+   "d" '(dap-hydra t :wk "debugger")))
 
 (use-package docker
     :bind ("C-c d" . docker))
@@ -630,7 +650,7 @@
 (use-package copilot
   :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
   :ensure t)
-  
+
 (define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
 (define-key copilot-completion-map (kbd "TAB") 'copilot-accept-completion)
 
