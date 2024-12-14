@@ -280,9 +280,9 @@
          ("C-c b f" . 'counsel-fzf)
          ("C-c b m" . 'counsel-kmacro)
          :map xah-fly-command-map
-         ("/ c d" . 'project-find-dir)
+         ("/ c d" . 'counsel-cd)
          ("/ c r" . 'counsel-mark-ring)
-         ("/ c f" . 'project-find-file)
+         ("/ c f" . 'counsel-fzf)
          ("/ c m" . 'counsel-kmacro)
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history))
@@ -401,11 +401,11 @@
           ("st" "School todos" tags-todo "+@school/TODO")
           ("sp" "School Projects" tags-todo "+@school/ACTIVE")
           ("sr" "School Review" tags-todo "+@school/REVIEW")
-
+          
           ("pt" "Personal todos" tags-todo "+personal/TODO")
           ("pl" "Personal Projects" tags-todo "+personal/ACTIVE")
           ("pr" "Personal Review" tags-todo "+personal/REVIEW")
-
+          
           ;; Low-effort next actions
           ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
            ((org-agenda-overriding-header "Low Effort Tasks")
@@ -650,7 +650,7 @@
 (use-package copilot
   :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
   :ensure t)
-
+  
 (define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
 (define-key copilot-completion-map (kbd "TAB") 'copilot-accept-completion)
 

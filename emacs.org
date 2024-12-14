@@ -418,9 +418,9 @@ You will have to install the icons on your machine before to get the full functi
            ("C-c b f" . 'counsel-fzf)
            ("C-c b m" . 'counsel-kmacro)
            :map xah-fly-command-map
-           ("/ c d" . 'project-find-dir)
+           ("/ c d" . 'counsel-cd)
            ("/ c r" . 'counsel-mark-ring)
-           ("/ c f" . 'project-find-file)
+           ("/ c f" . 'counsel-fzf)
            ("/ c m" . 'counsel-kmacro)
            :map minibuffer-local-map
            ("C-r" . 'counsel-minibuffer-history))
