@@ -20,9 +20,6 @@
 ;; remove noise for not non allowed command in emacs if your system make them
 (setq ring-bell-function 'ignore)
 
-;; Make frame transparency overridable
-(defvar smv/frame-transparency '(90 . 90))
-
 (setq custom-file (locate-user-emacs-file "custom-vars.el"))
 (load custom-file 'noerror 'nomessage)
 
@@ -143,8 +140,6 @@
 
 
 ;; Set frame transparency
-(set-frame-parameter (selected-frame) 'alpha smv/frame-transparency)
-(add-to-list 'default-frame-alist `(alpha . ,smv/frame-transparency))
 (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
