@@ -233,7 +233,7 @@
   :config
   (define-key vterm-mode-map [return]                      #'vterm-send-return)
   ;; terminal height percent of 30
-  (setq multi-vterm-dedicated-window-height-percent 30))
+  (setq multi-vterm-dedicated-window-height-percent 45))
 
 (use-package doom-themes)
 (use-package ef-themes

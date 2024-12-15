@@ -341,7 +341,7 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
     :config
     (define-key vterm-mode-map [return]                      #'vterm-send-return)
     ;; terminal height percent of 30
-    (setq multi-vterm-dedicated-window-height-percent 30))
+    (setq multi-vterm-dedicated-window-height-percent 45))
 
 #+end_src
 
