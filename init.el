@@ -146,6 +146,8 @@
 ;; Set frame font
 (add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font"))
 
+(set-face-attribute 'default nil :height smv/default-font-size)
+
 ;; some modes doesn't have to start with lines enable
 (dolist (mode '(org-mode-hook
                 term-mode-hook
