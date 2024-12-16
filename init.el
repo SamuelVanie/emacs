@@ -207,11 +207,31 @@
 
 
 (use-package ace-jump-mode
-  :bind
-  (:map xah-fly-command-map
-        ("/ a c" . (lambda () (interactive) (smv/custom-ace-jump 'char)))
-        ("/ a w" . (lambda () (interactive) (smv/custom-ace-jump 'window)))
-        ("/ a l" . (lambda () (interactive) (smv/custom-ace-jump 'line)))))
+  :config
+  (general-define-key
+   :keymaps 'xah-fly-command-map
+   :prefix "/ a"
+   "c" (lambda () (interactive) (smv/custom-ace-jump 'char))
+   "w" (lambda () (interactive) (smv/custom-ace-jump 'window))
+   "l" (lambda () (interactive) (smv/custom-ace-jump 'line))))
+
+(general-define-key
+ :keymaps 'xah-fly-command-map
+ :prefix "/ w"
+ "n" 'windmove-left
+ "i" 'windmove-right
+ "e" 'windmove-down
+ "u" 'windmove-up
+ "+" 'balance-windows
+ "m" 'maximize-window)
+
+(general-define-key
+ :keymaps 'xah-fly-command-map
+ :prefix "/ w s"
+ "n" 'windmove-swap-states-left
+ "i" 'windmove-swap-states-right
+ "e" 'windmove-swap-states-down
+ "u" 'windmove-swap-states-up)
 
 (use-package vterm)
 
@@ -629,16 +649,20 @@
    "d" '(dap-hydra t :wk "debugger")))
 
 (use-package docker
-    :bind ("C-c d" . docker))
+  :bind ("C-c d" . docker))
 
 (use-package dockerfile-mode)
 
 (use-package copilot
   :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
+  :bind
+  (:map copilot-completion-map
+        ("C-M-<down>" . copilot-accept-completion)
+        ("C-M-<up>" . copilot-accept-completion-by-word)
+        ("C-M-<right>" . copilot-next-completion)
+        ("C-M-<left>" . copilot-previous-completion)
+        )
   :ensure t)
-  
-(define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
-(define-key copilot-completion-map (kbd "TAB") 'copilot-accept-completion)
 
 ;; (defun smv/gptel-api-key ()
 ;;   "Retrieve my OpenAI API key from a secure location."

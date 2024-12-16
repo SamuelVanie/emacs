@@ -34,7 +34,7 @@
 
   ;; auto refresh buffers when files changes
   (global-auto-revert-mode t)
-   #+end_src
+#+end_src
 
 * Scrolling inside popup view
 
@@ -134,7 +134,7 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
 
   (use-package eshell-toggle
     :bind ("C-x C-z" . eshell-toggle))
-  #+end_src
+#+end_src
 
 * Buffers
 
@@ -160,6 +160,7 @@ I'm writing this function to kill all the buffers because it is really boring to
   (global-set-key (kbd "C-k") 'kill-line)
 #+end_src
 
+
 * Basic UI Configuration
 
 This section configures basic UI settings that remove unneeded elements to make Emacs look a lot more minimal and modern.
@@ -184,7 +185,7 @@ This section configures basic UI settings that remove unneeded elements to make 
 
   ;; Set frame font
   (add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font"))
-  
+
   (set-face-attribute 'default nil :height smv/default-font-size)
 
   ;; some modes doesn't have to start with lines enable
@@ -300,13 +301,41 @@ A modal editing tool that permits to avoid emacs' pinky.
 
 
   (use-package ace-jump-mode
-    :bind
-    (:map xah-fly-command-map
-          ("/ a c" . (lambda () (interactive) (smv/custom-ace-jump 'char)))
-          ("/ a w" . (lambda () (interactive) (smv/custom-ace-jump 'window)))
-          ("/ a l" . (lambda () (interactive) (smv/custom-ace-jump 'line)))))
+    :config
+    (general-define-key
+     :keymaps 'xah-fly-command-map
+     :prefix "/ a"
+     "c" (lambda () (interactive) (smv/custom-ace-jump 'char))
+     "w" (lambda () (interactive) (smv/custom-ace-jump 'window))
+     "l" (lambda () (interactive) (smv/custom-ace-jump 'line))))
+
+
 #+end_src
 
+
+* Windows
+
+There's no unified bindings that permits to manage windows, so here's mine
+
+#+begin_src emacs-lisp
+  (general-define-key
+   :keymaps 'xah-fly-command-map
+   :prefix "/ w"
+   "n" 'windmove-left
+   "i" 'windmove-right
+   "e" 'windmove-down
+   "u" 'windmove-up
+   "+" 'balance-windows
+   "m" 'maximize-window)
+
+  (general-define-key
+   :keymaps 'xah-fly-command-map
+   :prefix "/ w s"
+   "n" 'windmove-swap-states-left
+   "i" 'windmove-swap-states-right
+   "e" 'windmove-swap-states-down
+   "u" 'windmove-swap-states-up)
+#+end_src
 
 * vterm
 
@@ -430,7 +459,7 @@ You will have to install the icons on your machine before to get the full functi
 Permit to check the list of things like the pop mark. Pretty neat for me as I prefer visual navigation.
 
 #+begin_src emacs-lisp
-(use-package consult)
+  (use-package consult)
 #+end_src
 
 ** Helpful Help Commands
@@ -721,7 +750,7 @@ Switching to lsp-mode instead of the default emacs. Lsp-mode has more features t
     :config
     (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
     (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))
-    #+end_src
+#+end_src
 
 
 ** lsp-booster
@@ -730,36 +759,36 @@ This package permit to make the lsp faster in emacs.
 You can install the binary by running =nix-env -iA nixpkgs.emacs-lsp-booster=
 
 #+begin_src emacs-lisp
-(defun lsp-booster--advice-json-parse (old-fn &rest args)
-  "Try to parse bytecode instead of json."
-  (or
-   (when (equal (following-char) ?#)
-     (let ((bytecode (read (current-buffer))))
-       (when (byte-code-function-p bytecode)
-         (funcall bytecode))))
-   (apply old-fn args)))
-(advice-add (if (progn (require 'json)
-                       (fboundp 'json-parse-buffer))
-                'json-parse-buffer
-              'json-read)
-            :around
-            #'lsp-booster--advice-json-parse)
+  (defun lsp-booster--advice-json-parse (old-fn &rest args)
+    "Try to parse bytecode instead of json."
+    (or
+     (when (equal (following-char) ?#)
+       (let ((bytecode (read (current-buffer))))
+         (when (byte-code-function-p bytecode)
+           (funcall bytecode))))
+     (apply old-fn args)))
+  (advice-add (if (progn (require 'json)
+                         (fboundp 'json-parse-buffer))
+                  'json-parse-buffer
+                'json-read)
+              :around
+              #'lsp-booster--advice-json-parse)
 
-(defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
-  "Prepend emacs-lsp-booster command to lsp CMD."
-  (let ((orig-result (funcall old-fn cmd test?)))
-    (if (and (not test?)                             ;; for check lsp-server-present?
-             (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
-             lsp-use-plists
-             (not (functionp 'json-rpc-connection))  ;; native json-rpc
-             (executable-find "emacs-lsp-booster"))
-        (progn
-          (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
-            (setcar orig-result command-from-exec-path))
-          (message "Using emacs-lsp-booster for %s!" orig-result)
-          (cons "emacs-lsp-booster" orig-result))
-      orig-result)))
-(advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
+  (defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+    "Prepend emacs-lsp-booster command to lsp CMD."
+    (let ((orig-result (funcall old-fn cmd test?)))
+      (if (and (not test?)                             ;; for check lsp-server-present?
+               (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+               lsp-use-plists
+               (not (functionp 'json-rpc-connection))  ;; native json-rpc
+               (executable-find "emacs-lsp-booster"))
+          (progn
+            (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
+              (setcar orig-result command-from-exec-path))
+            (message "Using emacs-lsp-booster for %s!" orig-result)
+            (cons "emacs-lsp-booster" orig-result))
+        orig-result)))
+  (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
 #+end_src
 
 ** Nix
@@ -802,7 +831,7 @@ Useful snippets for quick programming
 #+begin_src emacs-lisp
   (use-package yasnippet
     :config (yas-global-mode))
-  
+
   (use-package yasnippet-snippets)
 #+end_src
 
@@ -955,15 +984,15 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
 Switching to dap-mode because it's more convenient to work with lsp-mode
 
 #+begin_src emacs-lisp
-(use-package dap-mode
-  :custom
-  (lsp-enable-dap-auto-configure nil)
-  :config
-  (dap-ui-mode 1)
-  (general-define-key
-   :keymaps 'lsp-mode-map
-   :prefix lsp-keymap-prefix
-   "d" '(dap-hydra t :wk "debugger")))
+  (use-package dap-mode
+    :custom
+    (lsp-enable-dap-auto-configure nil)
+    :config
+    (dap-ui-mode 1)
+    (general-define-key
+     :keymaps 'lsp-mode-map
+     :prefix lsp-keymap-prefix
+     "d" '(dap-hydra t :wk "debugger")))
 #+end_src
 
 ** Docker Mode
@@ -971,10 +1000,10 @@ Switching to dap-mode because it's more convenient to work with lsp-mode
 Quickly manages [[https://github.com/Silex/docker.el][docker]] container directly inside emacs.
 
 #+begin_src emacs-lisp
-(use-package docker
+  (use-package docker
     :bind ("C-c d" . docker))
 
-(use-package dockerfile-mode)
+  (use-package dockerfile-mode)
 #+end_src
 
 ** Github Copilot
@@ -985,10 +1014,14 @@ Uncomment the commented parts only when you will finish installing copilot.
 #+begin_src emacs-lisp
   (use-package copilot
     :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
+    :bind
+    (:map copilot-completion-map
+          ("C-M-<down>" . copilot-accept-completion)
+          ("C-M-<up>" . copilot-accept-completion-by-word)
+          ("C-M-<right>" . copilot-next-completion)
+          ("C-M-<left>" . copilot-previous-completion)
+          )
     :ensure t)
-    
-  (define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
-  (define-key copilot-completion-map (kbd "TAB") 'copilot-accept-completion)
 #+end_src
 
 ** Gptel
