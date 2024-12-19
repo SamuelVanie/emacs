@@ -434,7 +434,6 @@ It's a completion interface that is based on the default emacs completion framew
     (keymap-set vertico-map "M-TAB" #'minibuffer-complete))
 #+end_src
 
-
 ** Marginalia
 
 Permit to add useful information about the current completion candidate.
@@ -447,19 +446,6 @@ Permit to add useful information about the current completion candidate.
   (marginalia-align 'right)
   :init
   (marginalia-mode))
-#+end_src
-
-
-** All-the-icons-completion
-
-Permit to add beautiful icons to the minibuffer while completing
-
-#+begin_src emacs-lisp
-  (use-package all-the-icons-completion
-    :after (marginalia all-the-icons)
-    :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
-    :init
-    (all-the-icons-completion-mode))
 #+end_src
 
 ** Consult
@@ -505,7 +491,6 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
 
 #+end_src
 
-
 ** Orderless
 
 #+begin_src emacs-lisp
@@ -516,7 +501,6 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
     (completion-category-defaults nil)
     (completion-category-overrides '((file (styles partial-completion)))))
 #+end_src
-
 
 ** Consult-lsp
 
