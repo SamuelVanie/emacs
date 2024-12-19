@@ -115,7 +115,19 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
     (global-treesit-auto-mode))
 #+end_src
 
+
 * Shell
+
+** Getting the exec path from shell
+
+This is a package that will permit to have the same exec-path as my $PATH shell variable so that all of my packages are available.
+
+#+begin_src emacs-lisp
+  (use-package exec-path-from-shell
+    :ensure t
+    :init
+    (exec-path-from-shell-initialize))
+#+end_src
 
 ** Eshell Ouptut format
 
@@ -183,10 +195,7 @@ This section configures basic UI settings that remove unneeded elements to make 
   (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
   (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-  ;; Set frame font
-  (add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font"))
 
-  (set-face-attribute 'default nil :height smv/default-font-size)
 
   ;; some modes doesn't have to start with lines enable
   (dolist (mode '(org-mode-hook
@@ -204,10 +213,11 @@ This section configures basic UI settings that remove unneeded elements to make 
 I use DaddyTimeMono Nerd Font as my main font for both fixed and variable fonts.
 
 #+begin_src emacs-lisp
-  ;; Change the font size (139) according to your screen
   (custom-set-faces
    `(fixed-pitch ((t (:height ,smv/default-font-size :family "JetbrainsMono Nerd Font"))))
    `(variable-pitch ((t (:height ,smv/default-font-size :family "FiraCode Nerd Font")))))
+
+  (set-frame-font "JetbrainsMono Nerd Font-19" nil t)
 #+end_src
 
 ** Ligatures
@@ -378,9 +388,6 @@ You will have to install the icons on your machine before to get the full functi
   (use-package all-the-icons
     :if (display-graphic-p))
 
-  (use-package all-the-icons-ivy
-    :after all-the-icons)
-
   (use-package nerd-icons)
 
   (use-package all-the-icons-dired
@@ -399,59 +406,68 @@ You will have to install the icons on your machine before to get the full functi
     (setq which-key-idle-delay 0.3))
 #+end_src
 
-** Ivy and Counsel
 
-[[https://oremacs.com/swiper/][Ivy]]  is an excellent completion framework for Emacs. It provides a minimal yet powerful selection menu that appears when you open files, switch buffers, and for many other tasks in Emacs. Counsel is a customized set of commands to replace `find-file` with `counsel-find-file`, etc which provide useful commands for each of the default completion commands.
+* Completion system
 
-[[https://github.com/Yevgnen/ivy-rich][ivy-rich]] adds extra columns to a few of the Counsel commands to provide more information about each item.
+My completion system in emacs includes now : ~Vertico~, ~Orderless~ , ~Marginalia~, ~all-the-icons-completion~ and ~Consult~.
+
+** Orderless
 
 #+begin_src emacs-lisp
-  (use-package ivy
-    :diminish
-    :config
-    (ivy-mode 1))
-
-  (use-package ivy-rich
-    :after (ivy counsel)
-    :init
-    (ivy-rich-mode 1))
-
-  (use-package counsel
-    :after xah-fly-keys
-    :bind (("C-c b b" . 'counsel-switch-buffer)
-           ("C-c b d" . 'counsel-cd)
-           ("C-s" . 'counsel-grep-or-swiper)
-           ("C-c b r" . 'counsel-mark-ring)
-           ("C-c b f" . 'counsel-fzf)
-           ("C-c b m" . 'counsel-kmacro)
-           :map xah-fly-command-map
-           ("/ c d" . 'counsel-cd)
-           ("/ c r" . 'counsel-mark-ring)
-           ("/ c f" . 'counsel-fzf)
-           ("/ c m" . 'counsel-kmacro)
-           :map minibuffer-local-map
-           ("C-r" . 'counsel-minibuffer-history))
+  (use-package orderless
+    :ensure t
     :custom
-    (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
-    :config
-    (counsel-mode 1))
+    (completion-styles '(orderless basic))
+    (completion-category-defaults nil)
+    (completion-category-overrides '((file (styles partial-completion)))))
 #+end_src
 
-*** Improved Candidate Sorting with prescient.el
 
-[[https://github.com/radian-software/prescient.el][prescient.el]] provides some helpful behavior for sorting Ivy completion candidates based on how recently or frequently you select them. This can be especially helpful when using M-x to run commands that you don’t have bound to a key but still need to access occasionally.
+** Vertico
+
+It's a completion interface that is based on the default emacs completion framework.
 
 #+begin_src emacs-lisp
-
-  (use-package ivy-prescient
-    :after counsel
-    :custom
-    (ivy-prescient-enable-filtering nil)
+  (use-package vertico
+    :init
+    (vertico-mode)
     :config
-    ;; Uncomment the following line to have sorting remembered across sessions!
-                                          ;(prescient-persist-mode 1)
-    (ivy-prescient-mode 1))
+    ;; disable case sensitiveness for files and dir
+    (setq read-file-name-completion-ignore-case t
+      read-buffer-completion-ignore-case t
+      completion-ignore-case t)
+    (setq completion-styles '(basic substring partial-completion flex))
+    (keymap-set vertico-map "?" #'minibuffer-completion-help)
+    (keymap-set vertico-map "M-RET" #'minibuffer-force-complete-and-exit)
+    (keymap-set vertico-map "M-TAB" #'minibuffer-complete))
+#+end_src
 
+
+** Marginalia
+
+Permit to add useful information about the current completion candidate.
+
+
+#+begin_src emacs-lisp
+(use-package marginalia
+  :custom
+  (marginalia-max-relative-age 0)
+  (marginalia-align 'right)
+  :init
+  (marginalia-mode))
+#+end_src
+
+
+** All-the-icons-completion
+
+Permit to add beautiful icons to the minibuffer while completing
+
+#+begin_src emacs-lisp
+  (use-package all-the-icons-completion
+    :after (marginalia all-the-icons)
+    :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
+    :init
+    (all-the-icons-completion-mode))
 #+end_src
 
 ** Consult
@@ -459,7 +475,30 @@ You will have to install the icons on your machine before to get the full functi
 Permit to check the list of things like the pop mark. Pretty neat for me as I prefer visual navigation.
 
 #+begin_src emacs-lisp
-  (use-package consult)
+  (use-package consult
+    :after xah-fly-keys
+    :init
+    (advice-add #'register-preview :override #'consult-register-window)
+    (setq register-preview-delay 0.5)
+
+    ;; Use Consult to select xref locations with preview
+    (setq xref-show-xrefs-function #'consult-xref
+          xref-show-definitions-function #'consult-xref)
+    :hook (completion-list-mode . consult-preview-at-point-mode)
+
+    :bind
+    ("C-s" . consult-line)
+    ("M-g M-g" . consult-goto-line)
+
+    :config
+    (general-define-key
+     :keymaps 'xah-fly-command-map
+     :prefix "/ c"
+     "f" 'consult-fd
+     "s" 'consult-ripgrep
+     "i" 'consult-imenu
+     "m" 'consult-global-mark)
+    )
 #+end_src
 
 ** Helpful Help Commands
@@ -479,6 +518,18 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
     ([remap describe-variable] . counsel-describe-variable)
     ([remap describe-key] . helpful-key))
 
+#+end_src
+
+
+** Consult-lsp
+
+Try to mimic the workflow of lsp-ivy
+
+#+begin_src emacs-lisp
+  (use-package consult-lsp
+    :after (consult lsp-mode)
+    :config
+    (define-key lsp-mode-map [remap xref-find-apropos] #'consult-lsp-symbols))
 #+end_src
 
 * Org Mode
@@ -654,8 +705,9 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
     (org-babel-do-load-languages
      'org-babel-load-languages
      '((emacs-lisp . t)
+       (dot . t)
        (python . t)))
-
+    
     (push '("conf-unix" . conf-unix) org-src-lang-modes))
 #+end_src
 
@@ -744,12 +796,6 @@ Switching to lsp-mode instead of the default emacs. Lsp-mode has more features t
 
   (use-package lsp-treemacs
     :after lsp)
-
-  (use-package lsp-ivy
-    :commands lsp-ivy-workspace-symbol
-    :config
-    (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-    (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))
 #+end_src
 
 

@@ -91,6 +91,11 @@
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
 
+(use-package exec-path-from-shell
+  :ensure t
+  :init
+  (exec-path-from-shell-initialize))
+
 (require 'em-smart)
 (setq eshell-where-to-jump 'begin)
 (setq eshell-review-quick-commands nil)
@@ -132,10 +137,7 @@
 (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-;; Set frame font
-(add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font"))
 
-(set-face-attribute 'default nil :height smv/default-font-size)
 
 ;; some modes doesn't have to start with lines enable
 (dolist (mode '(org-mode-hook
@@ -146,10 +148,11 @@
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-;; Change the font size (139) according to your screen
 (custom-set-faces
  `(fixed-pitch ((t (:height ,smv/default-font-size :family "JetbrainsMono Nerd Font"))))
  `(variable-pitch ((t (:height ,smv/default-font-size :family "FiraCode Nerd Font")))))
+
+(set-frame-font "JetbrainsMono Nerd Font-19" nil t)
 
 (use-package ligature
   :config
@@ -253,9 +256,6 @@
 (use-package all-the-icons
   :if (display-graphic-p))
 
-(use-package all-the-icons-ivy
-  :after all-the-icons)
-
 (use-package nerd-icons)
 
 (use-package all-the-icons-dired
@@ -267,46 +267,63 @@
   :config ;; only runs after the mode is loaded
   (setq which-key-idle-delay 0.3))
 
-(use-package ivy
-  :diminish
-  :config
-  (ivy-mode 1))
+(use-package orderless
+  :ensure t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles partial-completion)))))
 
-(use-package ivy-rich
-  :after (ivy counsel)
+(use-package vertico
   :init
-  (ivy-rich-mode 1))
+  (vertico-mode)
+  :config
+  ;; disable case sensitiveness for files and dir
+  (setq read-file-name-completion-ignore-case t
+    read-buffer-completion-ignore-case t
+    completion-ignore-case t)
+  (setq completion-styles '(basic substring partial-completion flex))
+  (keymap-set vertico-map "?" #'minibuffer-completion-help)
+  (keymap-set vertico-map "M-RET" #'minibuffer-force-complete-and-exit)
+  (keymap-set vertico-map "M-TAB" #'minibuffer-complete))
 
-(use-package counsel
+(use-package marginalia
+  :custom
+  (marginalia-max-relative-age 0)
+  (marginalia-align 'right)
+  :init
+  (marginalia-mode))
+
+(use-package all-the-icons-completion
+  :after (marginalia all-the-icons)
+  :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
+  :init
+  (all-the-icons-completion-mode))
+
+(use-package consult
   :after xah-fly-keys
-  :bind (("C-c b b" . 'counsel-switch-buffer)
-         ("C-c b d" . 'counsel-cd)
-         ("C-s" . 'counsel-grep-or-swiper)
-         ("C-c b r" . 'counsel-mark-ring)
-         ("C-c b f" . 'counsel-fzf)
-         ("C-c b m" . 'counsel-kmacro)
-         :map xah-fly-command-map
-         ("/ c d" . 'counsel-cd)
-         ("/ c r" . 'counsel-mark-ring)
-         ("/ c f" . 'counsel-fzf)
-         ("/ c m" . 'counsel-kmacro)
-         :map minibuffer-local-map
-         ("C-r" . 'counsel-minibuffer-history))
-  :custom
-  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
-  :config
-  (counsel-mode 1))
+  :init
+  (advice-add #'register-preview :override #'consult-register-window)
+  (setq register-preview-delay 0.5)
 
-(use-package ivy-prescient
-  :after counsel
-  :custom
-  (ivy-prescient-enable-filtering nil)
-  :config
-  ;; Uncomment the following line to have sorting remembered across sessions!
-                                        ;(prescient-persist-mode 1)
-  (ivy-prescient-mode 1))
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+  :hook (completion-list-mode . consult-preview-at-point-mode)
 
-(use-package consult)
+  :bind
+  ("C-s" . consult-line)
+  ("M-g M-g" . consult-goto-line)
+
+  :config
+  (general-define-key
+   :keymaps 'xah-fly-command-map
+   :prefix "/ c"
+   "f" 'consult-fd
+   "s" 'consult-ripgrep
+   "i" 'consult-imenu
+   "m" 'consult-global-mark)
+  )
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
@@ -318,6 +335,11 @@
   ([remap describe-command] . helpful-command)
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
+
+(use-package consult-lsp
+  :after (consult lsp-mode)
+  :config
+  (define-key lsp-mode-map [remap xref-find-apropos] #'consult-lsp-symbols))
 
 (defun smv/org-font-setup ()
   (font-lock-add-keywords 'org-mode ;; Change the list icon style from "-" to "."
@@ -450,8 +472,9 @@
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
+     (dot . t)
      (python . t)))
-
+  
   (push '("conf-unix" . conf-unix) org-src-lang-modes))
 
 (with-eval-after-load 'org
@@ -497,12 +520,6 @@
 
 (use-package lsp-treemacs
   :after lsp)
-
-(use-package lsp-ivy
-  :commands lsp-ivy-workspace-symbol
-  :config
-  (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-  (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))
 
 (defun lsp-booster--advice-json-parse (old-fn &rest args)
   "Try to parse bytecode instead of json."
