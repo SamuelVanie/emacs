@@ -642,7 +642,7 @@
   :hook (lsp-mode . company-mode)
   :bind
   (:map company-mode
-        ("M-o" . company-manual-begin))
+        ("M-k" . company-manual-begin))
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))
