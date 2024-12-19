@@ -304,7 +304,7 @@
   (all-the-icons-completion-mode))
 
 (use-package consult
-  :after (xah-fly-keys general)
+  :after general
   :init
   (advice-add #'register-preview :override #'consult-register-window)
   (setq register-preview-delay 0.5)
