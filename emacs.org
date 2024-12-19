@@ -479,6 +479,7 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
 
 #+begin_src emacs-lisp
   (use-package consult
+    :ensure t
     :after general
     :init
     (advice-add #'register-preview :override #'consult-register-window)
