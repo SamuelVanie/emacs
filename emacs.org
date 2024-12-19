@@ -123,10 +123,11 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
 This is a package that will permit to have the same exec-path as my $PATH shell variable so that all of my packages are available.
 
 #+begin_src emacs-lisp
-  (use-package exec-path-from-shell
-    :ensure t
-    :init
-    (exec-path-from-shell-initialize))
+  (if (eq system-type 'darwin)
+ 	(use-package exec-path-from-shell
+	    :ensure t
+	    :init
+	    (exec-path-from-shell-initialize)))
 #+end_src
 
 ** Eshell Ouptut format
@@ -217,7 +218,9 @@ I use DaddyTimeMono Nerd Font as my main font for both fixed and variable fonts.
    `(fixed-pitch ((t (:height ,smv/default-font-size :family "JetbrainsMono Nerd Font"))))
    `(variable-pitch ((t (:height ,smv/default-font-size :family "FiraCode Nerd Font")))))
 
-  (set-frame-font "JetbrainsMono Nerd Font-19" nil t)
+  (if (eq system-type 'darwin)
+      (set-frame-font "JetbrainsMono Nerd Font-19" nil t)
+    (add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font")))
 #+end_src
 
 ** Ligatures
@@ -476,7 +479,7 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
 
 #+begin_src emacs-lisp
   (use-package consult
-    :after xah-fly-keys
+    :after (xah-fly-keys general)
     :init
     (advice-add #'register-preview :override #'consult-register-window)
     (setq register-preview-delay 0.5)

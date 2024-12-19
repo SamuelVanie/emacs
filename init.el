@@ -91,10 +91,11 @@
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
 
-(use-package exec-path-from-shell
-  :ensure t
-  :init
-  (exec-path-from-shell-initialize))
+(if (eq system-type 'darwin)
+      (use-package exec-path-from-shell
+          :ensure t
+          :init
+          (exec-path-from-shell-initialize)))
 
 (require 'em-smart)
 (setq eshell-where-to-jump 'begin)
@@ -152,7 +153,9 @@
  `(fixed-pitch ((t (:height ,smv/default-font-size :family "JetbrainsMono Nerd Font"))))
  `(variable-pitch ((t (:height ,smv/default-font-size :family "FiraCode Nerd Font")))))
 
-(set-frame-font "JetbrainsMono Nerd Font-19" nil t)
+(if (eq system-type 'darwin)
+    (set-frame-font "JetbrainsMono Nerd Font-19" nil t)
+  (add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font")))
 
 (use-package ligature
   :config
@@ -301,7 +304,7 @@
   (all-the-icons-completion-mode))
 
 (use-package consult
-  :after xah-fly-keys
+  :after (xah-fly-keys general)
   :init
   (advice-add #'register-preview :override #'consult-register-window)
   (setq register-preview-delay 0.5)
