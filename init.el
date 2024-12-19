@@ -270,13 +270,6 @@
   :config ;; only runs after the mode is loaded
   (setq which-key-idle-delay 0.3))
 
-(use-package orderless
-  :ensure t
-  :custom
-  (completion-styles '(orderless basic))
-  (completion-category-defaults nil)
-  (completion-category-overrides '((file (styles partial-completion)))))
-
 (use-package vertico
   :init
   (vertico-mode)
@@ -304,29 +297,21 @@
   (all-the-icons-completion-mode))
 
 (use-package consult
-  :ensure t
-  :after general
   :init
   (advice-add #'register-preview :override #'consult-register-window)
   (setq register-preview-delay 0.5)
-
   ;; Use Consult to select xref locations with preview
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
   :hook (completion-list-mode . consult-preview-at-point-mode)
-
   :bind
   ("C-s" . consult-line)
   ("M-g M-g" . consult-goto-line)
-
-  :config
-  (general-define-key
-   :keymaps 'xah-fly-command-map
-   :prefix "/ c"
-   "f" 'consult-fd
-   "s" 'consult-ripgrep
-   "i" 'consult-imenu
-   "m" 'consult-global-mark)
+  (:map xah-fly-command-map
+        ("/ c f" . consult-fd)
+        ("/ c s" . consult-ripgrep)
+        ("/ c i" . consult-imenu)
+        ("/ c m" . consult-global-mark))
   )
 
 (use-package helpful
@@ -339,6 +324,13 @@
   ([remap describe-command] . helpful-command)
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
+
+(use-package orderless
+  :ensure t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package consult-lsp
   :after (consult lsp-mode)
