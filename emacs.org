@@ -375,7 +375,6 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
 ** Color Theme
 
 [[https://github.com/hlissner/emacs-doom-themes][doom-themes]] and ef  are a set of themes that support various emacs modes. It also has support for doom-modeline that I use as my mode line.
-Counsel can permit quickly switch between these themes, hit ~M-x counsel-load-theme~
 
 #+begin_src emacs-lisp
   (use-package doom-themes)
@@ -468,6 +467,7 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
           ("/ c f" . consult-fd)
           ("/ c s" . consult-ripgrep)
           ("/ c i" . consult-imenu)
+          ("/ c k" . consult-kmacro)
           ("/ c m" . consult-global-mark))
     )
 #+end_src
@@ -480,13 +480,8 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
 
   (use-package helpful
     :commands (helpful-callable helpful-variable helpful-command helpful-key)
-    :custom
-    (counsel-describe-function-function #'helpful-callable)
-    (counsel-describe-variable-function #'helpful-variable)
     :bind
-    ([remap describe-function] . counsel-describe-function)
     ([remap describe-command] . helpful-command)
-    ([remap describe-variable] . counsel-describe-variable)
     ([remap describe-key] . helpful-key))
 
 #+end_src
@@ -495,7 +490,7 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
 
 #+begin_src emacs-lisp
   (use-package orderless
-    :ensure t
+    :straight t
     :custom
     (completion-styles '(orderless basic))
     (completion-category-defaults nil)
@@ -972,7 +967,7 @@ Prettier automatically formats the code for you. I hate when it's in other modes
     :hook (rust-ts-mode . lsp-deferred))
 #+end_src
 
-*** Clojure
+*** Ruby
 
 clojure-lsp should be installed to use the lsp for this package.
 

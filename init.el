@@ -305,22 +305,18 @@
         ("/ c f" . consult-fd)
         ("/ c s" . consult-ripgrep)
         ("/ c i" . consult-imenu)
+        ("/ c k" . consult-kmacro)
         ("/ c m" . consult-global-mark))
   )
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
-  :custom
-  (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable)
   :bind
-  ([remap describe-function] . counsel-describe-function)
   ([remap describe-command] . helpful-command)
-  ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
 
 (use-package orderless
-  :ensure t
+  :straight t
   :custom
   (completion-styles '(orderless basic))
   (completion-category-defaults nil)
