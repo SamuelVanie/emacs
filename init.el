@@ -300,6 +300,7 @@
   :hook (completion-list-mode . consult-preview-at-point-mode)
   :bind
   ("C-s" . consult-line)
+  ("M-y" . consult-yank-from-kill-ring)
   ("M-g M-g" . consult-goto-line)
   (:map xah-fly-command-map
         ("/ c f" . consult-fd)
