@@ -149,13 +149,9 @@
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-(custom-set-faces
- `(fixed-pitch ((t (:height ,smv/default-font-size :family "JetbrainsMono Nerd Font"))))
- `(variable-pitch ((t (:height ,smv/default-font-size :family "FiraCode Nerd Font")))))
-
 (if (eq system-type 'darwin)
     (set-frame-font "JetbrainsMono Nerd Font-19" nil t)
-  (add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font-16")))
+  (add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font-15")))
 
 (use-package ligature
   :config
