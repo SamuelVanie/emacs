@@ -155,7 +155,7 @@
 
 (if (eq system-type 'darwin)
     (set-frame-font "JetbrainsMono Nerd Font-19" nil t)
-  (add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font")))
+  (add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font-16")))
 
 (use-package ligature
   :config
