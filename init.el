@@ -552,8 +552,8 @@
 (use-package auto-yasnippet
   :bind
   ("C-c C-y w" . aya-create)
-  ("C-c C-y TA". aya-expand)
-  ("C-c C-y SP". aya-expand-from-history)
+  ("C-c C-y x". aya-expand)
+  ("C-c C-y h". aya-expand-from-history)
   ("C-c C-y d" . aya-delete-from-history)
   ("C-c C-y c" . aya-clear-history)
   ("C-c C-y n" . aya-next-in-history)
