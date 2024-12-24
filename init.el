@@ -185,17 +185,17 @@
   (repeat-exit-timeout 5))
 
 (use-package xah-fly-keys
+  :ensure t
   :init
   (setq xah-fly-use-control-key nil)
   (setq xah-fly-use-meta-key nil)
   :config
   (xah-fly-keys-set-layout "colemak")
-  (xah-fly-keys 1)
-  :bind
-  (:map xah-fly-command-map
-        ("/" . nil)
-        ("&" . beginning-of-defun)
-        ("(" . end-of-defun)))
+  (define-key xah-fly-command-map (kbd "/") nil)
+  (xah-fly-keys 1))
+
+(define-key xah-fly-command-map (kbd "&") #'beginning-of-defun)
+(define-key xah-fly-command-map (kbd "(") #'end-of-defun)
 
 (defun smv/custom-ace-jump (mode)
   (interactive
@@ -211,6 +211,7 @@
 
 
 (use-package ace-jump-mode
+  :after xah-fly-keys
   :config
   (general-define-key
    :keymaps 'xah-fly-command-map
@@ -219,23 +220,21 @@
    "w" (lambda () (interactive) (smv/custom-ace-jump 'window))
    "l" (lambda () (interactive) (smv/custom-ace-jump 'line))))
 
-(general-define-key
- :keymaps 'xah-fly-command-map
- :prefix "/ w"
- "n" 'windmove-left
- "i" 'windmove-right
- "e" 'windmove-down
- "u" 'windmove-up
- "+" 'balance-windows
- "m" 'maximize-window)
-
-(general-define-key
- :keymaps 'xah-fly-command-map
- :prefix "/ w s"
- "n" 'windmove-swap-states-left
- "i" 'windmove-swap-states-right
- "e" 'windmove-swap-states-down
- "u" 'windmove-swap-states-up)
+(use-package windmove
+  :after xah-fly-keys
+  :straight nil
+  :bind
+  (:map xah-fly-command-map
+        ("/ w n" . windmove-left)
+        ("/ w i" . windmove-right)
+        ("/ w e" . windmove-down)
+        ("/ w u" . windmove-up)
+        ("/ w +" . balance-windows)
+        ("/ w m" . maximize-window)
+        ("/ w s n" . windmove-swap-states-left)
+        ("/ w s i" . windmove-swap-states-right)
+        ("/ w s e" . windmove-swap-states-down)
+        ("/ w s u" . windmove-swap-states-up)))
 
 (use-package vterm)
 
@@ -289,6 +288,7 @@
   (marginalia-mode))
 
 (use-package consult
+  :after xah-fly-keys
   :init
   (advice-add #'register-preview :override #'consult-register-window)
   (setq register-preview-delay 0.5)
