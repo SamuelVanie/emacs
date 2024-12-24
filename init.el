@@ -92,10 +92,10 @@
   (global-treesit-auto-mode))
 
 (if (eq system-type 'darwin)
-      (use-package exec-path-from-shell
-          :ensure t
-          :init
-          (exec-path-from-shell-initialize)))
+    (use-package exec-path-from-shell
+      :ensure t
+      :init
+      (exec-path-from-shell-initialize)))
 
 (require 'em-smart)
 (setq eshell-where-to-jump 'begin)
@@ -193,7 +193,9 @@
   (xah-fly-keys 1)
   :bind
   (:map xah-fly-command-map
-        ("/" . nil)))
+        ("/" . nil)
+        ("&" . beginning-of-defun)
+        ("(" . end-of-defun)))
 
 (defun smv/custom-ace-jump (mode)
   (interactive
