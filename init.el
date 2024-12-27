@@ -492,6 +492,10 @@
 (use-package wgrep)
 (global-set-key (kbd "C-c r") 'rgrep)
 
+;; Permit to get the first results directly in the compilation buffer
+;; This kind of buffer is the one used for grep
+(setq compilation-scroll-output 'first-error)
+
 (use-package lsp-mode
   :init
   (setq lsp-keymap-prefix "C-l")
