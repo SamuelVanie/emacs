@@ -110,9 +110,6 @@
 (setq eshell-aliases-file (format "%s%s" user-emacs-directory "aliases"))
 (setq explicit-shell-file-name "/bin/zsh")
 
-(use-package eshell-toggle
-  :bind ("C-x C-z" . eshell-toggle))
-
 ;; this will make emacs ibuffer the default used to list buffers
 (defalias 'list-buffers 'ibuffer)
 
@@ -124,6 +121,30 @@
 
 (global-set-key (kbd "C-c k a") 'kill-all-buffers)
 (global-set-key (kbd "C-k") 'kill-line)
+
+(use-package popper
+  :ensure t ; or :straight t
+  :bind (("C-`"   . popper-toggle)
+         ("M-`"   . popper-cycle)
+         ("C-M-`" . popper-toggle-type))
+  :init
+  (setq popper-reference-buffers
+        '("\\*Messages\\*"
+          "Output\\*$"
+          "\\*Async Shell Command\\*"
+          help-mode
+          compilation-mode))
+  ;; Match eshell, shell, term and/or vterm buffers
+  (setq popper-reference-buffers
+        (append popper-reference-buffers
+                '("^\\*eshell.*\\*$" eshell-mode ;eshell as a popup
+                  "^\\*shell.*\\*$"  shell-mode  ;shell as a popup
+                  "^\\*term.*\\*$"   term-mode   ;term as a popup
+                  "^\\*vterm.*\\*$"  vterm-mode  ;vterm as a popup
+                  )))
+  
+  (popper-mode +1)
+  (popper-echo-mode +1))
 
 (scroll-bar-mode -1) ; Disable visible scroll bar
 (tool-bar-mode -1) ; Disable the toolbar
