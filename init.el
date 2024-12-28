@@ -110,6 +110,10 @@
 (use-package eshell-toggle
   :bind ("C-x C-z" . eshell-toggle))
 
+(use-package envrc
+  :config
+  (envrc-global-mode))
+
 ;; this will make emacs ibuffer the default used to list buffers
 (defalias 'list-buffers 'ibuffer)
 
@@ -495,6 +499,11 @@
 ;; Permit to get the first results directly in the compilation buffer
 ;; This kind of buffer is the one used for grep
 (setq compilation-scroll-output 'first-error)
+
+;; Ignore some directories
+(eval-after-load 'grep
+  '(when (boundp 'grep-find-ignored-directories)
+     (add-to-list 'grep-find-ignored-directories "*.git")))
 
 (use-package lsp-mode
   :init

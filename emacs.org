@@ -149,6 +149,18 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
     :bind ("C-x C-z" . eshell-toggle))
 #+end_src
 
+
+
+** Envrc
+
+This package permits to load the variables that are inside the .envrc file into the emacs' process-environment.
+
+#+begin_src emacs-lisp
+  (use-package envrc
+    :config
+    (envrc-global-mode))
+#+end_src
+
 * Buffers
 
 ** Managing buffers easily
@@ -754,6 +766,11 @@ I use the built-in rgrep to do my search and replace so I'm binding it to =C-c r
   ;; Permit to get the first results directly in the compilation buffer
   ;; This kind of buffer is the one used for grep
   (setq compilation-scroll-output 'first-error)
+
+  ;; Ignore some directories
+  (eval-after-load 'grep
+    '(when (boundp 'grep-find-ignored-directories)
+       (add-to-list 'grep-find-ignored-directories "*.git")))
 #+end_src
 
 ** Lsp-mode
