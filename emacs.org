@@ -150,17 +150,6 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
 #+end_src
 
 
-
-** Envrc
-
-This package permits to load the variables that are inside the .envrc file into the emacs' process-environment.
-
-#+begin_src emacs-lisp
-  (use-package envrc
-    :config
-    (envrc-global-mode))
-#+end_src
-
 * Buffers
 
 ** Managing buffers easily

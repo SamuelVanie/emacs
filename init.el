@@ -110,10 +110,6 @@
 (use-package eshell-toggle
   :bind ("C-x C-z" . eshell-toggle))
 
-(use-package envrc
-  :config
-  (envrc-global-mode))
-
 ;; this will make emacs ibuffer the default used to list buffers
 (defalias 'list-buffers 'ibuffer)
 
