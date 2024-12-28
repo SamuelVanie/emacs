@@ -72,6 +72,9 @@
 
 (use-package dired-x
   :straight nil
+  :bind
+  (:map dired-mode-map
+        ("k" . dired-create-empty-file))
   :config
   (add-hook 'dired-mode-hook #'dired-hide-details-mode)
   (add-hook 'dired-mode-hook #'all-the-icons-dired-mode))
