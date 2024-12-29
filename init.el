@@ -275,7 +275,7 @@
 
 (use-package doom-themes)
 (use-package ef-themes
-  :config (load-theme 'manoj-dark t))
+  :config (load-theme 'doom-plain-dark t))
 
 (use-package all-the-icons
   :if (display-graphic-p))
