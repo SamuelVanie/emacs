@@ -275,7 +275,7 @@
 
 (use-package doom-themes)
 (use-package ef-themes
-  :config (ef-themes-load-random))
+  :config (load-theme 'manoj-dark t))
 
 (use-package all-the-icons
   :if (display-graphic-p))
