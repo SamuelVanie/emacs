@@ -28,6 +28,10 @@
 ;; auto refresh buffers when files changes
 (global-auto-revert-mode t)
 
+;; setting transparency for the window
+(set-frame-parameter (selected-frame) 'alpha '(85 . 50))
+(add-to-list 'default-frame-alist '(alpha . (85 . 50)))
+
 ;; to scroll down inside the popup
 (define-key global-map (kbd "C-M-'")
             (lambda ()
@@ -275,7 +279,7 @@
 
 (use-package doom-themes)
 (use-package ef-themes
-  :config (load-theme 'doom-plain-dark t))
+  :config (load-theme 'default t))
 
 (use-package all-the-icons
   :if (display-graphic-p))
