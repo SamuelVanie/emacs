@@ -29,8 +29,14 @@
 (global-auto-revert-mode t)
 
 ;; setting transparency for the window
-(set-frame-parameter (selected-frame) 'alpha '(85 . 50))
-(add-to-list 'default-frame-alist '(alpha . (85 . 50)))
+(cond
+ ((eq system-type 'darwin)  ;; macOS
+  (set-frame-parameter (selected-frame) 'alpha '(85 . 50))
+  (add-to-list 'default-frame-alist '(alpha . (85 . 50))))
+ ((eq system-type 'gnu/linux)  ;; Linux
+  (set-frame-parameter nil 'alpha-background 60)
+  (add-to-list 'default-frame-alist '(alpha-background . 60)))
+ )
 
 ;; to scroll down inside the popup
 (define-key global-map (kbd "C-M-'")
@@ -278,8 +284,7 @@
   (setq multi-vterm-dedicated-window-height-percent 45))
 
 (use-package doom-themes)
-(use-package ef-themes
-  :config (load-theme 'default t))
+(use-package ef-themes)
 
 (use-package all-the-icons
   :if (display-graphic-p))
