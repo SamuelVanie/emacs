@@ -284,7 +284,8 @@
   (setq multi-vterm-dedicated-window-height-percent 45))
 
 (use-package doom-themes)
-(use-package ef-themes)
+(use-package ef-themes
+  :config (load-theme 'doom-pine t))
 
 (use-package all-the-icons
   :if (display-graphic-p))

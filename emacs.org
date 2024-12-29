@@ -417,7 +417,8 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
 
 #+begin_src emacs-lisp
   (use-package doom-themes)
-  (use-package ef-themes)
+  (use-package ef-themes
+    :config (load-theme 'doom-pine t))
 #+end_src
 
 ** Adding icons to emacs
