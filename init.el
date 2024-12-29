@@ -31,8 +31,8 @@
 ;; setting transparency for the window
 (cond
  ((eq system-type 'darwin)  ;; macOS
-  (set-frame-parameter (selected-frame) 'alpha '(85 . 50))
-  (add-to-list 'default-frame-alist '(alpha . (85 . 50))))
+  (set-frame-parameter (selected-frame) 'alpha '(92 . 50))
+  (add-to-list 'default-frame-alist '(alpha . (92 . 50))))
  ((eq system-type 'gnu/linux)  ;; Linux
   (set-frame-parameter nil 'alpha-background 60)
   (add-to-list 'default-frame-alist '(alpha-background . 60)))
