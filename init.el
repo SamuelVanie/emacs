@@ -120,6 +120,31 @@
 (setq eshell-aliases-file (format "%s%s" user-emacs-directory "aliases"))
 (setq explicit-shell-file-name "/bin/zsh")
 
+(use-package envrc
+  :config
+  (envrc-global-mode))
+
+;; Writing a function that will permit to load the packages from an emacsclient that weren't launched inside a nix shell
+;; The function assumes that the folder that contains the lisp code
+;; that emacs should requires is in /nix-store-location/share/emacs/site-lisp/elpa/pkg-name-version/
+(defun smv/add-nix-pkg-to-lpath (PKG_ENV)
+  "Load the PKG_ENV directory to the load path of current emacs session
+  it permits to then require the package"
+  
+  (let ((pkg-nix-path (getenv PKG_ENV)))
+
+    (unless pkg-nix-path
+      (user-error "Environment variable '%s' is not set" PKG_ENV))
+
+    (let ((pkg-suffix "/share/emacs/site-lisp/elpa/"))
+      
+      (string-match "-emacs-\\([^/]+\\)" pkg-nix-path)
+      
+      (let* ((pkg-full-path (match-string 1 pkg-nix-path))
+             (path-to-add (concat pkg-nix-path pkg-suffix pkg-full-path)))
+        (unless (member path-to-add load-path)
+          (add-to-list 'load-path path-to-add))))))
+
 ;; this will make emacs ibuffer the default used to list buffers
 (defalias 'list-buffers 'ibuffer)
 
