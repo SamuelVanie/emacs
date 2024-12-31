@@ -118,7 +118,7 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
     (setq dashboard-icon-type 'nerd-icons)
     (setq dashboard-set-file-icons t)
     ;; Gets my files from the gifs directory
-    ;; excluding the ones that ends with ~ and t (for my gifs links)
+    ;; excluding the ones that ends with ~ and t (for my links.txt file)
     (let ((gifs (let* (
                  (root-dir (concat user-emacs-directory "gifs"))
                  (file-names (directory-files root-dir nil "^[^.].*[^~t]$")))
@@ -656,8 +656,7 @@ This section contains the basic configuration for org-mode plus the configuratio
     (setq org-agenda-start-with-log-mode t)
     (setq org-log-done 'time)
     (setq org-log-into-drawer t)
-    (setq org-startup-folded 'content)
-
+    
     (setq org-agenda-files
           '("~/.org/todo.org"
             "~/.org/projects.org"))
@@ -1076,7 +1075,6 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
 #+begin_src emacs-lisp
   (use-package company
     :after lsp-mode
-    :config (global-company-mode)
     :hook (lsp-mode . company-mode)
     :bind
     (:map company-mode

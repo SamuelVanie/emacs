@@ -98,7 +98,7 @@
   (setq dashboard-icon-type 'nerd-icons)
   (setq dashboard-set-file-icons t)
   ;; Gets my files from the gifs directory
-  ;; excluding the ones that ends with ~ and t (for my gifs links)
+  ;; excluding the ones that ends with ~ and t (for my links.txt file)
   (let ((gifs (let* (
                (root-dir (concat user-emacs-directory "gifs"))
                (file-names (directory-files root-dir nil "^[^.].*[^~t]$")))
@@ -442,8 +442,7 @@
   (setq org-agenda-start-with-log-mode t)
   (setq org-log-done 'time)
   (setq org-log-into-drawer t)
-  (setq org-startup-folded 'content)
-
+  
   (setq org-agenda-files
         '("~/.org/todo.org"
           "~/.org/projects.org"))
@@ -702,7 +701,6 @@
 
 (use-package company
   :after lsp-mode
-  :config (global-company-mode)
   :hook (lsp-mode . company-mode)
   :bind
   (:map company-mode
