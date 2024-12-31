@@ -261,6 +261,8 @@
   :config
   (xah-fly-keys-set-layout "colemak")
   (define-key xah-fly-command-map (kbd "/") nil)
+  (add-to-list 'xah-right-brackets "\"")
+  (add-to-list 'xah-left-brackets "\"")
   (xah-fly-keys 1))
 
 (define-key xah-fly-command-map (kbd "&") #'beginning-of-defun)
