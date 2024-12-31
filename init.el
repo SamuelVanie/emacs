@@ -93,7 +93,17 @@
 
 (use-package dashboard
   :config
-  (dashboard-setup-startup-hook))
+  (dashboard-setup-startup-hook)
+  (setq dashboard-display-icons-p t)
+  (setq dashboard-icon-type 'nerd-icons)
+  (setq dashboard-set-file-icons t)
+  ;; Gets my files from the gifs directory
+  ;; excluding the ones that ends with ~ and t (for my gifs links)
+  (let ((gifs (let* (
+               (root-dir (concat user-emacs-directory "gifs"))
+               (file-names (directory-files root-dir nil "^[^.].*[^~t]$")))
+       (mapcar (lambda (x) (concat root-dir "/" x)) file-names))))
+    (setq dashboard-startup-banner gifs)))
 
 (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
 
@@ -692,10 +702,11 @@
 
 (use-package company
   :after lsp-mode
+  :config (global-company-mode)
   :hook (lsp-mode . company-mode)
   :bind
   (:map company-mode
-        ("M-k" . company-manual-begin))
+        ("M-p" . company-manual-begin))
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))
