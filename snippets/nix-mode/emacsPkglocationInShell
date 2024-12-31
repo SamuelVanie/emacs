@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: new shell env
+# key: /ese
+# --
+export EMACSPKGS_${1:VARNAME}="\${pkgs.emacsPackages.${2:pkgname}}"

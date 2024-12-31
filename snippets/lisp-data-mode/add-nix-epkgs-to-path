@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: call my custom add to loadpath func for emacs pkgs
+# key: /elp
+# --
+(smv/add-nix-pkg-to-lpath "EMACSPKGS_${$$(upcase yas-text)}")
