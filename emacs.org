@@ -31,6 +31,8 @@
   (load custom-file 'noerror 'nomessage)
 
   (setq-default indent-tabs-mode nil)
+  (global-set-key (kbd "C-<tab>") 'tab-to-tab-stop)
+
 
   ;; auto refresh buffers when files changes
   (global-auto-revert-mode t)
