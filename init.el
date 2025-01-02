@@ -270,6 +270,12 @@
 (define-key xah-fly-command-map (kbd "&") #'beginning-of-defun)
 (define-key xah-fly-command-map (kbd "(") #'end-of-defun)
 
+(defun smv/surround-region (character)
+  (interactive "sEnter a character:")
+  (xah-insert-bracket-pair character character))
+
+(define-key xah-fly-command-map (kbd "SPC y a") #'smv/surround-region)
+
 (defun smv/custom-ace-jump (mode)
   (interactive
    (list (intern (completing-read "Select mode (char/line/window): "

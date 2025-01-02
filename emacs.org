@@ -381,6 +381,12 @@ If, you happen to use the xah-change-brackets function to quickly change bracket
 
   (define-key xah-fly-command-map (kbd "&") #'beginning-of-defun)
   (define-key xah-fly-command-map (kbd "(") #'end-of-defun)
+
+  (defun smv/surround-region (character)
+    (interactive "sEnter a character:")
+    (xah-insert-bracket-pair character character))
+
+  (define-key xah-fly-command-map (kbd "SPC y a") #'smv/surround-region)
 #+end_src
 
 
