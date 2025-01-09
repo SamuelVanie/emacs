@@ -49,7 +49,9 @@
 
 #+end_src
 
-* Scrolling inside popup view
+* Scrolling
+
+** Scrolling inside pop-up view
 
 #+begin_src emacs-lisp
   ;; to scroll down inside the popup
@@ -65,6 +67,7 @@
                 (scroll-other-window-down 2)))
 
 #+end_src
+
 
 * Package System setup
 
@@ -411,7 +414,7 @@ If, you happen to use the xah-change-brackets function to quickly change bracket
     :config
     (general-define-key
      :keymaps 'xah-fly-command-map
-     :prefix "/ a"
+     :prefix "*"
      "c" (lambda () (interactive) (smv/custom-ace-jump 'char))
      "w" (lambda () (interactive) (smv/custom-ace-jump 'window))
      "l" (lambda () (interactive) (smv/custom-ace-jump 'line))))
@@ -729,6 +732,7 @@ This section contains the basic configuration for org-mode plus the configuratio
     (global-set-key (kbd "M-i") 'org-insert-item))
 
 #+end_src
+
 
 ** Auto rendering latex section
 
@@ -1148,32 +1152,6 @@ Uncomment the commented parts only when you will finish installing copilot.
     :ensure t)
 #+end_src
 
-** Gptel
-
-Using chatgpt directly in emacs so that I will not be obliged to switch to the web browser when coding.
-
-#+begin_src emacs-lisp
-  ;; (defun smv/gptel-api-key ()
-  ;;   "Retrieve my OpenAI API key from a secure location."
-  ;;   (with-temp-buffer
-  ;;     (insert-file-contents-literally "~/.open_api_key")
-  ;;     (string-trim (buffer-string))))
-
-  ;; (use-package gptel)
-  ;; (setq gptel-api-key (smv/gptel-api-key))
-#+end_src
-
-** Youdotcom
-
-This is my own package to make web search and chat directly inside emacs
-
-#+begin_src emacs-lisp
-(use-package youdotcom
-    :bind
-    ("C-c y" . youdotcom-enter)
-    :config
-    (setq youdotcom-rag-api-key ""))
-#+end_src
 
 ** Magit
 

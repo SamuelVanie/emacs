@@ -294,7 +294,7 @@
   :config
   (general-define-key
    :keymaps 'xah-fly-command-map
-   :prefix "/ a"
+   :prefix "*"
    "c" (lambda () (interactive) (smv/custom-ace-jump 'char))
    "w" (lambda () (interactive) (smv/custom-ace-jump 'window))
    "l" (lambda () (interactive) (smv/custom-ace-jump 'line))))
@@ -752,21 +752,6 @@
         ("C-M-<left>" . copilot-previous-completion)
         )
   :ensure t)
-
-;; (defun smv/gptel-api-key ()
-;;   "Retrieve my OpenAI API key from a secure location."
-;;   (with-temp-buffer
-;;     (insert-file-contents-literally "~/.open_api_key")
-;;     (string-trim (buffer-string))))
-
-;; (use-package gptel)
-;; (setq gptel-api-key (smv/gptel-api-key))
-
-(use-package youdotcom
-    :bind
-    ("C-c y" . youdotcom-enter)
-    :config
-    (setq youdotcom-rag-api-key ""))
 
 (use-package magit
     :commands magit-status
