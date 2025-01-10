@@ -284,8 +284,8 @@
  "d" #'dired-other-tab
  "f" #'find-file-other-tab
  "r" #'tab-rename
- "l" #'tab-close
- "u" #'tab-previous
+ "u" #'tab-close
+ "l" #'tab-previous
  "y" #'tab-next)
 
 ;; buffer movements
