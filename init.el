@@ -142,16 +142,16 @@
 (defun smv/add-nix-pkg-to-lpath (PKG_ENV)
   "Load the PKG_ENV directory to the load path of current emacs session
   it permits to then require the package"
-  
+
   (let ((pkg-nix-path (getenv PKG_ENV)))
 
     (unless pkg-nix-path
       (user-error "Environment variable '%s' is not set" PKG_ENV))
 
     (let ((pkg-suffix "/share/emacs/site-lisp/elpa/"))
-      
+
       (string-match "-emacs-\\([^/]+\\)" pkg-nix-path)
-      
+
       (let* ((pkg-full-path (match-string 1 pkg-nix-path))
              (path-to-add (concat pkg-nix-path pkg-suffix pkg-full-path)))
         (unless (member path-to-add load-path)
@@ -189,7 +189,7 @@
                   "^\\*term.*\\*$"   term-mode   ;term as a popup
                   "^\\*vterm.*\\*$"  vterm-mode  ;vterm as a popup
                   )))
-  
+
   (popper-mode +1)
   (popper-echo-mode +1))
 
@@ -263,18 +263,47 @@
   :config
   (xah-fly-keys-set-layout "colemak")
   (define-key xah-fly-command-map (kbd "/") nil)
+  (define-key xah-fly-command-map (kbd ";") nil)
   (add-to-list 'xah-right-brackets "\"")
+  (add-to-list 'xah-brackets "''")
   (add-to-list 'xah-left-brackets "\"")
   (xah-fly-keys 1))
 
+;; navigate between functions
 (define-key xah-fly-command-map (kbd "&") #'beginning-of-defun)
 (define-key xah-fly-command-map (kbd "(") #'end-of-defun)
+
+;; line manipulations
+(define-key xah-fly-command-map (kbd ";") #'duplicate-line)
+
+;; tabs manipulations
+(general-define-key
+ :keymaps 'xah-fly-command-map
+ :prefix "#"
+ "n" #'tab-new
+ "d" #'dired-other-tab
+ "f" #'find-file-other-tab
+ "r" #'tab-rename
+ "l" #'tab-close
+ "u" #'tab-previous
+ "y" #'tab-next)
+
+;; buffer movements
+(define-key xah-fly-command-map (kbd "@") #'previous-buffer)
+(define-key xah-fly-command-map (kbd "$") #'next-buffer)
+(general-define-key
+ :keymaps 'xah-fly-command-map
+ :prefix "%"
+ "s" #'scratch-buffer)
+
 
 (defun smv/surround-region (character)
   (interactive "sEnter a character:")
   (xah-insert-bracket-pair character character))
 
-(define-key xah-fly-command-map (kbd "SPC y a") #'smv/surround-region)
+;; Some more complex commands
+(define-key xah-fly-command-map (kbd "SPC s x") #'smv/surround-region)
+(define-key xah-fly-command-map (kbd "SPC e a") #'xah-select-text-in-quote)
 
 (defun smv/custom-ace-jump (mode)
   (interactive
@@ -352,8 +381,8 @@
   :config
   ;; disable case sensitiveness for files and dir
   (setq read-file-name-completion-ignore-case t
-    read-buffer-completion-ignore-case t
-    completion-ignore-case t)
+        read-buffer-completion-ignore-case t
+        completion-ignore-case t)
   (setq completion-styles '(basic substring partial-completion flex))
   (keymap-set vertico-map "?" #'minibuffer-completion-help)
   (keymap-set vertico-map "M-RET" #'minibuffer-force-complete-and-exit)
@@ -384,7 +413,8 @@
         ("/ c s" . consult-ripgrep)
         ("/ c i" . consult-imenu)
         ("/ c k" . consult-kmacro)
-        ("/ c m" . consult-global-mark))
+        ("/ c m" . consult-global-mark)
+        ("SPC t" . consult-buffer))
   )
 
 (use-package helpful
@@ -452,7 +482,7 @@
   (setq org-agenda-start-with-log-mode t)
   (setq org-log-done 'time)
   (setq org-log-into-drawer t)
-  
+
   (setq org-agenda-files
         '("~/.org/todo.org"
           "~/.org/projects.org"))
@@ -492,11 +522,11 @@
           ("st" "School todos" tags-todo "+@school/TODO")
           ("sp" "School Projects" tags-todo "+@school/ACTIVE")
           ("sr" "School Review" tags-todo "+@school/REVIEW")
-          
+
           ("pt" "Personal todos" tags-todo "+personal/TODO")
           ("pl" "Personal Projects" tags-todo "+personal/ACTIVE")
           ("pr" "Personal Review" tags-todo "+personal/REVIEW")
-          
+
           ;; Low-effort next actions
           ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
            ((org-agenda-overriding-header "Low Effort Tasks")
@@ -537,7 +567,7 @@
    '((emacs-lisp . t)
      (dot . t)
      (python . t)))
-  
+
   (push '("conf-unix" . conf-unix) org-src-lang-modes))
 
 (with-eval-after-load 'org
@@ -640,15 +670,17 @@
 
 (use-package auto-yasnippet
   :bind
-  ("C-c C-y w" . aya-create)
-  ("C-c C-y x". aya-expand)
-  ("C-c C-y h". aya-expand-from-history)
-  ("C-c C-y d" . aya-delete-from-history)
-  ("C-c C-y c" . aya-clear-history)
-  ("C-c C-y n" . aya-next-in-history)
-  ("C-c C-y p" . aya-previous-in-history)
-  ("C-c C-y s" . aya-persist-snippet)
-  ("C-c C-y o" . aya-open-line))
+  (:map xah-fly-command-map
+        ("/ a w" . aya-create)
+        ("/ a x" . aya-expand)
+        ("/ a h" . aya-expand-from-history)
+        ("/ a d" . aya-delete-from-history)
+        ("/ a c" . aya-clear-history)
+        ("/ a n" . aya-next-in-history)
+        ("/ a p" . aya-previous-in-history)
+        ("/ a s" . aya-persist-snippet)
+        ("/ a o" . aya-open-line)
+        ))
 
 (use-package yaml-mode
   :mode (("\\.yml\\'" . yaml-mode)
