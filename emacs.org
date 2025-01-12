@@ -434,17 +434,20 @@ If, you happen to use the xah-change-brackets function to quickly change bracket
   (use-package avy
     :after xah-fly-keys
     :straight nil
-    :config
-    (general-define-key
-     :keymaps 'xah-fly-command-map
-     :prefix "*"
-     "c" #'avy-goto-char
-     "*" #'avy-goto-char-in-line
-     "r" #'avy-resume
-     "d" #'avy-kill-whole-line
-     "<up>" #'avy-goto-line-above
-     "<down>" #'avy-goto-line-below
-     "y" #'avy-copy-line))
+    :bind
+    (:map xah-fly-command-map
+          ("* *" . avy-goto-char-in-line)
+          ("* c" . avy-goto-char)
+          ("* r r" . avy-resume)
+          ("* l d" . avy-kill-whole-line)
+          ("* l l" . avy-goto-end-of-line)
+          ("* <up>" . avy-goto-line-above)
+          ("* <down>" . avy-goto-line-below)
+          ("* l y" . avy-copy-line)
+          ("* r d" . avy-kill-region)
+          ("* r y" . avy-copy-region)
+          ("* r t" . avy-transpose-lines-in-region)
+          ("* r m" . avy-move-region)))
 #+end_src
 
 
