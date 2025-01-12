@@ -270,8 +270,8 @@
   (xah-fly-keys 1))
 
 ;; navigate between functions
-(define-key xah-fly-command-map (kbd "&") #'beginning-of-defun)
-(define-key xah-fly-command-map (kbd "(") #'end-of-defun)
+(define-key xah-fly-command-map (kbd "&") #'backward-sexp)
+(define-key xah-fly-command-map (kbd "(") #'forward-sexp)
 
 ;; line manipulations
 (define-key xah-fly-command-map (kbd ";") #'duplicate-line)
