@@ -300,6 +300,9 @@
  :prefix "%"
  "s" #'scratch-buffer)
 
+(define-key xah-fly-command-map (kbd "<") #'back-to-indentation)
+(define-key xah-fly-command-map (kbd ">") #'end-of-visual-line)
+
 
 (defun smv/surround-region (character)
   (interactive "sEnter a character:")
@@ -309,28 +312,20 @@
 (define-key xah-fly-command-map (kbd "SPC s x") #'smv/surround-region)
 (define-key xah-fly-command-map (kbd "SPC e a") #'xah-select-text-in-quote)
 
-(defun smv/custom-ace-jump (mode)
-  (interactive
-   (list (intern (completing-read "Select mode (char/line/window): "
-                                  '("char" "line" "window")
-                                  nil t))))
-  (xah-fly-insert-mode-activate)
-  (pcase mode
-    ('char (call-interactively 'ace-jump-char-mode))
-    ('line (call-interactively 'ace-jump-line-mode))
-    ('window (call-interactively 'ace-window))
-    (_ (message "Unknown mode: %s" mode))))
-
-
-(use-package ace-jump-mode
+(use-package avy
   :after xah-fly-keys
+  :straight nil
   :config
   (general-define-key
    :keymaps 'xah-fly-command-map
    :prefix "*"
-   "c" (lambda () (interactive) (smv/custom-ace-jump 'char))
-   "w" (lambda () (interactive) (smv/custom-ace-jump 'window))
-   "l" (lambda () (interactive) (smv/custom-ace-jump 'line))))
+   "c" #'avy-goto-char
+   "*" #'avy-goto-char-in-line
+   "r" #'avy-resume
+   "d" #'avy-kill-whole-line
+   "<up>" #'avy-goto-line-above
+   "<down>" #'avy-goto-line-below
+   "y" #'avy-copy-line))
 
 (use-package windmove
   :after xah-fly-keys
