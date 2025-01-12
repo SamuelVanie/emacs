@@ -106,9 +106,9 @@
   ;; Gets my files from the gifs directory
   ;; excluding the ones that ends with ~ and t (for my links.txt file)
   (let ((gifs (let* (
-               (root-dir (concat user-emacs-directory "gifs"))
-               (file-names (directory-files root-dir nil "^[^.].*[^~t]$")))
-       (mapcar (lambda (x) (concat root-dir "/" x)) file-names))))
+                     (root-dir (concat user-emacs-directory "gifs"))
+                     (file-names (directory-files root-dir nil "^[^.].*[^~t]$")))
+                (mapcar (lambda (x) (concat root-dir "/" x)) file-names))))
     (setq dashboard-startup-banner gifs)))
 
 (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
@@ -136,9 +136,7 @@
 (setq eshell-aliases-file (format "%s%s" user-emacs-directory "aliases"))
 (setq explicit-shell-file-name "/bin/zsh")
 
-(use-package envrc
-  :config
-  (envrc-global-mode))
+(use-package envrc)
 
 ;; Writing a function that will permit to load the packages from an emacsclient that weren't launched inside a nix shell
 ;; The function assumes that the folder that contains the lisp code
@@ -319,7 +317,6 @@
   (:map xah-fly-command-map
         ("* *" . avy-goto-char-in-line)
         ("* c" . avy-goto-char)
-        ("* r r" . avy-resume)
         ("* l d" . avy-kill-whole-line)
         ("* l l" . avy-goto-end-of-line)
         ("* <up>" . avy-goto-line-above)
@@ -328,6 +325,7 @@
         ("* r d" . avy-kill-region)
         ("* r y" . avy-copy-region)
         ("* r t" . avy-transpose-lines-in-region)
+        ("* r r" . avy-resume)
         ("* r m" . avy-move-region)))
 
 (use-package windmove
