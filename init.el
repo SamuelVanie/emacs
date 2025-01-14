@@ -275,6 +275,11 @@
 (define-key xah-fly-command-map (kbd "&") #'backward-sexp)
 (define-key xah-fly-command-map (kbd "(") #'forward-sexp)
 
+  ;; Movements inside the buffer
+(define-key xah-fly-command-map (kbd "<") #'back-to-indentation)
+(define-key xah-fly-command-map (kbd ">") #'end-of-visual-line)
+(define-key xah-fly-command-map (kbd "<end>") #'kill-buffer-and-window)
+
 ;; line manipulations
 (define-key xah-fly-command-map (kbd ";") #'duplicate-line)
 
@@ -297,10 +302,6 @@
  :keymaps 'xah-fly-command-map
  :prefix "%"
  "s" #'scratch-buffer)
-
-(define-key xah-fly-command-map (kbd "<") #'back-to-indentation)
-(define-key xah-fly-command-map (kbd ">") #'end-of-visual-line)
-
 
 (defun smv/surround-region (character)
   (interactive "sEnter a character:")
