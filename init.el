@@ -52,10 +52,6 @@
               (interactive)
               (scroll-other-window-down 2)))
 
-;; Move by half pages
-(global-set-key (kbd "C-v") 'View-scroll-half-page-forward)
-(global-set-key (kbd "M-v") 'View-scroll-half-page-backward)
-
 ;; Initialize package sources
 (require 'package)
 (require 'cl)
