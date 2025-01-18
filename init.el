@@ -264,6 +264,7 @@
   (xah-fly-keys-set-layout "colemak")
   (define-key xah-fly-command-map (kbd "/") nil)
   (define-key xah-fly-command-map (kbd ";") nil)
+  (xah-punctuation-regex "['\"]")
   (xah-fly-keys 1))
 
 ;; navigate between functions
