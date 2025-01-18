@@ -378,14 +378,15 @@ If, you happen to use the xah-change-brackets function to quickly change bracket
     (xah-fly-keys-set-layout "colemak")
     (define-key xah-fly-command-map (kbd "/") nil)
     (define-key xah-fly-command-map (kbd ";") nil)
-    (xah-punctuation-regex "['\"]")
     (xah-fly-keys 1))
+
+  (setq xah-punctuation-regex "['\"]")
 
   ;; navigate between functions
   (define-key xah-fly-command-map (kbd "&") #'backward-sexp)
   (define-key xah-fly-command-map (kbd "(") #'forward-sexp)
 
-    ;; Movements inside the buffer
+  ;; Movements inside the buffer
   (define-key xah-fly-command-map (kbd "<") #'back-to-indentation)
   (define-key xah-fly-command-map (kbd ">") #'end-of-visual-line)
   (define-key xah-fly-command-map (kbd "<end>") #'kill-buffer-and-window)
