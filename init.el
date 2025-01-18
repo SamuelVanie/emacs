@@ -132,7 +132,9 @@
 (setq eshell-aliases-file (format "%s%s" user-emacs-directory "aliases"))
 (setq explicit-shell-file-name "/bin/zsh")
 
-(use-package envrc)
+(use-package envrc
+  :config
+  (envrc-global-mode))
 
 ;; Writing a function that will permit to load the packages from an emacsclient that weren't launched inside a nix shell
 ;; The function assumes that the folder that contains the lisp code
@@ -262,9 +264,6 @@
   (xah-fly-keys-set-layout "colemak")
   (define-key xah-fly-command-map (kbd "/") nil)
   (define-key xah-fly-command-map (kbd ";") nil)
-  (add-to-list 'xah-right-brackets "\"")
-  (add-to-list 'xah-brackets "''")
-  (add-to-list 'xah-left-brackets "\"")
   (xah-fly-keys 1))
 
 ;; navigate between functions
