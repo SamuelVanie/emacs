@@ -914,9 +914,6 @@ Switching to lsp-mode instead of the default emacs. Lsp-mode has more features t
   (use-package lsp-ui
     :commands lsp-ui-mode
     :hook (lsp-mode . lsp-ui-mode))
-
-  (use-package lsp-treemacs
-    :after lsp)
 #+end_src
 
 

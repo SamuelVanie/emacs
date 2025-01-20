@@ -632,9 +632,6 @@
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
 
-(use-package lsp-treemacs
-  :after lsp)
-
 (defun lsp-booster--advice-json-parse (old-fn &rest args)
   "Try to parse bytecode instead of json."
   (or
