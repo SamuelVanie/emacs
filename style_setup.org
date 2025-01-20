@@ -1,0 +1,34 @@
+#+LATEX_HEADER: \titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
+#+LATEX_HEADER: \titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+#+LATEX_HEADER: \setlength{\parindent}{0pt}
+#+LATEX_HEADER: \setlength{\parskip}{1em}
+#+LATEX_HEADER: \hypersetup{colorlinks=true, linkcolor=blue, urlcolor=cyan}
+
+#+LATEX_HEADER: \usepackage[french]{babel}
+
+#+LATEX_HEADER: \usepackage[margin=2.5cm]{geometry}
+#+LATEX_HEADER: \usepackage{fontspec}
+#+LATEX_HEADER: \setmainfont{Crimson}
+#+LATEX_HEADER: \setsansfont{Linux Libertine}
+#+LATEX_HEADER: \usepackage{microtype}
+#+LATEX_HEADER: \usepackage{graphicx}
+#+LATEX_HEADER: \usepackage{float}
+#+LATEX_HEADER: \usepackage{amsmath, amssymb}
+#+LATEX_HEADER: \usepackage{hyperref}
+#+LATEX_HEADER: \usepackage{titlesec}
+#+LATEX_HEADER: \usepackage{longtable}
+#+LATEX_HEADER: \usepackage{wrapfig}
+#+LATEX_HEADER: \usepackage{capt-of}
+#+LATEX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \PassOptionsToPackage{--shell-escape}{minted}
+#+LATEX_HEADER: \usepackage{fancyhdr}
+#+LATEX_HEADER: \pagestyle{fancy}
+#+LATEX_HEADER: \fancyhf{}
+#+LATEX_HEADER: \lhead{\leftmark}
+#+LATEX_HEADER: \rfoot{\thepage}
+#+LATEX_HEADER: \renewcommand{\headrulewidth}{0.4pt}
+#+LATEX_HEADER: \renewcommand{\footrulewidth}{0.4pt}
+
+#+LATEX_COMPILER: xelatex
+
+#+PROPERTY: header-args :eval no-export :exports none :tangle no

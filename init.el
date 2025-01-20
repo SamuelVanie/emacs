@@ -36,8 +36,8 @@
   (set-frame-parameter (selected-frame) 'alpha '(92 . 50))
   (add-to-list 'default-frame-alist '(alpha . (92 . 50))))
  ((eq system-type 'gnu/linux)  ;; Linux
-  (set-frame-parameter nil 'alpha-background 60)
-  (add-to-list 'default-frame-alist '(alpha-background . 60)))
+  (set-frame-parameter nil 'alpha-background 85)
+  (add-to-list 'default-frame-alist '(alpha-background . 85)))
  )
 
 ;; to scroll down inside the popup
@@ -478,11 +478,41 @@
   (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
   (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
+(defun smv/org-style-pdf ()
+  ;; in Case error
+  ;; with xetex fmt files
+  ;; reformat with
+  ;; sudo pacman -S texlive-xetex
+  ;; sudo fmtutil-sys --byfmt xelatex
+  ;; install the extra of latex from your package repo
+  (require 'ox-latex)
+
+  ;; Activer l'utilisation de minted
+  ;; font python source blocs install Pygments
+  (setq org-latex-listings 'minted)
+  (setq org-latex-minted-options
+        '(("frame" "lines")
+          ("linenos" "true")
+          ("breaklines" "true")
+          ("fontsize" "\\scriptsize")))
+
+  ;; Style des blocs source dans Org Mode
+  (setq org-src-fontify-natively t)
+  (setq org-src-tab-acts-natively t)
+
+  ;; Ajouter des en-têtes et des pieds de page
+  (setq org-latex-default-packages-alist
+        (remove '("AUTO" "inputenc" t) org-latex-default-packages-alist))
+
+  ;; Utiliser minted dans les documents LaTeX
+  (add-to-list 'org-latex-packages-alist '("" "minted" t)))
+
 (defun smv/org-mode-setup()
   (org-indent-mode)
   (variable-pitch-mode 1)
   (auto-fill-mode 0)
   (visual-line-mode 1)
+  (smv/org-style-pdf)
   (smv/org-font-setup))
 
 
