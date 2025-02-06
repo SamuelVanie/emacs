@@ -824,6 +824,16 @@
         )
   :ensure t)
 
+(use-package gptel
+  :config
+  ;; OPTIONAL configuration
+  (setq
+   gptel-model 'gemini-pro
+   gptel-backend (gptel-make-gemini "Gemini"
+                   :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
+                   :stream t))
+  :bind ("C-c x" . gptel-send))
+
 (use-package magit
     :commands magit-status
     :custom
