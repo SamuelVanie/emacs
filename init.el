@@ -86,10 +86,12 @@
   :straight nil
   :bind
   (:map dired-mode-map
-        ("k" . dired-create-empty-file))
+        ("k" . dired-create-empty-file)
+        ("<tab>" . dired-subtree-toggle))
   :config
   (add-hook 'dired-mode-hook #'dired-hide-details-mode)
   (add-hook 'dired-mode-hook #'all-the-icons-dired-mode))
+
 
 (use-package dired-sidebar
   :bind (("C-x C-n" . dired-sidebar-toggle-sidebar))
