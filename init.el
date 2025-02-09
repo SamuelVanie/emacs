@@ -660,6 +660,9 @@
   :config
   (lsp-enable-which-key-integration t))
 
+(use-package lsp-treemacs
+  :after lsp)
+
 (use-package lsp-ui
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
@@ -781,6 +784,12 @@
 (use-package ruby-ts-mode
   :mode "\\.rb\\'"
   :hook (ruby-ts-mode . lsp-deferred))
+
+(use-package dart-mode
+  :mode "\\.dart\\'"
+  :hook (dart-mode . lsp-deferred))
+
+(use-package lsp-dart)
 
 (use-package company
   :after lsp-mode
