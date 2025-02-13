@@ -239,6 +239,9 @@
 (if (eq system-type 'darwin)
     (set-frame-font "JetbrainsMono Nerd Font-19" nil t)
   (add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font-15")))
+(set-face-attribute 'fixed-pitch nil :family "TerminessTTF Nerd Font")
+(set-face-attribute 'variable-pitch nil :family "Iosevka Nerd Font")
+;; (set-face-attribute 'variable-pitch nil :family "FantasqueSansM Nerd Font")
 
 (use-package ligature
   :config
@@ -373,7 +376,7 @@
 
 (use-package doom-themes)
 (use-package ef-themes
-  :config (load-theme 'doom-pine t))
+  :config (load-theme 'leuven-dark t))
 
 (use-package all-the-icons
   :if (display-graphic-p))
