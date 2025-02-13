@@ -287,6 +287,9 @@
 
 (setq xah-punctuation-regex "['\"]")
 
+;; windows
+(define-key xah-fly-command-map (kbd "SPC 1") #'kill-buffer-and-window)  
+
 ;; navigate between functions
 (define-key xah-fly-command-map (kbd "&") #'backward-sexp)
 (define-key xah-fly-command-map (kbd "(") #'forward-sexp)
