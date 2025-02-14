@@ -114,14 +114,7 @@
   (dashboard-setup-startup-hook)
   (setq dashboard-display-icons-p t)
   (setq dashboard-icon-type 'nerd-icons)
-  (setq dashboard-set-file-icons t)
-  ;; Gets my files from the gifs directory
-  ;; excluding the ones that ends with ~ and t (for my links.txt file)
-  (let ((gifs (let* (
-                     (root-dir (concat user-emacs-directory "gifs"))
-                     (file-names (directory-files root-dir nil "^[^.].*[^~t]$")))
-                (mapcar (lambda (x) (concat root-dir "/" x)) file-names))))
-    (setq dashboard-startup-banner gifs)))
+  (setq dashboard-set-file-icons t))
 
 (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
 
