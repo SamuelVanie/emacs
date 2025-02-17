@@ -432,19 +432,6 @@ If, you happen to use the xah-change-bracket-pairs function to quickly change br
     (when (>= (length character) 2)
       (xah-insert-bracket-pair (aref character 0) (aref character 1))))
 
-  (defun smv/delete-region-ends (start end &optional chars)
-    (interactive "r\nP")
-    (let* ((chars-to-delete (if chars
-                                (prefix-numeric-value chars)
-                              1))
-           (region-length (- end start))
-           (delete-count (min chars-to-delete (floor region-length 2))))
-      (save-excursion
-        (goto-char (- end delete-count))
-        (delete-region (point) end)
-        (goto-char start)
-        (delete-region start (+ start delete-count)))))
-
   (defun smv/mark-between-chars (chars)
     (interactive "sEnter two characters (e.g. \"()\"): ")
     (unless (= (length chars) 2)
@@ -529,8 +516,7 @@ If, you happen to use the xah-change-bracket-pairs function to quickly change br
    :keymaps 'xah-fly-command-map
    :prefix "SPC s"
    "s" #'smv/surround-region
-   "c" #'xah-change-bracket-pairs
-   "d" #'smv/delete-region-ends)
+   "c" #'xah-change-bracket-pairs)
 
   (define-key xah-fly-command-map (kbd "9") #'smv/mark-between-chars)
 #+end_src
