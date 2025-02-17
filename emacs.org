@@ -434,12 +434,26 @@ If, you happen to use the xah-change-brackets function to quickly change bracket
   (define-key xah-fly-command-map (kbd "9") #'xah-extend-selection)
 
   (defun smv/surround-region (character)
-    (interactive "sEnter a character:")
-    (xah-insert-bracket-pair character character))
+    (interactive "sEnter two characters:")
+    (when (>= (length character) 2)
+      (xah-insert-bracket-pair (aref character 0) (aref character 1))))
+
+  (defun smv/delete-region-ends (start end &optional chars)
+    (interactive "r\nP")
+    (let* ((chars-to-delete (if chars
+                                (prefix-numeric-value chars)
+                              1))
+           (region-length (- end start))
+           (delete-count (min chars-to-delete (floor region-length 2))))
+      (save-excursion
+        (goto-char (- end delete-count))
+        (delete-region (point) end)
+        (goto-char start)
+        (delete-region start (+ start delete-count)))))
 
   ;; Some more complex commands
   (define-key xah-fly-command-map (kbd "SPC s x") #'smv/surround-region)
-  (define-key xah-fly-command-map (kbd "SPC e a") #'xah-select-text-in-quote)
+  (define-key xah-fly-command-map (kbd "SPC s z") #'smv/delete-region-ends)
 #+end_src
 
 
