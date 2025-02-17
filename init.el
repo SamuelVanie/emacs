@@ -25,6 +25,7 @@
 
 (setq-default indent-tabs-mode nil)
 (global-set-key (kbd "C-<tab>") 'tab-to-tab-stop)
+(setq tab-width 4)
 
 
 ;; auto refresh buffers when files changes
@@ -314,6 +315,9 @@
  :keymaps 'xah-fly-command-map
  :prefix "%"
  "s" #'scratch-buffer)
+
+;; selection
+(define-key xah-fly-command-map (kbd "9") #'xah-extend-selection)
 
 (defun smv/surround-region (character)
   (interactive "sEnter a character:")
