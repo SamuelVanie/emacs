@@ -414,9 +414,9 @@
 (general-define-key
  :keymaps 'xah-fly-command-map
  :prefix "SPC s"
- "s" #'surround-region
+ "s" #'smv/surround-region
  "c" #'xah-change-bracket-pairs
- "d" #'delete-region-ends)
+ "d" #'smv/delete-region-ends)
 
 (define-key xah-fly-command-map (kbd "9") #'smv/mark-between-chars)
 
