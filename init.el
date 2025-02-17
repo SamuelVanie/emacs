@@ -281,6 +281,18 @@
 
 (setq xah-punctuation-regex "['\"]")
 
+(defun smv/next-vim-word ()
+  "Move cursor to the next WORD, similar to Vim's 'W' command."
+  (interactive)
+  (skip-syntax-forward "^ ")
+  (skip-syntax-forward " "))
+
+(defun smv/prev-vim-word ()
+  "Move cursor to the previous WORD, similar to Vim's 'B' command."
+  (interactive)
+  (skip-syntax-backward "^ ")
+  (skip-syntax-backward " "))
+
 ;; windows
 (define-key xah-fly-command-map (kbd "SPC 1") #'kill-buffer-and-window)  
 
@@ -292,6 +304,10 @@
 (define-key xah-fly-command-map (kbd "<") #'back-to-indentation)
 (define-key xah-fly-command-map (kbd ">") #'end-of-visual-line)
 (define-key xah-fly-command-map (kbd "<end>") #'kill-buffer-and-window)
+
+(define-key xah-fly-command-map (kbd "L") #'smv/prev-vim-word)
+(define-key xah-fly-command-map (kbd "Y") #'smv/next-vim-word)
+
 
 ;; line manipulations
 (define-key xah-fly-command-map (kbd ";") #'duplicate-line)
@@ -391,6 +407,8 @@
      ;; Other cases where pairs weren't found in the expected order
      (t
       (message "No matching pair of '%c' and '%c' found in the expected order" char1 char2)))))
+
+
 
 ;; Some more complex commands
 (general-define-key
