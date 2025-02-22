@@ -231,9 +231,12 @@
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 (if (eq system-type 'darwin)
-    (set-frame-font "JetbrainsMono Nerd Font-19" nil t)
-  (add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font-15")))
-(set-face-attribute 'fixed-pitch nil :family "TerminessTTF Nerd Font")
+    (progn
+      (set-frame-font "JetbrainsMono Nerd Font-19" nil t)
+      (set-face-attribute 'fixed-pitch nil :family "Terminess Nerd Font"))
+  (add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font-15"))
+  (set-face-attribute 'fixed-pitch nil :family "TerminessTTF Nerd Font"))
+
 (set-face-attribute 'variable-pitch nil :family "Iosevka Nerd Font")
 ;; (set-face-attribute 'variable-pitch nil :family "FantasqueSansM Nerd Font")
 
@@ -376,21 +379,21 @@
      ((and middle-char1-pos middle-char2-pos
            (< middle-char1-pos (point))
            (> middle-char2-pos (point)))
-      (goto-char middle-char1-pos)
+      (goto-char (1+ middle-char1-pos))
       (push-mark (point) t t)
-      (goto-char middle-char2-pos))
+      (goto-char (1- middle-char2-pos)))
      
      ;; Forward case: found both chars
      ((and forward-char1-pos forward-char2-pos)
-      (goto-char (1- forward-char1-pos))
+      (goto-char forward-char1-pos)
       (push-mark (point) t t)
-      (goto-char forward-char2-pos))
+      (goto-char (1- forward-char2-pos)))
      
      ;; Backward case: found both chars
      ((and backward-char1-pos backward-char2-pos)
-      (goto-char (1+ backward-char2-pos))  ; Move to end of second char
+      (goto-char backward-char2-pos)  ; Move to end of second char
       (push-mark (point) t t)
-      (goto-char backward-char1-pos))  ; Move to start of first char
+      (goto-char (1+ backward-char1-pos)))  ; Move to start of first char
      
      ;; Neither char found
      ((not (or forward-char1-pos backward-char2-pos middle-char1-pos middle-char2-pos))
