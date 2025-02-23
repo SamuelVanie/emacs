@@ -421,7 +421,7 @@ If, you happen to use the xah-change-bracket-pairs function to quickly change br
   (define-key xah-fly-command-map (kbd "<") #'back-to-indentation)
   (define-key xah-fly-command-map (kbd ">") #'end-of-visual-line)
   (define-key xah-fly-command-map (kbd "<end>") #'kill-buffer-and-window)
-  
+
   (define-key xah-fly-command-map (kbd "L") #'smv/prev-vim-word)
   (define-key xah-fly-command-map (kbd "Y") #'smv/next-vim-word)
 
@@ -539,7 +539,13 @@ If, you happen to use the xah-change-bracket-pairs function to quickly change br
    "s" #'smv/surround-region
    "c" #'xah-change-bracket-pairs)
 
+  (defun smv/remove-overlays ()
+    (interactive)
+    (remove-overlays))
+
   (define-key xah-fly-command-map (kbd "9") #'smv/mark-between-chars)
+  (define-key xah-fly-command-map (kbd "SPC SPC") 'smv/remove-overlays)
+
 #+end_src
 
 

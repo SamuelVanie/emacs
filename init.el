@@ -425,7 +425,12 @@
  "s" #'smv/surround-region
  "c" #'xah-change-bracket-pairs)
 
+(defun smv/remove-overlays ()
+  (interactive)
+  (remove-overlays))
+
 (define-key xah-fly-command-map (kbd "9") #'smv/mark-between-chars)
+(define-key xah-fly-command-map (kbd "SPC SPC") 'smv/remove-overlays)
 
 (use-package avy
   :after xah-fly-keys
