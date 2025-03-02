@@ -623,7 +623,7 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
 #+begin_src emacs-lisp
   (use-package doom-themes)
   (use-package ef-themes
-    :config (load-theme 'leuven-dark t))
+    :config (load-theme 'doom-acario-dark t))
 #+end_src
 
 ** Adding icons to emacs
@@ -830,7 +830,7 @@ I create a function called `smv/org-font-setup` to configure various text faces 
 
     ;; Utiliser minted dans les documents LaTeX
     (add-to-list 'org-latex-packages-alist '("" "minted" t)))
-#+end_src
+          #+end_src
 
 ** Basic Config
 
@@ -858,7 +858,8 @@ This section contains the basic configuration for org-mode plus the configuratio
 
     (setq org-agenda-files
           '("~/.org/todo.org"
-            "~/.org/projects.org"))
+            "~/.org/projects.org"
+            "~/.org/personal.org"))
 
     (setq org-todo-keywords
           '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
@@ -868,7 +869,8 @@ This section contains the basic configuration for org-mode plus the configuratio
     (setq org-refile-targets
           '(("archive.org" :maxlevel . 1)
             ("todo.org" :maxlevel . 1)
-            ("projects.org" :maxlevel . 1)))
+            ("projects.org" :maxlevel . 1)
+            ("personal.org" :maxlevel . 1)))
 
     ;; Save Org buffers after refiling!
     (advice-add 'org-refile :after 'org-save-all-org-buffers)

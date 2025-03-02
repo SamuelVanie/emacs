@@ -481,7 +481,7 @@
 
 (use-package doom-themes)
 (use-package ef-themes
-  :config (load-theme 'leuven-dark t))
+  :config (load-theme 'doom-acario-dark t))
 
 (use-package all-the-icons
   :if (display-graphic-p))
@@ -637,7 +637,8 @@
 
   (setq org-agenda-files
         '("~/.org/todo.org"
-          "~/.org/projects.org"))
+          "~/.org/projects.org"
+          "~/.org/personal.org"))
 
   (setq org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
@@ -647,7 +648,8 @@
   (setq org-refile-targets
         '(("archive.org" :maxlevel . 1)
           ("todo.org" :maxlevel . 1)
-          ("projects.org" :maxlevel . 1)))
+          ("projects.org" :maxlevel . 1)
+          ("personal.org" :maxlevel . 1)))
 
   ;; Save Org buffers after refiling!
   (advice-add 'org-refile :after 'org-save-all-org-buffers)
