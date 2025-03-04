@@ -395,6 +395,7 @@ If, you happen to use the xah-change-bracket-pairs function to quickly change br
     (xah-fly-keys-set-layout "colemak")
     (define-key xah-fly-command-map (kbd "/") nil)
     (define-key xah-fly-command-map (kbd ";") nil)
+    (define-key xah-fly-command-map (kbd "k") #'compilation-shell-minor-mode)
     (xah-fly-keys 1))
 
   (setq xah-punctuation-regex "['\"]")
@@ -1007,6 +1008,13 @@ This snippets adds a hook to `org-mode` buffers so that efs/org-babel-tangle-con
 #+end_src
 
 * Development
+
+** Compilation
+
+#+begin_src emacs-lisp
+  (require 'ansi-color)
+  (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
+#+end_src
 
 ** Undo tree
 

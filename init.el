@@ -280,6 +280,7 @@
   (xah-fly-keys-set-layout "colemak")
   (define-key xah-fly-command-map (kbd "/") nil)
   (define-key xah-fly-command-map (kbd ";") nil)
+  (define-key xah-fly-command-map (kbd "k") #'compilation-shell-minor-mode)
   (xah-fly-keys 1))
 
 (setq xah-punctuation-regex "['\"]")
@@ -743,6 +744,9 @@
       (org-babel-tangle))))
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'smv/org-babel-tangle-config)))
+
+(require 'ansi-color)
+(add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
 
 (use-package undo-tree
   :config
