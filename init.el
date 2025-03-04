@@ -529,7 +529,6 @@
   :bind
   ("C-s" . consult-line)
   ("M-y" . consult-yank-from-kill-ring)
-  ("M-g M-g" . consult-goto-line)
   (:map xah-fly-command-map
         ("/ c f" . consult-fd)
         ("/ c s" . consult-ripgrep)
@@ -959,4 +958,3 @@
     :commands magit-status
     :custom
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
-(put 'dired-find-alternate-file 'disabled nil)
