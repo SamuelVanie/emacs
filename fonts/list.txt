@@ -1,0 +1,3 @@
+https://github.com/ryanoasis/nerd-fonts/releases/download/v3.3.0/FantasqueSansMono.zip
+https://github.com/ryanoasis/nerd-fonts/releases/download/v3.3.0/Iosevka.zip
+https://github.com/ryanoasis/nerd-fonts/releases/download/v3.3.0/JetBrainsMono.zip

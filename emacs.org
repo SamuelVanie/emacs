@@ -315,13 +315,14 @@ I use DaddyTimeMono Nerd Font as my main font for both fixed and variable fonts.
   (if (eq system-type 'darwin)
       (progn
         (set-frame-font "JetbrainsMono Nerd Font-19" nil t)
-        (set-face-attribute 'fixed-pitch nil :family "Terminess Nerd Font"))
+        (set-face-attribute 'fixed-pitch nil :family "FantasqueSansMono Nerd Font"))
     (add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font-15"))
-    (set-face-attribute 'fixed-pitch nil :family "TerminessTTF Nerd Font"))
+    (set-face-attribute 'fixed-pitch nil :family "FantasqueSansMono Nerd Font"))
 
   (set-face-attribute 'variable-pitch nil :family "Iosevka Nerd Font")
   ;; (set-face-attribute 'variable-pitch nil :family "FantasqueSansM Nerd Font")
 #+end_src
+
 
 ** Ligatures
 

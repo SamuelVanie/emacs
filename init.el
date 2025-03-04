@@ -233,9 +233,9 @@
 (if (eq system-type 'darwin)
     (progn
       (set-frame-font "JetbrainsMono Nerd Font-19" nil t)
-      (set-face-attribute 'fixed-pitch nil :family "Terminess Nerd Font"))
+      (set-face-attribute 'fixed-pitch nil :family "FantasqueSansMono Nerd Font"))
   (add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font-15"))
-  (set-face-attribute 'fixed-pitch nil :family "TerminessTTF Nerd Font"))
+  (set-face-attribute 'fixed-pitch nil :family "FantasqueSansMono Nerd Font"))
 
 (set-face-attribute 'variable-pitch nil :family "Iosevka Nerd Font")
 ;; (set-face-attribute 'variable-pitch nil :family "FantasqueSansM Nerd Font")
@@ -959,3 +959,4 @@
     :commands magit-status
     :custom
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+(put 'dired-find-alternate-file 'disabled nil)
