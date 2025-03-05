@@ -338,7 +338,7 @@
   (when (>= (length character) 2)
     (xah-insert-bracket-pair (aref character 0) (aref character 1))))
 
-(load-file "./mark_between_char.el")
+(load-file (format "%s%s" user-emacs-directory "mark_between_char.el"))
 
 ;; Some more complex commands
 (general-define-key
