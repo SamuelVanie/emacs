@@ -359,6 +359,10 @@
 (define-key xah-fly-command-map (kbd "9") #'smv/mark-between-chars)
 (define-key xah-fly-command-map (kbd "SPC SPC") 'smv/remove-overlays)
 
+(use-package surround
+  :after xah-fly-keys
+  :bind-keymap ("M-'" . surround-keymap))
+
 (use-package avy
   :after xah-fly-keys
   :straight nil

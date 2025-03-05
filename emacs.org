@@ -477,6 +477,16 @@ If, you happen to use the xah-change-bracket-pairs function to quickly change br
 #+end_src
 
 
+** Surround
+
+Similar functionalities as vim-surround inside emacs.
+
+#+begin_src emacs-lisp
+  (use-package surround
+    :after xah-fly-keys
+    :bind-keymap ("M-'" . surround-keymap))
+#+end_src
+
 ** Avy mode
 
 #+begin_src emacs-lisp
@@ -498,6 +508,8 @@ If, you happen to use the xah-change-bracket-pairs function to quickly change br
           ("* r r" . avy-resume)
           ("* r m" . avy-move-region)))
 #+end_src
+
+
 
 
 * Windows
