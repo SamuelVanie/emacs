@@ -233,7 +233,7 @@
 (if (eq system-type 'darwin)
     (progn
       (set-frame-font "JetbrainsMono Nerd Font-19" nil t)
-      (set-face-attribute 'fixed-pitch nil :family "FantasqueSansMono Nerd Font"))
+      (set-face-attribute 'fixed-pitch nil :family "FantasqueSansM Nerd Font Mono"))
   (add-to-list 'default-frame-alist '(font . "JetbrainsMono Nerd Font-15"))
   (set-face-attribute 'fixed-pitch nil :family "FantasqueSansMono Nerd Font"))
 
