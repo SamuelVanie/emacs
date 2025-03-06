@@ -181,7 +181,6 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
 
   ;; Watch out you should have fish installed on your computer
   (setq eshell-aliases-file (format "%s%s" user-emacs-directory "aliases"))
-  (setq explicit-shell-file-name "/bin/zsh")
 #+end_src
 
 ** Envrc
@@ -1304,19 +1303,38 @@ Uncomment the commented parts only when you will finish installing copilot.
 
 ** Gptel
 
-Mode to interact with different llms directly inside emacs
+Mode to interact with different llms in emacs.
+
+#+begin_src emacs-lisp
+(use-package gptel
+  :config
+  ;; OPTIONAL configuration
+  (setq
+   gptel-model 'gemini-pro
+   gptel-backend (gptel-make-gemini "Gemini"
+                   :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
+                   :stream t))
+  :bind ("C-c g" . gptel-send))
+#+end_src
+
+
+** Aidermacs
+
+Coding assistant directly inside emacs.
 
 
 #+begin_src emacs-lisp
-  (use-package gptel
+  (use-package aidermacs
+    :straight (:host github :repo "MatthewZMD/aidermacs" :files ("*.el"))
     :config
-    ;; OPTIONAL configuration
-    (setq
-     gptel-model 'gemini-pro
-     gptel-backend (gptel-make-gemini "Gemini"
-                     :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
-                     :stream t))
-    :bind ("C-c x" . gptel-send))
+    (setq aidermacs-default-model "gemini-2.0-flash-exp")
+    (global-set-key (kbd "C-c x") 'aidermacs-transient-menu)
+    (setq aidermacs-use-architect-mode t)
+    (setq aidermacs-editor-model "gemini-2.0-flash-exp")
+    (aidermacs-setup-minor-mode)
+    (setq aidermacs-auto-commits t)
+    (setq aidermacs-use-architect-mode t)
+    (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))))
 #+end_src
 
 
