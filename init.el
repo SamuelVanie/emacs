@@ -270,54 +270,100 @@
   (repeat-too-dangerous '(kill-this-buffer))
   (repeat-exit-timeout 5))
 
-(use-package xah-fly-keys
-  :ensure t
-  :init
-  (setq xah-fly-use-control-key nil)
-  (setq xah-fly-use-meta-key nil)
+(defun meow-setup ()
+  (setq meow-cheatsheet-layout meow-cheatsheet-layout-colemak)
+  (meow-motion-define-key
+   '("u" . meow-prev)        ;; Up (prev line)
+   '("e" . meow-next)       ;; Down (next line)
+   '("<escape>" . ignore))
+
+  (meow-leader-define-key
+   '("?" . meow-cheatsheet)
+   '("1" . meow-digit-argument)
+   '("2" . meow-digit-argument)
+   '("3" . meow-digit-argument)
+   '("4" . meow-digit-argument)
+   '("5" . meow-digit-argument)
+   '("6" . meow-digit-argument)
+   '("7" . meow-digit-argument)
+   '("8" . meow-digit-argument)
+   '("9" . meow-digit-argument)
+   '("0" . meow-digit-argument))
+  
+  (meow-normal-define-key
+   '("0" . meow-expand-0)
+   '("1" . meow-expand-1)
+   '("2" . meow-expand-2)
+   '("3" . meow-expand-3)
+   '("4" . meow-expand-4)
+   '("5" . meow-expand-5)
+   '("6" . meow-expand-6)
+   '("7" . meow-expand-7)
+   '("8" . meow-expand-8)
+   '("9" . meow-expand-9)
+   '("-" . negative-argument)
+   '(";" . meow-reverse)
+   '("," . meow-inner-of-thing)
+   '("." . meow-bounds-of-thing)
+   '("[" . meow-beginning-of-thing)
+   '("]" . meow-end-of-thing)
+   '("}" . forward-paragraph)
+   '("{" . backward-paragraph)
+   '("/" . meow-visit)
+   '("a" . meow-append)
+   '("A" . meow-open-below)
+   '("b" . meow-back-word)
+   '("B" . meow-back-symbol)
+   '("c" . meow-change)
+   '("e" . meow-next)        ;; Down (next line)
+   '("E" . meow-next-expand)
+   '("f" . meow-find)
+   '("g" . meow-cancel-selection)
+   '("G" . meow-grab)
+   '("h" . undefined)         ;; Disable old left binding
+   '("H" . undefined)
+   '("i" . meow-right) ;; Right (forward char)
+   '("I" . meow-right-expand)
+   '("j" . meow-join)
+   '("k" . meow-kill)
+   '("l" . meow-line)
+   '("L" . meow-goto-line)
+   '("m" . meow-mark-word)
+   '("M" . meow-mark-symbol)
+   '("n" . meow-left) ;; Left (backward char)
+   '("N" . meow-next-expand)
+   '("o" . meow-block)
+   '("O" . meow-to-block)
+   '("p" . meow-yank)
+   '("q" . meow-quit)
+   '("r" . meow-replace)
+   '("s" . meow-insert)
+   '("S" . meow-open-above)
+   '("t" . meow-till)
+   '("u" . meow-prev)        ;; Up (prev line)
+   '("U" . meow-undo)        ;; Undo moved to U <button class="citation-flag" data-index="1">
+   '("v" . meow-search)
+   '("w" . meow-next-word)
+   '("W" . meow-next-symbol)
+   '("x" . meow-delete)
+   '("X" . meow-backward-delete)
+   '("y" . meow-save)
+   '("z" . meow-pop-selection)
+   '("'" . repeat)
+   '("<escape>" . ignore)))
+
+(use-package meow
   :config
-  (xah-fly-keys-set-layout "colemak")
-  (define-key xah-fly-command-map (kbd "/") nil)
-  (define-key xah-fly-command-map (kbd ";") nil)
-  (define-key xah-fly-command-map (kbd "k") #'compilation-shell-minor-mode)
-  (xah-fly-keys 1))
-
-(setq xah-punctuation-regex "['\"]")
-
-(defun smv/next-vim-word ()
-  "Move cursor to the next WORD, similar to Vim's 'W' command."
-  (interactive)
-  (skip-syntax-forward "^ ")
-  (skip-syntax-forward " "))
-
-(defun smv/prev-vim-word ()
-  "Move cursor to the previous WORD, similar to Vim's 'B' command."
-  (interactive)
-  (skip-syntax-backward "^ ")
-  (skip-syntax-backward " "))
-
-;; windows
-(define-key xah-fly-command-map (kbd "SPC 1") #'kill-buffer-and-window)  
-
-;; navigate between functions
-(define-key xah-fly-command-map (kbd "&") #'backward-sexp)
-(define-key xah-fly-command-map (kbd "(") #'forward-sexp)
+  (meow-setup)
+  (meow-global-mode 1))
 
 ;; Movements inside the buffer
-(define-key xah-fly-command-map (kbd "<") #'back-to-indentation)
-(define-key xah-fly-command-map (kbd ">") #'end-of-visual-line)
-(define-key xah-fly-command-map (kbd "<end>") #'kill-buffer-and-window)
-
-(define-key xah-fly-command-map (kbd "L") #'smv/prev-vim-word)
-(define-key xah-fly-command-map (kbd "Y") #'smv/next-vim-word)
-
-
-;; line manipulations
-(define-key xah-fly-command-map (kbd ";") #'duplicate-line)
+(define-key meow-normal-state-keymap (kbd "<") #'back-to-indentation)
+(define-key meow-normal-state-keymap (kbd ">") #'end-of-visual-line)
 
 ;; tabs manipulations
 (general-define-key
- :keymaps 'xah-fly-command-map
+ :keymaps 'meow-normal-state-keymap
  :prefix "#"
  "n" #'tab-new
  "d" #'dired-other-tab
@@ -327,46 +373,24 @@
  "l" #'tab-previous
  "y" #'tab-next)
 
-;; buffer movements
-(define-key xah-fly-command-map (kbd "@") #'previous-buffer)
-(define-key xah-fly-command-map (kbd "$") #'next-buffer)
+;; Buffers manipulations
+(general-define-key
+ :keymaps 'meow-normal-state-keymap
+ :prefix "\\"
+ "b k" #'kill-buffer-and-window)
 
-
-(defun smv/surround-region (character)
-  (interactive "sEnter two characters:")
-  (when (>= (length character) 2)
-    (xah-insert-bracket-pair (aref character 0) (aref character 1))))
-
-(load-file (format "%s%s" user-emacs-directory "mark_between_char.el"))
 
 ;; Some more complex commands
 (general-define-key
- :keymaps 'xah-fly-command-map
+ :keymaps 'meow-normal-state-keymap
  :prefix "%"
  "s" #'scratch-buffer)
 
-(general-define-key
- :keymaps 'xah-fly-command-map
- :prefix "SPC s"
- "s" #'smv/surround-region
- "c" #'xah-change-bracket-pairs)
-
-(defun smv/remove-overlays ()
-  (interactive)
-  (remove-overlays))
-
-(define-key xah-fly-command-map (kbd "9") #'smv/mark-between-chars)
-(define-key xah-fly-command-map (kbd "SPC SPC") 'smv/remove-overlays)
-
-(use-package surround
-  :after xah-fly-keys
-  :bind-keymap ("M-'" . surround-keymap))
-
 (use-package avy
-  :after xah-fly-keys
+  :after meow
   :straight nil
   :bind
-  (:map xah-fly-command-map
+  (:map meow-normal-state-keymap
         ("* *" . avy-goto-char-in-line)
         ("* c" . avy-goto-char)
         ("* l d" . avy-kill-whole-line)
@@ -381,20 +405,20 @@
         ("* r m" . avy-move-region)))
 
 (use-package windmove
-  :after xah-fly-keys
+  :after meow
   :straight nil
   :bind
-  (:map xah-fly-command-map
-        ("/ w n" . windmove-left)
-        ("/ w i" . windmove-right)
-        ("/ w e" . windmove-down)
-        ("/ w u" . windmove-up)
-        ("/ w +" . balance-windows)
-        ("/ w m" . maximize-window)
-        ("/ w s n" . windmove-swap-states-left)
-        ("/ w s i" . windmove-swap-states-right)
-        ("/ w s e" . windmove-swap-states-down)
-        ("/ w s u" . windmove-swap-states-up)))
+  (:map meow-normal-state-keymap
+        ("$ n" . windmove-left)
+        ("$ i" . windmove-right)
+        ("$ e" . windmove-down)
+        ("$ u" . windmove-up)
+        ("$ +" . balance-windows)
+        ("$ m" . maximize-window)
+        ("$ s n" . windmove-swap-states-left)
+        ("$ s i" . windmove-swap-states-right)
+        ("$ s e" . windmove-swap-states-down)
+        ("$ s u" . windmove-swap-states-up)))
 
 (use-package vterm)
 
@@ -448,7 +472,7 @@
   (marginalia-mode))
 
 (use-package consult
-  :after xah-fly-keys
+  :after meow
   :init
   (advice-add #'register-preview :override #'consult-register-window)
   (setq register-preview-delay 0.5)
@@ -459,13 +483,13 @@
   :bind
   ("C-s" . consult-line)
   ("M-y" . consult-yank-from-kill-ring)
-  (:map xah-fly-command-map
-        ("/ c f" . consult-fd)
-        ("/ c s" . consult-ripgrep)
-        ("/ c i" . consult-imenu)
-        ("/ c k" . consult-kmacro)
-        ("/ c m" . consult-global-mark)
-        ("SPC t" . consult-buffer))
+  (:map meow-normal-state-keymap
+        ("\\ c f" . consult-fd)
+        ("\\ c s" . consult-ripgrep)
+        ("\\ c i" . consult-imenu)
+        ("\\ c k" . consult-kmacro)
+        ("\\ c m" . consult-global-mark)
+        ("\\ t" . consult-buffer))
   )
 
 (use-package helpful
@@ -756,16 +780,16 @@
 
 (use-package auto-yasnippet
   :bind
-  (:map xah-fly-command-map
-        ("/ a w" . aya-create)
-        ("/ a x" . aya-expand)
-        ("/ a h" . aya-expand-from-history)
-        ("/ a d" . aya-delete-from-history)
-        ("/ a c" . aya-clear-history)
-        ("/ a n" . aya-next-in-history)
-        ("/ a p" . aya-previous-in-history)
-        ("/ a s" . aya-persist-snippet)
-        ("/ a o" . aya-open-line)
+  (:map meow-normal-state-keymap
+        ("\\ a w" . aya-create)
+        ("\\ a x" . aya-expand)
+        ("\\ a h" . aya-expand-from-history)
+        ("\\ a d" . aya-delete-from-history)
+        ("\\ a c" . aya-clear-history)
+        ("\\ a n" . aya-next-in-history)
+        ("\\ a p" . aya-previous-in-history)
+        ("\\ a s" . aya-persist-snippet)
+        ("\\ a o" . aya-open-line)
         ))
 
 (use-package yaml-mode
