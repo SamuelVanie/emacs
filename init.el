@@ -914,13 +914,9 @@
 (use-package aidermacs
   :straight (:host github :repo "MatthewZMD/aidermacs" :files ("*.el"))
   :config
-  (setq aidermacs-default-model "gemini-2.0-flash-exp")
+  (setq aidermacs-default-model "gemini/gemini-2.0-flash")
   (global-set-key (kbd "C-c x") 'aidermacs-transient-menu)
-  (setq aidermacs-use-architect-mode t)
-  (setq aidermacs-editor-model "gemini-2.0-flash-exp")
   (aidermacs-setup-minor-mode)
-  (setq aidermacs-auto-commits t)
-  (setq aidermacs-use-architect-mode t)
   (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))))
 
 (use-package magit
