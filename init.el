@@ -391,18 +391,18 @@
   :straight nil
   :bind
   (:map meow-normal-state-keymap
-        ("* *" . avy-goto-char-in-line)
-        ("* c" . avy-goto-char)
-        ("* l d" . avy-kill-whole-line)
-        ("* l l" . avy-goto-end-of-line)
-        ("* u" . avy-goto-line-above)
-        ("* e" . avy-goto-line-below)
-        ("* l y" . avy-copy-line)
-        ("* r d" . avy-kill-region)
-        ("* r y" . avy-copy-region)
-        ("* r t" . avy-transpose-lines-in-region)
-        ("* r r" . avy-resume)
-        ("* r m" . avy-move-region)))
+        ("@ @" . avy-goto-char-in-line)
+        ("@ c" . avy-goto-char)
+        ("@ l d" . avy-kill-whole-line)
+        ("@ l l" . avy-goto-end-of-line)
+        ("@ u" . avy-goto-line-above)
+        ("@ e" . avy-goto-line-below)
+        ("@ l y" . avy-copy-line)
+        ("@ r d" . avy-kill-region)
+        ("@ r y" . avy-copy-region)
+        ("@ r t" . avy-transpose-lines-in-region)
+        ("@ r r" . avy-resume)
+        ("@ r m" . avy-move-region)))
 
 (use-package windmove
   :after meow
