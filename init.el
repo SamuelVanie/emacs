@@ -273,8 +273,6 @@
 (defun meow-setup ()
   (setq meow-cheatsheet-layout meow-cheatsheet-layout-colemak)
   (meow-motion-define-key
-   '("u" . meow-prev)        ;; Up (prev line)
-   '("e" . meow-next)       ;; Down (next line)
    '("<escape>" . ignore))
 
   (meow-leader-define-key
