@@ -273,7 +273,12 @@
 (defun meow-setup ()
   (setq meow-cheatsheet-layout meow-cheatsheet-layout-colemak)
   (meow-motion-define-key
-   '("<escape>" . ignore))
+   '("<escape>" . ignore)
+   '("e" . meow-next)
+   '("u" . meow-prev)
+   '("n" . meow-left)
+   '("s" . meow-insert)
+   '("i" . meow-right))
 
   (meow-leader-define-key
    '("?" . meow-cheatsheet)
@@ -368,8 +373,8 @@
  "f" #'find-file-other-tab
  "r" #'tab-rename
  "u" #'tab-close
- "l" #'tab-previous
- "y" #'tab-next)
+ "i" #'tab-previous
+ "n" #'tab-next)
 
 ;; Buffers manipulations
 (general-define-key
