@@ -278,7 +278,10 @@
    '("u" . meow-prev)
    '("n" . meow-left)
    '("s" . meow-insert)
-   '("i" . meow-right))
+   '("i" . meow-right)
+   '("<" . back-to-indentation)
+   '(">" . end-of-visual-line)
+   )
 
   (meow-leader-define-key
    '("?" . meow-cheatsheet)
@@ -353,6 +356,8 @@
    '("y" . meow-save)
    '("z" . meow-pop-selection)
    '("'" . repeat)
+   '("<" . back-to-indentation)
+   '(">" . end-of-visual-line)
    '("<escape>" . ignore)))
 
 (use-package meow
@@ -360,13 +365,9 @@
   (meow-setup)
   (meow-global-mode 1))
 
-;; Movements inside the buffer
-(define-key meow-normal-state-keymap (kbd "<") #'back-to-indentation)
-(define-key meow-normal-state-keymap (kbd ">") #'end-of-visual-line)
-
 ;; tabs manipulations
 (general-define-key
- :keymaps 'meow-normal-state-keymap
+ :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
  :prefix "#"
  "n" #'tab-new
  "d" #'dired-other-tab
@@ -378,7 +379,7 @@
 
 ;; Buffers manipulations
 (general-define-key
- :keymaps 'meow-normal-state-keymap
+ :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
  :prefix "\\"
  "b k" #'kill-buffer-and-window)
 
@@ -388,6 +389,12 @@
  :keymaps 'meow-normal-state-keymap
  :prefix "%"
  "s" #'scratch-buffer)
+
+(general-define-key
+ :keymaps 'global-map
+ :prefix "C-c f"
+ "f" #'ffap
+ "s" #'ffap-menu)
 
 (use-package avy
   :after meow
@@ -491,7 +498,7 @@
         ("\\ c s" . consult-ripgrep)
         ("\\ c i" . consult-imenu)
         ("\\ c k" . consult-kmacro)
-        ("\\ c m" . consult-global-mark)
+        ("\\ c m" . consult-mark)
         ("\\ t" . consult-buffer))
   )
 
