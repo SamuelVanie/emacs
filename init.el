@@ -399,36 +399,41 @@
 (use-package avy
   :after meow
   :straight nil
-  :bind
-  (:map meow-normal-state-keymap
-        ("@ @" . avy-goto-char-in-line)
-        ("@ c" . avy-goto-char)
-        ("@ l d" . avy-kill-whole-line)
-        ("@ l l" . avy-goto-end-of-line)
-        ("@ u" . avy-goto-line-above)
-        ("@ e" . avy-goto-line-below)
-        ("@ l y" . avy-copy-line)
-        ("@ r d" . avy-kill-region)
-        ("@ r y" . avy-copy-region)
-        ("@ r t" . avy-transpose-lines-in-region)
-        ("@ r r" . avy-resume)
-        ("@ r m" . avy-move-region)))
+  :config
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-insert-state-keymap)
+   :prefix "@"
+   "@"  #'avy-goto-char-in-line
+   "c"  #'avy-goto-char
+   "l d"  #'avy-kill-whole-line
+   "l l"  #'avy-goto-end-of-line
+   "u"  #'avy-goto-line-above
+   "e"  #'avy-goto-line-below
+   "l y"  #'avy-copy-line
+   "r d"  #'avy-kill-region
+   "r y"  #'avy-copy-region
+   "r t"  #'avy-transpose-lines-in-region
+   "r r"  #'avy-resume
+   "r m"  #'avy-move-region))
 
 (use-package windmove
   :after meow
   :straight nil
-  :bind
-  (:map meow-normal-state-keymap
-        ("$ n" . windmove-left)
-        ("$ i" . windmove-right)
-        ("$ e" . windmove-down)
-        ("$ u" . windmove-up)
-        ("$ +" . balance-windows)
-        ("$ m" . maximize-window)
-        ("$ s n" . windmove-swap-states-left)
-        ("$ s i" . windmove-swap-states-right)
-        ("$ s e" . windmove-swap-states-down)
-        ("$ s u" . windmove-swap-states-up)))
+  :config
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-insert-state-keymap)
+   :prefix "$"
+   "$ n"  #'windmove-left
+   "$ i"  #'windmove-right
+   "$ e"  #'windmove-down
+   "$ u"  #'windmove-up
+   "$ +"  #'balance-windows
+   "$ m"  #'maximize-window
+   "$ s n"  #'windmove-swap-states-left
+   "$ s i"  #'windmove-swap-states-right
+   "$ s e"  #'windmove-swap-states-down
+   "$ s u"  #'windmove-swap-states-up)
+  )
 
 (use-package vterm)
 
