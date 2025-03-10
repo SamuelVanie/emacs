@@ -369,7 +369,7 @@
 (general-define-key
  :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
  :prefix "#"
- "n" #'tab-new
+ "l" #'tab-new
  "d" #'dired-other-tab
  "f" #'find-file-other-tab
  "r" #'tab-rename
