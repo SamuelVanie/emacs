@@ -403,7 +403,7 @@
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    :prefix "@"
-   "@"  #'avy-goto-char-in-line
+   "#"  #'avy-goto-char-in-line
    "c"  #'avy-goto-char
    "l d"  #'avy-kill-whole-line
    "l l"  #'avy-goto-end-of-line
