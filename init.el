@@ -401,7 +401,7 @@
   :straight nil
   :config
   (general-define-key
-   :keymaps '(meow-normal-state-keymap meow-insert-state-keymap)
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    :prefix "@"
    "@"  #'avy-goto-char-in-line
    "c"  #'avy-goto-char
@@ -421,7 +421,7 @@
   :straight nil
   :config
   (general-define-key
-   :keymaps '(meow-normal-state-keymap meow-insert-state-keymap)
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    :prefix "$"
    "n"  #'windmove-left
    "i"  #'windmove-right
