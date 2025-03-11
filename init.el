@@ -423,16 +423,16 @@
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-insert-state-keymap)
    :prefix "$"
-   "$ n"  #'windmove-left
-   "$ i"  #'windmove-right
-   "$ e"  #'windmove-down
-   "$ u"  #'windmove-up
-   "$ +"  #'balance-windows
-   "$ m"  #'maximize-window
-   "$ s n"  #'windmove-swap-states-left
-   "$ s i"  #'windmove-swap-states-right
-   "$ s e"  #'windmove-swap-states-down
-   "$ s u"  #'windmove-swap-states-up)
+   "n"  #'windmove-left
+   "i"  #'windmove-right
+   "e"  #'windmove-down
+   "u"  #'windmove-up
+   "+"  #'balance-windows
+   "m"  #'maximize-window
+   "s n"  #'windmove-swap-states-left
+   "s i"  #'windmove-swap-states-right
+   "s e"  #'windmove-swap-states-down
+   "s u"  #'windmove-swap-states-up)
   )
 
 (use-package vterm)
