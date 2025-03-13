@@ -525,7 +525,6 @@ Some commands for completing meow, adding the ones I'm used to.
 #+begin_src emacs-lisp
   (use-package avy
     :after meow
-    :straight nil
     :config
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)

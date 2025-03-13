@@ -398,7 +398,6 @@
 
 (use-package avy
   :after meow
-  :straight nil
   :config
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
