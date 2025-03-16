@@ -494,17 +494,19 @@
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
   :hook (completion-list-mode . consult-preview-at-point-mode)
+  :config
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   :prefix "\\ c"
+   "f"  #'consult-fd
+   "s"  #'consult-ripgrep
+   "i"  #'consult-imenu
+   "k"  #'consult-kmacro
+   "m"  #'consult-mark
+   "t"  #'consult-buffer)
   :bind
   ("C-s" . consult-line)
-  ("M-y" . consult-yank-from-kill-ring)
-  (:map meow-normal-state-keymap
-        ("\\ c f" . consult-fd)
-        ("\\ c s" . consult-ripgrep)
-        ("\\ c i" . consult-imenu)
-        ("\\ c k" . consult-kmacro)
-        ("\\ c m" . consult-mark)
-        ("\\ t" . consult-buffer))
-  )
+  ("M-y" . consult-yank-from-kill-ring))
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
@@ -793,18 +795,21 @@
 (use-package yasnippet-snippets)
 
 (use-package auto-yasnippet
-  :bind
-  (:map meow-normal-state-keymap
-        ("\\ a w" . aya-create)
-        ("\\ a x" . aya-expand)
-        ("\\ a h" . aya-expand-from-history)
-        ("\\ a d" . aya-delete-from-history)
-        ("\\ a c" . aya-clear-history)
-        ("\\ a n" . aya-next-in-history)
-        ("\\ a p" . aya-previous-in-history)
-        ("\\ a s" . aya-persist-snippet)
-        ("\\ a o" . aya-open-line)
-        ))
+  :after meow
+  :config
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   :prefix "\\ a"
+   "w" #'aya-create
+   "x" #'aya-expand
+   "h" #'aya-expand-from-history
+   "d" #'aya-delete-from-history
+   "c" #'aya-clear-history
+   "n" #'aya-next-in-history
+   "p" #'aya-previous-in-history
+   "s" #'aya-persist-snippet
+   "o" #'aya-open-line
+   ))
 
 (use-package yaml-mode
   :mode (("\\.yml\\'" . yaml-mode)
