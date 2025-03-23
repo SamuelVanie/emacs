@@ -377,8 +377,8 @@
  "f" #'find-file-other-tab
  "r" #'tab-rename
  "u" #'tab-close
- "i" #'tab-previous
- "n" #'tab-next)
+ "i" #'tab-next
+ "n" #'tab-previous)
 
 ;; Buffers manipulations
 (general-define-key
