@@ -937,7 +937,15 @@
                    :stream t))
   :bind ("C-c g" . gptel-send))
 
-(setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string))))
+(use-package aidermacs
+  :straight (:host github :repo "MatthewZMD/aidermacs" :files ("*.el"))
+  :config
+  (setq aidermacs-default-model "gemini/gemini-2.0-flash-thinking-exp")
+  (global-set-key (kbd "C-c x") 'aidermacs-transient-menu)
+  (aidermacs-setup-minor-mode)
+  (setq aidermacs-show-diff-after-change t)
+  (setq aidermacs-backend 'vterm)
+  (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))))
 
 (use-package magit
     :commands magit-status

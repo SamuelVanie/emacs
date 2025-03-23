@@ -1379,10 +1379,18 @@ Mode to interact with different llms in emacs.
 
 ** Aider
 
-Setting up my env with my key for aider
+Setting up aider by using the aidermacs package, a convenient way of accessing aider inside emacs.
 
 #+begin_src emacs-lisp
-  (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string))))
+  (use-package aidermacs
+    :straight (:host github :repo "MatthewZMD/aidermacs" :files ("*.el"))
+    :config
+    (setq aidermacs-default-model "gemini/gemini-2.0-flash-thinking-exp")
+    (global-set-key (kbd "C-c x") 'aidermacs-transient-menu)
+    (aidermacs-setup-minor-mode)
+    (setq aidermacs-show-diff-after-change t)
+    (setq aidermacs-backend 'vterm)
+    (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))))
 #+end_src
 
 
