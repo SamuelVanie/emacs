@@ -191,9 +191,9 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
 This package permits to load the variables that are inside the .envrc file into the emacs' process-environment.
 
 #+begin_src emacs-lisp
-  (use-package envrc
+  (use-package direnv
     :config
-    (envrc-global-mode))
+    (direnv-mode))
 
   ;; Writing a function that will permit to load the packages from an emacsclient that weren't launched inside a nix shell
   ;; The function assumes that the folder that contains the lisp code

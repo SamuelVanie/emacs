@@ -144,9 +144,9 @@
 ;; Watch out you should have fish installed on your computer
 (setq eshell-aliases-file (format "%s%s" user-emacs-directory "aliases"))
 
-(use-package envrc
+(use-package direnv
   :config
-  (envrc-global-mode))
+  (direnv-mode))
 
 ;; Writing a function that will permit to load the packages from an emacsclient that weren't launched inside a nix shell
 ;; The function assumes that the folder that contains the lisp code
