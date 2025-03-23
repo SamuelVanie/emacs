@@ -498,8 +498,11 @@
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
   :hook (completion-list-mode . consult-preview-at-point-mode)
-  :config
-  (general-define-key
+  :bind
+  ("C-s" . consult-line)
+  ("M-y" . consult-yank-from-kill-ring))
+
+(general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    :prefix "\\ c"
    "f"  #'consult-fd
@@ -508,9 +511,6 @@
    "k"  #'consult-kmacro
    "m"  #'consult-mark
    "t"  #'consult-buffer)
-  :bind
-  ("C-s" . consult-line)
-  ("M-y" . consult-yank-from-kill-ring))
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
