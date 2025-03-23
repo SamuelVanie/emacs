@@ -41,6 +41,9 @@
   (add-to-list 'default-frame-alist '(alpha-background . 85)))
  )
 
+;; Prevent dired-find-alternative warning message
+(put 'dired-find-alternate-file 'disabled nil)
+
 ;; to scroll down inside the popup
 (define-key global-map (kbd "C-M-'")
             (lambda ()
