@@ -140,6 +140,7 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
     (setq dashboard-set-file-icons t))
 
   (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
+
 #+END_SRC
 
 * Tree-sitter
@@ -617,6 +618,18 @@ You will have to install the icons on your machine before to get the full functi
   (use-package all-the-icons-dired
     :after all-the-icons)
 #+end_src
+
+
+** Modeline
+
+Styling my emacs modeline.
+
+#+begin_src emacs-lisp
+(use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1))
+#+end_src
+
 
 ** Which Key
 
