@@ -117,6 +117,8 @@
   :config
   (dashboard-setup-startup-hook)
   (setq dashboard-display-icons-p t)
+  (setq dashboard-startup-banner 'logo)
+  (setq dashboard-banner-logo-title "My safe place")
   (setq dashboard-icon-type 'nerd-icons)
   (setq dashboard-set-file-icons t))
 
@@ -971,6 +973,7 @@
   (aidermacs-setup-minor-mode)
   (setq aidermacs-show-diff-after-change t)
   (setq aidermacs-backend 'vterm)
+  (setenv "GROQ_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gq_key") (string-trim (buffer-string))))
   (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))))
 
 (use-package magit
