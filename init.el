@@ -273,6 +273,10 @@
   (repeat-too-dangerous '(kill-this-buffer))
   (repeat-exit-timeout 5))
 
+(defun smv/remove-overlays ()
+  (interactive)
+  (remove-overlays))
+
 (defun meow-setup ()
   (setq meow-cheatsheet-layout meow-cheatsheet-layout-colemak)
   (meow-motion-define-key
@@ -297,7 +301,8 @@
    '("7" . meow-digit-argument)
    '("8" . meow-digit-argument)
    '("9" . meow-digit-argument)
-   '("0" . meow-digit-argument))
+   '("0" . meow-digit-argument)
+   '("SPC" . smv/remove-overlays))
   
   (meow-normal-define-key
    '("0" . meow-expand-0)
