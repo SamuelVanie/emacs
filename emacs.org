@@ -529,6 +529,7 @@ Some commands for completing meow, adding the ones I'm used to.
 #+end_src
 
 
+* Utilities
 
 ** Avy mode
 
@@ -556,7 +557,7 @@ Some commands for completing meow, adding the ones I'm used to.
 
 
 
-* Windows
+** Windows
 
 There's no unified bindings that permits to manage windows, so here's mine
 
@@ -582,7 +583,8 @@ There's no unified bindings that permits to manage windows, so here's mine
 
 #+end_src
 
-* vterm
+
+** vterm
 
 Vterm is a better terminal emulator that will permit good rendering of all terminal commands
 
@@ -601,6 +603,33 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
     (setq multi-vterm-dedicated-window-height-percent 45))
 
 #+end_src
+
+
+** Browsing
+
+Calling my edge browser directly from emacs, to save up time
+
+#+begin_src emacs-lisp
+  (setq browse-url-generic-program "microsoft-edge-stable")
+  (defun smv/browse-search ()
+    "Unified search across multiple websites."
+    (interactive)
+    (let* ((sites '(("Bing" . "https://www.bing.com/search?q=")
+                    ("Google" . "https://www.google.com/search?q=")
+                    ("YouTube" . "https://www.youtube.com/results?search_query=")
+                    ("Wikipedia" . "https://en.wikipedia.org/wiki/Special:Search?search=")
+                    ("NixSearch" . "https://search.nixos.org/packages?from=0&size=50&sort=relevance&type=packages&query=")
+                    ("Reddit" . "https://www.reddit.com/search/?q=")
+                    ("Stack Overflow" . "https://stackoverflow.com/search?q=")
+                    ("GitHub" . "https://github.com/search?q=")))
+           (site (completing-read "Choose a site: " (mapcar #'car sites)))
+           (query (read-string (format "%s search: " site)))
+           (url (cdr (assoc site sites))))
+      (browse-url-generic (concat url (url-hexify-string query)))))
+
+  (global-set-key (kbd "C-c b") 'smv/browse-search)
+#+end_src
+
 
 * UI Configuration
 
@@ -831,7 +860,7 @@ I create a function called `smv/org-font-setup` to configure various text faces 
 
     ;; Utiliser minted dans les documents LaTeX
     (add-to-list 'org-latex-packages-alist '("" "minted" t)))
-          #+end_src
+#+end_src
 
 ** Basic Config
 

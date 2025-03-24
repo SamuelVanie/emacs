@@ -457,6 +457,25 @@
   ;; terminal height percent of 30
   (setq multi-vterm-dedicated-window-height-percent 45))
 
+(setq browse-url-generic-program "microsoft-edge-stable")
+(defun smv/browse-search ()
+  "Unified search across multiple websites."
+  (interactive)
+  (let* ((sites '(("Bing" . "https://www.bing.com/search?q=")
+                  ("Google" . "https://www.google.com/search?q=")
+                  ("YouTube" . "https://www.youtube.com/results?search_query=")
+                  ("Wikipedia" . "https://en.wikipedia.org/wiki/Special:Search?search=")
+                  ("NixSearch" . "https://search.nixos.org/packages?from=0&size=50&sort=relevance&type=packages&query=")
+                  ("Reddit" . "https://www.reddit.com/search/?q=")
+                  ("Stack Overflow" . "https://stackoverflow.com/search?q=")
+                  ("GitHub" . "https://github.com/search?q=")))
+         (site (completing-read "Choose a site: " (mapcar #'car sites)))
+         (query (read-string (format "%s search: " site)))
+         (url (cdr (assoc site sites))))
+    (browse-url-generic (concat url (url-hexify-string query)))))
+
+(global-set-key (kbd "C-c b") 'smv/browse-search)
+
 (use-package doom-themes)
 (use-package ef-themes
   :config (load-theme 'doom-acario-dark t))
