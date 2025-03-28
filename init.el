@@ -1,4 +1,5 @@
 (setq gc-const-threshold (* 80 1000 1000))
+(delete-selection-mode 1)
 
 (cond
  ((eq system-type 'darwin)  ;; macOS
