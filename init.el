@@ -501,26 +501,6 @@
   :config ;; only runs after the mode is loaded
   (setq which-key-idle-delay 0.3))
 
-(use-package vertico
-  :init
-  (vertico-mode)
-  :config
-  ;; disable case sensitiveness for files and dir
-  (setq read-file-name-completion-ignore-case t
-        read-buffer-completion-ignore-case t
-        completion-ignore-case t)
-  (setq completion-styles '(basic substring partial-completion flex))
-  (keymap-set vertico-map "?" #'minibuffer-completion-help)
-  (keymap-set vertico-map "M-RET" #'minibuffer-force-complete-and-exit)
-  (keymap-set vertico-map "M-TAB" #'minibuffer-complete))
-
-(use-package marginalia
-  :custom
-  (marginalia-max-relative-age 0)
-  (marginalia-align 'right)
-  :init
-  (marginalia-mode))
-
 (use-package helm
   :init
   (helm-mode)

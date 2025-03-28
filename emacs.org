@@ -687,42 +687,7 @@ Styling my emacs modeline.
 
 * Completion system
 
-My completion system in emacs includes now : ~Vertico~, ~Orderless~ , ~Marginalia~, ~all-the-icons-completion~ and ~Consult~.
-
-
-** Vertico
-
-It's a completion interface that is based on the default emacs completion framework.
-
-#+begin_src emacs-lisp
-  (use-package vertico
-    :init
-    (vertico-mode)
-    :config
-    ;; disable case sensitiveness for files and dir
-    (setq read-file-name-completion-ignore-case t
-          read-buffer-completion-ignore-case t
-          completion-ignore-case t)
-    (setq completion-styles '(basic substring partial-completion flex))
-    (keymap-set vertico-map "?" #'minibuffer-completion-help)
-    (keymap-set vertico-map "M-RET" #'minibuffer-force-complete-and-exit)
-    (keymap-set vertico-map "M-TAB" #'minibuffer-complete))
-#+end_src
-
-** Marginalia
-
-Permit to add useful information about the current completion candidate.
-
-
-#+begin_src emacs-lisp
-  (use-package marginalia
-    :custom
-    (marginalia-max-relative-age 0)
-    (marginalia-align 'right)
-    :init
-    (marginalia-mode))
-#+end_src
-
+My completion system, consist on only helm
 
 ** Helm
 
