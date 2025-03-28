@@ -709,8 +709,32 @@
 (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
 
 (use-package undo-tree
+  :ensure t
   :config
-  (global-undo-tree-mode))
+  ;; Set a dedicated directory for undo-tree files
+  (setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
+  ;; Create the directory if it doesn't exist
+  (unless (file-exists-p "~/.emacs.d/undo")
+    (make-directory "~/.emacs.d/undo" t))
+  ;; Enable global undo-tree mode
+  (global-undo-tree-mode 1))
+
+;; Store all backup files in a centralized directory
+(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+
+;; Create the directory if it doesn't exist
+(unless (file-exists-p "~/.emacs.d/backups")
+  (make-directory "~/.emacs.d/backups" t))
+
+;; Enable auto-save
+(setq auto-save-default t)
+
+;; Store all auto-save files in a centralized directory
+(setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
+
+;; Create the directory if it doesn't exist
+(unless (file-exists-p "~/.emacs.d/auto-save-list")
+  (make-directory "~/.emacs.d/auto-save-list" t))
 
 (global-set-key (kbd "C-M-;") 'comment-region)
 
