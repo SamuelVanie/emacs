@@ -511,6 +511,31 @@
   (setq helm-mode-fuzzy-match t)
   (setq helm-completion-in-region-fuzzy-match t))
 
+(defun smv/helm-zoxide-candidates ()
+  "Generate a list of zoxide query candidates."
+  (when-let ((zoxide (executable-find "zoxide")))
+    (with-temp-buffer
+      (call-process zoxide nil t nil "query" "-l")
+      (split-string (buffer-string) "\n" t))))
+
+(defun smv/helm-zoxide-source ()
+  "Create a Helm source for zoxide directories."
+  (helm-build-sync-source "Zoxide Directories"
+    :candidates #'smv/helm-zoxide-candidates
+    :fuzzy-match t
+    :action (helm-make-actions
+             "Change Directory" 
+             (lambda (candidate)
+               (cd candidate)
+               (message "Changed directory to %s" candidate)))))
+
+(defun smv/helm-zoxide-cd ()
+  "Use Helm to interactively select and change to a zoxide directory."
+  (interactive)
+  (if (executable-find "zoxide")
+      (helm :sources (smv/helm-zoxide-source)
+            :buffer "*helm zoxide*")))
+
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
   :bind

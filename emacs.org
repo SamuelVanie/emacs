@@ -222,6 +222,8 @@ This package permits to load the variables that are inside the .envrc file into 
 
 
 
+
+
 * Buffers
 
 ** Managing buffers easily
@@ -706,6 +708,38 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
 #+end_src
 
 
+** Navigating between folders
+
+I have zoxide installed on my computer, I want something that will help me quickly switch between the folders I use the most in emacs.
+
+#+begin_src emacs-lisp
+  (defun smv/helm-zoxide-candidates ()
+    "Generate a list of zoxide query candidates."
+    (when-let ((zoxide (executable-find "zoxide")))
+      (with-temp-buffer
+        (call-process zoxide nil t nil "query" "-l")
+        (split-string (buffer-string) "\n" t))))
+
+  (defun smv/helm-zoxide-source ()
+    "Create a Helm source for zoxide directories."
+    (helm-build-sync-source "Zoxide Directories"
+      :candidates #'smv/helm-zoxide-candidates
+      :fuzzy-match t
+      :action (helm-make-actions
+               "Change Directory" 
+               (lambda (candidate)
+                 (cd candidate)
+                 (message "Changed directory to %s" candidate)))))
+
+  (defun smv/helm-zoxide-cd ()
+    "Use Helm to interactively select and change to a zoxide directory."
+    (interactive)
+    (if (executable-find "zoxide")
+        (helm :sources (smv/helm-zoxide-source)
+              :buffer "*helm zoxide*")))
+#+end_src
+
+
 ** Helpful Help Commands
 
 [[https://github.com/Wilfred/helpful][Helpful]] adds a lot of very helpful (get it?) information to Emacs’ describe- command buffers. For example, if you use describe-function, you will not only get the documentation about the function, you will also see the source code of the function and where it gets used in other places in the Emacs configuration. It is very useful for figuring out how things work in Emacs.
@@ -936,6 +970,7 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 
     (push '("conf-unix" . conf-unix) org-src-lang-modes))
 #+end_src
+
 
 ** Structure Templates
 
