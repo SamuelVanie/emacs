@@ -506,7 +506,10 @@
   (helm-mode)
   :bind
   ("M-x" . helm-M-x)
-  ("C-s" . helm-occur-from-isearch))
+  ("C-s" . helm-occur)
+  :config
+  (setq helm-mode-fuzzy-match t)
+  (setq helm-completion-in-region-fuzzy-match t))
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
