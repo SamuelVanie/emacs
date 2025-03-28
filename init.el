@@ -521,28 +521,10 @@
   :init
   (marginalia-mode))
 
-(use-package consult
+(use-package helm
   :after meow
   :init
-  (advice-add #'register-preview :override #'consult-register-window)
-  (setq register-preview-delay 0.5)
-  ;; Use Consult to select xref locations with preview
-  (setq xref-show-xrefs-function #'consult-xref
-        xref-show-definitions-function #'consult-xref)
-  :hook (completion-list-mode . consult-preview-at-point-mode)
-  :bind
-  ("C-s" . consult-line)
-  ("M-y" . consult-yank-from-kill-ring))
-
-(general-define-key
-   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-   :prefix "\\ c"
-   "f"  #'consult-fd
-   "s"  #'consult-ripgrep
-   "i"  #'consult-imenu
-   "k"  #'consult-kmacro
-   "m"  #'consult-mark
-   "t"  #'consult-buffer)
+  (helm-mode))
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
@@ -556,11 +538,6 @@
   (completion-styles '(orderless basic))
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles partial-completion)))))
-
-(use-package consult-lsp
-  :after (consult lsp-mode)
-  :config
-  (define-key lsp-mode-map [remap xref-find-apropos] #'consult-lsp-symbols))
 
 (defun smv/org-font-setup ()
   (font-lock-add-keywords 'org-mode ;; Change the list icon style from "-" to "."

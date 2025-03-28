@@ -723,34 +723,18 @@ Permit to add useful information about the current completion candidate.
     (marginalia-mode))
 #+end_src
 
-** Consult
+
+** Helm
 
 Permit to check the list of things like the pop mark. Pretty neat for me as I prefer visual navigation.
 
 #+begin_src emacs-lisp
-  (use-package consult
+  (use-package helm
     :after meow
     :init
-    (advice-add #'register-preview :override #'consult-register-window)
-    (setq register-preview-delay 0.5)
-    ;; Use Consult to select xref locations with preview
-    (setq xref-show-xrefs-function #'consult-xref
-          xref-show-definitions-function #'consult-xref)
-    :hook (completion-list-mode . consult-preview-at-point-mode)
-    :bind
-    ("C-s" . consult-line)
-    ("M-y" . consult-yank-from-kill-ring))
-  
-  (general-define-key
-     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-     :prefix "\\ c"
-     "f"  #'consult-fd
-     "s"  #'consult-ripgrep
-     "i"  #'consult-imenu
-     "k"  #'consult-kmacro
-     "m"  #'consult-mark
-     "t"  #'consult-buffer)
+    (helm-mode))
 #+end_src
+
 
 ** Helpful Help Commands
 
@@ -777,16 +761,7 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
     (completion-category-overrides '((file (styles partial-completion)))))
 #+end_src
 
-** Consult-lsp
 
-Try to mimic the workflow of lsp-ivy
-
-#+begin_src emacs-lisp
-  (use-package consult-lsp
-    :after (consult lsp-mode)
-    :config
-    (define-key lsp-mode-map [remap xref-find-apropos] #'consult-lsp-symbols))
-#+end_src
 
 * Org Mode
 
