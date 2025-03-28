@@ -522,7 +522,6 @@
   (marginalia-mode))
 
 (use-package helm
-  :after meow
   :init
   (helm-mode)
   :bind
@@ -534,13 +533,6 @@
   :bind
   ([remap describe-command] . helpful-command)
   ([remap describe-key] . helpful-key))
-
-(use-package orderless
-  :straight t
-  :custom
-  (completion-styles '(orderless basic))
-  (completion-category-defaults nil)
-  (completion-category-overrides '((file (styles partial-completion)))))
 
 (defun smv/org-font-setup ()
   (font-lock-add-keywords 'org-mode ;; Change the list icon style from "-" to "."

@@ -730,7 +730,6 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
 
 #+begin_src emacs-lisp
   (use-package helm
-    :after meow
     :init
     (helm-mode)
     :bind
@@ -752,18 +751,6 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
     ([remap describe-key] . helpful-key))
 
 #+end_src
-
-** Orderless
-
-#+begin_src emacs-lisp
-  (use-package orderless
-    :straight t
-    :custom
-    (completion-styles '(orderless basic))
-    (completion-category-defaults nil)
-    (completion-category-overrides '((file (styles partial-completion)))))
-#+end_src
-
 
 
 * Org Mode
