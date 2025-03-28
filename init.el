@@ -524,7 +524,10 @@
 (use-package helm
   :after meow
   :init
-  (helm-mode))
+  (helm-mode)
+  :bind
+  ("M-x" . helm-M-x)
+  ("C-s" . helm-occur-from-isearch))
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)

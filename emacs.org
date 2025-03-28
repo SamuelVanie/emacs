@@ -732,7 +732,10 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
   (use-package helm
     :after meow
     :init
-    (helm-mode))
+    (helm-mode)
+    :bind
+    ("M-x" . helm-M-x)
+    ("C-s" . helm-occur-from-isearch))
 #+end_src
 
 
