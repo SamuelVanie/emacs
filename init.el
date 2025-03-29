@@ -1,5 +1,7 @@
 (setq gc-const-threshold (* 80 1000 1000))
 (delete-selection-mode 1)
+(global-unset-key (kbd "C-z"))
+(global-unset-key (kbd "C-x C-z"))
 
 (cond
  ((eq system-type 'darwin)  ;; macOS
@@ -375,7 +377,7 @@
   :config
   (meow-setup)
   ;; remove the overlay
-  (setq meow-expand-hint-remove-delay 1)
+  (setq meow-expand-hint-remove-delay 0)
   (meow-global-mode 1))
 
 ;; tabs manipulations
@@ -753,7 +755,7 @@
 ;; Store all auto-save files in a centralized directory
 (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
 
-;; Create the directory if it doesn't exist
+;; Create the directory if it doesn't exis
 (unless (file-exists-p "~/.emacs.d/auto-save-list")
   (make-directory "~/.emacs.d/auto-save-list" t))
 
@@ -976,8 +978,3 @@
   (setq aidermacs-backend 'vterm)
   (setenv "GROQ_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gq_key") (string-trim (buffer-string))))
   (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))))
-
-(use-package magit
-    :commands magit-status
-    :custom
-    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
