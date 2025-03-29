@@ -491,10 +491,6 @@
 (use-package all-the-icons-dired
   :after all-the-icons)
 
-(use-package doom-modeline
-  :ensure t
-  :init (doom-modeline-mode 1))
-
 (use-package which-key ;; print next keybindings
   :init (which-key-mode) ;; happens before the package is loaded
   :diminish which-key-mode

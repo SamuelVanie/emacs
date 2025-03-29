@@ -663,16 +663,6 @@ You will have to install the icons on your machine before to get the full functi
 #+end_src
 
 
-** Modeline
-
-Styling my emacs modeline.
-
-#+begin_src emacs-lisp
-(use-package doom-modeline
-  :ensure t
-  :init (doom-modeline-mode 1))
-#+end_src
-
 
 ** Which Key
 
