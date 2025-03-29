@@ -333,12 +333,12 @@
    '("B" . meow-back-symbol)
    '("c" . meow-change)
    '("e" . meow-next)        ;; Down (next line)
-   '("E" . meow-next-expand)
+   '("E" . meow-prev-expand)
    '("f" . meow-find)
    '("g" . meow-cancel-selection)
    '("G" . meow-grab)
    '("h" . undefined)         ;; Disable old left binding
-   '("H" . undefined)
+   '("H" . meow-left-expand)
    '("i" . meow-right) ;; Right (forward char)
    '("I" . meow-right-expand)
    '("j" . meow-join)
@@ -753,7 +753,7 @@
 ;; Store all auto-save files in a centralized directory
 (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
 
-;; Create the directory if it doesn't exist
+;; Create the directory if it doesn't exis
 (unless (file-exists-p "~/.emacs.d/auto-save-list")
   (make-directory "~/.emacs.d/auto-save-list" t))
 

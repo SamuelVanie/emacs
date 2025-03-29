@@ -449,12 +449,12 @@ Trying the modal editor meow
      '("B" . meow-back-symbol)
      '("c" . meow-change)
      '("e" . meow-next)        ;; Down (next line)
-     '("E" . meow-next-expand)
+     '("E" . meow-prev-expand)
      '("f" . meow-find)
      '("g" . meow-cancel-selection)
      '("G" . meow-grab)
      '("h" . undefined)         ;; Disable old left binding
-     '("H" . undefined)
+     '("H" . meow-left-expand)
      '("i" . meow-right) ;; Right (forward char)
      '("I" . meow-right-expand)
      '("j" . meow-join)
@@ -512,7 +512,7 @@ Some commands for completing meow, adding the ones I'm used to.
    "u" #'tab-close
    "i" #'tab-next
    "n" #'tab-previous)
-  
+
   ;; Buffers manipulations
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
@@ -1041,7 +1041,7 @@ Some day undo tree saved my self from losing my progress.
   ;; Store all auto-save files in a centralized directory
   (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
 
-  ;; Create the directory if it doesn't exist
+  ;; Create the directory if it doesn't exis
   (unless (file-exists-p "~/.emacs.d/auto-save-list")
     (make-directory "~/.emacs.d/auto-save-list" t))
   
