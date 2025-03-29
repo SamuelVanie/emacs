@@ -375,7 +375,7 @@
   :config
   (meow-setup)
   ;; remove the overlay
-  (setq meow-expand-hint-remove-delay 0)
+  (setq meow-expand-hint-remove-delay 1)
   (meow-global-mode 1))
 
 ;; tabs manipulations
@@ -753,7 +753,7 @@
 ;; Store all auto-save files in a centralized directory
 (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
 
-;; Create the directory if it doesn't exis
+;; Create the directory if it doesn't exist
 (unless (file-exists-p "~/.emacs.d/auto-save-list")
   (make-directory "~/.emacs.d/auto-save-list" t))
 
