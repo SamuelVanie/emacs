@@ -942,7 +942,9 @@
         ("M-p" . company-mode))
   :custom
   (company-minimum-prefix-length 1)
-  (company-idle-delay 0.0))
+  (company-idle-delay 0.0)
+  :config
+  (add-to-list 'company-backends 'company-files))
 
 (use-package company-box
   :hook
