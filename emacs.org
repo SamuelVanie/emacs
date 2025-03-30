@@ -696,6 +696,9 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
     ("C-s" . helm-occur)
     :config
     (setq helm-mode-fuzzy-match t)
+    (setq helm-full-frame nil)
+    (setq helm-split-window-inside-p t)
+    (setq helm-always-two-windows nil)
     (setq helm-completion-in-region-fuzzy-match t))
 #+end_src
 
@@ -1431,7 +1434,7 @@ Setting up aider by using the aidermacs package, a convenient way of accessing a
 [[https://magit.vc/][Magit]] is a git interface for emacs. It's very handy and fun to use.
 
 #+begin_src emacs-lisp
-(use-package magit
+  (use-package magit
     :commands magit-status
     :custom
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))

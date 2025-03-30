@@ -377,7 +377,7 @@
   :config
   (meow-setup)
   ;; remove the overlay
-  (setq meow-expand-hint-remove-delay 0)
+  (setq meow-expand-hint-remove-delay 1)
   (meow-global-mode 1))
 
 ;; tabs manipulations
@@ -507,6 +507,9 @@
   ("C-s" . helm-occur)
   :config
   (setq helm-mode-fuzzy-match t)
+  (setq helm-full-frame nil)
+  (setq helm-split-window-inside-p t)
+  (setq helm-always-two-windows nil)
   (setq helm-completion-in-region-fuzzy-match t))
 
 (defun smv/helm-zoxide-candidates ()
@@ -755,7 +758,7 @@
 ;; Store all auto-save files in a centralized directory
 (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
 
-;; Create the directory if it doesn't exis
+;; Create the directory if it doesn't exist
 (unless (file-exists-p "~/.emacs.d/auto-save-list")
   (make-directory "~/.emacs.d/auto-save-list" t))
 
@@ -978,3 +981,8 @@
   (setq aidermacs-backend 'vterm)
   (setenv "GROQ_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gq_key") (string-trim (buffer-string))))
   (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))))
+
+(use-package magit
+  :commands magit-status
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
