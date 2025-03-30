@@ -114,6 +114,22 @@
   (push 'rotate-windows dired-sidebar-toggle-hidden-commands)
   (setq dired-sidebar-use-term-integration t))
 
+
+
+(setq hippie-expand-try-functions-list
+      '(
+        try-expand-dabbrev
+        try-expand-dabbrev-all-buffers
+        ;; try-expand-dabbrev-from-kill
+        try-complete-lisp-symbol-partially
+        try-complete-lisp-symbol
+        try-complete-file-name-partially
+        try-complete-file-name
+        ;; try-expand-all-abbrevs
+        ;; try-expand-list
+        ;; try-expand-line
+        ))
+
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
 (use-package dashboard
@@ -334,6 +350,7 @@
    '("b" . meow-back-word)
    '("B" . meow-back-symbol)
    '("c" . meow-change)
+   '("d" . duplicate-line)
    '("e" . meow-next)        ;; Down (next line)
    '("E" . meow-prev-expand)
    '("f" . meow-find)
@@ -367,6 +384,7 @@
    '("x" . meow-delete)
    '("X" . meow-backward-delete)
    '("y" . meow-save)
+   '("Y" . copy-from-above-command)
    '("z" . meow-pop-selection)
    '("'" . repeat)
    '("<" . back-to-indentation)
@@ -876,7 +894,6 @@
   :hook
   (web-mode . smv/web-mode-hook)
   (web-mode . emmet-mode)
-  (web-mode . prettier-mode)
   )
 
 (add-hook 'web-mode-before-auto-complete-hooks
