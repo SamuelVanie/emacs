@@ -1005,3 +1005,7 @@
   :commands magit-status
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
+(use-package magit-todos
+  :after magit
+  :config (magit-todos-mode 1))

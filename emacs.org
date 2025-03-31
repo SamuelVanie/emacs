@@ -1458,3 +1458,14 @@ Setting up aider by using the aidermacs package, a convenient way of accessing a
     :custom
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 #+end_src
+
+
+** Magit-todos
+
+Something to manage the todos elements in the current project I am working on. Visit the github page : [[https://github.com/alphapapa/magit-todos][magit-todos]]
+
+#+begin_src emacs-lisp
+(use-package magit-todos
+  :after magit
+  :config (magit-todos-mode 1))
+#+end_src
