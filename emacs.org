@@ -207,40 +207,6 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
   (setq eshell-aliases-file (format "%s%s" user-emacs-directory "aliases"))
 #+end_src
 
-** Envrc
-
-This package permits to load the variables that are inside the .envrc file into the emacs' process-environment.
-
-#+begin_src emacs-lisp
-  (use-package direnv
-    :config
-    (direnv-mode))
-
-  ;; Writing a function that will permit to load the packages from an emacsclient that weren't launched inside a nix shell
-  ;; The function assumes that the folder that contains the lisp code
-  ;; that emacs should requires is in /nix-store-location/share/emacs/site-lisp/elpa/pkg-name-version/
-  (defun smv/add-nix-pkg-to-lpath (PKG_ENV)
-    "Load the PKG_ENV directory to the load path of current emacs session
-    it permits to then require the package"
-
-    (let ((pkg-nix-path (getenv PKG_ENV)))
-
-      (unless pkg-nix-path
-        (user-error "Environment variable '%s' is not set" PKG_ENV))
-
-      (let ((pkg-suffix "/share/emacs/site-lisp/elpa/"))
-
-        (string-match "-emacs-\\([^/]+\\)" pkg-nix-path)
-
-        (let* ((pkg-full-path (match-string 1 pkg-nix-path))
-               (path-to-add (concat pkg-nix-path pkg-suffix pkg-full-path)))
-          (unless (member path-to-add load-path)
-            (add-to-list 'load-path path-to-add))))))
-#+end_src
-
-
-
-
 
 * Buffers
 
