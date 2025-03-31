@@ -528,7 +528,15 @@
   (setq helm-full-frame nil)
   (setq helm-split-window-inside-p t)
   (setq helm-always-two-windows nil)
-  (setq helm-completion-in-region-fuzzy-match t))
+  (setq helm-completion-in-region-fuzzy-match t)
+  :bind
+  (
+   ("C-x C-f" . helm-find-files)
+   ("C-x b" . helm-buffers-list)
+   ("C-c h c" . smv/helm-zoxide-cd)
+   ("C-c h s" . helm-do-grep-ag)
+   ("C-c h t" . helm-magit-todos))
+  )
 
 (defun smv/helm-zoxide-candidates ()
   "Generate a list of zoxide query candidates."
