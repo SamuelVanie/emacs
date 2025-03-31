@@ -452,6 +452,7 @@
   :after meow
   :straight nil
   :config
+  (setq windmove-wrap-around t)
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    :prefix "$"
