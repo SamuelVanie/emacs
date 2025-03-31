@@ -477,7 +477,7 @@ Trying the modal editor meow
     :config
     (meow-setup)
     ;; remove the overlay
-    (setq meow-expand-hint-remove-delay 1)
+    (setq meow-expand-hint-remove-delay 0)
     (meow-global-mode 1))
 #+end_src
 

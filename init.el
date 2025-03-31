@@ -370,7 +370,7 @@
   :config
   (meow-setup)
   ;; remove the overlay
-  (setq meow-expand-hint-remove-delay 1)
+  (setq meow-expand-hint-remove-delay 0)
   (meow-global-mode 1))
 
 ;; tabs manipulations
