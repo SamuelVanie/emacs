@@ -475,6 +475,12 @@
 
 (global-set-key (kbd "C-c b") 'smv/browse-search)
 
+(use-package expand-region
+  :config
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   "*" #'er/expand-region))
+
 (use-package doom-themes)
 (use-package ef-themes
   :config (load-theme 'doom-acario-dark t))

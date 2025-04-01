@@ -623,6 +623,20 @@ Calling my edge browser directly from emacs, to save up time
 #+end_src
 
 
+** Expand
+
+Permit to expand region quickly, making it less painful to mark some region.
+
+
+#+begin_src emacs-lisp
+  (use-package expand-region
+    :config
+    (general-define-key
+     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+     "*" #'er/expand-region))
+#+end_src
+
+
 * UI Configuration
 
 ** Color Theme
