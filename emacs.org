@@ -41,16 +41,6 @@
   ;; auto refresh buffers when files changes
   (global-auto-revert-mode t)
 
-  ;; setting transparency for the window
-  (cond
-   ((eq system-type 'darwin)  ;; macOS
-    (set-frame-parameter (selected-frame) 'alpha '(92 . 50))
-    (add-to-list 'default-frame-alist '(alpha . (92 . 50))))
-   ((eq system-type 'gnu/linux)  ;; Linux
-    (set-frame-parameter nil 'alpha-background 85)
-    (add-to-list 'default-frame-alist '(alpha-background . 85)))
-   )
-
   ;; Prevent dired-find-alternative warning message
   (put 'dired-find-alternate-file 'disabled nil)
 #+end_src
