@@ -690,6 +690,7 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
      ("C-x C-f" . helm-find-files)
      ("C-x b" . helm-buffers-list)
      ("C-c h c" . smv/helm-zoxide-cd)
+     ("C-c h m" . helm-mark-ring)
      ("C-c h s" . helm-do-grep-ag)
      ("C-c h t" . helm-magit-todos))
     )
@@ -1083,13 +1084,15 @@ Switching to lsp-mode instead of the default emacs. Lsp-mode has more features t
   (use-package lsp-mode
     :init
     (setq lsp-keymap-prefix "C-l")
+    :bind
+    ("M-p l" . lsp-mode)
     :commands (lsp lsp-deferred)
     :config
     (lsp-enable-which-key-integration t))
 
   (use-package lsp-treemacs
     :after lsp)
-  
+
   (use-package lsp-ui
     :commands lsp-ui-mode
     :hook (lsp-mode . lsp-ui-mode))
@@ -1324,8 +1327,7 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
     :after lsp-mode
     :hook (lsp-mode . company-mode)
     :bind
-    (:map company-mode
-          ("M-p" . company-mode))
+    ("M-p c" . company-mode)
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0)

@@ -510,6 +510,7 @@
    ("C-x C-f" . helm-find-files)
    ("C-x b" . helm-buffers-list)
    ("C-c h c" . smv/helm-zoxide-cd)
+   ("C-c h m" . helm-mark-ring)
    ("C-c h s" . helm-do-grep-ag)
    ("C-c h t" . helm-magit-todos))
   )
@@ -781,6 +782,8 @@
 (use-package lsp-mode
   :init
   (setq lsp-keymap-prefix "C-l")
+  :bind
+  ("M-p l" . lsp-mode)
   :commands (lsp lsp-deferred)
   :config
   (lsp-enable-which-key-integration t))
@@ -922,8 +925,7 @@
   :after lsp-mode
   :hook (lsp-mode . company-mode)
   :bind
-  (:map company-mode
-        ("M-p" . company-mode))
+  ("M-p c" . company-mode)
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0)
