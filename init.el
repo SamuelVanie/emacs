@@ -1,5 +1,4 @@
 (setq gc-const-threshold (* 80 1000 1000))
-(delete-selection-mode 1)
 (global-unset-key (kbd "C-z"))
 (global-unset-key (kbd "C-x C-z"))
 
