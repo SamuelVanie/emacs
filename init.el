@@ -836,11 +836,9 @@
 (use-package yasnippet-snippets)
 
 (use-package auto-yasnippet
-  :after meow
   :config
   (general-define-key
-   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-   :prefix "\\ a"
+   :prefix "C-z *"
    "w" #'aya-create
    "x" #'aya-expand
    "h" #'aya-expand-from-history
