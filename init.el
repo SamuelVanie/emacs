@@ -702,8 +702,6 @@
 (use-package org-fragtog
   :hook (org-mode . org-fragtog-mode))
 
-(use-package ox-reveal)
-
 (use-package org-bullets ;; change the bullets in my org mode files
   :after org
   :hook (org-mode . org-bullets-mode)

@@ -939,11 +939,6 @@ This section contains the basic configuration for org-mode plus the configuratio
     :hook (org-mode . org-fragtog-mode))
 #+end_src
 
-** Presentation
-
-#+begin_src emacs-lisp
-  (use-package ox-reveal)
-#+end_src
 
 ** Nicer Heading
 
