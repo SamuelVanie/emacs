@@ -48,38 +48,52 @@
               (interactive)
               (scroll-other-window-down 2)))
 
-;; Initialize package sources
-(require 'package)
-(require 'cl)
+(defvar elpaca-installer-version 0.11)
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil :depth 1 :inherit ignore
+                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                              :build (:not elpaca--activate-package)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (when (<= emacs-major-version 28) (require 'subr-x))
+    (condition-case-unless-debug err
+        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                  ,@(when-let* ((depth (plist-get order :depth)))
+                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                  ,(plist-get order :repo) ,repo))))
+                  ((zerop (call-process "git" nil buffer t "checkout"
+                                        (or (plist-get order :ref) "--"))))
+                  (emacs (concat invocation-directory invocation-name))
+                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                  ((require 'elpaca))
+                  ((elpaca-generate-autoloads "elpaca" repo)))
+            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
 
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-                         ("elpa" . "https://elpa.gnu.org/packages/")))
+(setq package-enable-at-startup nil)
 
-(package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
-
-
-;; straight.el section
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-
-(straight-use-package 'use-package)
-(setq straight-use-package-by-default t)
+(elpaca elpaca-use-package
+  ;; Enable use-package :ensure support for Elpaca.
+  (elpaca-use-package-mode))
 
 (use-package dired-x
-  :straight nil
   :bind
   (:map dired-mode-map
         ("k" . dired-create-empty-file)
@@ -122,6 +136,9 @@
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
 (use-package dashboard
+  :ensure t
+  :demand t
+  :after nerd-icons
   :config
   (dashboard-setup-startup-hook)
   (setq dashboard-display-icons-p t)
@@ -133,6 +150,8 @@
 (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
 
 (use-package treesit-auto
+  :demand t
+  :ensure t
   :custom
   (treesit-auto-install 'prompt)
   :config
@@ -153,6 +172,7 @@
 
 ;; Watch out you should have fish installed on your computer
 (setq eshell-aliases-file (format "%s%s" user-emacs-directory "aliases"))
+(global-set-key (kbd "C-c e") 'eshell)
 
 ;; this will make emacs ibuffer the default used to list buffers
 (defalias 'list-buffers 'ibuffer)
@@ -228,6 +248,8 @@
 ;; (set-face-attribute 'variable-pitch nil :family "FantasqueSansM Nerd Font")
 
 (use-package ligature
+  :ensure t
+  :demand t
   :config
   ;; Enable all JetBrains Mono ligatures in programming modes
   (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
@@ -246,10 +268,15 @@
   (global-ligature-mode t))
 
 (use-package rainbow-delimiters
+  :ensure t
   :hook (prog-mode . rainbow-delimiters-mode))
 
-(use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
-(use-package general) ;; permit to define bindings under another one easily
+(use-package hydra
+  :ensure t
+  :demand t) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
+(use-package general
+  :ensure t
+  :demand t) ;; permit to define bindings under another one easily
 
 (use-package repeat
   :ensure nil
@@ -360,6 +387,8 @@
    '("<escape>" . ignore)))
 
 (use-package meow
+  :ensure t
+  :demand t
   :config
   (meow-setup)
   ;; remove the overlay
@@ -367,6 +396,8 @@
   (meow-global-mode 1))
 
 ;; tabs manipulations
+(with-eval-after-load 'general
+  
 (general-define-key
  :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
  :prefix "#"
@@ -395,9 +426,11 @@
  :keymaps 'global-map
  :prefix "C-c f"
  "f" #'ffap
- "s" #'ffap-menu)
+ "s" #'ffap-menu))
 
 (use-package avy
+  :ensure t
+  :demand t
   :after meow
   :config
   (general-define-key
@@ -432,7 +465,7 @@
 
 (use-package windmove
   :after meow
-  :straight nil
+  :ensure nil
   :config
   (setq windmove-wrap-around t)
   (general-define-key
@@ -450,10 +483,14 @@
    "s u"  #'windmove-swap-states-up)
   )
 
-(use-package vterm)
+(use-package vterm
+  :ensure t
+  :defer t)
 
 (use-package multi-vterm
+  :after vterm
   :ensure t
+  :defer t
   :bind (("C-c v n" . multi-vterm-project)
          ("C-c v f" . multi-vterm)
          ("C-c v r" . multi-vterm-rename-buffer)
@@ -463,7 +500,7 @@
   ;; terminal height percent of 30
   (setq multi-vterm-dedicated-window-height-percent 45))
 
-(setq browse-url-generic-program "microsoft-edge-stable")
+(setq browse-url-generic-program "MicrosoftEdge.exe")
 (defun smv/browse-search ()
   "Unified search across multiple websites."
   (interactive)
@@ -483,32 +520,46 @@
 (global-set-key (kbd "C-c b") 'smv/browse-search)
 
 (use-package expand-region
+  :ensure t
+  :demand t
   :config
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    "*" #'er/expand-region))
 
-(use-package doom-themes)
+(use-package doom-themes
+  :ensure t
+  :demand t)
 (use-package ef-themes
+  :ensure t
+  :demand t
   :config (load-theme 'doom-acario-dark t))
 
 (use-package all-the-icons
+  :ensure t
+  :demand t
   :if (display-graphic-p))
 
-(use-package nerd-icons)
+(use-package nerd-icons
+  :ensure t
+  :demand t)
 
 (use-package all-the-icons-dired
+  :ensure t
+  :demand t
   :after all-the-icons)
 
 (use-package which-key ;; print next keybindings
-  :init (which-key-mode) ;; happens before the package is loaded
+  :ensure t
+  :demand t
   :diminish which-key-mode
   :config ;; only runs after the mode is loaded
-  (setq which-key-idle-delay 0.3))
+  (setq which-key-idle-delay 0.3)
+  (which-key-mode))
 
 (use-package helm
-  :init
-  (helm-mode)
+  :ensure t
+  :demand t
   :bind
   ("M-x" . helm-M-x)
   ("C-s" . helm-occur)
@@ -518,6 +569,7 @@
   (setq helm-split-window-inside-p t)
   (setq helm-always-two-windows nil)
   (setq helm-completion-in-region-fuzzy-match t)
+  (helm-mode)
   :bind
   (
    ("C-x C-f" . helm-find-files)
@@ -629,7 +681,8 @@
 
 
 (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
-  :straight org-contrib
+  :demand t
+  :ensure (:wait org-contrib)
   :hook (org-mode . smv/org-mode-setup)
   :config
   (setq org-ellipsis " ▼:")
@@ -699,10 +752,9 @@
   (global-set-key (kbd "C-c a") 'org-agenda)
   (global-set-key (kbd "M-i") 'org-insert-item))
 
-(use-package org-fragtog
-  :hook (org-mode . org-fragtog-mode))
-
 (use-package org-bullets ;; change the bullets in my org mode files
+  :ensure t
+  :demand t
   :after org
   :hook (org-mode . org-bullets-mode)
   :custom
@@ -710,7 +762,7 @@
 
 ;; Outline numbering for org mode
 (use-package org-num
-  :straight nil
+  :ensure nil
   :load-path "lisp/"
   :after org
   :hook (org-mode . org-num-mode))
@@ -749,6 +801,7 @@
 (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
 
 (use-package undo-tree
+  :demand t
   :ensure t
   :config
   ;; Set a dedicated directory for undo-tree files
@@ -778,8 +831,10 @@
 
 (global-set-key (kbd "C-M-;") 'comment-region)
 
-(use-package wgrep)
-(global-set-key (kbd "C-c r") 'rgrep)
+(use-package wgrep
+  :ensure t
+  :config
+  (global-set-key (kbd "C-c r") 'rgrep))
 
 ;; Permit to get the first results directly in the compilation buffer
 ;; This kind of buffer is the one used for grep
@@ -842,16 +897,26 @@
   :config
   :hook (nix-mode . lsp-deferred))
 
-(use-package flycheck)
+(use-package flycheck
+  :ensure t
+  :demand t)
 
-(use-package markdown-mode)
+(use-package markdown-mode
+  :ensure t
+  :demand t)
 
 (use-package yasnippet
+  :ensure t
+  :demand t
   :config (yas-global-mode))
 
-(use-package yasnippet-snippets)
+(use-package yasnippet-snippets
+  :after yasnippet)
 
 (use-package auto-yasnippet
+  :after general
+  :ensure t
+  :demand t
   :config
   (general-define-key
    :prefix "C-z *"
@@ -871,7 +936,8 @@
          ("\\.yaml\\'" . yaml-mode)
          ))
 
-(use-package emmet-mode)
+(use-package emmet-mode
+  :ensure t)
 
 (defun smv/web-mode-hook ()
   "Hooks for Web mode."
@@ -904,20 +970,18 @@
                  (setq emmet-use-css-transform nil)))))
 
 (use-package rjsx-mode
+  :after prettier
   :mode (("\\.js\\'" . rjsx-mode)
          ("\\.ts\\'" . rjsx-mode))
   :hook
   (rjsx-mode . emmet-mode)
   (rjsx-mode . prettier-mode))
 
-(use-package prettier)
-
-(use-package rust-mode)
+(use-package prettier
+  :after web-mode)
 
 (use-package rust-ts-mode
   :mode "\\.rs\\'"
-  :bind-keymap
-  ("C-c c" . rust-mode-map)
   :hook (rust-ts-mode . lsp-deferred))
 
 (use-package ruby-ts-mode
@@ -928,7 +992,8 @@
   :mode "\\.dart\\'"
   :hook (dart-mode . lsp-deferred))
 
-(use-package lsp-dart)
+(use-package lsp-dart
+  :after lsp-mode)
 
 (use-package company
   :after lsp-mode
@@ -946,10 +1011,12 @@
   (company-mode . company-box-mode))
 
 (use-package company-tabnine
+  :after company
   :config
   (add-to-list 'company-backends #'company-tabnine t))
 
 (use-package dap-mode
+  :after (lsp-mode general)
   :custom
   (lsp-enable-dap-auto-configure nil)
   :config
@@ -962,20 +1029,24 @@
 (use-package docker
   :bind ("C-c d" . docker))
 
-(use-package dockerfile-mode)
+(use-package dockerfile-mode
+  :after docker)
 
 (use-package copilot
-  :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
+  :ensure (:fetcher github :repo "copilot-emacs/copilot.el" :files ("*.el"))
   :bind
   (:map copilot-completion-map
         ("C-M-<down>" . copilot-accept-completion)
         ("C-M-<up>" . copilot-accept-completion-by-word)
         ("C-M-<right>" . copilot-next-completion)
         ("C-M-<left>" . copilot-previous-completion)
-        )
+        ))
+
+(use-package transient
   :ensure t)
 
 (use-package gptel
+  :ensure t
   :config
   ;; OPTIONAL configuration
   (setq
@@ -986,7 +1057,7 @@
   :bind ("C-c g" . gptel-send))
 
 (use-package aidermacs
-  :straight (:host github :repo "MatthewZMD/aidermacs" :files ("*.el"))
+  :ensure (:fetcher github :repo "MatthewZMD/aidermacs" :files ("*.el"))
   :config
   (setq aidermacs-default-model "gemini/gemini-2.0-flash-thinking-exp")
   (global-set-key (kbd "C-c x") 'aidermacs-transient-menu)
@@ -997,10 +1068,14 @@
   (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))))
 
 (use-package magit
+  :demand t
+  :ensure t
   :commands magit-status
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
 (use-package magit-todos
+  :ensure t
+  :defer t
   :after magit
   :config (magit-todos-mode 1))

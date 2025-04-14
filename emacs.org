@@ -2,6 +2,9 @@
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el
 
 
+
+
+
 * Declare some global variables
 
 #+begin_src emacs-lisp
@@ -69,38 +72,52 @@ Emacs has a built in package manager but it doesn’t make it easy to automatica
 I don't know why but quelpa doesn't get install automatically (maybe a problem only on mac ?), you should install it manually by running `M-x package-install` then type quelpa
 
 #+BEGIN_SRC emacs-lisp
-  ;; Initialize package sources
-  (require 'package)
-  (require 'cl)
+  (defvar elpaca-installer-version 0.11)
+  (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+  (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+  (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+  (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                                :ref nil :depth 1 :inherit ignore
+                                :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                                :build (:not elpaca--activate-package)))
+  (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+         (build (expand-file-name "elpaca/" elpaca-builds-directory))
+         (order (cdr elpaca-order))
+         (default-directory repo))
+    (add-to-list 'load-path (if (file-exists-p build) build repo))
+    (unless (file-exists-p repo)
+      (make-directory repo t)
+      (when (<= emacs-major-version 28) (require 'subr-x))
+      (condition-case-unless-debug err
+          (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                    ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                    ,@(when-let* ((depth (plist-get order :depth)))
+                                                        (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                    ,(plist-get order :repo) ,repo))))
+                    ((zerop (call-process "git" nil buffer t "checkout"
+                                          (or (plist-get order :ref) "--"))))
+                    (emacs (concat invocation-directory invocation-name))
+                    ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                          "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                    ((require 'elpaca))
+                    ((elpaca-generate-autoloads "elpaca" repo)))
+              (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+            (error "%s" (with-current-buffer buffer (buffer-string))))
+        ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+    (unless (require 'elpaca-autoloads nil t)
+      (require 'elpaca)
+      (elpaca-generate-autoloads "elpaca" repo)
+      (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
+  (add-hook 'after-init-hook #'elpaca-process-queues)
+  (elpaca `(,@elpaca-order))
 
-  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                           ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-                           ("elpa" . "https://elpa.gnu.org/packages/")))
+  (setq package-enable-at-startup nil)
 
-  (package-initialize)
-  (unless package-archive-contents
-    (package-refresh-contents))
-
-
-  ;; straight.el section
-  (defvar bootstrap-version)
-  (let ((bootstrap-file
-         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-        (bootstrap-version 5))
-    (unless (file-exists-p bootstrap-file)
-      (with-current-buffer
-          (url-retrieve-synchronously
-           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-           'silent 'inhibit-cookies)
-        (goto-char (point-max))
-        (eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage))
-
-  (straight-use-package 'use-package)
-  (setq straight-use-package-by-default t)
+  (elpaca elpaca-use-package
+    ;; Enable use-package :ensure support for Elpaca.
+    (elpaca-use-package-mode))
 
   (use-package dired-x
-    :straight nil
     :bind
     (:map dired-mode-map
           ("k" . dired-create-empty-file)
@@ -143,6 +160,9 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
   (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
   (use-package dashboard
+    :ensure t
+    :demand t
+    :after nerd-icons
     :config
     (dashboard-setup-startup-hook)
     (setq dashboard-display-icons-p t)
@@ -155,10 +175,15 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
 
 #+END_SRC
 
+
+
+
 * Tree-sitter
 
 #+begin_src emacs-lisp
   (use-package treesit-auto
+    :demand t
+    :ensure t
     :custom
     (treesit-auto-install 'prompt)
     :config
@@ -194,6 +219,7 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
 
   ;; Watch out you should have fish installed on your computer
   (setq eshell-aliases-file (format "%s%s" user-emacs-directory "aliases"))
+  (global-set-key (kbd "C-c e") 'eshell)
 #+end_src
 
 
@@ -310,6 +336,8 @@ You will need to install the package ligature, because it cannot be installed au
 
 #+begin_src emacs-lisp
   (use-package ligature
+    :ensure t
+    :demand t
     :config
     ;; Enable all JetBrains Mono ligatures in programming modes
     (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
@@ -334,6 +362,7 @@ Rainbow permits to match pairs delimiters with the same color.
 
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters
+    :ensure t
     :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
 
@@ -342,8 +371,12 @@ Rainbow permits to match pairs delimiters with the same color.
 ** Hydra and general
 
 #+begin_src emacs-lisp
-  (use-package hydra) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
-  (use-package general) ;; permit to define bindings under another one easily
+  (use-package hydra
+    :ensure t
+    :demand t) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
+  (use-package general
+    :ensure t
+    :demand t) ;; permit to define bindings under another one easily
 #+end_src
 
 ** Repeat Mode
@@ -467,6 +500,8 @@ Trying the modal editor meow
      '("<escape>" . ignore)))
 
   (use-package meow
+    :ensure t
+    :demand t
     :config
     (meow-setup)
     ;; remove the overlay
@@ -481,6 +516,8 @@ Some commands for completing meow, adding the ones I'm used to.
 #+begin_src emacs-lisp
 
   ;; tabs manipulations
+  (with-eval-after-load 'general
+    
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    :prefix "#"
@@ -509,7 +546,7 @@ Some commands for completing meow, adding the ones I'm used to.
    :keymaps 'global-map
    :prefix "C-c f"
    "f" #'ffap
-   "s" #'ffap-menu)
+   "s" #'ffap-menu))
 #+end_src
 
 
@@ -519,6 +556,8 @@ Some commands for completing meow, adding the ones I'm used to.
 
 #+begin_src emacs-lisp
   (use-package avy
+    :ensure t
+    :demand t
     :after meow
     :config
     (general-define-key
@@ -563,7 +602,7 @@ There's no unified bindings that permits to manage windows, so here's mine
 #+begin_src emacs-lisp
   (use-package windmove
     :after meow
-    :straight nil
+    :ensure nil
     :config
     (setq windmove-wrap-around t)
     (general-define-key
@@ -589,10 +628,14 @@ There's no unified bindings that permits to manage windows, so here's mine
 Vterm is a better terminal emulator that will permit good rendering of all terminal commands
 
 #+begin_src emacs-lisp
-  (use-package vterm)
+  (use-package vterm
+    :ensure t
+    :defer t)
 
   (use-package multi-vterm
+    :after vterm
     :ensure t
+    :defer t
     :bind (("C-c v n" . multi-vterm-project)
            ("C-c v f" . multi-vterm)
            ("C-c v r" . multi-vterm-rename-buffer)
@@ -610,7 +653,7 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
 Calling my edge browser directly from emacs, to save up time
 
 #+begin_src emacs-lisp
-  (setq browse-url-generic-program "microsoft-edge-stable")
+  (setq browse-url-generic-program "MicrosoftEdge.exe")
   (defun smv/browse-search ()
     "Unified search across multiple websites."
     (interactive)
@@ -638,6 +681,8 @@ Permit to expand region quickly, making it less painful to mark some region.
 
 #+begin_src emacs-lisp
   (use-package expand-region
+    :ensure t
+    :demand t
     :config
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
@@ -652,8 +697,12 @@ Permit to expand region quickly, making it less painful to mark some region.
 [[https://github.com/hlissner/emacs-doom-themes][doom-themes]] and ef  are a set of themes that support various emacs modes. It also has support for doom-modeline that I use as my mode line.
 
 #+begin_src emacs-lisp
-  (use-package doom-themes)
+  (use-package doom-themes
+    :ensure t
+    :demand t)
   (use-package ef-themes
+    :ensure t
+    :demand t
     :config (load-theme 'doom-acario-dark t))
 #+end_src
 
@@ -663,11 +712,17 @@ You will have to install the icons on your machine before to get the full functi
 
 #+begin_src emacs-lisp
   (use-package all-the-icons
+    :ensure t
+    :demand t
     :if (display-graphic-p))
 
-  (use-package nerd-icons)
+  (use-package nerd-icons
+    :ensure t
+    :demand t)
 
   (use-package all-the-icons-dired
+    :ensure t
+    :demand t
     :after all-the-icons)
 #+end_src
 
@@ -679,10 +734,12 @@ You will have to install the icons on your machine before to get the full functi
 
 #+begin_src emacs-lisp
   (use-package which-key ;; print next keybindings
-    :init (which-key-mode) ;; happens before the package is loaded
+    :ensure t
+    :demand t
     :diminish which-key-mode
     :config ;; only runs after the mode is loaded
-    (setq which-key-idle-delay 0.3))
+    (setq which-key-idle-delay 0.3)
+    (which-key-mode))
 #+end_src
 
 
@@ -696,8 +753,8 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
 
 #+begin_src emacs-lisp
   (use-package helm
-    :init
-    (helm-mode)
+    :ensure t
+    :demand t
     :bind
     ("M-x" . helm-M-x)
     ("C-s" . helm-occur)
@@ -707,6 +764,7 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
     (setq helm-split-window-inside-p t)
     (setq helm-always-two-windows nil)
     (setq helm-completion-in-region-fuzzy-match t)
+    (helm-mode)
     :bind
     (
      ("C-x C-f" . helm-find-files)
@@ -859,7 +917,8 @@ This section contains the basic configuration for org-mode plus the configuratio
 
 
   (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
-    :straight org-contrib
+    :demand t
+    :ensure (:wait org-contrib)
     :hook (org-mode . smv/org-mode-setup)
     :config
     (setq org-ellipsis " ▼:")
@@ -932,14 +991,6 @@ This section contains the basic configuration for org-mode plus the configuratio
 #+end_src
 
 
-** Auto rendering latex section
-
-#+begin_src emacs-lisp
-  (use-package org-fragtog
-    :hook (org-mode . org-fragtog-mode))
-#+end_src
-
-
 ** Nicer Heading
 
 [[https://github.com/sabof/org-bullets][org-bullets]] permits to change the icon used for the different headings in org-mode.
@@ -949,6 +1000,8 @@ I use also `org-num` to add numbers in front of my different headlines.
 #+begin_src emacs-lisp
 
   (use-package org-bullets ;; change the bullets in my org mode files
+    :ensure t
+    :demand t
     :after org
     :hook (org-mode . org-bullets-mode)
     :custom
@@ -956,7 +1009,7 @@ I use also `org-num` to add numbers in front of my different headlines.
 
   ;; Outline numbering for org mode
   (use-package org-num
-    :straight nil
+    :ensure nil
     :load-path "lisp/"
     :after org
     :hook (org-mode . org-num-mode))
@@ -1028,6 +1081,7 @@ Some day undo tree saved my self from losing my progress.
 
 #+begin_src emacs-lisp
   (use-package undo-tree
+    :demand t
     :ensure t
     :config
     ;; Set a dedicated directory for undo-tree files
@@ -1079,8 +1133,10 @@ wgrep will permit to make grep buffers editable so that you can just modify the 
 I use the built-in rgrep to do my search and replace so I'm binding it to =C-c r=.
 
 #+begin_src emacs-lisp
-  (use-package wgrep)
-  (global-set-key (kbd "C-c r") 'rgrep)
+  (use-package wgrep
+    :ensure t
+    :config
+    (global-set-key (kbd "C-c r") 'rgrep))
 
   ;; Permit to get the first results directly in the compilation buffer
   ;; This kind of buffer is the one used for grep
@@ -1179,13 +1235,17 @@ I use some useful lsp packages with downloaded languages server for my programmi
 This is a better flymake, it has many features. That permits to better see the error and fix them.
 
 #+begin_src emacs-lisp
-  (use-package flycheck)
+  (use-package flycheck
+    :ensure t
+    :demand t)
 #+end_src
 
 **** markdown-mode
 
 #+begin_src emacs-lisp
-  (use-package markdown-mode)
+  (use-package markdown-mode
+    :ensure t
+    :demand t)
 #+end_src
 
 **** yasnippet
@@ -1194,9 +1254,12 @@ Useful snippets for quick programming
 
 #+begin_src emacs-lisp
   (use-package yasnippet
+    :ensure t
+    :demand t
     :config (yas-global-mode))
 
-  (use-package yasnippet-snippets)
+  (use-package yasnippet-snippets
+    :after yasnippet)
 #+end_src
 
 **** auto-yasnippet
@@ -1205,6 +1268,9 @@ A way to create temporary snippet to prevent rewriting code
 
 #+begin_src emacs-lisp
   (use-package auto-yasnippet
+    :after general
+    :ensure t
+    :demand t
     :config
     (general-define-key
      :prefix "C-z *"
@@ -1238,7 +1304,8 @@ Mode for yaml configuration files editing.
 Emmet mode allors you to easily expand html and css abbreviations for instance if I type "p" then press control and j I get <p></p>. You can also use things like ~".container>section>(h1+p)"~.
 
 #+begin_src emacs-lisp
-  (use-package emmet-mode)
+  (use-package emmet-mode
+    :ensure t)
 #+end_src
 
 **** Web-mode
@@ -1283,6 +1350,7 @@ The useful web mode for programming.
 
 #+begin_src emacs-lisp
   (use-package rjsx-mode
+    :after prettier
     :mode (("\\.js\\'" . rjsx-mode)
            ("\\.ts\\'" . rjsx-mode))
     :hook
@@ -1295,19 +1363,16 @@ The useful web mode for programming.
 Prettier automatically formats the code for you. I hate when it's in other modes but in web mode it's quite useful.
 
 #+begin_src emacs-lisp
-  (use-package prettier)
+  (use-package prettier
+    :after web-mode)
 #+end_src
 
 
 *** RUST
 
 #+begin_src emacs-lisp
-  (use-package rust-mode)
-
   (use-package rust-ts-mode
     :mode "\\.rs\\'"
-    :bind-keymap
-    ("C-c c" . rust-mode-map)
     :hook (rust-ts-mode . lsp-deferred))
 #+end_src
 
@@ -1330,7 +1395,8 @@ clojure-lsp should be installed to use the lsp for this package.
     :mode "\\.dart\\'"
     :hook (dart-mode . lsp-deferred))
 
-  (use-package lsp-dart)
+  (use-package lsp-dart
+    :after lsp-mode)
 #+end_src
 
 ** Company Mode
@@ -1354,6 +1420,7 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
     (company-mode . company-box-mode))
 
   (use-package company-tabnine
+    :after company
     :config
     (add-to-list 'company-backends #'company-tabnine t))
 #+end_src
@@ -1364,6 +1431,7 @@ Switching to dap-mode because it's more convenient to work with lsp-mode
 
 #+begin_src emacs-lisp
   (use-package dap-mode
+    :after (lsp-mode general)
     :custom
     (lsp-enable-dap-auto-configure nil)
     :config
@@ -1382,7 +1450,8 @@ Quickly manages [[https://github.com/Silex/docker.el][docker]] container directl
   (use-package docker
     :bind ("C-c d" . docker))
 
-  (use-package dockerfile-mode)
+  (use-package dockerfile-mode
+    :after docker)
 #+end_src
 
 ** Github Copilot
@@ -1392,17 +1461,25 @@ Uncomment the commented parts only when you will finish installing copilot.
 
 #+begin_src emacs-lisp
   (use-package copilot
-    :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
+    :ensure (:fetcher github :repo "copilot-emacs/copilot.el" :files ("*.el"))
     :bind
     (:map copilot-completion-map
           ("C-M-<down>" . copilot-accept-completion)
           ("C-M-<up>" . copilot-accept-completion-by-word)
           ("C-M-<right>" . copilot-next-completion)
           ("C-M-<left>" . copilot-previous-completion)
-          )
-    :ensure t)
+          ))
 #+end_src
 
+
+** transient
+
+Some package required for gptel and magit
+
+#+begin_src emacs-lisp
+  (use-package transient
+    :ensure t)
+#+end_src
 
 
 ** Gptel
@@ -1410,15 +1487,16 @@ Uncomment the commented parts only when you will finish installing copilot.
 Mode to interact with different llms in emacs.
 
 #+begin_src emacs-lisp
-(use-package gptel
-  :config
-  ;; OPTIONAL configuration
-  (setq
-   gptel-model 'gemini-pro
-   gptel-backend (gptel-make-gemini "Gemini"
-                   :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
-                   :stream t))
-  :bind ("C-c g" . gptel-send))
+  (use-package gptel
+    :ensure t
+    :config
+    ;; OPTIONAL configuration
+    (setq
+     gptel-model 'gemini-pro
+     gptel-backend (gptel-make-gemini "Gemini"
+                     :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
+                     :stream t))
+    :bind ("C-c g" . gptel-send))
 #+end_src
 
 
@@ -1428,7 +1506,7 @@ Setting up aider by using the aidermacs package, a convenient way of accessing a
 
 #+begin_src emacs-lisp
   (use-package aidermacs
-    :straight (:host github :repo "MatthewZMD/aidermacs" :files ("*.el"))
+    :ensure (:fetcher github :repo "MatthewZMD/aidermacs" :files ("*.el"))
     :config
     (setq aidermacs-default-model "gemini/gemini-2.0-flash-thinking-exp")
     (global-set-key (kbd "C-c x") 'aidermacs-transient-menu)
@@ -1446,6 +1524,8 @@ Setting up aider by using the aidermacs package, a convenient way of accessing a
 
 #+begin_src emacs-lisp
   (use-package magit
+    :demand t
+    :ensure t
     :commands magit-status
     :custom
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
@@ -1457,7 +1537,9 @@ Setting up aider by using the aidermacs package, a convenient way of accessing a
 Something to manage the todos elements in the current project I am working on. Visit the github page : [[https://github.com/alphapapa/magit-todos][magit-todos]]
 
 #+begin_src emacs-lisp
-(use-package magit-todos
-  :after magit
-  :config (magit-todos-mode 1))
+  (use-package magit-todos
+    :ensure t
+    :defer t
+    :after magit
+    :config (magit-todos-mode 1))
 #+end_src
