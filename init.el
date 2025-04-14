@@ -767,6 +767,22 @@
   :after org
   :hook (org-mode . org-num-mode))
 
+(use-package org-journal
+  :ensure t
+  :defer t
+  :init
+  ;; Set the directory where journal files will be stored
+  (setq org-journal-dir "~/.org/journal/")
+  ;; Optional: Set a file name format (default is YYYYMMDD)
+  (setq org-journal-file-format "%Y-%m-%d.org")
+  :bind
+  ("C-c n j" . org-journal-new-entry)
+  :config
+  ;; Optional: Automatically add a timestamp to new entries
+  (setq org-journal-enable-timestamp t)
+  ;; Ensure the directory exists
+  (make-directory org-journal-dir t))
+
 (with-eval-after-load 'org
   (org-babel-do-load-languages
    'org-babel-load-languages
