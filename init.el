@@ -500,7 +500,7 @@
   ;; terminal height percent of 30
   (setq multi-vterm-dedicated-window-height-percent 45))
 
-(setq browse-url-generic-program "MicrosoftEdge.exe")
+(setq browse-url-generic-program "microsoft-edge-stable")
 (defun smv/browse-search ()
   "Unified search across multiple websites."
   (interactive)

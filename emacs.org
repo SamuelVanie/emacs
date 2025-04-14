@@ -653,7 +653,7 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
 Calling my edge browser directly from emacs, to save up time
 
 #+begin_src emacs-lisp
-  (setq browse-url-generic-program "MicrosoftEdge.exe")
+  (setq browse-url-generic-program "microsoft-edge-stable")
   (defun smv/browse-search ()
     "Unified search across multiple websites."
     (interactive)
