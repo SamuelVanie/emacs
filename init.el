@@ -817,9 +817,9 @@
 (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
 
 (use-package undo-tree
-  :demand t
-  :hook
-  (meow-global-mode . global-undo-tree-mode)
+  :ensure (:wait t)
+  :init
+  (global-undo-tree-mode)
   :config
   ;; Set a dedicated directory for undo-tree files
   (setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
@@ -927,6 +927,7 @@
   :config (yas-global-mode))
 
 (use-package yasnippet-snippets
+  :ensure t
   :after yasnippet)
 
 (use-package auto-yasnippet
@@ -1062,6 +1063,7 @@
   :ensure t)
 
 (use-package gptel
+  :ensure t
   :demand t
   :config
   ;; OPTIONAL configuration
@@ -1084,10 +1086,12 @@
   (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))))
 
 (use-package magit
-  :demand t
+  :ensure (:wait t)
   :commands magit-status
   :custom
-  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
+  :init
+  (magit-maybe-define-global-key-bindings t))
 
 (use-package magit-todos
   :ensure t

@@ -1104,9 +1104,9 @@ Some day undo tree saved my self from losing my progress.
 
 #+begin_src emacs-lisp
   (use-package undo-tree
-    :demand t
-    :hook
-    (meow-global-mode . global-undo-tree-mode)
+    :ensure (:wait t)
+    :init
+    (global-undo-tree-mode)
     :config
     ;; Set a dedicated directory for undo-tree files
     (setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
@@ -1282,6 +1282,7 @@ Useful snippets for quick programming
     :config (yas-global-mode))
 
   (use-package yasnippet-snippets
+    :ensure t
     :after yasnippet)
 #+end_src
 
@@ -1511,6 +1512,7 @@ Mode to interact with different llms in emacs.
 
 #+begin_src emacs-lisp
   (use-package gptel
+    :ensure t
     :demand t
     :config
     ;; OPTIONAL configuration
@@ -1547,10 +1549,12 @@ Setting up aider by using the aidermacs package, a convenient way of accessing a
 
 #+begin_src emacs-lisp
   (use-package magit
-    :demand t
+    :ensure (:wait t)
     :commands magit-status
     :custom
-    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
+    :init
+    (magit-maybe-define-global-key-bindings t))
 #+end_src
 
 
