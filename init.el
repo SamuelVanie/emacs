@@ -577,6 +577,7 @@
    ("C-c h c" . smv/helm-zoxide-cd)
    ("C-c h m" . helm-mark-ring)
    ("C-c h s" . helm-do-grep-ag)
+   ("C-c h f" . helm-find)
    ("C-c h t" . helm-magit-todos))
   )
 

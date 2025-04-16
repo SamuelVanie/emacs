@@ -653,7 +653,7 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
 Calling my edge browser directly from emacs, to save up time
 
 #+begin_src emacs-lisp
-  (setq browse-url-generic-program "microsoft-edge-stable")
+  (setq browse-url-generic-program "MicrosoftEdge.exe")
   (defun smv/browse-search ()
     "Unified search across multiple websites."
     (interactive)
@@ -772,6 +772,7 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
      ("C-c h c" . smv/helm-zoxide-cd)
      ("C-c h m" . helm-mark-ring)
      ("C-c h s" . helm-do-grep-ag)
+     ("C-c h f" . helm-find)
      ("C-c h t" . helm-magit-todos))
     )
 #+end_src
