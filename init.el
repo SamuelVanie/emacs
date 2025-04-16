@@ -818,15 +818,15 @@
 
 (use-package undo-tree
   :demand t
-  :ensure t
+  :hook
+  (meow-global-mode . global-undo-tree-mode)
   :config
   ;; Set a dedicated directory for undo-tree files
   (setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
   ;; Create the directory if it doesn't exist
   (unless (file-exists-p "~/.emacs.d/undo")
-    (make-directory "~/.emacs.d/undo" t))
+    (make-directory "~/.emacs.d/undo" t)))
   ;; Enable global undo-tree mode
-  (global-undo-tree-mode 1))
 
 ;; Store all backup files in a centralized directory
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
@@ -1062,7 +1062,7 @@
   :ensure t)
 
 (use-package gptel
-  :ensure t
+  :demand t
   :config
   ;; OPTIONAL configuration
   (setq
@@ -1085,7 +1085,6 @@
 
 (use-package magit
   :demand t
-  :ensure t
   :commands magit-status
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
