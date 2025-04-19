@@ -229,7 +229,7 @@
 
 
 ;; some modes doesn't have to start with lines enable
-(dolist (mode '(org-mode-hook
+(dolist (mode '(
                 term-mode-hook
                 doc-view-minor-mode-hook
                 shell-mode-hook
