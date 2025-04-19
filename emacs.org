@@ -1174,6 +1174,7 @@ Switching to lsp-mode instead of the default emacs. Lsp-mode has more features t
 
 #+begin_src emacs-lisp
   (use-package lsp-mode
+    :ensure t
     :init
     (setq lsp-keymap-prefix "C-l")
     :bind
@@ -1186,6 +1187,7 @@ Switching to lsp-mode instead of the default emacs. Lsp-mode has more features t
     :after lsp)
 
   (use-package lsp-ui
+    :ensure t
     :commands lsp-ui-mode
     :hook (lsp-mode . lsp-ui-mode))
 #+end_src
@@ -1345,6 +1347,8 @@ The useful web mode for programming.
     )
 
   (use-package web-mode
+    :ensure t
+    :defer t
     :mode (("\\.html?\\'" . web-mode)
            ("\\.css?\\'" . web-mode)
            )
@@ -1370,6 +1374,7 @@ The useful web mode for programming.
 
 #+begin_src emacs-lisp
   (use-package rjsx-mode
+    :defer t
     :after prettier
     :mode (("\\.js\\'" . rjsx-mode)
            ("\\.ts\\'" . rjsx-mode))
@@ -1392,16 +1397,18 @@ Prettier automatically formats the code for you. I hate when it's in other modes
 
 #+begin_src emacs-lisp
   (use-package rust-ts-mode
+    :ensure t
+    :defer t
     :mode "\\.rs\\'"
     :hook (rust-ts-mode . lsp-deferred))
 #+end_src
 
 *** Ruby
 
-clojure-lsp should be installed to use the lsp for this package.
-
 #+begin_src emacs-lisp
   (use-package ruby-ts-mode
+    :ensure t
+    :defer t
     :mode "\\.rb\\'"
     :hook (ruby-ts-mode . lsp-deferred))
 #+end_src
@@ -1412,6 +1419,8 @@ clojure-lsp should be installed to use the lsp for this package.
 
 #+begin_src emacs-lisp
   (use-package dart-mode
+    :ensure t
+    :defer t
     :mode "\\.dart\\'"
     :hook (dart-mode . lsp-deferred))
 
@@ -1425,6 +1434,7 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
 
 #+begin_src emacs-lisp
   (use-package company
+    :ensure t
     :after lsp-mode
     :hook (lsp-mode . company-mode)
     :bind
@@ -1436,10 +1446,12 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
     (add-to-list 'company-backends 'company-files))
 
   (use-package company-box
+    :ensure t
     :hook
     (company-mode . company-box-mode))
 
   (use-package company-tabnine
+    :ensure t
     :after company
     :config
     (add-to-list 'company-backends #'company-tabnine t))
@@ -1451,6 +1463,8 @@ Switching to dap-mode because it's more convenient to work with lsp-mode
 
 #+begin_src emacs-lisp
   (use-package dap-mode
+    :ensure t
+    :defer t
     :after (lsp-mode general)
     :custom
     (lsp-enable-dap-auto-configure nil)
@@ -1481,11 +1495,12 @@ Uncomment the commented parts only when you will finish installing copilot.
 
 #+begin_src emacs-lisp
   (use-package copilot
+    :defer t
     :ensure (:fetcher github :repo "copilot-emacs/copilot.el" :files ("*.el"))
     :bind
     (:map copilot-completion-map
-          ("C-M-<down>" . copilot-accept-completion)
-          ("C-M-<up>" . copilot-accept-completion-by-word)
+          ("C-M-x" . copilot-accept-completion)
+          ("C-M-<down>" . copilot-accept-completion-by-word)
           ("C-M-<right>" . copilot-next-completion)
           ("C-M-<left>" . copilot-previous-completion)
           ))
@@ -1539,6 +1554,7 @@ Setting up aider by using the aidermacs package, a convenient way of accessing a
 #+begin_src emacs-lisp
   (use-package aidermacs
     :ensure (:fetcher github :repo "MatthewZMD/aidermacs" :files ("*.el"))
+    :defer t
     :config
     (setq aidermacs-default-model "gemini/gemini-2.0-flash-thinking-exp")
     (global-set-key (kbd "C-c x") 'aidermacs-transient-menu)
@@ -1571,7 +1587,6 @@ Something to manage the todos elements in the current project I am working on. V
 
 #+begin_src emacs-lisp
   (use-package magit-todos
-    :ensure t
     :defer t
     :after magit
     :config (magit-todos-mode 1))

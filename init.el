@@ -861,6 +861,7 @@
      (add-to-list 'grep-find-ignored-directories "*.git")))
 
 (use-package lsp-mode
+  :ensure t
   :init
   (setq lsp-keymap-prefix "C-l")
   :bind
@@ -873,6 +874,7 @@
   :after lsp)
 
 (use-package lsp-ui
+  :ensure t
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
 
@@ -966,6 +968,8 @@
   )
 
 (use-package web-mode
+  :ensure t
+  :defer t
   :mode (("\\.html?\\'" . web-mode)
          ("\\.css?\\'" . web-mode)
          )
@@ -986,6 +990,7 @@
                  (setq emmet-use-css-transform nil)))))
 
 (use-package rjsx-mode
+  :defer t
   :after prettier
   :mode (("\\.js\\'" . rjsx-mode)
          ("\\.ts\\'" . rjsx-mode))
@@ -997,14 +1002,20 @@
   :after web-mode)
 
 (use-package rust-ts-mode
+  :ensure t
+  :defer t
   :mode "\\.rs\\'"
   :hook (rust-ts-mode . lsp-deferred))
 
 (use-package ruby-ts-mode
+  :ensure t
+  :defer t
   :mode "\\.rb\\'"
   :hook (ruby-ts-mode . lsp-deferred))
 
 (use-package dart-mode
+  :ensure t
+  :defer t
   :mode "\\.dart\\'"
   :hook (dart-mode . lsp-deferred))
 
@@ -1012,6 +1023,7 @@
   :after lsp-mode)
 
 (use-package company
+  :ensure t
   :after lsp-mode
   :hook (lsp-mode . company-mode)
   :bind
@@ -1023,15 +1035,19 @@
   (add-to-list 'company-backends 'company-files))
 
 (use-package company-box
+  :ensure t
   :hook
   (company-mode . company-box-mode))
 
 (use-package company-tabnine
+  :ensure t
   :after company
   :config
   (add-to-list 'company-backends #'company-tabnine t))
 
 (use-package dap-mode
+  :ensure t
+  :defer t
   :after (lsp-mode general)
   :custom
   (lsp-enable-dap-auto-configure nil)
@@ -1049,11 +1065,12 @@
   :after docker)
 
 (use-package copilot
+  :defer t
   :ensure (:fetcher github :repo "copilot-emacs/copilot.el" :files ("*.el"))
   :bind
   (:map copilot-completion-map
-        ("C-M-<down>" . copilot-accept-completion)
-        ("C-M-<up>" . copilot-accept-completion-by-word)
+        ("C-M-x" . copilot-accept-completion)
+        ("C-M-<down>" . copilot-accept-completion-by-word)
         ("C-M-<right>" . copilot-next-completion)
         ("C-M-<left>" . copilot-previous-completion)
         ))
@@ -1080,6 +1097,7 @@
 
 (use-package aidermacs
   :ensure (:fetcher github :repo "MatthewZMD/aidermacs" :files ("*.el"))
+  :defer t
   :config
   (setq aidermacs-default-model "gemini/gemini-2.0-flash-thinking-exp")
   (global-set-key (kbd "C-c x") 'aidermacs-transient-menu)
@@ -1098,7 +1116,6 @@
   (magit-maybe-define-global-key-bindings t))
 
 (use-package magit-todos
-  :ensure t
   :defer t
   :after magit
   :config (magit-todos-mode 1))
