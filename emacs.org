@@ -526,13 +526,6 @@ Some commands for completing meow, adding the ones I'm used to.
    "i" #'tab-next
    "n" #'tab-previous)
 
-  ;; Buffers manipulations
-  (general-define-key
-   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-   :prefix "\\"
-   "b k" #'kill-buffer-and-window)
-
-
   ;; Some more complex commands
   (general-define-key
    :keymaps 'meow-normal-state-keymap
@@ -609,6 +602,7 @@ There's no unified bindings that permits to manage windows, so here's mine
      "i"  #'windmove-right
      "e"  #'windmove-down
      "u"  #'windmove-up
+     "x"  #'kill-buffer-and-window
      "+"  #'balance-windows
      "m"  #'maximize-window
      "s n"  #'windmove-swap-states-left

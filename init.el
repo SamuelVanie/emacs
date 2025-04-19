@@ -409,13 +409,6 @@
  "i" #'tab-next
  "n" #'tab-previous)
 
-;; Buffers manipulations
-(general-define-key
- :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
- :prefix "\\"
- "b k" #'kill-buffer-and-window)
-
-
 ;; Some more complex commands
 (general-define-key
  :keymaps 'meow-normal-state-keymap
@@ -475,6 +468,7 @@
    "i"  #'windmove-right
    "e"  #'windmove-down
    "u"  #'windmove-up
+   "x"  #'kill-buffer-and-window
    "+"  #'balance-windows
    "m"  #'maximize-window
    "s n"  #'windmove-swap-states-left
