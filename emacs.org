@@ -2,9 +2,6 @@
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el
 
 
-
-
-
 * Declare some global variables
 
 #+begin_src emacs-lisp
@@ -504,8 +501,6 @@ Trying the modal editor meow
     :demand t
     :config
     (meow-setup)
-    ;; remove the overlay
-    (setq meow-expand-hint-remove-delay 0)
     (meow-global-mode 1))
 #+end_src
 
@@ -653,7 +648,7 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
 Calling my edge browser directly from emacs, to save up time
 
 #+begin_src emacs-lisp
-  (setq browse-url-generic-program "MicrosoftEdge.exe")
+  (setq browse-url-generic-program "microsoft-edge-stable")
   (defun smv/browse-search ()
     "Unified search across multiple websites."
     (interactive)
@@ -1506,6 +1501,17 @@ Some package required for gptel and magit
     :ensure t)
 #+end_src
 
+
+** Direnv
+
+Provides direnv integration inside emacs
+
+#+begin_src emacs-lisp
+  (use-package direnv
+    :ensure t
+    :config
+    (direnv-mode))
+#+end_src
 
 ** Gptel
 

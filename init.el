@@ -391,8 +391,6 @@
   :demand t
   :config
   (meow-setup)
-  ;; remove the overlay
-  (setq meow-expand-hint-remove-delay 0)
   (meow-global-mode 1))
 
 ;; tabs manipulations
@@ -1062,6 +1060,11 @@
 
 (use-package transient
   :ensure t)
+
+(use-package direnv
+  :ensure t
+  :config
+  (direnv-mode))
 
 (use-package gptel
   :ensure t
