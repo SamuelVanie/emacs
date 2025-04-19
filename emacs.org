@@ -1397,7 +1397,6 @@ Prettier automatically formats the code for you. I hate when it's in other modes
 
 #+begin_src emacs-lisp
   (use-package rust-ts-mode
-    :ensure t
     :defer t
     :mode "\\.rs\\'"
     :hook (rust-ts-mode . lsp-deferred))

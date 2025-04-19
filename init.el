@@ -1002,7 +1002,6 @@
   :after web-mode)
 
 (use-package rust-ts-mode
-  :ensure t
   :defer t
   :mode "\\.rs\\'"
   :hook (rust-ts-mode . lsp-deferred))
