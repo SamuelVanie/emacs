@@ -391,6 +391,8 @@
   :demand t
   :config
   (meow-setup)
+  ;; remove those hints that clutter vision
+  (setq meow-expand-hint-remove-delay 2)
   (meow-global-mode 1))
 
 ;; tabs manipulations
