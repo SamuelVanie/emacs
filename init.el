@@ -1003,13 +1003,11 @@
   :hook (rust-ts-mode . lsp-deferred))
 
 (use-package ruby-ts-mode
-  :ensure t
   :defer t
   :mode "\\.rb\\'"
   :hook (ruby-ts-mode . lsp-deferred))
 
 (use-package dart-mode
-  :ensure t
   :defer t
   :mode "\\.dart\\'"
   :hook (dart-mode . lsp-deferred))

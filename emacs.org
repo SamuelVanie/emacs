@@ -1402,7 +1402,6 @@ Prettier automatically formats the code for you. I hate when it's in other modes
 
 #+begin_src emacs-lisp
   (use-package ruby-ts-mode
-    :ensure t
     :defer t
     :mode "\\.rb\\'"
     :hook (ruby-ts-mode . lsp-deferred))
@@ -1414,7 +1413,6 @@ Prettier automatically formats the code for you. I hate when it's in other modes
 
 #+begin_src emacs-lisp
   (use-package dart-mode
-    :ensure t
     :defer t
     :mode "\\.dart\\'"
     :hook (dart-mode . lsp-deferred))
