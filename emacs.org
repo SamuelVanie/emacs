@@ -1179,9 +1179,6 @@ Switching to lsp-mode instead of the default emacs. Lsp-mode has more features t
     :config
     (lsp-enable-which-key-integration t))
 
-  (use-package lsp-treemacs
-    :after lsp)
-
   (use-package lsp-ui
     :ensure t
     :commands lsp-ui-mode
@@ -1463,6 +1460,10 @@ Switching to dap-mode because it's more convenient to work with lsp-mode
     (lsp-enable-dap-auto-configure nil)
     :config
     (dap-ui-mode 1)
+    (general-define-key
+     :keymaps 'meow-normal-state-keymap
+     :prefix "%"
+     "d" #'dap-hydra)
     (general-define-key
      :keymaps 'lsp-mode-map
      :prefix lsp-keymap-prefix

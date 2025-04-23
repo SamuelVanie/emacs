@@ -866,9 +866,6 @@
   :config
   (lsp-enable-which-key-integration t))
 
-(use-package lsp-treemacs
-  :after lsp)
-
 (use-package lsp-ui
   :ensure t
   :commands lsp-ui-mode
@@ -1046,6 +1043,10 @@
   (lsp-enable-dap-auto-configure nil)
   :config
   (dap-ui-mode 1)
+  (general-define-key
+   :keymaps 'meow-normal-state-keymap
+   :prefix "%"
+   "d" #'dap-hydra)
   (general-define-key
    :keymaps 'lsp-mode-map
    :prefix lsp-keymap-prefix
