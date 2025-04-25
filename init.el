@@ -104,7 +104,12 @@
 
 
 (use-package dired-sidebar
-  :bind (("C-x C-n" . dired-sidebar-toggle-sidebar))
+  :bind (
+         ("C-x C-n" . dired-sidebar-toggle-sidebar)
+         (:map dired-mode-map
+               ("k" . dired-create-empty-file)
+               ("<tab>" . dired-subtree-toggle))
+         )
   :ensure t
   :commands (dired-sidebar-toggle-sidebar)
   :init
