@@ -474,6 +474,7 @@
    "e"  #'windmove-down
    "u"  #'windmove-up
    "x"  #'kill-buffer-and-window
+   "$" #'delete-window
    "+"  #'balance-windows
    "m"  #'maximize-window
    "s n"  #'windmove-swap-states-left
