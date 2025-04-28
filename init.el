@@ -355,7 +355,6 @@
    '("f" . meow-find)
    '("g" . meow-cancel-selection)
    '("G" . meow-grab)
-   '("h" . undefined)         ;; Disable old left binding
    '("H" . meow-left-expand)
    '("i" . meow-right) ;; Right (forward char)
    '("I" . meow-right-expand)
@@ -403,28 +402,28 @@
 ;; tabs manipulations
 (with-eval-after-load 'general
   
-(general-define-key
- :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
- :prefix "#"
- "l" #'tab-new
- "d" #'dired-other-tab
- "f" #'find-file-other-tab
- "r" #'tab-rename
- "u" #'tab-close
- "i" #'tab-next
- "n" #'tab-previous)
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   :prefix "#"
+   "l" #'tab-new
+   "d" #'dired-other-tab
+   "f" #'find-file-other-tab
+   "r" #'tab-rename
+   "u" #'tab-close
+   "i" #'tab-next
+   "n" #'tab-previous)
 
-;; Some more complex commands
-(general-define-key
- :keymaps 'meow-normal-state-keymap
- :prefix "%"
- "s" #'scratch-buffer)
+  ;; Some more complex commands
+  (general-define-key
+   :keymaps 'meow-normal-state-keymap
+   :prefix "%"
+   "s" #'scratch-buffer)
 
-(general-define-key
- :keymaps 'global-map
- :prefix "C-c f"
- "f" #'ffap
- "s" #'ffap-menu))
+  (general-define-key
+   :keymaps 'global-map
+   :prefix "C-c f"
+   "f" #'ffap
+   "s" #'ffap-menu))
 
 (use-package avy
   :ensure t
@@ -830,7 +829,7 @@
   ;; Create the directory if it doesn't exist
   (unless (file-exists-p "~/.emacs.d/undo")
     (make-directory "~/.emacs.d/undo" t)))
-  ;; Enable global undo-tree mode
+;; Enable global undo-tree mode
 
 ;; Store all backup files in a centralized directory
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
@@ -868,12 +867,21 @@
 (use-package lsp-mode
   :ensure t
   :init
-  (setq lsp-keymap-prefix "C-l")
+  (setq lsp-keymap-prefix "M-l")
   :bind
   ("M-p l" . lsp-mode)
   :commands (lsp lsp-deferred)
   :config
-  (lsp-enable-which-key-integration t))
+  (lsp-enable-which-key-integration t)
+  (general-define-key
+   :keymaps 'meow-normal-state-keymap
+   :prefix "h"
+   "h" #'lsp-ui-doc-glance
+   "d" #'lsp-ui-peek-find-definitions
+   "e" #'lsp-ui-flycheck-list
+   "r" #'lsp-ui-peek-find-references
+   "i" #'lsp-ui-peek-find-implementations)
+  (define-key lsp-mode-map [remap xref-find-apropos] #'helm-lsp-workspace-symbol))
 
 (use-package lsp-ui
   :ensure t
@@ -1018,8 +1026,7 @@
   :mode "\\.dart\\'"
   :hook (dart-mode . lsp-deferred))
 
-(use-package lsp-dart
-  :after lsp-mode)
+;; (use-package lsp-dart)
 
 (use-package company
   :ensure t

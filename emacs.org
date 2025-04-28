@@ -465,7 +465,6 @@ Trying the modal editor meow
      '("f" . meow-find)
      '("g" . meow-cancel-selection)
      '("G" . meow-grab)
-     '("h" . undefined)         ;; Disable old left binding
      '("H" . meow-left-expand)
      '("i" . meow-right) ;; Right (forward char)
      '("I" . meow-right-expand)
@@ -520,29 +519,29 @@ Some commands for completing meow, adding the ones I'm used to.
   ;; tabs manipulations
   (with-eval-after-load 'general
     
-  (general-define-key
-   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-   :prefix "#"
-   "l" #'tab-new
-   "d" #'dired-other-tab
-   "f" #'find-file-other-tab
-   "r" #'tab-rename
-   "u" #'tab-close
-   "i" #'tab-next
-   "n" #'tab-previous)
+    (general-define-key
+     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+     :prefix "#"
+     "l" #'tab-new
+     "d" #'dired-other-tab
+     "f" #'find-file-other-tab
+     "r" #'tab-rename
+     "u" #'tab-close
+     "i" #'tab-next
+     "n" #'tab-previous)
 
-  ;; Some more complex commands
-  (general-define-key
-   :keymaps 'meow-normal-state-keymap
-   :prefix "%"
-   "s" #'scratch-buffer)
+    ;; Some more complex commands
+    (general-define-key
+     :keymaps 'meow-normal-state-keymap
+     :prefix "%"
+     "s" #'scratch-buffer)
 
-  (general-define-key
-   :keymaps 'global-map
-   :prefix "C-c f"
-   "f" #'ffap
-   "s" #'ffap-menu))
-#+end_src
+    (general-define-key
+     :keymaps 'global-map
+     :prefix "C-c f"
+     "f" #'ffap
+     "s" #'ffap-menu))
+   #+end_src
 
 
 * Utilities
@@ -1114,7 +1113,7 @@ Some day undo tree saved my self from losing my progress.
     ;; Create the directory if it doesn't exist
     (unless (file-exists-p "~/.emacs.d/undo")
       (make-directory "~/.emacs.d/undo" t)))
-    ;; Enable global undo-tree mode
+  ;; Enable global undo-tree mode
 #+end_src
 
 
@@ -1181,12 +1180,21 @@ Switching to lsp-mode instead of the default emacs. Lsp-mode has more features t
   (use-package lsp-mode
     :ensure t
     :init
-    (setq lsp-keymap-prefix "C-l")
+    (setq lsp-keymap-prefix "M-l")
     :bind
     ("M-p l" . lsp-mode)
     :commands (lsp lsp-deferred)
     :config
-    (lsp-enable-which-key-integration t))
+    (lsp-enable-which-key-integration t)
+    (general-define-key
+     :keymaps 'meow-normal-state-keymap
+     :prefix "h"
+     "h" #'lsp-ui-doc-glance
+     "d" #'lsp-ui-peek-find-definitions
+     "e" #'lsp-ui-flycheck-list
+     "r" #'lsp-ui-peek-find-references
+     "i" #'lsp-ui-peek-find-implementations)
+    (define-key lsp-mode-map [remap xref-find-apropos] #'helm-lsp-workspace-symbol))
 
   (use-package lsp-ui
     :ensure t
@@ -1423,8 +1431,7 @@ Prettier automatically formats the code for you. I hate when it's in other modes
     :mode "\\.dart\\'"
     :hook (dart-mode . lsp-deferred))
 
-  (use-package lsp-dart
-    :after lsp-mode)
+  ;; (use-package lsp-dart)
 #+end_src
 
 ** Company Mode
