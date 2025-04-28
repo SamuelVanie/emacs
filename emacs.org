@@ -507,7 +507,7 @@ Trying the modal editor meow
     :config
     (meow-setup)
     ;; remove those hints that clutter vision
-    (setq meow-expand-hint-remove-delay 2)
+    (setq meow-expand-hint-remove-delay 0)
     (meow-global-mode 1))
 #+end_src
 
@@ -1135,7 +1135,7 @@ Some day undo tree saved my self from losing my progress.
   ;; Create the directory if it doesn't exist
   (unless (file-exists-p "~/.emacs.d/auto-save-list")
     (make-directory "~/.emacs.d/auto-save-list" t))
-  
+
 #+end_src
 
 
@@ -1562,6 +1562,7 @@ Setting up aider by using the aidermacs package, a convenient way of accessing a
     (setq aidermacs-show-diff-after-change t)
     (setq aidermacs-backend 'vterm)
     (setenv "GROQ_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gq_key") (string-trim (buffer-string))))
+    (setenv "ANTHROPIC_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string))))
     (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))))
 #+end_src
 

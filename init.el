@@ -397,34 +397,34 @@
   :config
   (meow-setup)
   ;; remove those hints that clutter vision
-  (setq meow-expand-hint-remove-delay 2)
+  (setq meow-expand-hint-remove-delay 0)
   (meow-global-mode 1))
 
 ;; tabs manipulations
 (with-eval-after-load 'general
   
-(general-define-key
- :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
- :prefix "#"
- "l" #'tab-new
- "d" #'dired-other-tab
- "f" #'find-file-other-tab
- "r" #'tab-rename
- "u" #'tab-close
- "i" #'tab-next
- "n" #'tab-previous)
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   :prefix "#"
+   "l" #'tab-new
+   "d" #'dired-other-tab
+   "f" #'find-file-other-tab
+   "r" #'tab-rename
+   "u" #'tab-close
+   "i" #'tab-next
+   "n" #'tab-previous)
 
-;; Some more complex commands
-(general-define-key
- :keymaps 'meow-normal-state-keymap
- :prefix "%"
- "s" #'scratch-buffer)
+  ;; Some more complex commands
+  (general-define-key
+   :keymaps 'meow-normal-state-keymap
+   :prefix "%"
+   "s" #'scratch-buffer)
 
-(general-define-key
- :keymaps 'global-map
- :prefix "C-c f"
- "f" #'ffap
- "s" #'ffap-menu))
+  (general-define-key
+   :keymaps 'global-map
+   :prefix "C-c f"
+   "f" #'ffap
+   "s" #'ffap-menu))
 
 (use-package avy
   :ensure t
@@ -1105,6 +1105,7 @@
   (setq aidermacs-show-diff-after-change t)
   (setq aidermacs-backend 'vterm)
   (setenv "GROQ_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gq_key") (string-trim (buffer-string))))
+  (setenv "ANTHROPIC_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string))))
   (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))))
 
 (use-package magit
