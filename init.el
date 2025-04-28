@@ -403,28 +403,28 @@
 ;; tabs manipulations
 (with-eval-after-load 'general
   
-  (general-define-key
-   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-   :prefix "#"
-   "l" #'tab-new
-   "d" #'dired-other-tab
-   "f" #'find-file-other-tab
-   "r" #'tab-rename
-   "u" #'tab-close
-   "i" #'tab-next
-   "n" #'tab-previous)
+(general-define-key
+ :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+ :prefix "#"
+ "l" #'tab-new
+ "d" #'dired-other-tab
+ "f" #'find-file-other-tab
+ "r" #'tab-rename
+ "u" #'tab-close
+ "i" #'tab-next
+ "n" #'tab-previous)
 
-  ;; Some more complex commands
-  (general-define-key
-   :keymaps 'meow-normal-state-keymap
-   :prefix "%"
-   "s" #'scratch-buffer)
+;; Some more complex commands
+(general-define-key
+ :keymaps 'meow-normal-state-keymap
+ :prefix "%"
+ "s" #'scratch-buffer)
 
-  (general-define-key
-   :keymaps 'global-map
-   :prefix "C-c f"
-   "f" #'ffap
-   "s" #'ffap-menu))
+(general-define-key
+ :keymaps 'global-map
+ :prefix "C-c f"
+ "f" #'ffap
+ "s" #'ffap-menu))
 
 (use-package avy
   :ensure t
@@ -532,8 +532,11 @@
   :demand t)
 (use-package ef-themes
   :ensure t
+  :demand t)
+(use-package standard-themes
+  :ensure t
   :demand t
-  :config (load-theme 'doom-acario-dark t))
+  :config (load-theme 'standard-light t))
 
 (use-package all-the-icons
   :ensure t

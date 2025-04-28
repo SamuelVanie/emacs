@@ -699,8 +699,11 @@ Permit to expand region quickly, making it less painful to mark some region.
     :demand t)
   (use-package ef-themes
     :ensure t
+    :demand t)
+  (use-package standard-themes
+    :ensure t
     :demand t
-    :config (load-theme 'doom-acario-dark t))
+    :config (load-theme 'standard-light t))
 #+end_src
 
 ** Adding icons to emacs
