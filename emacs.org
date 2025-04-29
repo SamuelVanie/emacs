@@ -534,14 +534,16 @@ Some commands for completing meow, adding the ones I'm used to.
     (general-define-key
      :keymaps 'meow-normal-state-keymap
      :prefix "%"
-     "s" #'scratch-buffer)
+     "s" #'scratch-buffer
+     "e" #'split-window-below
+     "i" #'split-window-right)
 
     (general-define-key
      :keymaps 'global-map
      :prefix "C-c f"
      "f" #'ffap
      "s" #'ffap-menu))
-   #+end_src
+  #+end_src
 
 
 * Utilities

@@ -417,7 +417,9 @@
   (general-define-key
    :keymaps 'meow-normal-state-keymap
    :prefix "%"
-   "s" #'scratch-buffer)
+   "s" #'scratch-buffer
+   "e" #'split-window-below
+   "i" #'split-window-right)
 
   (general-define-key
    :keymaps 'global-map
