@@ -481,7 +481,11 @@
    "s n"  #'windmove-swap-states-left
    "s i"  #'windmove-swap-states-right
    "s e"  #'windmove-swap-states-down
-   "s u"  #'windmove-swap-states-up)
+   "s u"  #'windmove-swap-states-up
+   "d n"  #'windmove-delete-left
+   "d i"  #'windmove-delete-right
+   "d e"  #'windmove-delete-down
+   "d u"  #'windmove-delete-up)
   )
 
 (use-package vterm
