@@ -1077,6 +1077,19 @@ Org mode's [[https://orgmode.org/manual/Structure-Templates.html][structure temp
   (add-to-list 'org-structure-template-alist '("cpp" . "src cpp"))
 #+end_src
 
+
+** From org-mode to typst
+
+Typst is a markup language better than latex and org in my point of view due to the customization functionalities that its provide.
+
+
+#+begin_src emacs-lisp
+  (use-package ox-typst
+    :ensure t
+    :after org)
+#+end_src
+
+
 ** Auto-tangle Configuration files
 
 This snippets adds a hook to `org-mode` buffers so that efs/org-babel-tangle-config gets executed each time such a buffer gets saved. This function checks to see if the file being saved is the Emacs.org file you’re looking at right now, and if so, automatically exports the configuration here to the associated output files. Tangle is use to export org mode files into the configuration init.el file.

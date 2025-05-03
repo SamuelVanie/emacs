@@ -812,6 +812,10 @@
 
 (add-to-list 'org-structure-template-alist '("cpp" . "src cpp"))
 
+(use-package ox-typst
+  :ensure t
+  :after org)
+
 ;; Automatically tangle our Emacs.org config file when we save it
 (defun smv/org-babel-tangle-config ()
   (when (string-equal (buffer-file-name)
