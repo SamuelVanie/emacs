@@ -1306,7 +1306,12 @@ Useful snippets for quick programming
   (use-package yasnippet
     :ensure t
     :demand t
-    :config (yas-global-mode))
+    :config
+    (yas-global-mode)
+    (general-define-key
+     :prefix "C-c s"
+     "s" #'yas-insert-snippet
+     "r" #'yas-reload-all))
 
   (use-package yasnippet-snippets
     :ensure t
