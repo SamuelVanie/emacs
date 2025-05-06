@@ -1289,7 +1289,9 @@ This is a better flymake, it has many features. That permits to better see the e
 #+begin_src emacs-lisp
   (use-package flycheck
     :ensure t
-    :demand t)
+    :demand t
+    :config
+    (setq flycheck-error-list-minimum-level 'error))
 #+end_src
 
 **** markdown-mode

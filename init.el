@@ -938,7 +938,9 @@
 
 (use-package flycheck
   :ensure t
-  :demand t)
+  :demand t
+  :config
+  (setq flycheck-error-list-minimum-level 'error))
 
 (use-package markdown-mode
   :ensure t
