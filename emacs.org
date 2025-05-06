@@ -9,6 +9,8 @@
   (global-unset-key (kbd "C-z"))
   (global-unset-key (kbd "C-x C-z"))
 
+  (setq warning-minimum-level :error)
+
   (cond
    ((eq system-type 'darwin)  ;; macOS
     (setq read-process-output-max (* 64 1024)))  ;; 64KB
