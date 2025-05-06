@@ -1045,7 +1045,9 @@
   :mode "\\.dart\\'"
   :hook (dart-mode . lsp-deferred))
 
-;; (use-package lsp-dart)
+(use-package lsp-dart
+  :defer t
+  :after lsp-mode)
 
 (use-package company
   :ensure t

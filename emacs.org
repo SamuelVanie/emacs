@@ -1459,7 +1459,9 @@ Prettier automatically formats the code for you. I hate when it's in other modes
     :mode "\\.dart\\'"
     :hook (dart-mode . lsp-deferred))
 
-  ;; (use-package lsp-dart)
+  (use-package lsp-dart
+    :defer t
+    :after lsp-mode)
 #+end_src
 
 ** Company Mode
