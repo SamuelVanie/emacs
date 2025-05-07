@@ -890,7 +890,7 @@
   :init
   (setq lsp-keymap-prefix "M-l")
   :bind
-  ("M-p l" . lsp-mode)
+  ("M-p M-p" . lsp-mode)
   :commands (lsp lsp-deferred)
   :config
   (lsp-enable-which-key-integration t)
