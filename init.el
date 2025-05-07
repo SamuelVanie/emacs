@@ -309,6 +309,7 @@
    '("V" . meow-unpop-to-mark)
    '("<" . back-to-indentation)
    '(">" . end-of-visual-line)
+   '("K" . kill-buffer)
    )
 
   (meow-leader-define-key
@@ -362,6 +363,7 @@
    '("I" . meow-right-expand)
    '("j" . meow-join)
    '("k" . meow-kill)
+   '("K" . kill-buffer)
    '("l" . meow-line)
    '("L" . meow-goto-line)
    '("m" . meow-mark-word)
@@ -390,6 +392,7 @@
    '("z" . meow-pop-selection)
    '("<" . back-to-indentation)
    '(">" . end-of-visual-line)
+   '("=" . meow-indent)
    '("<escape>" . ignore)))
 
 (use-package meow
