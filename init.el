@@ -373,6 +373,7 @@
    '("p" . meow-yank)
    '("q" . meow-quit)
    '("r" . meow-replace)
+   '("R" . meow-swap-grab)
    '("s" . meow-insert)
    '("S" . meow-open-above)
    '("t" . meow-till)
@@ -387,7 +388,6 @@
    '("y" . meow-save)
    '("Y" . copy-from-above-command)
    '("z" . meow-pop-selection)
-   '("'" . repeat)
    '("<" . back-to-indentation)
    '(">" . end-of-visual-line)
    '("<escape>" . ignore)))
@@ -532,7 +532,16 @@
   :config
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-   "*" #'er/expand-region))
+   "*" #'er/expand-region)
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   :prefix "'"
+   "o" #'er/mark-outside-pairs
+   "i" #'er/mark-inside-pairs
+   "u" #'er/mark-url
+   "n" #'er/mark-ts-node
+   "d" #'er/mark-method-call
+   "m" #'er/mark-email))
 
 (use-package doom-themes
   :ensure t

@@ -483,6 +483,7 @@ Trying the modal editor meow
      '("p" . meow-yank)
      '("q" . meow-quit)
      '("r" . meow-replace)
+     '("R" . meow-swap-grab)
      '("s" . meow-insert)
      '("S" . meow-open-above)
      '("t" . meow-till)
@@ -497,7 +498,6 @@ Trying the modal editor meow
      '("y" . meow-save)
      '("Y" . copy-from-above-command)
      '("z" . meow-pop-selection)
-     '("'" . repeat)
      '("<" . back-to-indentation)
      '(">" . end-of-visual-line)
      '("<escape>" . ignore)))
@@ -690,7 +690,16 @@ Permit to expand region quickly, making it less painful to mark some region.
     :config
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-     "*" #'er/expand-region))
+     "*" #'er/expand-region)
+    (general-define-key
+     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+     :prefix "'"
+     "o" #'er/mark-outside-pairs
+     "i" #'er/mark-inside-pairs
+     "u" #'er/mark-url
+     "n" #'er/mark-ts-node
+     "d" #'er/mark-method-call
+     "m" #'er/mark-email))
 #+end_src
 
 
