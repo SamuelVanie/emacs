@@ -949,7 +949,14 @@
   :ensure t
   :demand t
   :config
-  (setq flycheck-error-list-minimum-level 'error))
+  (setq flycheck-error-list-minimum-level 'error)
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   :prefix "("
+   "(" #'flycheck-clear
+   "d" #'flycheck-disable-checker
+   ")" #'flycheck-list-errors)
+  )
 
 (use-package markdown-mode
   :ensure t
