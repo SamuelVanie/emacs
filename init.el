@@ -307,8 +307,8 @@
    '("i" . meow-right)
    '("C" . meow-pop-to-mark)
    '("V" . meow-unpop-to-mark)
-   '("<" . back-to-indentation)
-   '(">" . end-of-visual-line)
+   '("<" . previous-buffer)
+   '(">" . next-buffer)
    '("K" . kill-this-buffer)
    )
 
@@ -390,9 +390,8 @@
    '("y" . meow-save)
    '("Y" . copy-from-above-command)
    '("z" . meow-pop-selection)
-   '("<" . back-to-indentation)
+   '("<" . previous-buffer)
    '(">" . end-of-visual-line)
-   '("=" . meow-indent)
    '("<escape>" . ignore)))
 
 (use-package meow
@@ -425,6 +424,15 @@
    "s" #'scratch-buffer
    "e" #'split-window-below
    "i" #'split-window-right)
+
+
+  ;; Some more complex commands
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   :prefix "="
+   "=" #'meow-indent
+   "t" #'repeat
+   "r" #'repeat-complex-command)
 
   (general-define-key
    :keymaps 'global-map
