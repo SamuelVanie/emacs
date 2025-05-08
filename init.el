@@ -309,7 +309,7 @@
    '("V" . meow-unpop-to-mark)
    '("<" . previous-buffer)
    '(">" . next-buffer)
-   '("K" . kill-this-buffer)
+   '("K" . kill-current-buffer)
    )
 
   (meow-leader-define-key
@@ -363,7 +363,7 @@
    '("I" . meow-right-expand)
    '("j" . meow-join)
    '("k" . meow-kill)
-   '("K" . kill-this-buffer)
+   '("K" . kill-current-buffer)
    '("l" . meow-line)
    '("L" . meow-goto-line)
    '("m" . meow-mark-word)
