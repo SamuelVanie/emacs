@@ -563,7 +563,7 @@
 (use-package standard-themes
   :ensure t
   :demand t
-  :config (load-theme 'standard-light t))
+  :config (load-theme 'standard-dark-tinted t))
 
 (use-package all-the-icons
   :ensure t
