@@ -1585,15 +1585,14 @@ Some package required for gptel and magit
 #+end_src
 
 
-** Direnv
+** Envrc
 
-Provides direnv integration inside emacs
+Envrc feels quicker than direnv, still have to reload the environment manually but this is good.
 
 #+begin_src emacs-lisp
-  (use-package direnv
+  (use-package envrc
     :ensure t
-    :config
-    (direnv-mode))
+    :hook (after-init . envrc-global-mode))
 #+end_src
 
 ** Gptel
