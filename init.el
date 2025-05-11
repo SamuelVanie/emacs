@@ -1069,11 +1069,13 @@
   :hook (ruby-ts-mode . lsp-deferred))
 
 (use-package dart-mode
+  :ensure t
   :defer t
   :mode "\\.dart\\'"
   :hook (dart-mode . lsp-deferred))
 
 (use-package lsp-dart
+  :ensure t
   :defer t
   :after lsp-mode)
 
@@ -1137,9 +1139,10 @@
 (use-package transient
   :ensure t)
 
-(use-package envrc
+(use-package direnv
   :ensure t
-  :hook (after-init . envrc-global-mode))
+  :config
+  (direnv-mode))
 
 (use-package gptel
   :ensure t

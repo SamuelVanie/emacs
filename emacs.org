@@ -1483,11 +1483,13 @@ Prettier automatically formats the code for you. I hate when it's in other modes
 
 #+begin_src emacs-lisp
   (use-package dart-mode
+    :ensure t
     :defer t
     :mode "\\.dart\\'"
     :hook (dart-mode . lsp-deferred))
 
   (use-package lsp-dart
+    :ensure t
     :defer t
     :after lsp-mode)
 #+end_src
@@ -1585,14 +1587,15 @@ Some package required for gptel and magit
 #+end_src
 
 
-** Envrc
+** Direnv
 
-Envrc feels quicker than direnv, still have to reload the environment manually but this is good.
+Do not tell me about anything else, direnv is the best package if you want nix to reload your env directly inside emacs.
 
 #+begin_src emacs-lisp
-  (use-package envrc
+  (use-package direnv
     :ensure t
-    :hook (after-init . envrc-global-mode))
+    :config
+    (direnv-mode))
 #+end_src
 
 ** Gptel
