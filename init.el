@@ -953,6 +953,7 @@
 (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
 
 (use-package nix-mode
+  :ensure t
   :mode "\\.nix\\'"
   :config
   :hook (nix-mode . lsp-deferred))

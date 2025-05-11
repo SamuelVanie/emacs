@@ -1290,6 +1290,7 @@ Nix is a package manager and a language that I use to setup devshell or to build
 
 #+begin_src emacs-lisp
   (use-package nix-mode
+    :ensure t
     :mode "\\.nix\\'"
     :config
     :hook (nix-mode . lsp-deferred))
