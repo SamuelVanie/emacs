@@ -1163,9 +1163,7 @@
   :ensure t)
 
 (use-package direnv
-  :ensure t
-  :config
-  (direnv-mode))
+  :ensure t)
 
 (use-package gptel
   :ensure t

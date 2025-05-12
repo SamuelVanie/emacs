@@ -1616,9 +1616,7 @@ Do not tell me about anything else, direnv is the best package if you want nix t
 
 #+begin_src emacs-lisp
   (use-package direnv
-    :ensure t
-    :config
-    (direnv-mode))
+    :ensure t)
 #+end_src
 
 ** Gptel
