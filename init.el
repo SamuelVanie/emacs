@@ -619,6 +619,28 @@
       (call-process zoxide nil t nil "query" "-l")
       (split-string (buffer-string) "\n" t))))
 
+
+(defun smv/zoxide-add-path (path-to-add)
+  "Internal helper to add a given PATH-TO-ADD to zoxide.
+  Returns t on success, nil on failure."
+  (let ((expanded-path (expand-file-name path-to-add)))
+    (if (file-directory-p expanded-path)
+        (progn
+          (call-process (executable-find "zoxide") nil nil nil "add" expanded-path)
+          (message "Added '%s' to zoxide." expanded-path)
+          t)
+      (message "'%s' is not a valid directory." expanded-path)
+      nil)))
+
+(defun smv/zoxide-add-prompt-directory ()
+  "Prompt for a directory and add it to zoxide."
+  (interactive)
+  (if-let ((zoxide (executable-find "zoxide")))
+      (let ((dir (read-directory-name "Directory to add to zoxide: " default-directory nil t)))
+        (when dir ; User didn't cancel
+          (smv/zoxide-add-path dir)))
+    (message "zoxide executable not found.")))
+
 (defun smv/helm-zoxide-source ()
   "Create a Helm source for zoxide directories."
   (helm-build-sync-source "Zoxide Directories"
