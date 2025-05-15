@@ -184,6 +184,15 @@
 ;; this will make emacs ibuffer the default used to list buffers
 (defalias 'list-buffers 'ibuffer)
 
+;; Ibuffer appearance configuration
+(setq ibuffer-use-other-window t)
+(add-to-list 'display-buffer-alist
+           '("\\*Ibuffer\\*"
+             (display-buffer-in-side-window)
+             (window-height . 0.3)     ;; Takes 30% of the frame height
+             (side . bottom)           ;; Display at bottom
+             (slot . 0)))
+
 (defun kill-all-buffers ()
   "Kill all buffers without asking for confirmation."
   (interactive)
@@ -518,7 +527,7 @@
   ;; terminal height percent of 30
   (setq multi-vterm-dedicated-window-height-percent 45))
 
-(setq browse-url-generic-program "microsoft-edge-stable")
+(setq browse-url-generic-program "MicrosoftEdge.exe")
 (defun smv/browse-search ()
   "Unified search across multiple websites."
   (interactive)
@@ -746,8 +755,7 @@
 
   (setq org-agenda-files
         '("~/.org/todo.org"
-          "~/.org/projects.org"
-          "~/.org/personal.org"))
+          "~/.org/projects.org"))
 
   (setq org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
@@ -789,6 +797,8 @@
           ("pt" "Personal todos" tags-todo "+personal/TODO")
           ("pl" "Personal Projects" tags-todo "+personal/ACTIVE")
           ("pr" "Personal Review" tags-todo "+personal/REVIEW")
+          
+          ("oa" "OnePoint Archimind" tags "+archimind+@school+coding/TODO")
 
           ;; Low-effort next actions
           ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
@@ -799,7 +809,9 @@
   (setq org-capture-templates ;; quickly add todos entries without going into the file
         `(("t" "Tasks")
           ("tt" "Task" entry (file+olp "~/.org/todo.org" "Tasks")
-           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
+           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
+          ("ta" "Archimind task" entry (file+regexp "~/.org/todo.org" "PHASE 5")
+           "**** TODO %?\n %T\n %a\n %i")))
 
 
   (smv/org-font-setup)
