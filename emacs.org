@@ -611,6 +611,24 @@ Some commands for completing meow, adding the ones I'm used to.
 #+end_src
 
 
+** Multicursors
+
+Made modification on multiple places quicker in emacs.
+Find the repository here : [[https://github.com/magnars/multiple-cursors.el][multicursors]]
+
+#+begin_src emacs-lisp
+  (use-package multiple-cursors
+    :ensure t
+    :demand t
+    :config
+    (general-define-key
+     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+     :prefix "+"
+     "+" #'mc/edit-lines
+     ">" #'mc/mark-next-like-this
+     "<" #'mc/mark-previous-like-this
+     "=" #'mc/mark-all-like-this))
+#+end_src
 
 
 ** Windows
@@ -738,7 +756,7 @@ Permit to expand region quickly, making it less painful to mark some region.
   (use-package standard-themes
     :ensure t
     :demand t
-    :config (load-theme 'standard-dark-tinted t))
+    :config (load-theme 'doom-meltbus t))
 #+end_src
 
 ** Adding icons to emacs

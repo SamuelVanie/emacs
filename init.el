@@ -484,6 +484,18 @@
    "r r"  #'avy-resume
    "r m"  #'avy-move-region))
 
+(use-package multiple-cursors
+  :ensure t
+  :demand t
+  :config
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   :prefix "+"
+   "+" #'mc/edit-lines
+   ">" #'mc/mark-next-like-this
+   "<" #'mc/mark-previous-like-this
+   "=" #'mc/mark-all-like-this))
+
 (use-package windmove
   :after meow
   :ensure nil
@@ -572,7 +584,7 @@
 (use-package standard-themes
   :ensure t
   :demand t
-  :config (load-theme 'standard-dark-tinted t))
+  :config (load-theme 'doom-meltbus t))
 
 (use-package all-the-icons
   :ensure t
