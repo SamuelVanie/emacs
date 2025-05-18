@@ -528,7 +528,6 @@
 
 (use-package multi-vterm
   :after vterm
-  :ensure t
   :defer t
   :bind (("C-c v n" . multi-vterm-project)
          ("C-c v f" . multi-vterm)
@@ -955,7 +954,8 @@
   (general-define-key
    :keymaps 'meow-normal-state-keymap
    :prefix "h"
-   "h" #'lsp-ui-doc-glance
+   "h" #'lsp-ui-doc-toggle
+   "q" #'lsp-ui-doc-hide
    "d" #'lsp-ui-peek-find-definitions
    "e" #'lsp-ui-flycheck-list
    "r" #'lsp-ui-peek-find-references
@@ -967,36 +967,36 @@
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
 
-(defun lsp-booster--advice-json-parse (old-fn &rest args)
-  "Try to parse bytecode instead of json."
-  (or
-   (when (equal (following-char) ?#)
-     (let ((bytecode (read (current-buffer))))
-       (when (byte-code-function-p bytecode)
-         (funcall bytecode))))
-   (apply old-fn args)))
-(advice-add (if (progn (require 'json)
-                       (fboundp 'json-parse-buffer))
-                'json-parse-buffer
-              'json-read)
-            :around
-            #'lsp-booster--advice-json-parse)
+;; (defun lsp-booster--advice-json-parse (old-fn &rest args)
+;;   "Try to parse bytecode instead of json."
+;;   (or
+;;    (when (equal (following-char) ?#)
+;;      (let ((bytecode (read (current-buffer))))
+;;        (when (byte-code-function-p bytecode)
+;;          (funcall bytecode))))
+;;    (apply old-fn args)))
+;; (advice-add (if (progn (require 'json)
+;;                        (fboundp 'json-parse-buffer))
+;;                 'json-parse-buffer
+;;               'json-read)
+;;             :around
+;;             #'lsp-booster--advice-json-parse)
 
-(defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
-  "Prepend emacs-lsp-booster command to lsp CMD."
-  (let ((orig-result (funcall old-fn cmd test?)))
-    (if (and (not test?)                             ;; for check lsp-server-present?
-             (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
-             lsp-use-plists
-             (not (functionp 'json-rpc-connection))  ;; native json-rpc
-             (executable-find "emacs-lsp-booster"))
-        (progn
-          (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
-            (setcar orig-result command-from-exec-path))
-          (message "Using emacs-lsp-booster for %s!" orig-result)
-          (cons "emacs-lsp-booster" orig-result))
-      orig-result)))
-(advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
+;; (defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+;;   "Prepend emacs-lsp-booster command to lsp CMD."
+;;   (let ((orig-result (funcall old-fn cmd test?)))
+;;     (if (and (not test?)                             ;; for check lsp-server-present?
+;;              (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+;;              lsp-use-plists
+;;              (not (functionp 'json-rpc-connection))  ;; native json-rpc
+;;              (executable-find "emacs-lsp-booster"))
+;;         (progn
+;;           (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
+;;             (setcar orig-result command-from-exec-path))
+;;           (message "Using emacs-lsp-booster for %s!" orig-result)
+;;           (cons "emacs-lsp-booster" orig-result))
+;;       orig-result)))
+;; (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
 
 (use-package nix-mode
   :ensure t
@@ -1114,6 +1114,19 @@
   :defer t
   :mode "\\.rb\\'"
   :hook (ruby-ts-mode . lsp-deferred))
+
+(use-package typst-ts-mode
+  :ensure t
+  :defer t
+  :mode "\\.typ\\'")
+
+(with-eval-after-load 'lsp-mode
+  (add-to-list 'lsp-language-id-configuration '(".*\\.typ" . "typst"))
+
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection '("tinymist")) ; Or the command to run your LSP server
+                    :activation-fn (lsp-activate-on "typst")
+                    :server-id 'tinymist)))
 
 (use-package dart-mode
   :ensure t
