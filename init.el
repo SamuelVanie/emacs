@@ -956,6 +956,8 @@
    :prefix "h"
    "h" #'lsp-ui-doc-toggle
    "q" #'lsp-ui-doc-hide
+   "f" #'lsp-ui-doc-focus-frame
+   "u" #'lsp-ui-doc-unfocus-frame
    "d" #'lsp-ui-peek-find-definitions
    "e" #'lsp-ui-flycheck-list
    "r" #'lsp-ui-peek-find-references
