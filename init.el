@@ -951,6 +951,7 @@
   :commands (lsp lsp-deferred)
   :config
   (lsp-enable-which-key-integration t)
+  (lsp-ui-doc-show-with-mouse nil)
   (general-define-key
    :keymaps 'meow-normal-state-keymap
    :prefix "h"
