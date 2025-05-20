@@ -621,6 +621,7 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
     :ensure t
     :demand t
     :config
+    (setq mc/cmds-to-run-once '())
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
      :prefix "+"
@@ -1278,7 +1279,7 @@ Switching to lsp-mode instead of the default emacs. Lsp-mode has more features t
     :commands (lsp lsp-deferred)
     :config
     (lsp-enable-which-key-integration t)
-    (lsp-ui-doc-show-with-mouse nil)
+    (setq lsp-ui-doc-show-with-mouse nil)
     (general-define-key
      :keymaps 'meow-normal-state-keymap
      :prefix "h"

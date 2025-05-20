@@ -488,6 +488,7 @@
   :ensure t
   :demand t
   :config
+  (setq mc/cmds-to-run-once '())
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    :prefix "+"
@@ -951,7 +952,7 @@
   :commands (lsp lsp-deferred)
   :config
   (lsp-enable-which-key-integration t)
-  (lsp-ui-doc-show-with-mouse nil)
+  (setq lsp-ui-doc-show-with-mouse nil)
   (general-define-key
    :keymaps 'meow-normal-state-keymap
    :prefix "h"
