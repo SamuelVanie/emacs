@@ -489,13 +489,34 @@
   :demand t
   :config
   (setq mc/cmds-to-run-once '())
+  (defhydra hydra-multiple-cursors (:hint nil)
+    "
+ ^Mark^             ^Skip^               ^Edit^
+ ^^^^^^^^-----------------------------------------
+ _>_: next like this    _i_: to next like this   _+_: edit lines
+ _<_: prev like this    _n_: to prev like this   _=_: mark all like this
+ _q_: quit
+ "
+    ("+" mc/edit-lines)
+    (">" mc/mark-next-like-this)
+    ("<" mc/mark-previous-like-this)
+    ("=" mc/mark-all-like-this)
+    ("i" mc/skip-to-next-like-this)
+    ("n" mc/skip-to-previous-like-this)
+    ("q" nil))
+  (define-key mc/keymap (kbd "<return>") nil)
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-   :prefix "+"
-   "+" #'mc/edit-lines
-   ">" #'mc/mark-next-like-this
-   "<" #'mc/mark-previous-like-this
-   "=" #'mc/mark-all-like-this))
+   "+" #'hydra-multiple-cursors/body)
+  (setq mc/cmds-to-run-once
+        (append mc/cmds-to-run-once
+                '(hydra-multiple-cursors/body
+                  hydra-multiple-cursors/mc/edit-lines
+                  hydra-multiple-cursors/mc/mark-next-like-this
+                  hydra-multiple-cursors/mc/mark-previous-like-this
+                  hydra-multiple-cursors/mc/mark-all-like-this
+                  hydra-multiple-cursors/mc/skip-to-next-like-this
+                  hydra-multiple-cursors/mc/skip-to-previous-like-this))))
 
 (use-package windmove
   :after meow
