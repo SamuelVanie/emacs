@@ -605,7 +605,7 @@
 (use-package standard-themes
   :ensure t
   :demand t
-  :config (load-theme 'doom-meltbus t))
+  :config (load-theme 'doom-meltbus t));; meltbus
 
 (use-package all-the-icons
   :ensure t
@@ -1220,6 +1220,9 @@
    gptel-model 'gemini-pro
    gptel-backend (gptel-make-gemini "Gemini"
                    :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
+                   :stream t)
+   gptel-backend (gptel-make-anthropic "Anthropic"
+                   :key (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string)))
                    :stream t))
   :bind ("C-c g" . gptel-send))
 
