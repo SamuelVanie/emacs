@@ -605,7 +605,7 @@
 (use-package standard-themes
   :ensure t
   :demand t
-  :config (load-theme 'doom-meltbus t));; meltbus
+  :config (load-theme 'doom-challenger-deep t));; meltbus
 
 (use-package all-the-icons
   :ensure t
