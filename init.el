@@ -444,6 +444,17 @@
    "r" #'repeat-complex-command)
 
   (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   :prefix ")"
+   "n" #'smerge-vc-next-conflict
+   "m" #'smerge-keep-mine
+   "o" #'smerge-keep-other
+   "b" #'smerge-keep-all
+   "r" #'smerge-refine
+   "s" #'smerge-resolve)
+
+  
+  (general-define-key
    :keymaps 'global-map
    :prefix "C-c f"
    "f" #'ffap
@@ -605,7 +616,7 @@
 (use-package standard-themes
   :ensure t
   :demand t
-  :config (load-theme 'doom-challenger-deep t));; meltbus
+  :config (load-theme 'doom-dark+ t));; meltbus
 
 (use-package all-the-icons
   :ensure t
@@ -1215,6 +1226,8 @@
   :ensure t
   :demand t
   :config
+  ;; something that makes it more convenient to add mcp tools in gptel
+  (require 'gptel-integrations)
   ;; OPTIONAL configuration
   (setq
    gptel-model 'gemini-pro
@@ -1224,7 +1237,45 @@
    gptel-backend (gptel-make-anthropic "Anthropic"
                    :key (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string)))
                    :stream t))
+  (gptel-make-openai "OpenRouter"
+    :host "openrouter.ai"
+    :endpoint "/api/v1/chat/completions"
+    :stream t
+    :key (with-temp-buffer (insert-file-contents "~/.org/.openr_key") (string-trim (buffer-string)))
+    :models '(openai/gpt-3.5-turbo
+              mistralai/mixtral-8x7b-instruct
+              meta-llama/codellama-34b-instruct
+              codellama/codellama-70b-instruct
+              google/palm-2-codechat-bison-32k
+              google/gemini-pro))
   :bind ("C-c g" . gptel-send))
+
+(defun smv-tool/run_command (command)
+  (shell-command-to-string command))
+
+(with-eval-after-load 'gptel
+  (gptel-make-tool
+   :name "run_command"                    ; javascript-style  snake_case name
+   :function #'smv-tool/run_command
+   :description "Execute a shell command on the system and get the corresponding output"
+   :confirm t
+   :include t
+   :args (list '(:name "command"             ; a list of argument specifications
+                       :type string
+                       :description "The shell command to execute"))
+   :category "system")
+  )
+
+(use-package mcp
+  :ensure (:fetcher github :repo "lizqwerscott/mcp.el" :files ("*.el"))
+  :demand t
+  :after gptel
+  :custom (mcp-hub-servers
+           `(
+             ("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "/home/svanie/projects/ai_retrodoc")))
+             ("Context7" . (:command "npx" :args ("-y" "@upstash/context7-mcp")))
+             ))
+  :config (require 'mcp-hub))
 
 (use-package aidermacs
   :ensure (:fetcher github :repo "MatthewZMD/aidermacs" :files ("*.el"))
