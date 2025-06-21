@@ -1243,8 +1243,8 @@
               google/palm-2-codechat-bison-32k
               google/gemini-pro))
   :bind
-  ("C-c g s" . gptel-send)
-  ("C-c g g" . gptel))
+  ("C-c RET" . gptel-send)
+  ("C-c g" . gptel))
 
 ;; My custom emacs tools
 (defun smv-tool/run_command (command)
