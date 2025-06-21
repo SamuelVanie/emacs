@@ -1692,6 +1692,7 @@ Mode to interact with different llms in emacs.
     (require 'gptel-integrations)
     ;; OPTIONAL configuration
     (setq gptel-default-mode 'org-mode)
+    (setq gptel-use-context 'user)
     (setq
      gptel-model 'gemini-pro
      gptel-backend (gptel-make-gemini "Gemini"
@@ -1705,12 +1706,27 @@ Mode to interact with different llms in emacs.
       :endpoint "/api/v1/chat/completions"
       :stream t
       :key (with-temp-buffer (insert-file-contents "~/.org/.openr_key") (string-trim (buffer-string)))
-      :models '(openai/gpt-3.5-turbo
-                mistralai/mixtral-8x7b-instruct
-                meta-llama/codellama-34b-instruct
-                codellama/codellama-70b-instruct
-                google/palm-2-codechat-bison-32k
-                google/gemini-pro))
+      :models '(
+                anthropic/claude-sonnet-4 ;; 3 in - 15 out
+                x-ai/grok-3-beta ;; 3 in - 15 out
+                openai/o3-mini ;; 1.10 in - 4.40 out
+                openai/o4-mini ;; 1.0 in - 4.10 out
+                openai/o4-mini-high ;; 1.0 in - 4.10 out
+                minimax/minimax-m1:extended ;; 0.55 in - 2.20 out
+                openai/gpt-4.1-mini ;; 0.40 in - 1.60 out
+                deepseek/deepseek-chat-v3-0324 ;; 0.33 in - 1.30 out
+                minimax/minimax-m1 ;; 0.30 in - 1.65 out
+                x-ai/grok-3-mini ;; 0.30 in - 0.50 out
+                minimax/minimax-01 ;; 0.20 in - 1.10 out
+                google/gemini-2.5-flash-preview:thinking ;; 0.15 in - 3.50 out
+                google/gemini-2.5-flash-preview ;; 0.15 in - 0.60 out
+                google/gemini-2.5-flash-lite-preview-06-17
+                openai/gpt-4.1-nano ;; 0.10 in - 0.40 out
+                google/gemini-2.0-flash-lite-001 ;; 0.075 in - 0.30 out
+                google/gemini-2.5-pro-exp-03-25 ;; free
+                deepseek/deepseek-chat-v3-0324:free ;; free
+                deepseek/deepseek-r1-0528:free ;; free
+                ))
     :bind
     ("C-c RET" . gptel-send)
     ("C-c g" . gptel))
@@ -1741,7 +1757,7 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
      :include t
      :args (list '(:name "command"             ; a list of argument specifications
                          :type string
-                         :description "The shell command to execute"))
+                         :description "The shell command to execute. e.g: echo 'test'"))
      :category "system")
 
     (gptel-make-tool
@@ -1751,7 +1767,7 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
      :confirm t
      :args (list '(:name "url"             ; a list of argument specifications
                          :type string
-                         :description "The url of the webpage to fetch"))
+                         :description "The url of the webpage to fetch. e.g: https://google.com"))
      :category "browsing")
     )
 #+end_src
