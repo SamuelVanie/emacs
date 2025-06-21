@@ -1112,7 +1112,6 @@ This section contains the basic configuration for org-mode plus the configuratio
 I use also `org-num` to add numbers in front of my different headlines.
 
 #+begin_src emacs-lisp
-
   (use-package org-bullets ;; change the bullets in my org mode files
     :ensure t
     :demand t
@@ -1120,13 +1119,6 @@ I use also `org-num` to add numbers in front of my different headlines.
     :hook (org-mode . org-bullets-mode)
     :custom
     (org-bullets-bullet-list '("◉" "☯" "○" "☯" "✸" "☯" "✿" "☯" "✜" "☯" "◆" "☯" "▶")))
-
-  ;; Outline numbering for org mode
-  (use-package org-num
-    :ensure nil
-    :load-path "lisp/"
-    :after org
-    :hook (org-mode . org-num-mode))
 #+end_src
 
 
@@ -1707,6 +1699,7 @@ Mode to interact with different llms in emacs.
      gptel-backend (gptel-make-anthropic "Anthropic"
                      :key (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string)))
                      :stream t))
+    gptel-default-mode 'org-mode
     (gptel-make-openai "OpenRouter"
       :host "openrouter.ai"
       :endpoint "/api/v1/chat/completions"
@@ -1718,7 +1711,9 @@ Mode to interact with different llms in emacs.
                 codellama/codellama-70b-instruct
                 google/palm-2-codechat-bison-32k
                 google/gemini-pro))
-    :bind ("C-c g" . gptel-send))
+    :bind
+    ("C-c g s" . gptel-send)
+    ("C-c g g" . gptel))
 #+end_src
 
 
@@ -1726,9 +1721,8 @@ Mode to interact with different llms in emacs.
 
 This permits to add interaction capabilities to my llm. LLMs will be able to use some tools to get more context if needed.
 
-
-
 #+begin_src emacs-lisp
+  ;; My custom emacs tools
   (defun smv-tool/run_command (command)
     (shell-command-to-string command))
 
@@ -1748,6 +1742,7 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
 
 
 #+begin_src emacs-lisp
+  ;; tools from mcp servers
   (use-package mcp
     :ensure (:fetcher github :repo "lizqwerscott/mcp.el" :files ("*.el"))
     :demand t

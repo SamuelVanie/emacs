@@ -870,13 +870,6 @@
   :custom
   (org-bullets-bullet-list '("◉" "☯" "○" "☯" "✸" "☯" "✿" "☯" "✜" "☯" "◆" "☯" "▶")))
 
-;; Outline numbering for org mode
-(use-package org-num
-  :ensure nil
-  :load-path "lisp/"
-  :after org
-  :hook (org-mode . org-num-mode))
-
 (use-package org-journal
   :ensure t
   :defer t
@@ -1237,6 +1230,7 @@
    gptel-backend (gptel-make-anthropic "Anthropic"
                    :key (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string)))
                    :stream t))
+  gptel-default-mode 'org-mode
   (gptel-make-openai "OpenRouter"
     :host "openrouter.ai"
     :endpoint "/api/v1/chat/completions"
@@ -1248,8 +1242,11 @@
               codellama/codellama-70b-instruct
               google/palm-2-codechat-bison-32k
               google/gemini-pro))
-  :bind ("C-c g" . gptel-send))
+  :bind
+  ("C-c g s" . gptel-send)
+  ("C-c g g" . gptel))
 
+;; My custom emacs tools
 (defun smv-tool/run_command (command)
   (shell-command-to-string command))
 
@@ -1266,6 +1263,7 @@
    :category "system")
   )
 
+;; tools from mcp servers
 (use-package mcp
   :ensure (:fetcher github :repo "lizqwerscott/mcp.el" :files ("*.el"))
   :demand t
