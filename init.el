@@ -1251,6 +1251,7 @@
   (shell-command-to-string command))
 
 (with-eval-after-load 'gptel
+  ;; shell command execution tool
   (gptel-make-tool
    :name "run_command"                    ; javascript-style  snake_case name
    :function #'smv-tool/run_command
@@ -1272,6 +1273,7 @@
            `(
              ("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "/home/svanie/projects/ai_retrodoc")))
              ("Context7" . (:command "npx" :args ("-y" "@upstash/context7-mcp")))
+             ("playwright" . (:command "npx" :args ("@playwright/mcp@latest" "--browser" "msedge" "--isolated")))
              ))
   :config (require 'mcp-hub))
 
