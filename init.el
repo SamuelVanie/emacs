@@ -1222,6 +1222,7 @@
   ;; something that makes it more convenient to add mcp tools in gptel
   (require 'gptel-integrations)
   ;; OPTIONAL configuration
+  (setq gptel-default-mode 'org-mode)
   (setq
    gptel-model 'gemini-pro
    gptel-backend (gptel-make-gemini "Gemini"
@@ -1230,7 +1231,6 @@
    gptel-backend (gptel-make-anthropic "Anthropic"
                    :key (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string)))
                    :stream t))
-  gptel-default-mode 'org-mode
   (gptel-make-openai "OpenRouter"
     :host "openrouter.ai"
     :endpoint "/api/v1/chat/completions"
