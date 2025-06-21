@@ -1246,9 +1246,14 @@
   ("C-c RET" . gptel-send)
   ("C-c g" . gptel))
 
+(load-file (format "%s%s/%s%s" user-emacs-directory "tools" "fetch_url" ".el"))
+
 ;; My custom emacs tools
 (defun smv-tool/run_command (command)
   (shell-command-to-string command))
+
+(defun smv-tool/fetch_url_content (url)
+  (smv/fetch-content url))
 
 (with-eval-after-load 'gptel
   ;; shell command execution tool
@@ -1262,6 +1267,16 @@
                        :type string
                        :description "The shell command to execute"))
    :category "system")
+
+  (gptel-make-tool
+   :name "fetch_url_content"                    ; javascript-style  snake_case name
+   :function #'smv-tool/fetch_url_content
+   :description "Get the content of a web page in text format"
+   :confirm t
+   :args (list '(:name "url"             ; a list of argument specifications
+                       :type string
+                       :description "The url of the webpage to fetch"))
+   :category "browsing")
   )
 
 ;; tools from mcp servers
