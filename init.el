@@ -1263,6 +1263,7 @@
   ("C-c g" . gptel))
 
 (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "fetch_url" ".el"))
+(load-file (format "%s%s/%s%s" user-emacs-directory "tools" "grep" ".el"))
 
 ;; My custom emacs tools
 (defun smv-tool/run_command (command)
@@ -1293,6 +1294,22 @@
                        :type string
                        :description "The url of the webpage to fetch. e.g: https://google.com"))
    :category "browsing")
+
+  (gptel-make-tool
+   :name "grep"                    ; javascript-style  snake_case name
+   :function #'smv-tool/grep
+   :description "Search through file contents in the directory using regex patterns (great for finding functions, variables, or specific code patterns)"
+   :confirm t
+   :include t
+   :args (list '(:name "pattern"             ; a list of argument specifications
+                       :type string
+                       :description "The pattern to look for in the directory")
+               '(:name "directory"
+                       :type string
+                       :description "The directory from which to begin the search. If not set, the search will start from the project's root directory"
+                       :optional t))
+   :category "system")
+  
   )
 
 ;; tools from mcp servers
