@@ -1258,10 +1258,14 @@
               deepseek/deepseek-chat-v3-0324:free ;; free
               deepseek/deepseek-r1-0528:free ;; free
               ))
+  ;; loads agents
+  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "presentator" ".el"))
+
   :bind
   ("C-c RET" . gptel-send)
   ("C-c g" . gptel))
 
+;; load tools
 (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "fetch_url" ".el"))
 (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "grep" ".el"))
 

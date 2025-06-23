@@ -1727,6 +1727,9 @@ Mode to interact with different llms in emacs.
                 deepseek/deepseek-chat-v3-0324:free ;; free
                 deepseek/deepseek-r1-0528:free ;; free
                 ))
+    ;; loads agents
+    (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "presentator" ".el"))
+
     :bind
     ("C-c RET" . gptel-send)
     ("C-c g" . gptel))
@@ -1738,6 +1741,7 @@ Mode to interact with different llms in emacs.
 This permits to add interaction capabilities to my llm. LLMs will be able to use some tools to get more context if needed.
 
 #+begin_src emacs-lisp
+  ;; load tools
   (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "fetch_url" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "grep" ".el"))
 
