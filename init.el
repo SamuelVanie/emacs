@@ -1301,7 +1301,7 @@
                          (shell-quote-argument question))))
     (shell-command-to-string command)))
 
-(defun smv-tool/get_repomap (question)
+(defun smv-tool/get_repomap ()
   "Call aider for the repomap of the project"
   (shell-command-to-string "aider --model deepseek --no-gitignore --no-show-model-warnings --show-repo-map"))
 
@@ -1377,7 +1377,7 @@
              ("playwright" . (:command "npx" :args ("@playwright/mcp@latest" "--isolated")))
              ("taskmaster-ai" . (
                                  :command "npx"
-                                 :args ("-y" "--package=task-master-ai" "task-master-ai")
+                                 :args ("-y" "task-master-ai")
                                  :env (
                                        :DEEPSEEK_API_KEY ,(getenv "DEEPSEEK_API_KEY")
                                        :OPENROUTER_API_KEY ,(getenv "OPENROUTER_API_KEY")
