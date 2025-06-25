@@ -126,6 +126,7 @@
 
 
 
+(setq read-file-name-completion-ignore-case t)
 (setq hippie-expand-try-functions-list
       '(
         try-expand-dabbrev
@@ -134,10 +135,7 @@
         try-complete-lisp-symbol-partially
         try-complete-lisp-symbol
         try-complete-file-name-partially
-        try-complete-file-name
-        ;; try-expand-all-abbrevs
-        ;; try-expand-list
-        ;; try-expand-line
+        try-expand-line-all-buffers
         ))
 
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
@@ -186,12 +184,24 @@
 
 ;; Ibuffer appearance configuration
 (setq ibuffer-use-other-window t)
+
+(defun my-both-modes-active-p (buffer-name action)
+  "Return non-nil if both specific modes are active in current buffer."
+  (with-current-buffer buffer-name
+    (and (derived-mode-p 'org-mode)
+         (derived-mode-p 'gptel-mode))))
+
 (add-to-list 'display-buffer-alist
-           '("\\*Ibuffer\\*"
-             (display-buffer-in-side-window)
-             (window-height . 0.3)     ;; Takes 30% of the frame height
-             (side . bottom)           ;; Display at bottom
-             (slot . 0)))
+             '("\\*Ibuffer\\*"
+               (display-buffer-in-side-window)
+               (window-height . 0.3)     ;; Takes 30% of the frame height
+               (side . bottom)           ;; Display at bottom
+               (slot . 0))
+             `(my-both-modes-active-p
+               (display-buffer-in-side-window)
+               (side . right)
+               (window-width . 0.3)
+               (window-parameters . ((no-other-window . t)))))
 
 (defun kill-all-buffers ()
   "Kill all buffers without asking for confirmation."
@@ -258,7 +268,7 @@
       (set-frame-font "VictorMono Nerd Font-19" nil t)
       (set-face-attribute 'fixed-pitch nil :family "FantasqueSansM Nerd Font Mono"))
   (add-to-list 'default-frame-alist '(font . "VictorMono Nerd Font-15"))
-  (set-face-attribute 'fixed-pitch nil :family "FantasqueSansMono Nerd Font"))
+  (set-face-attribute 'fixed-pitch nil :family "FantasqueSansM Nerd Font"))
 
 (set-face-attribute 'variable-pitch nil :family "Iosevka Nerd Font")
 ;; (set-face-attribute 'variable-pitch nil :family "FantasqueSansM Nerd Font")
@@ -400,7 +410,7 @@
    '("Y" . copy-from-above-command)
    '("z" . meow-pop-selection)
    '("<" . previous-buffer)
-   '(">" . end-of-visual-line)
+   '(">" . next-buffer)
    '("<escape>" . ignore)))
 
 (use-package meow
@@ -447,8 +457,8 @@
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    :prefix ")"
    "n" #'smerge-vc-next-conflict
-   "m" #'smerge-keep-mine
-   "o" #'smerge-keep-other
+   "u" #'smerge-keep-upper
+   "l" #'smerge-keep-lower
    "b" #'smerge-keep-all
    "r" #'smerge-refine
    "s" #'smerge-resolve)
@@ -1215,6 +1225,12 @@
 (use-package direnv
   :ensure t)
 
+(setenv "GROQ_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gq_key") (string-trim (buffer-string))))
+(setenv "ANTHROPIC_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string))))
+(setenv "DEEPSEEK_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.deep_key") (string-trim (buffer-string))))
+(setenv "OPENROUTER_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.openr_key") (string-trim (buffer-string))))
+(setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string))))
+
 (use-package gptel
   :ensure t
   :demand t
@@ -1224,42 +1240,49 @@
   ;; OPTIONAL configuration
   (setq gptel-default-mode 'org-mode)
   (setq gptel-use-context 'user)
-  (setq
-   gptel-model 'gemini-pro
-   gptel-backend (gptel-make-gemini "Gemini"
-                   :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
-                   :stream t)
-   gptel-backend (gptel-make-anthropic "Anthropic"
-                   :key (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string)))
-                   :stream t))
+  (setq gptel-include-tool-results t)
+  (gptel-make-gemini "Gemini"
+    :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
+    :stream t)
+  (gptel-make-deepseek "DeepSeek"       ;Any name you want
+    :stream t                           ;for streaming responses
+    :key (with-temp-buffer (insert-file-contents "~/.org/.deep_key") (string-trim (buffer-string))))
   (gptel-make-openai "OpenRouter"
     :host "openrouter.ai"
     :endpoint "/api/v1/chat/completions"
     :stream t
     :key (with-temp-buffer (insert-file-contents "~/.org/.openr_key") (string-trim (buffer-string)))
     :models '(
+              perplexity/sonar-pro
               anthropic/claude-sonnet-4 ;; 3 in - 15 out
               x-ai/grok-3-beta ;; 3 in - 15 out
               openai/o3-mini ;; 1.10 in - 4.40 out
               openai/o4-mini ;; 1.0 in - 4.10 out
               openai/o4-mini-high ;; 1.0 in - 4.10 out
               minimax/minimax-m1:extended ;; 0.55 in - 2.20 out
+              deepseek/deepseek-r1-0528 ;; 0.55 in - 2.19 out
               openai/gpt-4.1-mini ;; 0.40 in - 1.60 out
               deepseek/deepseek-chat-v3-0324 ;; 0.33 in - 1.30 out
               minimax/minimax-m1 ;; 0.30 in - 1.65 out
               x-ai/grok-3-mini ;; 0.30 in - 0.50 out
+              deepseek/deepseek-chat-v3-0324 ;; 0.27 in - 1.10 out
               minimax/minimax-01 ;; 0.20 in - 1.10 out
               google/gemini-2.5-flash-preview:thinking ;; 0.15 in - 3.50 out
               google/gemini-2.5-flash-preview ;; 0.15 in - 0.60 out
               google/gemini-2.5-flash-lite-preview-06-17
               openai/gpt-4.1-nano ;; 0.10 in - 0.40 out
               google/gemini-2.0-flash-lite-001 ;; 0.075 in - 0.30 out
-              google/gemini-2.5-pro-exp-03-25 ;; free
               deepseek/deepseek-chat-v3-0324:free ;; free
               deepseek/deepseek-r1-0528:free ;; free
               ))
+
+  (setq
+   gptel-model 'gemini-pro
+   gptel-backend (gptel-make-anthropic "Anthropic"
+                   :key (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string)))
+                   :stream t))
   ;; loads agents
-  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "presentator" ".el"))
+  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "streamlit_coder" ".el"))
 
   :bind
   ("C-c RET" . gptel-send)
@@ -1267,14 +1290,29 @@
 
 ;; load tools
 (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "fetch_url" ".el"))
-(load-file (format "%s%s/%s%s" user-emacs-directory "tools" "grep" ".el"))
 
 ;; My custom emacs tools
 (defun smv-tool/run_command (command)
   (shell-command-to-string command))
 
+(defun smv-tool/ask_partner (question)
+  "Call gemini given the prompt"
+  (let ((command (concat "gemini -p " 
+                         (shell-quote-argument question))))
+    (shell-command-to-string command)))
+
+(defun smv-tool/get_repomap (question)
+  "Call aider for the repomap of the project"
+  (shell-command-to-string "aider --model deepseek --no-gitignore --no-show-model-warnings --show-repo-map"))
+
 (defun smv-tool/fetch_url_content (url)
   (smv/fetch-content url))
+
+(defun smv-tool/get_project_root ()
+  (message "%s" default-directory))
+
+(defun smv-tool/get_current_date_time ()
+  (message "%s" (format-time-string "%Y-%m-%d %H:%M:%S")))
 
 (with-eval-after-load 'gptel
   ;; shell command execution tool
@@ -1290,30 +1328,41 @@
    :category "system")
 
   (gptel-make-tool
+   :name "get_project_root"
+   :function #'smv-tool/get_project_root
+   :description "Get the full path of the current project rootdir"
+   :category "project-info")
+
+  (gptel-make-tool
+   :name "get_current_datetime"
+   :function #'smv-tool/get_current_date_time
+   :description "Get the current date and time"
+   :category "info-gathering")
+
+  (gptel-make-tool
+   :name "get_repomap"
+   :function #'smv-tool/get_repomap
+   :description "Get the detailed map of the project"
+   :category "project-info")
+
+  (gptel-make-tool
+   :name "ask_partner"
+   :function #'smv-tool/ask_partner
+   :description "Get any information from the internet or the current project using natural language. It's like your big brother who knows everything"
+   :args (list '(:name "question"             ; a list of argument specifications
+                       :type string
+                       :description "Your info gathering request. e.g What is the most up to date way of writing slidemasters using pptxgenjs library?"))
+   :category "info-gathering")
+
+  (gptel-make-tool
    :name "fetch_url_content"                    ; javascript-style  snake_case name
    :function #'smv-tool/fetch_url_content
-   :description "Get the content of a web page in text format"
+   :description "Fetch the content of a web page in text format"
    :confirm t
    :args (list '(:name "url"             ; a list of argument specifications
                        :type string
                        :description "The url of the webpage to fetch. e.g: https://google.com"))
    :category "browsing")
-
-  (gptel-make-tool
-   :name "grep"                    ; javascript-style  snake_case name
-   :function #'smv-tool/grep
-   :description "Search through file contents in the directory using regex patterns (great for finding functions, variables, or specific code patterns)"
-   :confirm t
-   :include t
-   :args (list '(:name "pattern"             ; a list of argument specifications
-                       :type string
-                       :description "The pattern to look for in the directory")
-               '(:name "directory"
-                       :type string
-                       :description "The directory from which to begin the search. If not set, the search will start from the project's root directory"
-                       :optional t))
-   :category "system")
-  
   )
 
 ;; tools from mcp servers
@@ -1324,8 +1373,17 @@
   :custom (mcp-hub-servers
            `(
              ("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "/home/svanie/projects/ai_retrodoc")))
-             ("Context7" . (:command "npx" :args ("-y" "@upstash/context7-mcp")))
-             ("playwright" . (:command "npx" :args ("@playwright/mcp@latest" "--browser" "msedge" "--isolated")))
+             ;; ("Context7" . (:command "npx" :args ("-y" "@upstash/context7-mcp")))
+             ("playwright" . (:command "npx" :args ("@playwright/mcp@latest" "--isolated")))
+             ("taskmaster-ai" . (
+                                 :command "npx"
+                                 :args ("-y" "--package=task-master-ai" "task-master-ai")
+                                 :env (
+                                       :DEEPSEEK_API_KEY ,(getenv "DEEPSEEK_API_KEY")
+                                       :OPENROUTER_API_KEY ,(getenv "OPENROUTER_API_KEY")
+                                       :ANTHROPIC_API_KEY ,(getenv "ANTHROPIC_API_KEY")
+                                       )
+                                 ))
              ))
   :config (require 'mcp-hub))
 
@@ -1337,12 +1395,7 @@
   (global-set-key (kbd "C-c x") 'aidermacs-transient-menu)
   (aidermacs-setup-minor-mode)
   (setq aidermacs-show-diff-after-change t)
-  (setq aidermacs-backend 'vterm)
-  (setenv "GROQ_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gq_key") (string-trim (buffer-string))))
-  (setenv "ANTHROPIC_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string))))
-  (setenv "DEEPSEEK_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.deep_key") (string-trim (buffer-string))))
-  (setenv "OPENROUTER_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.openr_key") (string-trim (buffer-string))))
-  (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))))
+  (setq aidermacs-backend 'vterm))
 
 (use-package magit
   :ensure (:wait t)
