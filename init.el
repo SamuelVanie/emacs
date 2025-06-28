@@ -663,6 +663,7 @@
   (setq helm-always-two-windows nil)
   (setq helm-completion-in-region-fuzzy-match t)
   (helm-mode)
+  (fido-mode 1)
   :bind
   (
    ("C-x C-f" . helm-find-files)
