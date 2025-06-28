@@ -862,7 +862,6 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
     (setq helm-always-two-windows nil)
     (setq helm-completion-in-region-fuzzy-match t)
     (helm-mode)
-    (fido-mode 1)
     :bind
     (
      ("C-x C-f" . helm-find-files)
@@ -874,6 +873,7 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
      ("C-c h f" . helm-find)
      ("C-c h t" . helm-magit-todos))
     )
+  (fido-mode 1)
 #+end_src
 
 
@@ -1755,7 +1755,8 @@ Mode to interact with different llms in emacs.
                      :key (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string)))
                      :stream t))
     ;; loads agents
-    (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "streamlit_coder" ".el"))
+    (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "command_line" ".el"))
+    (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_kurosumi" ".el"))
 
     :bind
     ("C-c RET" . gptel-send)

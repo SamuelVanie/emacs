@@ -663,7 +663,6 @@
   (setq helm-always-two-windows nil)
   (setq helm-completion-in-region-fuzzy-match t)
   (helm-mode)
-  (fido-mode 1)
   :bind
   (
    ("C-x C-f" . helm-find-files)
@@ -675,6 +674,7 @@
    ("C-c h f" . helm-find)
    ("C-c h t" . helm-magit-todos))
   )
+(fido-mode 1)
 
 (defun smv/helm-zoxide-candidates ()
   "Generate a list of zoxide query candidates."
@@ -1283,7 +1283,8 @@
                    :key (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string)))
                    :stream t))
   ;; loads agents
-  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "streamlit_coder" ".el"))
+  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "command_line" ".el"))
+  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_kurosumi" ".el"))
 
   :bind
   ("C-c RET" . gptel-send)
