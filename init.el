@@ -1241,6 +1241,7 @@
   ;; OPTIONAL configuration
   (setq gptel-default-mode 'org-mode)
   (setq gptel-use-context 'user)
+  (setq gptel-include-reasoning nil)
   (setq gptel-include-tool-results t)
   (gptel-make-gemini "Gemini"
     :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
@@ -1285,7 +1286,12 @@
   ;; loads agents
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "command_line" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_kurosumi" ".el"))
-
+  
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   :prefix "!"
+   "!" #'gptel-send
+   "(" #'gptel)
   :bind
   ("C-c RET" . gptel-send)
   ("C-c g" . gptel))
