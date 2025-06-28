@@ -1374,7 +1374,7 @@
   :after gptel
   :custom (mcp-hub-servers
            `(
-             ("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "/home/svanie/projects/ai_retrodoc")))
+             ("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "~/projects")))
              ;; ("Context7" . (:command "npx" :args ("-y" "@upstash/context7-mcp")))
              ("playwright" . (:command "npx" :args ("@playwright/mcp@latest" "--isolated")))
              ("taskmaster-ai" . (
