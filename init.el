@@ -1303,24 +1303,24 @@
 (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "fetch_url" ".el"))
 
 ;; My custom emacs tools
+(defun smv-tool/get_project_root ()
+  (project-root (project-current)))
+
 (defun smv-tool/run_command (command)
-  (shell-command-to-string command))
+  (shell-command-to-string (format "cd %s && %s" (smv-tool/get_project_root) command)))
 
 (defun smv-tool/ask_partner (question)
   "Call gemini given the prompt"
   (let ((command (concat "gemini -p " 
                          (shell-quote-argument question))))
-    (shell-command-to-string command)))
+    (shell-command-to-string (format "cd %s && %s" (smv-tool/get_project_root) command))))
 
 (defun smv-tool/get_repomap ()
   "Call aider for the repomap of the project"
-  (shell-command-to-string "aider --model deepseek --no-gitignore --no-show-model-warnings --show-repo-map"))
+  (shell-command-to-string (format "cd %s && %s" (smv-tool/get_project_root) "aider --model deepseek --no-gitignore --no-show-model-warnings --show-repo-map")))
 
 (defun smv-tool/fetch_url_content (url)
   (smv/fetch-content url))
-
-(defun smv-tool/get_project_root ()
-  (message "%s" (project-current)))
 
 (defun smv-tool/get_current_date_time ()
   (message "%s" (format-time-string "%Y-%m-%d %H:%M:%S")))

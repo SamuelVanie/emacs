@@ -39,7 +39,7 @@
     </knowledge_files>
 
     <tool_interface name=\"task-master\">
-        <summary>Use `task-master` for all task management functions.</summary>
+        <summary>Use `task-master` for all task management functions. If .knowledge/ and .taskmaster/ exists in the root folder of the project it means *task-master init* should not be executed during our work, the project was already initialized.</summary>
         <commands>
             <command signature=\"task-master init\"/>
             <command signature=\"task-master parse-prd --input=<prd-file.txt>\"/>
@@ -63,7 +63,7 @@
     </phase>
 
     <phase id=\"1\" name=\"Comprehensive Context Loading\">
-        <summary>Before starting any work, load all necessary project context.</summary>
+        <summary>Before starting any work, GET THE CURRENT PROJECT ROOT DIR then load all necessary project context.</summary>
         <step>Identify the current task via `task-master next` or user instruction (`<task_id>`).</step>
         <step>Run `task-master show <task_id>` to understand the task and its dependencies.</step>
         <step>Load the following files into your working context: 
