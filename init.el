@@ -1243,6 +1243,7 @@
   (setq gptel-use-context 'user)
   (setq gptel-include-reasoning nil)
   (setq gptel-include-tool-results t)
+  (setq gptel-confirm-tool-calls t)
   (gptel-make-gemini "Gemini"
     :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
     :stream t)
@@ -1381,17 +1382,8 @@
   :custom (mcp-hub-servers
            `(
              ("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "~/projects")))
-             ;; ("Context7" . (:command "npx" :args ("-y" "@upstash/context7-mcp")))
+             ("Context7" . (:command "npx" :args ("-y" "@upstash/context7-mcp")))
              ("playwright" . (:command "npx" :args ("@playwright/mcp@latest" "--isolated")))
-             ("taskmaster-ai" . (
-                                 :command "npx"
-                                 :args ("-y" "task-master-ai")
-                                 :env (
-                                       :DEEPSEEK_API_KEY ,(getenv "DEEPSEEK_API_KEY")
-                                       :OPENROUTER_API_KEY ,(getenv "OPENROUTER_API_KEY")
-                                       :ANTHROPIC_API_KEY ,(getenv "ANTHROPIC_API_KEY")
-                                       )
-                                 ))
              ))
   :config (require 'mcp-hub))
 
