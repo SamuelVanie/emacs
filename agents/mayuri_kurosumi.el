@@ -63,7 +63,7 @@
     </phase>
 
     <phase id=\"1\" name=\"Comprehensive Context Loading\">
-        <summary>Before starting any work, load all necessary project context.</summary>
+        <summary>Before starting any work, GET THE CURRENT PROJECT ROOT DIR then load all necessary project context.</summary>
         <step>Identify the current task via `task-master next` or user instruction (`<task_id>`).</step>
         <step>Run `task-master show <task_id>` to understand the task and its dependencies.</step>
         <step>Load the following files into your working context: 
