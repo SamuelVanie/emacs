@@ -1320,7 +1320,7 @@
   (smv/fetch-content url))
 
 (defun smv-tool/get_project_root ()
-  (message "%s" default-directory))
+  (message "%s" (project-current)))
 
 (defun smv-tool/get_current_date_time ()
   (message "%s" (format-time-string "%Y-%m-%d %H:%M:%S")))
