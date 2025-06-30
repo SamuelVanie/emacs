@@ -1341,13 +1341,13 @@
   (gptel-make-tool
    :name "get_project_root"
    :function #'smv-tool/get_project_root
-   :description "Get the full path of the current project rootdir"
+   :description "Get the full path of the current project rootdir. Could be interesting to run at the beginning of work, because all the following work depends on it."
    :category "project-info")
 
   (gptel-make-tool
    :name "get_current_datetime"
    :function #'smv-tool/get_current_date_time
-   :description "Get the current date and time"
+   :description "Get the current date and time. Could be interesting to call when logging info, or gathering infos from the internet"
    :category "info-gathering")
 
   (gptel-make-tool
