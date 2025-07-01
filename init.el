@@ -1288,7 +1288,8 @@
                    :stream t))
   ;; loads agents
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "command_line" ".el"))
-  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_kurosumi" ".el"))
+  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_kurotsuchi" ".el"))
+  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri" ".el"))
   
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
