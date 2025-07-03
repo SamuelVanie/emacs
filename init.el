@@ -1282,10 +1282,25 @@
               ))
 
   (setq
-   gptel-model 'gemini-pro
    gptel-backend (gptel-make-anthropic "Anthropic"
                    :key (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string)))
                    :stream t))
+
+  ;; ;; local models
+  ;; (gptel-make-openai "lmstudio"
+  ;;   :host "http://10.32.68.169:1234"
+  ;;   :endpoint "/v1/chat/completions"
+  ;;   :stream t
+  ;;   :key "dummy"
+  ;;   :models '(
+  ;;             microsoft/phi-4-reasoning-plus
+  ;;             deepseek-coder-7b-instruct-v1.5
+  ;;             google/gemma-3-12b
+  ;;             whisper-large-v3
+  ;;             llama-3-groq-8b-tool-use
+  ;;             deepseek/deepseek-r1-0528-qwen3-8b
+  ;;             ))
+
   ;; loads agents
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "command_line" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_kurotsuchi" ".el"))
@@ -1305,7 +1320,10 @@
 
 ;; My custom emacs tools
 (defun smv-tool/get_project_root ()
-  (project-root (project-current)))
+  (let (project-root (project-current))
+    (if project-root
+        project-root
+      default-directory)))
 
 (defun smv-tool/run_command (command)
   (shell-command-to-string (format "cd %s && %s" (smv-tool/get_project_root) command)))
@@ -1387,6 +1405,7 @@
              ("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "~/projects")))
              ("Context7" . (:command "npx" :args ("-y" "@upstash/context7-mcp")))
              ("playwright" . (:command "npx" :args ("@playwright/mcp@latest" "--isolated")))
+             ("pyautogui" . (:url "http://172.20.224.1:8000/mcp/"))
              ))
   :config (require 'mcp-hub))
 
