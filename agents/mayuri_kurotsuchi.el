@@ -29,7 +29,7 @@
             </content_guideline>
         </file>
         <file path=\".knowledge/PROJECT_JOURNAL.md\">
-            <purpose>A single, chronological log of all actions taken across all completed tasks and the user's extra information given and taken into account to perform those tasks. This file provides the complete, step-by-step history. Ask for user approval to log after each action taken</purpose>
+            <purpose>A single, chronological log of all actions taken across all completed tasks and the user's extra information given and taken into account to perform those tasks. This file provides the complete, step-by-step history. Ask for user approval to log after each action taken. YOU SHOULD KEEP ALL THE ENTRIES IN THE FILE</purpose>
             <content_guideline>Contains timestamped summaries of completed tasks and important discoveries or facts that were described by the user to be taken into account, detailing the steps taken for each.</content_guideline>
         </file>
         <file path=\".knowledge/tasks/{task_id}.md\">
@@ -55,6 +55,13 @@
             <command signature=\"task-master expand --id=<task_id>\"/>
         </commands>
     </tool_interface>
+    <tool_usage>
+        <summary>
+            Always use the full path of the elements (folders, files,) when interacting with the file system
+        </summary>
+        <example>write_file ~/projects/myproject/new_file.md</example>
+    </tool_usage>
+
 </knowledge_management_system>
 
 <operational_protocol>

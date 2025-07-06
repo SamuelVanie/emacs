@@ -844,6 +844,10 @@
           ("n" "Next Tasks"
            ((todo "NEXT"
                   ((org-agenda-overriding-header "Next Tasks")))))
+          
+          ("a" "Active"
+           ((todo "ACTIVE"
+                  ((org-agenda-overriding-header "Ongoing Tasks")))))
 
           ("st" "School todos" tags-todo "+@school/TODO")
           ("sp" "School Projects" tags-todo "+@school/ACTIVE")
@@ -1320,10 +1324,7 @@
 
 ;; My custom emacs tools
 (defun smv-tool/get_project_root ()
-  (let (project-root (project-current))
-    (if project-root
-        project-root
-      default-directory)))
+  (if (project-current) (project-root (project-current)) default-directory))
 
 (defun smv-tool/run_command (command)
   (shell-command-to-string (format "cd %s && %s" (smv-tool/get_project_root) command)))
