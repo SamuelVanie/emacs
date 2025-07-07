@@ -1894,24 +1894,6 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
 #+end_src
 
 
-
-** Aider
-
-Setting up aider by using the aidermacs package, a convenient way of accessing aider inside emacs.
-
-#+begin_src emacs-lisp
-  (use-package aidermacs
-    :ensure (:fetcher github :repo "MatthewZMD/aidermacs" :files ("*.el"))
-    :defer t
-    :config
-    (setq aidermacs-default-model "gemini/gemini-2.0-flash-thinking-exp")
-    (global-set-key (kbd "C-c x") 'aidermacs-transient-menu)
-    (aidermacs-setup-minor-mode)
-    (setq aidermacs-show-diff-after-change t)
-    (setq aidermacs-backend 'vterm))
-#+end_src
-
-
 ** Magit
 
 [[https://magit.vc/][Magit]] is a git interface for emacs. It's very handy and fun to use.

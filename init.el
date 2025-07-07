@@ -1410,16 +1410,6 @@
              ))
   :config (require 'mcp-hub))
 
-(use-package aidermacs
-  :ensure (:fetcher github :repo "MatthewZMD/aidermacs" :files ("*.el"))
-  :defer t
-  :config
-  (setq aidermacs-default-model "gemini/gemini-2.0-flash-thinking-exp")
-  (global-set-key (kbd "C-c x") 'aidermacs-transient-menu)
-  (aidermacs-setup-minor-mode)
-  (setq aidermacs-show-diff-after-change t)
-  (setq aidermacs-backend 'vterm))
-
 (use-package magit
   :ensure (:wait t)
   :commands magit-status
