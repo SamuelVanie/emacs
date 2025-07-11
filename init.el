@@ -813,8 +813,8 @@
           "~/.org/projects.org"))
 
   (setq org-todo-keywords
-        '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-          (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+        '((sequence "TODO(t!)" "NEXT(n!)" "|" "DONE(d!)")
+          (sequence "BACKLOG(b!)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v!)" "WAIT(w@/!)" "|" "COMPLETED(c)" "CANC(k@)")))
 
   ;; easily move task to another header
   (setq org-refile-targets
@@ -1291,19 +1291,19 @@
                    :stream t))
 
   ;; ;; local models
-  ;; (gptel-make-openai "lmstudio"
-  ;;   :host "http://10.32.68.169:1234"
-  ;;   :endpoint "/v1/chat/completions"
-  ;;   :stream t
-  ;;   :key "dummy"
-  ;;   :models '(
-  ;;             microsoft/phi-4-reasoning-plus
-  ;;             deepseek-coder-7b-instruct-v1.5
-  ;;             google/gemma-3-12b
-  ;;             whisper-large-v3
-  ;;             llama-3-groq-8b-tool-use
-  ;;             deepseek/deepseek-r1-0528-qwen3-8b
-  ;;             ))
+  (gptel-make-openai "lmstudio"
+    :host "http://10.32.68.169:1234"
+    :endpoint "/v1/chat/completions"
+    :stream t
+    :key "dummy"
+    :models '(
+              microsoft/phi-4-reasoning-plus
+              deepseek-coder-7b-instruct-v1.5
+              google/gemma-3-12b
+              whisper-large-v3
+              llama-3-groq-8b-tool-use
+              deepseek/deepseek-r1-0528-qwen3-8b
+              ))
 
   ;; loads agents
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "command_line" ".el"))
@@ -1418,9 +1418,7 @@
   :ensure (:wait t)
   :commands magit-status
   :custom
-  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
-  :init
-  (magit-maybe-define-global-key-bindings t))
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
 (use-package magit-todos
   :defer t
