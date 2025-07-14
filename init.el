@@ -1071,21 +1071,6 @@
          ("\\.yaml\\'" . yaml-mode)
          ))
 
-(use-package graphviz-dot-mode
-  :ensure t
-  :config
-  (setq graphviz-dot-view-edit-command t)
-  (setq graphviz-dot-indent-width 4))
-
-(with-eval-after-load 'lsp-mode
-  (add-to-list 'lsp-language-id-configuration '(".*\\.dot" . "dot"))
-
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection '("dot-language-server" "--stdio")) ; Or the command to run your LSP server
-                    :activation-fn (lsp-activate-on "dot")
-                    :priority 100
-                    :server-id 'dot-language-server)))
-
 (use-package emmet-mode
   :ensure t)
 
