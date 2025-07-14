@@ -1307,9 +1307,7 @@
 
   ;; loads agents
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "command_line" ".el"))
-  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_kurotsuchi" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri" ".el"))
-  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "opencode" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "command_line" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer_google" ".el"))
