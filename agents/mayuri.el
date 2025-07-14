@@ -92,6 +92,7 @@ REMIND the user to commit the changes at the appropriate time, after a bug fix, 
 # Tool usage policy
 - When doing search through the code base to understand it, rely on your partner, this will reduce the time that you pass trying to understand.
 - If you intend to call multiple tools and there are no dependencies between the calls, make all of the independent calls in the same function_calls block.
+- After three back and forths with the user, you should ask him to summarize the discussion so far using the summarizer agent.
 
 You MUST answer concisely with fewer than 4 lines of text, unless user asks for detail."
   :stream t
