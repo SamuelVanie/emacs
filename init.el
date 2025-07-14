@@ -1231,7 +1231,6 @@
   (setq gptel-default-mode 'org-mode)
   (setq gptel-use-context 'user)
   (setq gptel-include-reasoning nil)
-  (setq gptel-include-tool-results t)
   (setq gptel-confirm-tool-calls t)
   (gptel-make-gemini "Gemini"
     :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
@@ -1245,7 +1244,8 @@
     :stream t
     :key (with-temp-buffer (insert-file-contents "~/.org/.openr_key") (string-trim (buffer-string)))
     :models '(
-              perplexity/sonar-pro
+              anthropic/claude-opus-4 ;; 15 in - 75 out
+              perplexity/sonar-pro ;; 3 in - 15 out
               anthropic/claude-sonnet-4 ;; 3 in - 15 out
               x-ai/grok-3 ;; 3 in - 15 out
               google/gemini-2.5-pro ;; 1.25 in - 10 out
