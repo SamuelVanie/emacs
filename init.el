@@ -1366,7 +1366,7 @@
   (gptel-make-tool
    :name "ask_partner"
    :function #'smv-tool/ask_partner
-   :description "Get any information from the internet or the current project using natural language. It's like your big brother who knows everything"
+   :description "Get any information from the internet or the current project using natural language. It's like your big brother who knows everything, you call him when you're really stuck, you got no alternative to get info."
    :args (list '(:name "question"             ; a list of argument specifications
                        :type string
                        :description "Your info gathering request. e.g What is the most up to date way of writing slidemasters using pptxgenjs library?"))
