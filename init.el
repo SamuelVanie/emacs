@@ -628,7 +628,7 @@
 (use-package standard-themes
   :ensure t
   :demand t
-  :config (load-theme 'doom-dark+ t));; meltbus
+  :config (load-theme 'ef-dark t));; meltbus
 
 (use-package all-the-icons
   :ensure t
