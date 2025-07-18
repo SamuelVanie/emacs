@@ -567,7 +567,9 @@
 
 (use-package vterm
   :ensure t
-  :defer t)
+  :defer t
+  :bind
+  ("<f7>" . vterm))
 
 (use-package multi-vterm
   :after vterm
@@ -1081,7 +1083,7 @@
   (setq web-mode-code-indent-offset 2)
   (setq web-mode-enable-current-column-highlight t)
   (setq web-mode-enable-current-element-highlight t)
-  (set (make-local-variable 'company-backends) '(company-css company-web-html company-yasnippet company-files))
+  (set (make-local-variable 'company-backends) '(company-css company-web-html company-yasnippet company-files dap-ui-repl-company))
   )
 
 (use-package web-mode
@@ -1157,12 +1159,16 @@
   :after lsp-mode
   :hook (lsp-mode . company-mode)
   :bind
-  ("M-p c" . company-mode)
+  ("C-z C-z" . company-mode)
+  ("C-z C-c" . company-complete)
   :custom
   (company-minimum-prefix-length 1)
-  (company-idle-delay 0.0)
+  (Company-idle-delay 0.0)
   :config
-  (add-to-list 'company-backends 'company-files))
+  (add-to-list 'company-backends 'company-files)
+  (add-to-list 'company-backends 'company-yasnippet)
+  (add-to-list 'company-backends 'company-files)
+  (add-to-list 'company-backends 'dap-ui-repl-company))
 
 (use-package company-box
   :ensure t
