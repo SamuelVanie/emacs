@@ -1236,7 +1236,7 @@
   ;; OPTIONAL configuration
   (setq gptel-default-mode 'org-mode)
   (setq gptel-use-context 'user)
-  (setq gptel-include-reasoning nil)
+  (setq gptel-include-reasoning t)
   (setq gptel-confirm-tool-calls t)
   (gptel-make-gemini "Gemini"
     :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
@@ -1328,10 +1328,6 @@
                          (shell-quote-argument question))))
     (shell-command-to-string (format "cd %s && %s" (smv-tool/get_project_root) command))))
 
-(defun smv-tool/get_repomap ()
-  "Call aider for the repomap of the project"
-  (shell-command-to-string (format "cd %s && %s" (smv-tool/get_project_root) "aider --model deepseek --no-gitignore --no-show-model-warnings --show-repo-map")))
-
 (defun smv-tool/fetch_url_content (url)
   (smv/fetch-content url))
 
@@ -1362,12 +1358,6 @@
    :function #'smv-tool/get_current_date_time
    :description "Get the current date and time. Could be interesting to call when logging info, or gathering infos from the internet"
    :category "info-gathering")
-
-  (gptel-make-tool
-   :name "get_repomap"
-   :function #'smv-tool/get_repomap
-   :description "Get the detailed map of the project"
-   :category "project-info")
 
   (gptel-make-tool
    :name "ask_partner"
