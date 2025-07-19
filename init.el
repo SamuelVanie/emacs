@@ -194,13 +194,13 @@
 (add-to-list 'display-buffer-alist
              '("\\*Ibuffer\\*"
                (display-buffer-in-side-window)
-               (window-height . 0.3)     ;; Takes 30% of the frame height
+               (window-height . 0.4)     ;; Takes 40% of the frame height
                (side . bottom)           ;; Display at bottom
                (slot . 0))
              `(my-both-modes-active-p
                (display-buffer-in-side-window)
                (side . right)
-               (window-width . 0.3)
+               (window-width . 0.4)
                (window-parameters . ((no-other-window . t)))))
 
 (defun kill-all-buffers ()
@@ -224,6 +224,7 @@
           "\\*Async Shell Command\\*"
           help-mode
           compilation-mode))
+  (setq popper-window-height "40")
   ;; Match eshell, shell, term and/or vterm buffers
   (setq popper-reference-buffers
         (append popper-reference-buffers
