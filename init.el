@@ -1307,6 +1307,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
     :stream t                           ;for streaming responses
     :key (with-temp-buffer (insert-file-contents "~/.org/.deep_key") (string-trim (buffer-string))))
   (gptel-make-openai "OpenRouter"
+    ;; :online in the language slug to add the search plugin
     :host "openrouter.ai"
     :endpoint "/api/v1/chat/completions"
     :stream t
@@ -1321,6 +1322,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
               openai/o3-mini ;; 1.10 in - 4.40 out
               openai/o4-mini ;; 1.0 in - 4.10 out
               openai/o4-mini-high ;; 1.0 in - 4.10 out
+              switchpoint/router ;; 0.85 in - 3.40 out
               minimax/minimax-m1:extended ;; 0.55 in - 2.20 out
               deepseek/deepseek-r1-0528 ;; 0.55 in - 2.19 out
               openai/gpt-4.1-mini ;; 0.40 in - 1.60 out
