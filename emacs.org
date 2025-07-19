@@ -844,6 +844,9 @@ Permit to expand region quickly, making it less painful to mark some region.
      "u" #'er/mark-url
      "n" #'er/mark-ts-node
      "d" #'er/mark-method-call
+     "p" #'er/mark-paragraph
+     "'" #'er/mark-inside-quotes
+     "\"" #'er/mark-outside-quotes
      "m" #'er/mark-email))
 #+end_src
 

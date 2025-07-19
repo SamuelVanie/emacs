@@ -680,6 +680,9 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    "u" #'er/mark-url
    "n" #'er/mark-ts-node
    "d" #'er/mark-method-call
+   "p" #'er/mark-paragraph
+   "'" #'er/mark-inside-quotes
+   "\"" #'er/mark-outside-quotes
    "m" #'er/mark-email))
 
 (use-package doom-themes
