@@ -315,6 +315,64 @@
   (interactive)
   (remove-overlays))
 
+(defun smv/surround-with-pair (open close)
+  "Surround the active region or insert pair at point using insert-pair.
+    OPEN is the opening character, CLOSE is the closing character."
+  (interactive)
+  (if (use-region-p)
+      (insert-pair 1 open close)
+    (insert-pair nil open close)))
+
+
+(defun smv/surround-custom ()
+  "Prompt for custom opening and closing characters to surround text."
+  (interactive)
+  (let ((open (read-char "Opening character: "))
+        (close (read-char "Closing character: ")))
+    (smv/surround-with-pair open close)))
+
+
+(defun smv/surround-with-string (open-str close-str)
+  "Surround region or point with arbitrary strings."
+  (if (use-region-p)
+      (let ((beg (region-beginning))
+            (end (region-end)))
+        (goto-char end)
+        (insert close-str)
+        (goto-char beg)
+        (insert open-str))
+    (insert open-str close-str)
+    (backward-char (length close-str))))
+
+(with-eval-after-load 'hydra
+  (defhydra hydra-surround (:color blue :hint nil)
+    "
+^Quotes^          ^Brackets^        ^Symbols^         ^Custom^
+^^^^^^^^--------------------------------------------------------
+_\"_: double       _(_: parentheses  _<_: angles       _c_: custom pair
+_'_: single        _[_: square       _`_: backticks    _t_: HTML tag
+_~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
+                                   _=_: equals
+                                   _+_: plus
+"
+    ("\"" (smv/surround-with-pair ?\" ?\"))
+    ("'" (smv/surround-with-pair ?' ?'))
+    ("~" (smv/surround-with-pair ?~ ?~))
+    ("(" (smv/surround-with-pair ?\( ?\)))
+    ("[" (smv/surround-with-pair ?\[ ?\]))
+    ("{" (smv/surround-with-pair ?\{ ?\}))
+    ("<" (smv/surround-with-pair ?\< ?\>))
+    ("`" (smv/surround-with-pair ?` ?`))
+    ("*" (smv/surround-with-pair ?* ?*))
+    ("=" (smv/surround-with-pair ?= ?=))
+    ("+" (smv/surround-with-pair ?+ ?+))
+    ("c" smv/surround-custom)
+    ("s" (let ((open (read-string "Opening string: "))
+               (close (read-string "Closing string: ")))
+           (smv/surround-with-string open close)))
+    ("q" nil "quit" :color red))
+  )
+
 (defun meow-setup ()
   (setq meow-cheatsheet-layout meow-cheatsheet-layout-colemak)
   (meow-motion-define-key
@@ -324,6 +382,7 @@
    '("n" . meow-left)
    '("s" . meow-insert)
    '("i" . meow-right)
+   '("J" . hydra-surround/body)
    '("C" . meow-pop-to-mark)
    '("V" . meow-unpop-to-mark)
    '("<" . previous-buffer)
@@ -372,6 +431,7 @@
    '("c" . meow-change)
    '("C" . meow-pop-to-mark)
    '("d" . duplicate-line)
+   '("D" . delete-pair)
    '("e" . meow-next)        ;; Down (next line)
    '("E" . meow-prev-expand)
    '("f" . meow-find)
@@ -381,6 +441,7 @@
    '("i" . meow-right) ;; Right (forward char)
    '("I" . meow-right-expand)
    '("j" . meow-join)
+   '("J" . hydra-surround/body)
    '("k" . meow-kill)
    '("K" . kill-current-buffer)
    '("l" . meow-line)
@@ -416,6 +477,7 @@
 (use-package meow
   :ensure t
   :demand t
+  :after hydra
   :config
   (meow-setup)
   ;; remove those hints that clutter vision
