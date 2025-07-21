@@ -1359,6 +1359,8 @@ I use the built-in rgrep to do my search and replace so I'm binding it to =C-c r
 #+begin_src emacs-lisp
   (use-package wgrep
     :ensure t
+    :bind
+    ("C-x C-," . wgrep-change-to-wgrep-mode)
     :config
     (global-set-key (kbd "C-c r") 'rgrep))
 
@@ -1742,6 +1744,19 @@ Do not tell me about anything else, direnv is the best package if you want nix t
     :ensure t)
 #+end_src
 
+
+** Copilot chat
+
+#+begin_src emacs-lisp
+  (use-package copilot-chat
+    :ensure t
+    :demand t
+    :after (request org markdown-mode)
+    :bind (:map global-map
+            ("C-c C-y" . copilot-chat-yank)
+            ("C-c M-y" . copilot-chat-yank-pop)
+            ("C-c C-M-y" . (lambda () (interactive) (copilot-chat-yank-pop -1)))))
+#+end_src
 
 ** AI API
 

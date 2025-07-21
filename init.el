@@ -1039,6 +1039,8 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 
 (use-package wgrep
   :ensure t
+  :bind
+  ("C-x C-," . wgrep-change-to-wgrep-mode)
   :config
   (global-set-key (kbd "C-c r") 'rgrep))
 
@@ -1286,6 +1288,15 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 
 (use-package direnv
   :ensure t)
+
+(use-package copilot-chat
+  :ensure t
+  :demand t
+  :after (request org markdown-mode)
+  :bind (:map global-map
+          ("C-c C-y" . copilot-chat-yank)
+          ("C-c M-y" . copilot-chat-yank-pop)
+          ("C-c C-M-y" . (lambda () (interactive) (copilot-chat-yank-pop -1)))))
 
 (setenv "GROQ_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gq_key") (string-trim (buffer-string))))
 (setenv "ANTHROPIC_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string))))
