@@ -1396,8 +1396,10 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    :prefix "!"
+   ")" #'gptel-add
    "!" #'gptel-send
    "(" #'gptel)
+  
   :bind
   ("C-c RET" . gptel-send)
   ("C-c g" . gptel))

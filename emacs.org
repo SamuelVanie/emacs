@@ -1865,8 +1865,10 @@ Mode to interact with different llms in emacs.
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
      :prefix "!"
+     ")" #'gptel-add
      "!" #'gptel-send
      "(" #'gptel)
+    
     :bind
     ("C-c RET" . gptel-send)
     ("C-c g" . gptel))
