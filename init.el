@@ -695,7 +695,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 (use-package standard-themes
   :ensure t
   :demand t
-  :config (load-theme 'doom-homage-white t));; meltbus
+  :config (load-theme 'doom-old-hope t));; meltbus
 
 (use-package all-the-icons
   :ensure t
@@ -1322,7 +1322,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (gptel-make-deepseek "DeepSeek"       ;Any name you want
     :stream t                           ;for streaming responses
     :key (with-temp-buffer (insert-file-contents "~/.org/.deep_key") (string-trim (buffer-string))))
-  (gptel-make-gh-copilot "Copilot")
   (gptel-make-openai "OpenRouter"
     ;; :online in the language slug to add the search plugin
     :host "openrouter.ai"
@@ -1362,6 +1361,8 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    gptel-backend (gptel-make-anthropic "Anthropic"
                    :key (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string)))
                    :stream t))
+  
+  (gptel-make-gh-copilot "Copilot")
 
   ;; ;; local models
   (gptel-make-openai "lmstudio"
