@@ -186,22 +186,17 @@
 (setq ibuffer-use-other-window t)
 
 (defun my-both-modes-active-p (buffer-name action)
-  "Return non-nil if both specific modes are active in current buffer."
+  "Return non-nil if buffer is org-mode with gptel active."
   (with-current-buffer buffer-name
     (and (derived-mode-p 'org-mode)
-         (derived-mode-p 'gptel-mode))))
+         (bound-and-true-p gptel-mode))))
 
 (add-to-list 'display-buffer-alist
              '("\\*Ibuffer\\*"
                (display-buffer-in-side-window)
                (window-height . 0.4)     ;; Takes 40% of the frame height
                (side . bottom)           ;; Display at bottom
-               (slot . 0))
-             `(my-both-modes-active-p
-               (display-buffer-in-side-window)
-               (side . right)
-               (window-width . 0.4)
-               (window-parameters . ((no-other-window . t)))))
+               (slot . 0)))
 
 (defun kill-all-buffers ()
   "Kill all buffers without asking for confirmation."
@@ -245,7 +240,6 @@
 
 
 (column-number-mode)
-(setq display-line-numbers-type 'relative)
 (global-display-line-numbers-mode t) ;; print line numbers for files
 
 
@@ -376,6 +370,8 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 
 (defun meow-setup ()
   (setq meow-cheatsheet-layout meow-cheatsheet-layout-colemak)
+
+
   (meow-motion-define-key
    '("<escape>" . ignore)
    '("e" . meow-next)
@@ -383,10 +379,16 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    '("n" . meow-left)
    '("s" . meow-insert)
    '("i" . meow-right)
+   '("m" . meow-mark-word)
+   '("M" . meow-mark-symbol)
    '("J" . hydra-surround/body)
    '("C" . meow-pop-to-mark)
    '("V" . meow-unpop-to-mark)
    '("<" . previous-buffer)
+   '("t" . meow-temp-normal)
+   '(";" . meow-reverse)
+   '("," . meow-inner-of-thing)
+   '("." . meow-bounds-of-thing)
    '(">" . next-buffer)
    '("K" . kill-current-buffer)
    )
@@ -636,7 +638,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 
 (use-package multi-vterm
   :after vterm
-  :defer t
   :bind (("C-c v n" . multi-vterm-project)
          ("C-c v f" . multi-vterm)
          ("C-c v r" . multi-vterm-rename-buffer)
@@ -694,7 +695,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 (use-package standard-themes
   :ensure t
   :demand t
-  :config (load-theme 'ef-dark t));; meltbus
+  :config (load-theme 'doom-homage-white t));; meltbus
 
 (use-package all-the-icons
   :ensure t
@@ -1313,14 +1314,15 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   ;; OPTIONAL configuration
   (setq gptel-default-mode 'org-mode)
   (setq gptel-use-context 'user)
-  (setq gptel-include-reasoning t)
-  (setq gptel-confirm-tool-calls t)
+  ;; (setq gptel-confirm-tool-calls t)
+  (setq gptel-include-tool-results t)
   (gptel-make-gemini "Gemini"
     :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
     :stream t)
   (gptel-make-deepseek "DeepSeek"       ;Any name you want
     :stream t                           ;for streaming responses
     :key (with-temp-buffer (insert-file-contents "~/.org/.deep_key") (string-trim (buffer-string))))
+  (gptel-make-gh-copilot "Copilot")
   (gptel-make-openai "OpenRouter"
     ;; :online in the language slug to add the search plugin
     :host "openrouter.ai"
@@ -1342,6 +1344,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
               deepseek/deepseek-r1-0528 ;; 0.55 in - 2.19 out
               openai/gpt-4.1-mini ;; 0.40 in - 1.60 out
               deepseek/deepseek-chat-v3-0324 ;; 0.33 in - 1.30 out
+              qwen/qwen3-coder  ;; 0.302 in - 0.302 out
               minimax/minimax-m1 ;; 0.30 in - 1.65 out
               x-ai/grok-3-mini ;; 0.30 in - 0.50 out
               deepseek/deepseek-chat-v3-0324 ;; 0.27 in - 1.10 out
@@ -1381,6 +1384,14 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "command_line" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer_google" ".el"))
+
+  ;; configuring the window size
+  (add-to-list 'display-buffer-alist
+               `(my-both-modes-active-p
+                 (display-buffer-in-side-window)
+                 (side . right)
+                 (window-width . 0.37)
+                 (window-parameters . ((no-other-window . t)))))
   
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
@@ -1410,9 +1421,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 (defun smv-tool/fetch_url_content (url)
   (smv/fetch-content url))
 
-(defun smv-tool/get_current_date_time ()
-  (message "%s" (format-time-string "%Y-%m-%d %H:%M:%S")))
-
 (with-eval-after-load 'gptel
   ;; shell command execution tool
   (gptel-make-tool
@@ -1431,12 +1439,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    :function #'smv-tool/get_project_root
    :description "Get the full path of the current project rootdir. Could be interesting to run at the beginning of work, because all the following work depends on it."
    :category "project-info")
-
-  (gptel-make-tool
-   :name "get_current_datetime"
-   :function #'smv-tool/get_current_date_time
-   :description "Get the current date and time. Could be interesting to call when logging info, or gathering infos from the internet"
-   :category "info-gathering")
 
   (gptel-make-tool
    :name "ask_partner"
