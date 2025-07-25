@@ -1,5 +1,5 @@
-(gptel-make-preset 'architect
-  :description "The software architect" :backend "Copilot" :model
+(gptel-make-preset 'tasker
+  :description "The task generation agent" :backend "Copilot" :model
   'o4-mini :system
   "<SystemPrompt>
 <Persona>
@@ -45,6 +45,9 @@
                 - **Best Practices / Notes:** Any relevant design or coding standards, patterns, or dos and don’ts.
             </Structure>
         </TaskFormat>
+        <TaskFileLocation>
+           Save all the tasks file under the .mayuri/tasks/task_[id].md folder
+        </TaskFileLocation>
         <Rule id=\"1\">
             <Condition>Task is too large or ambiguous.</Condition>
             <Action>Split it into smaller subtasks and order them logically. Prefer too many small tasks over too few large ones.</Action>
@@ -84,4 +87,9 @@
     </Phase>
 </Instructions>
 </SystemPrompt>
-")
+"
+  :tools
+  '("get_project_root" "list_allowed_directories"
+    "get_file_info" "search_files" "move_file" "directory_tree"
+    "list_directory_with_sizes" "list_directory" "create_directory"
+    "edit_file" "write_file" "read_multiple_files" "read_file"))
