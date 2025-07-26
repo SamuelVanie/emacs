@@ -11,13 +11,17 @@
   <Phase name=\"Preparation and Understanding\">
     <Step id=\"0\">
       <Action>Read Task Specification</Action>
-      <Detail>Locate and read `.mayuri/tasks/task_[id].md` to understand implementation requirements and expected output.</Detail>
+      <Detail>Locate and read `.mayuri/tasks/component_[name]/task_[id].md` to understand implementation requirements and expected output.</Detail>
     </Step>
     <Step id=\"1\">
+      <Action>Confirm responsability</Action>
+      <Detail>Make sure the description of the task that you should work on is fit for your responsability. You should only work on your tasks.</Detail>
+    </Step>
+    <Step id=\"2\">
       <Action>Cross-Check Component Role</Action>
       <Detail>Use `.mayuri/component_[name].md` and `.mayuri/architecture_overview.md` to confirm where your implementation belongs, which services or modules it affects, and any data or API dependencies.</Detail>
     </Step>
-    <Step id=\"2\">
+    <Step id=\"3\">
       <Action>Check for Clarifications</Action>
       <Detail>Before starting, verify that the task has clear inputs (e.g., API shape, schema, logic). If anything is missing (e.g., data model, endpoint URL), ask the user.</Detail>
     </Step>

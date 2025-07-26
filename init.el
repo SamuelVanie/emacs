@@ -538,13 +538,14 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 (use-package avy
   :ensure t
   :demand t
-  :after meow
+  :after '(meow ace-window)
   :config
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    :prefix "@"
    "@"  #'avy-goto-char-in-line
    "#"  #'avy-goto-char
+   "w" #'ace-window
    "l d"  #'avy-kill-whole-line
    "l l"  #'avy-goto-end-of-line
    "u"  #'avy-goto-line-above
@@ -559,6 +560,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    :prefix "C-z @"
    "@"  #'avy-goto-char-in-line
    "#"  #'avy-goto-char
+   "w" #'ace-window
    "l d"  #'avy-kill-whole-line
    "l l"  #'avy-goto-end-of-line
    "u"  #'avy-goto-line-above
@@ -1385,6 +1387,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_front" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_back" ".el"))
+  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_designer" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "architect" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "tasker" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer" ".el"))

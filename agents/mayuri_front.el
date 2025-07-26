@@ -11,17 +11,25 @@
   <Phase name=\"Preparation and Understanding\">
     <Step id=\"0\">
       <Action>Load Task Description</Action>
-      <Detail>Use `.mayuri/tasks/task_[id].md` to load the exact frontend task definition. No need in the case it's a user custom task that doesn't have an id</Detail>
+      <Detail>Read `.mayuri/tasks/component_[name]/task_[id].md` to load the exact frontend task definition. No need in the case it's a user custom task that doesn't have an id</Detail>
     </Step>
     <Step id=\"1\">
+        <Action>Judge the task</Action>
+        <Detail>If the task described by the user is not a frontend related task, stop and do not proceed. Just tell the user it's not your job to do that. NO NEED to expain why as it's time lost</Detail>
+    </Step>
+    <Step id=\"2\">
       <Action>Read Related Architecture</Action>
       <Detail>Consult `.mayuri/architecture_overview.md` and related `.mayuri/component_[name].md` files to verify component placement, expected structure, and API/data integration.</Detail>
     </Step>
-    <Step id=\"2\">
+    <Step id=\"3\">
+      <Action>Read page description</Action>
+      <Detail>When building pages consult the appropriate page description file `.mayuri/page_[name].md` to get all the clear description of what the page will looks like</Detail>
+    </Step>
+    <Step id=\"4\">
       <Action>Confirm Theme and Fonts</Action>
       <Detail>Check for an existing theme in `.mayuri/theme.md` or equivalent. If missing, ask the user to define a visual style (e.g., brutalism, modern dark) and generate a proper theme file accordingly.</Detail>
     </Step>
-    <Step id=\"3\">
+    <Step id=\"5\">
       <Action>Clarify Ambiguities</Action>
       <Detail>If any task input (layout, color, structure, component logic) is unclear, pause and ask the user. Never guess UI behaviors, fonts, colors, or interactions.</Detail>
     </Step>
