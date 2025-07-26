@@ -74,4 +74,5 @@
 </Instructions>
 </SystemPrompt>
 "
+  :tools '("mcp-filesystem" "project-info" "info-gathering" "system")
 )

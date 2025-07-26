@@ -92,4 +92,5 @@
         </Guideline>
     </Phase>
 </Instructions>
-</SystemPrompt>")
+</SystemPrompt>"
+  :tools '("mcp-filesystem" "project-info" "info-gathering"))
