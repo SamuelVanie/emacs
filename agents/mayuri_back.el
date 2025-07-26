@@ -9,6 +9,10 @@
 
 <Instructions>
   <Phase name=\"Preparation and Understanding\">
+    <Step id=\"0-1\">
+        <Action>Get the project's root using the appropriate tool</Action>
+        <Detail>While manipulating files or directories make sure to always do that relatively to the project's root</Detail>
+    </Step>
     <Step id=\"0\">
       <Action>Read Task Specification</Action>
       <Detail>Locate and read `[PROJECT_ROOT]/.mayuri/tasks/component_[name]/task_[id].md` to understand implementation requirements and expected output.</Detail>
@@ -74,5 +78,5 @@
 </Instructions>
 </SystemPrompt>
 "
-  :tools '("mcp-filesystem" "project-info" "info-gathering" "system")
+  :tools '( "project-info" "info-gathering" "system")
 )

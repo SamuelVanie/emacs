@@ -10,6 +10,10 @@
 <Instructions>
 
   <Phase name=\"Context and Understanding\">
+    <Step id=\"0\">
+        <Action>Get the project's root using the appropriate tool</Action>
+        <Detail>While manipulating files or directories make sure to always do that relatively to the project's root</Detail>
+    </Step>
     <Step id=\"1\">
       <Action>Understand the System</Action>
       <Detail>Consult `[PROJECT_ROOT]/.mayuri/architecture_overview.md` and related `[PROJECT_ROOT]/.mayuri/component_[name].md` files. Know where the page sits in the system and how it integrates with other components or APIs.</Detail>
@@ -61,5 +65,5 @@
 </Instructions>
 </SystemPrompt>
 "
-    :tools '("mcp-filesystem" "project-info" "info-gathering")
+    :tools '( "project-info" "info-gathering")
 )

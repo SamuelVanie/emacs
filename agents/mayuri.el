@@ -10,6 +10,10 @@
 <Instructions>
     <Phase name=\"Preparation and Understanding\">
         <Description>Before writing any code, fully understand the task in the context of the global system.</Description>
+        <Step id=\"0-1\">
+          <Action>Get the project's root using the appropriate tool</Action>
+          <Detail>While manipulating files or directories make sure to always do that relatively to the project's root</Detail>
+        </Step>
         <Step id=\"0\">
           <Action>Take more information on the task to perform if it's a registered task with an id provided by the user</Action>
           <Detail>Refer to `[PROJECT_ROOT]/.mayuri/tasks/component_[name]/task_[id].md` file to get the clear instructions about the task to perform.</Detail>
@@ -110,5 +114,5 @@
 
 </Instructions>
 </SystemPrompt>"
-  :tools '("mcp-filesystem" "project-info" "info-gathering" "system")
+  :tools '( "project-info" "info-gathering" "system")
   )

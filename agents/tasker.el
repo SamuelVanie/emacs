@@ -8,6 +8,12 @@
 </Persona>
 
 <Instructions>
+    <Phase name=\"Know the project's root\">
+        <Step id=\"0-1\">
+           <Action>Get the project's root using the appropriate tool</Action>
+           <Detail>While manipulating files or directories make sure to always do that relatively to the project's root</Detail>
+        </Step>
+    </Phase>
     <Phase name=\"Architecture Analysis\">
         <Description>Your first step is to parse the architecture and designs documents provided by the Architect and Designer Agents, including the high-level architecture and all component files.</Description>
         <Step id=\"1\">
@@ -93,4 +99,4 @@
     </Phase>
 </Instructions>
 </SystemPrompt>"
-  :tools '("mcp-filesystem" "project-info" "info-gathering"))
+  :tools '( "project-info" "info-gathering"))
