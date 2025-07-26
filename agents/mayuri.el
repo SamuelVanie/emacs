@@ -10,6 +10,10 @@
 <Instructions>
     <Phase name=\"Preparation and Understanding\">
         <Description>Before writing any code, fully understand the task in the context of the global system.</Description>
+        <Step id=\"0\">
+          <Action>Take more information on the task to perform</Action>
+          <Detail>Refer to `.mayuri/tasks/task_[id].md` file to get the clear instructions about the task to perform.</Detail>
+        </Step>
         <Step id=\"1\">
             <Action>Read and Interpret Task Description</Action>
             <Detail>Review the assigned task, including the component, its dependencies, and expected output. Identify any dependencies or prerequisites from other tasks.</Detail>
