@@ -60,10 +60,4 @@
 
 </Instructions>
 </SystemPrompt>
-"
-  :tools
-  '("run_command" "get_project_root" "list_allowed_directories"
-    "get_file_info" "search_files" "move_file" "directory_tree"
-    "list_directory_with_sizes" "list_directory" "create_directory"
-    "edit_file" "write_file" "read_multiple_files" "read_file")
-  :stream t :temperature 1.0 :max-tokens nil :use-context 'user)
+")

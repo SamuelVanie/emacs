@@ -538,7 +538,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 (use-package avy
   :ensure t
   :demand t
-  :after '(meow ace-window)
+  :after 'meow
   :config
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
@@ -1494,3 +1494,11 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :defer t
   :after magit
   :config (magit-todos-mode 1))
+
+(use-package eaf
+  :load-path "~/.emacs.d/site-lisp/emacs-application-framework"
+  :config
+  (require 'eaf)
+  (require 'eaf-markdown-previewer)
+  (require 'eaf-org-previewer)
+  (require 'eaf-pyqterminal))
