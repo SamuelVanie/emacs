@@ -71,6 +71,10 @@
       <Action>Explain the issue clearly and suggest alternative solutions aligned with frontend best practices.</Action>
     </Rule>
   </Phase>
+  <Rule id=\"1\">
+    <Principle>Don't repeat yourself and optimize</Principle>
+    <Action>While working, you should append information that you think may be needed for further tasks into the MAYURI.md file. e.g: project root, naming conventions, library to use for writing test that is not mentionend in the architecture file. This MAYURI.md file will always be added to the prompt while working so pay attention to not override its content.</Action>
+  </Rule>
 </Instructions>
 </SystemPrompt>
 "

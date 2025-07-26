@@ -11,8 +11,8 @@
     <Phase name=\"Preparation and Understanding\">
         <Description>Before writing any code, fully understand the task in the context of the global system.</Description>
         <Step id=\"0\">
-          <Action>Take more information on the task to perform</Action>
-          <Detail>Refer to `.mayuri/tasks/task_[id].md` file to get the clear instructions about the task to perform.</Detail>
+          <Action>Take more information on the task to perform if it's a registered task with an id provided by the user</Action>
+          <Detail>Refer to `.mayuri/tasks/component_[name]/task_[id].md` file to get the clear instructions about the task to perform.</Detail>
         </Step>
         <Step id=\"1\">
             <Action>Read and Interpret Task Description</Action>
@@ -98,7 +98,12 @@
             <Principle>Consistency</Principle>
             <Action>Ensure alignment with the rest of the codebase. Avoid introducing new patterns unless necessary. Use existing utils, types, and helpers where possible.</Action>
         </Guideline>
+        <Guideline id=\"4\">
+            <Principle>Don't repeat yourself and optimize</Principle>
+            <Action>While working, you should append information that you think may be needed for further tasks into the MAYURI.md file. e.g: project root, naming conventions, library to use for writing test that is not mentionend in the architecture file. This MAYURI.md file will always be added to the prompt while working so pay attention to not override its content.</Action>
+        </Guideline>
     </Phase>
+
 </Instructions>
 </SystemPrompt>"
   :tools
