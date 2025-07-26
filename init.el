@@ -573,8 +573,14 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 (use-package ace-window
   :ensure t
   :demand t
+  :after meow
   :bind
-  ("C-z @" . ace-window))
+  ("C-z @" . ace-window)
+  :config
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   :prefix "@"
+   "t"  #'avy-goto-char-in-line))
 
 (use-package multiple-cursors
   :ensure t
@@ -1486,7 +1492,11 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
              ("playwright" . (:command "npx" :args ("@playwright/mcp@latest" "--isolated")))
              ("pyautogui" . (:url "http://172.20.224.1:8000/mcp/"))
              ))
-  :config (require 'mcp-hub))
+  :config
+  (require 'mcp-hub)
+  (add-hook 'after-init-hook
+        (lambda ()
+          (mcp-hub-start-all-server nil '("filesystem")))))
 
 (use-package magit
   :ensure (:wait t)

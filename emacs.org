@@ -702,8 +702,14 @@ Quickly switch between windows
   (use-package ace-window
     :ensure t
     :demand t
+    :after meow
     :bind
-    ("C-z @" . ace-window))
+    ("C-z @" . ace-window)
+    :config
+    (general-define-key
+     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+     :prefix "@"
+     "t"  #'avy-goto-char-in-line))
 #+end_src
 
 ** Multicursors
@@ -1967,7 +1973,11 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
                ("playwright" . (:command "npx" :args ("@playwright/mcp@latest" "--isolated")))
                ("pyautogui" . (:url "http://172.20.224.1:8000/mcp/"))
                ))
-    :config (require 'mcp-hub))
+    :config
+    (require 'mcp-hub)
+    (add-hook 'after-init-hook
+          (lambda ()
+            (mcp-hub-start-all-server nil '("filesystem")))))
 #+end_src
 
 

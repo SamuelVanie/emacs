@@ -135,4 +135,4 @@
     </Phase>
 </Instructions>
 </SystemPrompt>"
-  :tools '( "project-info" "info-gathering"))
+  :tools '("mcp-filesystem" "project-info" "info-gathering"))
