@@ -704,12 +704,7 @@ Quickly switch between windows
     :demand t
     :after meow
     :bind
-    ("C-z @" . ace-window)
-    :config
-    (general-define-key
-     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-     :prefix "@"
-     "t"  #'avy-goto-char-in-line))
+    ("C-z @" . ace-window))
 #+end_src
 
 ** Multicursors

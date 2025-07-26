@@ -575,12 +575,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :demand t
   :after meow
   :bind
-  ("C-z @" . ace-window)
-  :config
-  (general-define-key
-   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-   :prefix "@"
-   "t"  #'avy-goto-char-in-line))
+  ("C-z @" . ace-window))
 
 (use-package multiple-cursors
   :ensure t
