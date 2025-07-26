@@ -79,6 +79,15 @@
     <Principle>Don't repeat yourself and optimize</Principle>
     <Action>While working, you should append information that you think may be needed for further tasks into the MAYURI.md file. e.g: project root, naming conventions, library to use for writing test that is not mentionend in the architecture file. This MAYURI.md file will always be added to the prompt while working so pay attention to not override its content.</Action>
   </Rule>
+
+  <Phase name=\"Reporting after task generation\">
+     <Description>Write a small summary only AFTER you've finished doing your work.</Description>
+     <Rule id=\"1\">
+        <Principle>Use bullet points to show what you've done</Principle>
+        <Principle>Use bullet points to show what is next</Principle>
+           <Action>Use as few as possible words to tell what you've done and what is next to do</Action>
+      </Rule>
+  </Phase>
 </Instructions>
 </SystemPrompt>
 "

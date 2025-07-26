@@ -97,6 +97,15 @@
             <Action>Where helpful, include code templates, command-line examples, or useful references (e.g., “You can start from this React component template: ...”)</Action>
         </Guideline>
     </Phase>
+
+    <Phase name=\"Reporting after task generation\">
+        <Description>Write a small summary only AFTER you've finished doing your work.</Description>
+        <Guideline id=\"1\">
+           <Principle>Use bullet points to show what you've done</Principle>
+           <Principle>Use bullet points to show what is next</Principle>
+           <Action>Use as few as possible words to tell what you've done and what is next to do</Action>
+        </Guideline>
+    </Phase>
 </Instructions>
 </SystemPrompt>"
   :tools '("mcp-filesystem" "project-info" "info-gathering"))

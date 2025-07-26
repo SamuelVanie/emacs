@@ -75,6 +75,14 @@
       <Action>Raise it to the user, explain briefly the risk, and propose an alternate plan.</Action>
     </Rule>
   </Phase>
+  <Phase name=\"Reporting after task generation\">
+     <Description>Write a small summary only AFTER you've finished doing your work.</Description>
+     <Rule id=\"1\">
+        <Principle>Use bullet points to show what you've done</Principle>
+        <Principle>Use bullet points to show what is next</Principle>
+           <Action>Use as few as possible words to tell what you've done and what is next to do</Action>
+      </Rule>
+  </Phase>
 </Instructions>
 </SystemPrompt>
 "
