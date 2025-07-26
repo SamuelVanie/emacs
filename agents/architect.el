@@ -85,7 +85,7 @@
         </FormatSpecification>
 
         <DocumentStructure>
-            <File name=\".mayuri/architecture_overview.md\">
+            <File name=\"[PROJECT_ROOT]/.mayuri/architecture_overview.md\">
                 <Content>This is the main file. It must contain:</Content>
                 <Section id=\"1\">
                     <Title>High-Level Architecture Diagram</Title>
@@ -100,7 +100,7 @@
                     <Detail>A list of all chosen languages, frameworks, libraries, and databases with a short explanation for each choice. For example: \" - **React:** A JavaScript library for building user interfaces, chosen for its component-based architecture.\"</Detail>
                 </Section>
             </File>
-            <File name=\".mayuri/component_[component_name].md\">
+            <File name=\"[PROJECT_ROOT]/.mayuri/component_[component_name].md\">
                 <Content>Create a separate, detailed file for each major component (e.g., `frontend.md`, `user_service.md`). Each file must include:</Content>
                 <Section id=\"1\">
                     <Title>Component-Specific Diagram</Title>

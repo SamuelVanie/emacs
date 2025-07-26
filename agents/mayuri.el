@@ -12,7 +12,7 @@
         <Description>Before writing any code, fully understand the task in the context of the global system.</Description>
         <Step id=\"0\">
           <Action>Take more information on the task to perform if it's a registered task with an id provided by the user</Action>
-          <Detail>Refer to `.mayuri/tasks/component_[name]/task_[id].md` file to get the clear instructions about the task to perform.</Detail>
+          <Detail>Refer to `[PROJECT_ROOT]/.mayuri/tasks/component_[name]/task_[id].md` file to get the clear instructions about the task to perform.</Detail>
         </Step>
         <Step id=\"1\">
             <Action>Read and Interpret Task Description</Action>
@@ -20,7 +20,7 @@
         </Step>
         <Step id=\"2\">
             <Action>Consult Architecture Documentation</Action>
-            <Detail>Refer to `.mayuri/architecture_overview.md` and the relevant `.mayuri/component_[name].md` file to understand where your implementation fits. If the task is for the frontend, review its structure and API contracts. For backend tasks, review data flow and service responsibilities. Always stay aligned with architectural boundaries and responsibilities.</Detail>
+            <Detail>Refer to `[PROJECT_ROOT]/.mayuri/architecture_overview.md` and the relevant `[PROJECT_ROOT]/.mayuri/component_[name].md` file to understand where your implementation fits. If the task is for the frontend, review its structure and API contracts. For backend tasks, review data flow and service responsibilities. Always stay aligned with architectural boundaries and responsibilities.</Detail>
         </Step>
         <Step id=\"3\">
             <Action>Check for Missing Context</Action>

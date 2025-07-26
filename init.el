@@ -253,6 +253,7 @@
 (dolist (mode '(
                 term-mode-hook
                 doc-view-minor-mode-hook
+                gptel-mode-hook
                 shell-mode-hook
                 vterm-mode-hook
                 eshell-mode-hook))
@@ -488,8 +489,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (meow-global-mode 1))
 
 ;; tabs manipulations
-(with-eval-after-load 'general
-  
+(with-eval-after-load 'general    
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    :prefix "#"
@@ -538,14 +538,13 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 (use-package avy
   :ensure t
   :demand t
-  :after 'meow
+  :after meow
   :config
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    :prefix "@"
    "@"  #'avy-goto-char-in-line
    "#"  #'avy-goto-char
-   "w" #'ace-window
    "l d"  #'avy-kill-whole-line
    "l l"  #'avy-goto-end-of-line
    "u"  #'avy-goto-line-above
@@ -560,7 +559,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    :prefix "C-z @"
    "@"  #'avy-goto-char-in-line
    "#"  #'avy-goto-char
-   "w" #'ace-window
    "l d"  #'avy-kill-whole-line
    "l l"  #'avy-goto-end-of-line
    "u"  #'avy-goto-line-above
@@ -571,6 +569,12 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    "r t"  #'avy-transpose-lines-in-region
    "r r"  #'avy-resume
    "r m"  #'avy-move-region))
+
+(use-package ace-window
+  :ensure t
+  :demand t
+  :bind
+  ("C-z @" . ace-window))
 
 (use-package multiple-cursors
   :ensure t

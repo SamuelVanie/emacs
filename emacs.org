@@ -44,7 +44,7 @@
 
   ;; Prevent dired-find-alternative warning message
   (put 'dired-find-alternate-file 'disabled nil)
-  #+end_src
+#+end_src
 
 * Scrolling
 
@@ -324,6 +324,7 @@ This section configures basic UI settings that remove unneeded elements to make 
   (dolist (mode '(
                   term-mode-hook
                   doc-view-minor-mode-hook
+                  gptel-mode-hook
                   shell-mode-hook
                   vterm-mode-hook
                   eshell-mode-hook))
@@ -604,8 +605,7 @@ Some commands for completing meow, adding the ones I'm used to.
 
 #+begin_src emacs-lisp
   ;; tabs manipulations
-  (with-eval-after-load 'general
-    
+  (with-eval-after-load 'general    
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
      :prefix "#"
@@ -650,9 +650,7 @@ Some commands for completing meow, adding the ones I'm used to.
      :prefix "C-c f"
      "f" #'ffap
      "s" #'ffap-menu))
-
-
-  #+end_src
+#+end_src
 
 
 * Utilities
@@ -663,14 +661,13 @@ Some commands for completing meow, adding the ones I'm used to.
   (use-package avy
     :ensure t
     :demand t
-    :after 'meow
+    :after meow
     :config
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
      :prefix "@"
      "@"  #'avy-goto-char-in-line
      "#"  #'avy-goto-char
-     "w" #'ace-window
      "l d"  #'avy-kill-whole-line
      "l l"  #'avy-goto-end-of-line
      "u"  #'avy-goto-line-above
@@ -685,7 +682,6 @@ Some commands for completing meow, adding the ones I'm used to.
      :prefix "C-z @"
      "@"  #'avy-goto-char-in-line
      "#"  #'avy-goto-char
-     "w" #'ace-window
      "l d"  #'avy-kill-whole-line
      "l l"  #'avy-goto-end-of-line
      "u"  #'avy-goto-line-above
@@ -696,9 +692,19 @@ Some commands for completing meow, adding the ones I'm used to.
      "r t"  #'avy-transpose-lines-in-region
      "r r"  #'avy-resume
      "r m"  #'avy-move-region))
-
 #+end_src
 
+** Ace window
+
+Quickly switch between windows
+
+#+begin_src emacs-lisp
+  (use-package ace-window
+    :ensure t
+    :demand t
+    :bind
+    ("C-z @" . ace-window))
+#+end_src
 
 ** Multicursors
 

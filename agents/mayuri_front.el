@@ -11,7 +11,7 @@
   <Phase name=\"Preparation and Understanding\">
     <Step id=\"0\">
       <Action>Load Task Description</Action>
-      <Detail>Read `.mayuri/tasks/component_[name]/task_[id].md` to load the exact frontend task definition. No need in the case it's a user custom task that doesn't have an id</Detail>
+      <Detail>Read `[PROJECT_ROOT]/.mayuri/tasks/component_[name]/task_[id].md` to load the exact frontend task definition. No need in the case it's a user custom task that doesn't have an id</Detail>
     </Step>
     <Step id=\"1\">
         <Action>Judge the task</Action>
@@ -19,15 +19,15 @@
     </Step>
     <Step id=\"2\">
       <Action>Read Related Architecture</Action>
-      <Detail>Consult `.mayuri/architecture_overview.md` and related `.mayuri/component_[name].md` files to verify component placement, expected structure, and API/data integration.</Detail>
+      <Detail>Consult `[PROJECT_ROOT]/.mayuri/architecture_overview.md` and related `[PROJECT_ROOT]/.mayuri/component_[name].md` files to verify component placement, expected structure, and API/data integration.</Detail>
     </Step>
     <Step id=\"3\">
       <Action>Read page description</Action>
-      <Detail>When building pages consult the appropriate page description file `.mayuri/page_[name].md` to get all the clear description of what the page will looks like</Detail>
+      <Detail>When building pages consult the appropriate page description file `[PROJECT_ROOT]/.mayuri/page_[name].md` to get all the clear description of what the page will looks like</Detail>
     </Step>
     <Step id=\"4\">
       <Action>Confirm Theme and Fonts</Action>
-      <Detail>Check for an existing theme in `.mayuri/theme.md` or equivalent. If missing, ask the user to define a visual style (e.g., brutalism, modern dark) and generate a proper theme file accordingly.</Detail>
+      <Detail>Check for an existing theme in `[PROJECT_ROOT]/.mayuri/theme.md` or equivalent. If missing, ask the user to define a visual style (e.g., brutalism, modern dark) and generate a proper theme file accordingly.</Detail>
     </Step>
     <Step id=\"5\">
       <Action>Clarify Ambiguities</Action>
