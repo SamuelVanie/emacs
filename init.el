@@ -1491,6 +1491,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
            `(
              ("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "~/projects")))
              ("Context7" . (:command "npx" :args ("-y" "@upstash/context7-mcp")))
+             ;; playwright install --with-deps # installs browsers in playwright (and their deps) if required
              ("playwright" . (:command "npx" :args ("@playwright/mcp@latest" "--isolated")))
              ("pyautogui" . (:url "http://172.20.224.1:8000/mcp/"))
              ))
