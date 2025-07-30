@@ -226,7 +226,6 @@
                 '("^\\*eshell.*\\*$" eshell-mode ;eshell as a popup
                   "^\\*shell.*\\*$"  shell-mode  ;shell as a popup
                   "^\\*term.*\\*$"   term-mode   ;term as a popup
-                  "^\\*vterm.*\\*$"  vterm-mode  ;vterm as a popup
                   )))
 
   (popper-mode +1)
@@ -575,7 +574,13 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :demand t
   :after meow
   :bind
-  ("C-z @" . ace-window))
+  ("C-z w" . ace-window)
+  :config
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   :prefix "@"
+   "w"  #'ace-window
+   ))
 
 (use-package multiple-cursors
   :ensure t
@@ -650,9 +655,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
          ("C-c v r" . multi-vterm-rename-buffer)
          ("C-x C-y" . multi-vterm-dedicated-toggle))
   :config
-  (define-key vterm-mode-map [return]                      #'vterm-send-return)
-  ;; terminal height percent of 30
-  (setq multi-vterm-dedicated-window-height-percent 45))
+  (define-key vterm-mode-map [return]                      #'vterm-send-return))
 
 (setq browse-url-generic-program "MicrosoftEdge.exe")
 (defun smv/browse-search ()
@@ -748,6 +751,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    ("C-c h k" . helm-show-kill-ring)
    ("C-c h s" . helm-do-grep-ag)
    ("C-c h f" . helm-find)
+   ("C-c h n" . helm-complete-file-name-at-point)
    ("C-c h t" . helm-magit-todos))
   )
 (fido-mode 1)
