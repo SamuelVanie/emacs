@@ -218,8 +218,11 @@
           "Output\\*$"
           "\\*Async Shell Command\\*"
           help-mode
-          compilation-mode))
+          compilation-mode
+          (lambda (buf) (with-current-buffer buf
+                          (bound-and-true-p gptel-mode)))))
   (setq popper-window-height "40")
+  (setq popper-display-control nil)
   ;; Match eshell, shell, term and/or vterm buffers
   (setq popper-reference-buffers
         (append popper-reference-buffers
