@@ -34,6 +34,7 @@
 
 ;; auto refresh buffers when files changes
 (global-auto-revert-mode t)
+(global-visual-line-mode t)
 
 ;; Prevent dired-find-alternative warning message
 (put 'dired-find-alternate-file 'disabled nil)
@@ -450,8 +451,8 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    '("J" . hydra-surround/body)
    '("k" . meow-kill)
    '("K" . kill-current-buffer)
-   '("l" . meow-line)
-   '("L" . meow-goto-line)
+   '("l" . meow-visual-line)
+   '("L" . meow-line)
    '("m" . meow-mark-word)
    '("M" . meow-mark-symbol)
    '("n" . meow-left) ;; Left (backward char)
@@ -1359,9 +1360,11 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
               deepseek/deepseek-chat-v3-0324 ;; 0.33 in - 1.30 out
               qwen/qwen3-coder  ;; 0.302 in - 0.302 out
               minimax/minimax-m1 ;; 0.30 in - 1.65 out
+              qwen/qwen3-coder ;; 0.30 in - 1.20 out
               x-ai/grok-3-mini ;; 0.30 in - 0.50 out
               deepseek/deepseek-chat-v3-0324 ;; 0.27 in - 1.10 out
               minimax/minimax-01 ;; 0.20 in - 1.10 out
+              z-ai/glm-4.5 ;; 0.2 in - 0.2 out
               google/gemini-2.5-flash-preview:thinking ;; 0.15 in - 3.50 out
               google/gemini-2.5-flash-preview ;; 0.15 in - 0.60 out
               google/gemini-2.5-flash-lite-preview-06-17

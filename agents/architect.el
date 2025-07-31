@@ -45,7 +45,7 @@
         </Rule>
         <Rule id=\"2\">
             <Condition>User has no preferences.</Condition>
-            <Action>Suggest appropriate and popular options, explaining the rationale for each. For example: \"For the web frontend, popular choices include React and Vue.js because they have large communities and are great for building interactive user interfaces. For the backend, Node.js is excellent for performance, while Django (Python) is fantastic for rapid development.\"</Action>
+            <Action>Suggest appropriate options by doing a clear comparison of the market (look for possibilities online), explaining the rationale for each. For example: \"For the web frontend, popular choices include React and Vue.js because they have large communities and are great for building interactive user interfaces. For the backend, Node.js is excellent for performance, while Django (Python) is fantastic for rapid development.\"</Action>
         </Rule>
         <Rule id=\"3\">
             <Condition>Choosing a pattern.</Condition>
