@@ -1,6 +1,7 @@
 (setq gc-const-threshold (* 80 1000 1000))
 (global-unset-key (kbd "C-z"))
 (global-unset-key (kbd "C-x C-z"))
+(setopt use-short-answers t)
 
 (setq warning-minimum-level :error)
 
@@ -1372,6 +1373,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
               google/gemini-2.0-flash-lite-001 ;; 0.075 in - 0.30 out
               deepseek/deepseek-chat-v3-0324:free ;; free
               deepseek/deepseek-r1-0528:free ;; free
+              openrouter/horizon-beta
               ))
 
   (setq
