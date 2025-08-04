@@ -571,6 +571,7 @@ Trying the modal editor meow
      '("o" . meow-block)
      '("O" . meow-to-block)
      '("p" . meow-yank)
+     '("P" . meow-yank-pop)
      '("q" . meow-quit)
      '("r" . meow-replace)
      '("R" . meow-swap-grab)
@@ -1664,7 +1665,6 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
 #+begin_src emacs-lisp
   (use-package company
     :ensure t
-    :after lsp-mode
     :hook (lsp-mode . company-mode)
     :bind
     ("C-z C-z" . company-mode)
@@ -1673,10 +1673,8 @@ Company Mode provides a nicer in-buffer completion interface than completion-at-
     (company-minimum-prefix-length 1)
     (Company-idle-delay 0.0)
     :config
-    (add-to-list 'company-backends 'company-files)
     (add-to-list 'company-backends 'company-yasnippet)
-    (add-to-list 'company-backends 'company-files)
-    (add-to-list 'company-backends 'dap-ui-repl-company))
+    (add-to-list 'company-backends 'company-files))
   
   (use-package company-box
     :ensure t
@@ -1763,19 +1761,6 @@ Do not tell me about anything else, direnv is the best package if you want nix t
     :ensure t)
 #+end_src
 
-
-** Copilot chat
-
-#+begin_src emacs-lisp
-  (use-package copilot-chat
-    :ensure t
-    :demand t
-    :after (request org markdown-mode)
-    :bind (:map global-map
-            ("C-c C-y" . copilot-chat-yank)
-            ("C-c M-y" . copilot-chat-yank-pop)
-            ("C-c C-M-y" . (lambda () (interactive) (copilot-chat-yank-pop -1)))))
-#+end_src
 
 ** AI API
 
@@ -1875,6 +1860,7 @@ Mode to interact with different llms in emacs.
     (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri" ".el"))
     (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_front" ".el"))
     (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_back" ".el"))
+    (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_setup" ".el"))
     (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_designer" ".el"))
     (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "architect" ".el"))
     (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "tasker" ".el"))
@@ -1963,6 +1949,9 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
                          :type string
                          :description "The url of the webpage to fetch. e.g: https://google.com"))
      :category "browsing")
+
+    
+    (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "filesystem/filesystem" ".el"))
     )
 #+end_src
 
@@ -1975,7 +1964,6 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
     :after gptel
     :custom (mcp-hub-servers
              `(
-               ("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "~/projects")))
                ("Context7" . (:command "npx" :args ("-y" "@upstash/context7-mcp")))
                ;; playwright install --with-deps # installs browsers in playwright (and their deps) if required
                ("playwright" . (:command "npx" :args ("@playwright/mcp@latest" "--isolated")))

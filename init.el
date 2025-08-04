@@ -461,6 +461,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    '("o" . meow-block)
    '("O" . meow-to-block)
    '("p" . meow-yank)
+   '("P" . meow-yank-pop)
    '("q" . meow-quit)
    '("r" . meow-replace)
    '("R" . meow-swap-grab)
@@ -1241,7 +1242,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 
 (use-package company
   :ensure t
-  :after lsp-mode
   :hook (lsp-mode . company-mode)
   :bind
   ("C-z C-z" . company-mode)
@@ -1250,10 +1250,8 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (company-minimum-prefix-length 1)
   (Company-idle-delay 0.0)
   :config
-  (add-to-list 'company-backends 'company-files)
   (add-to-list 'company-backends 'company-yasnippet)
-  (add-to-list 'company-backends 'company-files)
-  (add-to-list 'company-backends 'dap-ui-repl-company))
+  (add-to-list 'company-backends 'company-files))
 
 (use-package company-box
   :ensure t
@@ -1305,15 +1303,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 
 (use-package direnv
   :ensure t)
-
-(use-package copilot-chat
-  :ensure t
-  :demand t
-  :after (request org markdown-mode)
-  :bind (:map global-map
-          ("C-c C-y" . copilot-chat-yank)
-          ("C-c M-y" . copilot-chat-yank-pop)
-          ("C-c C-M-y" . (lambda () (interactive) (copilot-chat-yank-pop -1)))))
 
 (setenv "GROQ_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gq_key") (string-trim (buffer-string))))
 (setenv "ANTHROPIC_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string))))
@@ -1404,6 +1393,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_front" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_back" ".el"))
+  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_setup" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_designer" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "architect" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "tasker" ".el"))
@@ -1485,6 +1475,9 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
                        :type string
                        :description "The url of the webpage to fetch. e.g: https://google.com"))
    :category "browsing")
+
+  
+  (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "filesystem/filesystem" ".el"))
   )
 
 ;; tools from mcp servers
@@ -1494,7 +1487,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :after gptel
   :custom (mcp-hub-servers
            `(
-             ("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "~/projects")))
              ("Context7" . (:command "npx" :args ("-y" "@upstash/context7-mcp")))
              ;; playwright install --with-deps # installs browsers in playwright (and their deps) if required
              ("playwright" . (:command "npx" :args ("@playwright/mcp@latest" "--isolated")))

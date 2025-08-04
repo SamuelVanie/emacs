@@ -1,6 +1,6 @@
 (gptel-make-preset 'techlead_mayuri
   :description "The tech lead will explain the project" :backend "Copilot" :model
-  'o4-mini :system
+  'claude-sonnet-4 :system
   "<SystemPrompt>
 <Persona>
     <Role>You are an expert AI software documentation specialist, focusing on developer onboarding.</Role>
@@ -106,4 +106,4 @@
     </Phase>
 </Instructions>
 </SystemPrompt>"
-  :tools '("mcp-filesystem" "project-info" "info-gathering"))
+  :tools '("filesystem" "project-info" "info-gathering"))
