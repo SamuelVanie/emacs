@@ -1240,18 +1240,46 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :defer t
   :after lsp-mode)
 
+(use-package cape
+  :ensure t
+  :demand t
+  ;; Bind prefix keymap providing all Cape commands under a mnemonic key.
+  ;; Press C-c p ? to for help.
+  :bind ("C-c p" . cape-prefix-map) ;; Alternative key: M-<tab>, M-p, M-+
+  ;; Alternatively bind Cape commands individually.
+  ;; :bind (("C-c p d" . cape-dabbrev)
+  ;;        ("C-c p h" . cape-history)
+  ;;        ("C-c p f" . cape-file)
+  ;;        ...)
+  :init
+  ;; Add to the global default value of `completion-at-point-functions' which is
+  ;; used by `completion-at-point'.  The order of the functions matters, the
+  ;; first function returning a result wins.  Note that the list of buffer-local
+  ;; completion functions takes precedence over the global list.
+  (add-hook 'completion-at-point-functions #'cape-dabbrev)
+  (add-hook 'completion-at-point-functions #'cape-elisp-block)
+  (add-hook 'completion-at-point-functions #'cape-keyword)
+  (add-hook 'completion-at-point-functions #'cape-history)
+  (add-hook 'completion-at-point-functions #'cape-elisp-symbol)
+  ;; ...
+  )
+
 (use-package company
   :ensure t
-  :hook (lsp-mode . company-mode)
+  :demand t
   :bind
   ("C-z C-z" . company-mode)
   ("C-z C-c" . company-complete)
+  ("C-M-i" . completion-at-point)
   :custom
   (company-minimum-prefix-length 1)
-  (Company-idle-delay 0.0)
+  (company-idle-delay 0.0)
+  (company-tooltip-idle-delay 0.0)
   :config
-  (add-to-list 'company-backends 'company-yasnippet)
-  (add-to-list 'company-backends 'company-files))
+  (add-to-list 'company-backends #'company-yasnippet t)
+  (add-to-list 'company-backends #'company-files t)
+  (add-to-list 'company-backends #'company-dabbrev t)
+  )
 
 (use-package company-box
   :ensure t
@@ -1260,7 +1288,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 
 (use-package company-tabnine
   :ensure t
-  :after company
   :config
   (add-to-list 'company-backends #'company-tabnine t))
 
@@ -1320,7 +1347,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (setq gptel-default-mode 'org-mode)
   (setq gptel-use-context 'user)
   ;; (setq gptel-confirm-tool-calls t)
-  (setq gptel-include-tool-results t)
+  (setq gptel-include-tool-results nil)
   (gptel-make-gemini "Gemini"
     :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
     :stream t)
