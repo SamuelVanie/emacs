@@ -125,12 +125,17 @@ Returns detailed information about changes made or would be made."
             :original-size original-size
             :new-size new-size))))
 
+
 (defun smv-tool/normalize-edits (edits)
-  "Normalize edits to consistent alist format.
-Handles multiple input formats:
-- Single pair: '(\"old\" \"new\") -> '(((oldText . \"old\") (newText . \"new\")))
-- List of pairs: '((\"old1\" \"new1\") (\"old2\" \"new2\"))
-- Already normalized: '(((oldText . \"old\") (newText . \"new\")))"
+  "Normalize edits to consistent alist format."
+  (message "DEBUG normalize-edits: type=%S, value=%S" (type-of edits) edits)
+  
+  ;; Handle JSON string input
+  (when (stringp edits)
+    (condition-case err
+        (setq edits (json-parse-string edits :array-type 'list))
+      (error (error "Failed to parse JSON edits: %S" edits))))
+  
   (cond
    ;; Single pair of strings: ("old" "new")
    ((and (listp edits)
@@ -151,7 +156,7 @@ Handles multiple input formats:
                 (error "Invalid edit pair format: %S" pair)))
             edits))
    
-   ;; Already in alist format: (((oldText . "old") (newText . "new")))
+   ;; Already in alist format
    ((and (listp edits)
          (listp (car edits))
          (consp (caar edits)))
@@ -282,6 +287,81 @@ Returns detailed metadata including size, timestamps, type, and permissions."
     (concat "^" regex "$")))
 
 
+(defun smv-tool/grep-regex (search-string path &optional context-lines)
+  "Search for a string within a file or directory, similar to 'grep'.
+
+When searching a directory, it recursively finds all files containing the
+string and returns a list of their paths. The 'context-lines' parameter is ignored.
+
+When searching a file, it finds all matching lines and returns them as a list
+of strings. If 'context-lines' is provided as a list of two integers,
+like '(2 2)', it will include that many lines of context before and after
+each matching line.
+
+INPUT:
+  - search-string (string): The literal string to search for.
+  - path (string): The full path to the file or directory to search in.
+  - context-lines (list of 2 integers, optional): For file searches, specifies
+    the number of context lines to show [before, after] the match.
+    Example: '(3 1)' shows 3 lines before and 1 line after.
+    This parameter is IGNORED if 'path' is a directory.
+
+RETURNS:
+  - If 'path' is a directory: A list of file paths that contain a match.
+  - If 'path' is a file: A list of strings, where each string is a block
+    of text containing a match and its surrounding context."
+  (unless (file-exists-p path)
+    (error "Path does not exist: %s" path))
+
+  (if (file-directory-p path)
+      ;; --- DIRECTORY SEARCH ---
+      ;; Use the command-line `grep` for efficiency.
+      ;; -r: recursive, -l: list files with matches.
+      (let* ((command (format "grep -r -l %s %s"
+                             (shell-quote-argument search-string)
+                             (shell-quote-argument path)))
+             (output (shell-command-to-string command)))
+        ;; Return a list of file paths, filtering out empty lines.
+        (when (> (length output) 0)
+          (split-string output "\n" t)))
+
+    ;; --- FILE SEARCH ---
+    (let ((before (or (nth 0 context-lines) 0))  ; CORRECTED LINE
+          (after (or (nth 1 context-lines) 0))   ; CORRECTED LINE
+          (results '()))
+      (with-temp-buffer
+        (insert-file-contents path)
+        (let ((lines (split-string (buffer-string) "\n"))
+              (query-regexp (regexp-quote search-string)))
+          (dotimes (i (length lines))
+            (when (string-match-p query-regexp (nth i lines))
+              (let* ((start-index (max 0 (- i before)))
+                     (end-index (min (1- (length lines)) (+ i after)))
+                     (context-slice (seq-subseq lines start-index (1+ end-index))))
+                (push (mapconcat #'identity context-slice "\n") results))))))
+      (nreverse results))))
+
+
+(gptel-make-tool
+ :name "grep-regex"
+ :function #'smv-tool/grep-regex
+ :description "Searches for a specific string within a given path. If the path points to a directory, the function recursively finds all files containing the string and returns a list of those file paths. If the path is a single file, it returns the matching lines, with the option to include a specified number of lines of context before and after each match. You could for example use that function to get the file where a particular function is implemented then use that result to get the implementation of that function (call the tool with 0 for the above value and 30, to be safe, for below)."
+ :confirm nil
+ :include t
+ :args (list
+        '(:name "search-string"
+                :type string
+                :description "The literal text string to search for. Be as specific as possible to avoid context wasting")
+        '(:name "path"
+                :type string
+                :description "The full path to the file or directory to search in.")
+        '(:name "context-lines"
+                :type array
+                :items (:type integer) 
+                :optional t
+                :description "An optional list of two integers `[before, after]` that specifies the number of context lines to show. This is only applicable when `path` is a file and is ignored for directory searches."))
+ :category "filesystem")
+
 (gptel-make-tool
  :name "read_file"
  :function #'smv-tool/read-file
@@ -302,7 +382,8 @@ Returns detailed metadata including size, timestamps, type, and permissions."
  :include t
  :args (list '(:name "paths"
                      :type array
-                     :description "Array of full file paths to read"))
+                     :items (:type string)
+                     :description "Comma separated list of full file paths to read"))
  :category "filesystem")
 
 ;; Write file
@@ -332,10 +413,13 @@ Returns detailed metadata including size, timestamps, type, and permissions."
                      :description "File to edit")
              '(:name "edits"
                      :type array
+                     :items (:type array
+                                  :items (:type string))
                      :description "List of edit operations. Can be simple pairs like [\"old\", \"new\"] or list of pairs")
              '(:name "dry-run"
                      :type boolean
-                     :description "Preview changes without applying them (default: false)"))
+                     :description "Preview changes without applying them (default: false)"
+                     :optional t))
  :category "filesystem")
 
 ;; Create directory
@@ -392,7 +476,9 @@ Returns detailed metadata including size, timestamps, type, and permissions."
                      :description "Search pattern (case-insensitive, supports wildcards)")
              '(:name "exclude-patterns"
                      :type array
-                     :description "Patterns to exclude (glob format supported)"))
+                     :items (:type string)
+                     :description "Patterns to exclude (glob format supported)"
+                     :optional t))
  :category "filesystem")
 
 ;; Get file info
