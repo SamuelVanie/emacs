@@ -130,11 +130,9 @@ Returns detailed information about changes made or would be made."
   "Normalize edits to consistent alist format."
   (message "DEBUG normalize-edits: type=%S, value=%S" (type-of edits) edits)
   
-  ;; Handle JSON string input
-  (when (stringp edits)
-    (condition-case err
-        (setq edits (json-parse-string edits :array-type 'list))
-      (error (error "Failed to parse JSON edits: %S" edits))))
+  ;; Convert vector to list if needed
+  (when (vectorp edits)
+    (setq edits (append edits nil)))
   
   (cond
    ;; Single pair of strings: ("old" "new")
@@ -146,10 +144,13 @@ Returns detailed information about changes made or would be made."
                 (cons 'newText (cadr edits)))))
    
    ;; List of pairs: (("old1" "new1") ("old2" "new2"))
+   ;; Need to handle when inner elements might also be vectors
    ((and (listp edits)
-         (listp (car edits))
-         (stringp (caar edits)))
+         (or (listp (car edits)) (vectorp (car edits))))
     (mapcar (lambda (pair)
+              ;; Convert vector pairs to lists
+              (when (vectorp pair)
+                (setq pair (append pair nil)))
               (if (and (listp pair) (= (length pair) 2))
                   (list (cons 'oldText (car pair))
                         (cons 'newText (cadr pair)))
@@ -165,6 +166,7 @@ Returns detailed information about changes made or would be made."
    ;; Invalid format
    (t
     (error "Invalid edits format: %S. Expected pairs of strings or alist format" edits))))
+
 
 (defun smv-tool/create-directory (path)
   "Create new directory or ensure it exists.
@@ -405,7 +407,7 @@ RETURNS:
 (gptel-make-tool
  :name "edit_file"
  :function #'smv-tool/edit-file
- :description "Make selective edits using advanced pattern matching and formatting. Best practice: Always use dryRun first to preview changes"
+ :description "Make selective edits using advanced pattern matching and formatting."
  :confirm t  ; Confirm because it modifies files
  :include t
  :args (list '(:name "path"
@@ -415,7 +417,7 @@ RETURNS:
                      :type array
                      :items (:type array
                                   :items (:type string))
-                     :description "List of edit operations. Can be simple pairs like [\"old\", \"new\"] or list of pairs")
+                     :description "List of edit operations. Can be simple comma separated pair like [\"old\", \"new\"] for one edit or list of comma separated pairs like [[\"old\", \"new\"], [\"old2\", \"new2\"]] for multiple edits")
              '(:name "dry-run"
                      :type boolean
                      :description "Preview changes without applying them (default: false)"
