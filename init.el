@@ -376,7 +376,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 (defun meow-setup ()
   (setq meow-cheatsheet-layout meow-cheatsheet-layout-colemak)
 
-
   (meow-motion-define-key
    '("<escape>" . ignore)
    '("e" . meow-next)
@@ -1274,7 +1273,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0)
-  (company-tooltip-idle-delay 0.0)
+  (company-tooltip-flip-when-above t)
   :config
   (add-to-list 'company-backends #'company-yasnippet t)
   (add-to-list 'company-backends #'company-files t)
