@@ -423,6 +423,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    '("e" . meow-next)        ;; Down (next line)
    '("E" . meow-prev-expand)
    '("f" . meow-find)
+   '("F" . yank-media)
    '("g" . meow-cancel-selection)
    '("G" . meow-grab)
    '("H" . meow-left-expand)

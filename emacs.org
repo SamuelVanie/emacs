@@ -527,6 +527,7 @@ Trying the modal editor meow
      '("e" . meow-next)        ;; Down (next line)
      '("E" . meow-prev-expand)
      '("f" . meow-find)
+     '("F" . yank-media)
      '("g" . meow-cancel-selection)
      '("G" . meow-grab)
      '("H" . meow-left-expand)
