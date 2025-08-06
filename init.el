@@ -689,7 +689,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 (use-package standard-themes
   :ensure t
   :demand t
-  :config (load-theme 'doom-old-hope t));; meltbus
+  :config (load-theme 'modus-vivendi-tinted t));; meltbus
 
 (use-package all-the-icons
   :ensure t
@@ -793,85 +793,10 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   ([remap describe-command] . helpful-command)
   ([remap describe-key] . helpful-key))
 
-(defun smv/org-font-setup ()
-  (font-lock-add-keywords 'org-mode ;; Change the list icon style from "-" to "."
-                          '(("^ *\\([-]\\) "
-                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
-  (font-lock-add-keywords 'org-mode
-                          '(("^ *\\([+]\\) "
-                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "◦"))))))
-
-  ;; configuration of heading levels size
-  (dolist (face '((org-level-1 . 1.2)
-                  (org-level-2 . 1.1)
-                  (org-level-3 . 1.05)
-                  (org-level-4 . 1.0)
-                  (org-level-5 . 1.0)
-                  (org-level-6 . 1.0)
-                  (org-level-7 . 1.0)
-                  (org-level-8 . 1.0)))
-    (set-face-attribute (car face) nil :font "JetbrainsMono Nerd Font" :weight 'regular :height (cdr face)))
-  ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-  (set-face-attribute 'org-block nil    :inherit 'fixed-pitch)
-  (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
-  (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
-  (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
-  (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
-  (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
-
-(defun smv/org-style-pdf ()
-  ;; in Case error
-  ;; with xetex fmt files
-  ;; reformat with
-  ;; sudo pacman -S texlive-xetex
-  ;; sudo fmtutil-sys --byfmt xelatex
-  ;; install the extra of latex from your package repo
-  (require 'ox-latex)
-
-  ;; Activer l'utilisation de minted
-  ;; font python source blocs install Pygments
-  (setq org-latex-listings 'minted)
-  (setq org-latex-minted-options
-        '(("frame" "lines")
-          ("linenos" "true")
-          ("breaklines" "true")
-          ("fontsize" "\\scriptsize")))
-
-  ;; Style des blocs source dans Org Mode
-  (setq org-src-fontify-natively t)
-  (setq org-src-tab-acts-natively t)
-
-  ;; Ajouter des en-têtes et des pieds de page
-  (setq org-latex-default-packages-alist
-        (remove '("AUTO" "inputenc" t) org-latex-default-packages-alist))
-
-  ;; Utiliser minted dans les documents LaTeX
-  (add-to-list 'org-latex-packages-alist '("" "minted" t)))
-
-(defun smv/org-mode-setup()
-  (org-indent-mode)
-  (variable-pitch-mode 1)
-  (auto-fill-mode 0)
-  (visual-line-mode 1)
-  (smv/org-style-pdf)
-  (smv/org-font-setup))
-
-
 (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
   :demand t
   :ensure (:wait org-contrib)
-  :hook (org-mode . smv/org-mode-setup)
   :config
-  (setq org-ellipsis " ▼:")
-  (setq org-agenda-start-with-log-mode t)
-  (setq org-log-done 'time)
-  (setq org-log-into-drawer t)
-
   (setq org-agenda-files
         '("~/.org/todo.org"
           "~/.org/projects.org"))
@@ -937,17 +862,38 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
            "**** TODO %?\n %T\n %a\n %i")))
 
 
-  (smv/org-font-setup)
   (global-set-key (kbd "C-c a") 'org-agenda)
   (global-set-key (kbd "M-i") 'org-insert-item))
 
-(use-package org-bullets ;; change the bullets in my org mode files
+(use-package org-modern
   :ensure t
   :demand t
-  :after org
-  :hook (org-mode . org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list '("◉" "☯" "○" "☯" "✸" "☯" "✿" "☯" "✜" "☯" "◆" "☯" "▶")))
+  :config
+  (modify-all-frames-parameters
+   '((right-divider-width . 30)
+     (internal-border-width . 30)))
+  (dolist (face '(window-divider
+                  window-divider-first-pixel
+                  window-divider-last-pixel))
+    (face-spec-reset-face face)
+    (set-face-foreground face (face-attribute 'default :background)))
+  (set-face-background 'fringe (face-attribute 'default :background))
+
+  (setq
+   ;; Edit settings
+   org-auto-align-tags nil
+   org-tags-column 0
+   org-catch-invisible-edits 'show-and-error
+   org-special-ctrl-a/e t
+   org-insert-heading-respect-content t
+
+   ;; Org styling, hide markup etc.
+   org-hide-emphasis-markers t
+   org-pretty-entities t
+   org-agenda-tags-column 0
+   org-ellipsis "…")
+
+  (global-org-modern-mode))
 
 (use-package org-journal
   :ensure t
