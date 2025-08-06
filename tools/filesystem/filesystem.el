@@ -341,7 +341,7 @@ RETURNS:
                                        (nreverse context-lines-with-nums) 
                                        "\n"))))
                   (push result-block results))))))
-      (nreverse results))))
+        (nreverse results)))))
 
 (defun smv-tool/read-file (path &optional start-line end-line)
   "Read file content with optional line range specification and line numbers.
