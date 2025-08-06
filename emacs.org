@@ -11,6 +11,7 @@
   (setopt use-short-answers t)
 
   (setq warning-minimum-level :error)
+  (global-hl-line-mode 1)
 
   (cond
    ((eq system-type 'darwin)  ;; macOS

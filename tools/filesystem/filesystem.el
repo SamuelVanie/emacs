@@ -161,7 +161,7 @@ Returns a list of strings with [FILE] or [DIR] prefixes for each entry."
   (unless (file-directory-p path)
     (error "Path is not a directory: %s" path))
   
-  (let ((entries (directory-files path nil "^[^.]"))) ; Exclude . and ..
+  (let ((entries (directory-files path nil))) ; Exclude . and ..
     (mapcar (lambda (entry)
               (let ((full-path (expand-file-name entry path)))
                 (if (file-directory-p full-path)
@@ -193,7 +193,7 @@ Fails if destination already exists."
   "Recursively search for files and directories matching pattern.
 INPUT:
   - path (string): Starting directory for search
-  - pattern (string): Search pattern (case-insensitive, supports wildcards)
+  - pattern (string): Search pattern (supports wildcards like *.js, file*.py)
   - exclude-patterns (list of strings): Patterns to exclude (glob format supported)
 Returns full paths to all matches with [FILE] or [DIR] prefixes."
   (unless (file-exists-p path)
@@ -201,8 +201,9 @@ Returns full paths to all matches with [FILE] or [DIR] prefixes."
   (unless (file-directory-p path)
     (error "Search path is not a directory: %s" path))
   
-  ;; Use directory-files-recursively for the heavy lifting
-  (let* ((all-files (directory-files-recursively path pattern t))
+  ;; Convert wildcard pattern to regex for directory-files-recursively
+  (let* ((regex-pattern (wildcard-to-regexp pattern))
+         (all-files (directory-files-recursively path regex-pattern t))
          (filtered-files all-files))
     
     ;; Apply exclude patterns if provided
@@ -212,7 +213,7 @@ Returns full paths to all matches with [FILE] or [DIR] prefixes."
              (lambda (file-path)
                (let ((file-name (file-name-nondirectory file-path)))
                  (cl-some (lambda (exclude-pattern)
-                            (string-match-p (wildcard-to-regexp exclude-pattern) file-name))
+                            (string-match-p (concat "^" (wildcard-to-regexp exclude-pattern) "$") file-name))
                           exclude-patterns)))
              filtered-files)))
     
@@ -222,7 +223,6 @@ Returns full paths to all matches with [FILE] or [DIR] prefixes."
                   (format "[DIR] %s" file-path)
                 (format "[FILE] %s" file-path)))
             filtered-files)))
-
 
 (defun smv-tool/get-file-info (path)
   "Get detailed file or directory metadata.
@@ -254,14 +254,13 @@ Returns detailed metadata including size, timestamps, type, and permissions."
           :writable (file-writable-p path)
           :executable (file-executable-p path))))
 
-;; Utility function for wildcard to regex conversion
+
 (defun wildcard-to-regexp (wildcard)
   "Convert shell wildcard pattern to regex pattern."
   (let ((regex (regexp-quote wildcard)))
     (setq regex (replace-regexp-in-string "\\\\\\*" ".*" regex))
     (setq regex (replace-regexp-in-string "\\\\\\?" "." regex))
-    (concat "^" regex "$")))
-
+    regex))
 
 
 (defun smv-tool/grep-regex (search-string path &optional context-lines)
@@ -383,33 +382,40 @@ RETURNS:
       
       (mapconcat #'identity (nreverse result-lines) "\n"))))
 
+
 (defun smv-tool/read-multiple-files (file-specs)
   "Read multiple files or file ranges in a single operation.
 Efficient for comparing implementations or gathering related context.
 
 INPUT:
-  - file-specs (list): List of file specifications, where each spec is:
+  - file-specs (list or vector): List of file specifications, where each spec is:
     - A list [file-path] - reads entire file
     - A list [file-path start-line-str end-line-str] - reads line range
 
 RETURNS:
   String with all file contents, separated by clear delimiters."
-  (let ((results '()))
-    (dolist (spec file-specs)
-      (let ((file-content
-             (cond
-              ;; List with 1 element - entire file
-              ((and (listp spec) (= (length spec) 1))
-               (let ((path (nth 0 spec)))
-                 (smv-tool/read-file path)))
-              ;; List with 3 elements - file with line range
-              ((and (listp spec) (= (length spec) 3))
-               (let ((path (nth 0 spec))
-                     (start (string-to-number (nth 1 spec)))
-                     (end (string-to-number (nth 2 spec))))
-                 (smv-tool/read-file path start end)))
-              (t
-               (error "Invalid file spec: %s. Expected [path] or [path, start-line, end-line]" spec)))))
+  ;; Convert vector to list if needed (GPTel passes JSON arrays as vectors)
+  (let* ((specs-list (if (vectorp file-specs) 
+                        (append file-specs nil) 
+                        file-specs))
+         (results '()))
+    (dolist (spec specs-list)
+      ;; Convert spec vector to list if needed
+      (let* ((spec-list (if (vectorp spec) (append spec nil) spec))
+             (file-content
+              (cond
+               ;; List with 1 element - entire file
+               ((and (listp spec-list) (= (length spec-list) 1))
+                (let ((path (nth 0 spec-list)))
+                  (smv-tool/read-file path)))
+               ;; List with 3 elements - file with line range
+               ((and (listp spec-list) (= (length spec-list) 3))
+                (let ((path (nth 0 spec-list))
+                      (start (string-to-number (nth 1 spec-list)))
+                      (end (string-to-number (nth 2 spec-list))))
+                  (smv-tool/read-file path start end)))
+               (t
+                (error "Invalid file spec: %s. Expected [path] or [path, start-line, end-line]" spec-list)))))
         (push file-content results)
         (push "\n========================================\n" results)))
     
@@ -674,7 +680,13 @@ REDUCES TOKEN USAGE by batching related reads vs. multiple separate read-file ca
 (gptel-make-tool
  :name "search_files"
  :function #'smv-tool/search-files
- :description "Recursively search for files/directories with case-insensitive pattern matching. Returns results with [FILE] or [DIR] prefixes"
+ :description "Recursively search for files/directories with case-insensitive pattern matching. Returns results with [FILE] or [DIR] prefixes
+PATTERN EXAMPLES:
+- '*.js' - all JavaScript files
+- 'file*.txt' - files starting with 'file' and ending with .txt
+- '*config*' - files containing 'config' in name
+- 'test_*.py' - Python test files
+"
  :confirm nil
  :include t
  :args (list '(:name "path"
