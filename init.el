@@ -259,6 +259,7 @@
                 doc-view-minor-mode-hook
                 gptel-mode-hook
                 shell-mode-hook
+                dired-mode-hook
                 vterm-mode-hook
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
