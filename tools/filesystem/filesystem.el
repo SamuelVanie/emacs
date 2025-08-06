@@ -1,29 +1,3 @@
-(defun smv-tool/read-file (path)
-  "Read complete contents of a file.
-INPUT: path (string) - Full path to the file to read
-Returns the complete file contents as a UTF-8 encoded string."
-  (unless (file-exists-p path)
-    (error "File does not exist: %s" path))
-  (unless (file-readable-p path)
-    (error "File is not readable: %s" path))
-  (with-temp-buffer
-    (insert-file-contents path)
-    (buffer-string)))
-
-(defun smv-tool/read-multiple-files (paths)
-  "Read multiple files simultaneously.
-INPUT: paths (list of strings) - Array of full file paths to read
-Returns a list of cons cells (path . content) for successfully read files.
-Failed reads won't stop the entire operation - they're logged but skipped."
-  (let (results)
-    (dolist (path paths)
-      (condition-case err
-          (let ((content (smv-tool/read-file path)))
-            (push (cons path content) results))
-        (error
-         (message "Failed to read file %s: %s" path (error-message-string err)))))
-    (nreverse results)))
-
 (defun smv-tool/write-file (path content)
   "Create new file or overwrite existing file (exercise caution).
 INPUT: 
@@ -289,47 +263,47 @@ Returns detailed metadata including size, timestamps, type, and permissions."
     (concat "^" regex "$")))
 
 
+
 (defun smv-tool/grep-regex (search-string path &optional context-lines)
-  "Search for a string within a file or directory, similar to 'grep'.
+  "LLM-optimized search tool for finding code symbols and patterns in codebases.
+Returns structured results with file paths, line numbers, and context to enable
+efficient follow-up queries.
 
-When searching a directory, it recursively finds all files containing the
-string and returns a list of their paths. The 'context-lines' parameter is ignored.
-
-When searching a file, it finds all matching lines and returns them as a list
-of strings. If 'context-lines' is provided as a list of two integers,
-like '(2 2)', it will include that many lines of context before and after
-each matching line.
+WORKFLOW GUIDANCE:
+1. Start with directory search to locate relevant files
+2. Use file search with context to examine specific implementations
+3. Use line numbers from results with read-file tool for detailed analysis
 
 INPUT:
-  - search-string (string): The literal string to search for.
-  - path (string): The full path to the file or directory to search in.
-  - context-lines (list of 2 integers, optional): For file searches, specifies
-    the number of context lines to show [before, after] the match.
-    Example: '(3 1)' shows 3 lines before and 1 line after.
-    This parameter is IGNORED if 'path' is a directory.
+  - search-string (string): Literal string or simple regex pattern to search for
+  - path (string): Full path to file or directory to search in
+  - context-lines (list of 2 integers, optional): [before, after] context lines
+    Only applies to file searches. Recommended: [2, 3] for function definitions
 
 RETURNS:
-  - If 'path' is a directory: A list of file paths that contain a match.
-  - If 'path' is a file: A list of strings, where each string is a block
-    of text containing a match and its surrounding context."
+  - Directory search: List of file paths containing matches
+  - File search: Structured blocks with file path, line numbers, and content"
   (unless (file-exists-p path)
     (error "Path does not exist: %s" path))
-
+  
   (if (file-directory-p path)
-      ;; --- DIRECTORY SEARCH ---
-      ;; Use the command-line `grep` for efficiency.
-      ;; -r: recursive, -l: list files with matches.
-      (let* ((command (format "grep -r -l %s %s"
-                             (shell-quote-argument search-string)
-                             (shell-quote-argument path)))
+      ;; === DIRECTORY SEARCH ===
+      ;; Use ripgrep (rg) if available, fallback to grep
+      (let* ((use-rg (executable-find "rg"))
+             (command (if use-rg
+                         (format "rg -l %s %s"
+                                (shell-quote-argument search-string)
+                                (shell-quote-argument path))
+                       (format "grep -r -l %s %s"
+                              (shell-quote-argument search-string)
+                              (shell-quote-argument path))))
              (output (shell-command-to-string command)))
-        ;; Return a list of file paths, filtering out empty lines.
         (when (> (length output) 0)
           (split-string output "\n" t)))
-
-    ;; --- FILE SEARCH ---
-    (let ((before (or (nth 0 context-lines) 0))  ; CORRECTED LINE
-          (after (or (nth 1 context-lines) 0))   ; CORRECTED LINE
+    
+    ;; === FILE SEARCH ===
+    (let ((before (or (nth 0 context-lines) 0))
+          (after (or (nth 1 context-lines) 0))
           (results '()))
       (with-temp-buffer
         (insert-file-contents path)
@@ -337,56 +311,289 @@ RETURNS:
               (query-regexp (regexp-quote search-string)))
           (dotimes (i (length lines))
             (when (string-match-p query-regexp (nth i lines))
-              (let* ((start-index (max 0 (- i before)))
+              (let* ((match-line-num (1+ i)) ; 1-based line numbers
+                     (start-index (max 0 (- i before)))
                      (end-index (min (1- (length lines)) (+ i after)))
-                     (context-slice (seq-subseq lines start-index (1+ end-index))))
-                (push (mapconcat #'identity context-slice "\n") results))))))
+                     (start-line-num (1+ start-index))
+                     (context-lines-with-nums '())
+                     (match-found-at-line nil))
+                
+                ;; Build context with line numbers
+                (dotimes (j (- end-index start-index -1))
+                  (let* ((line-index (+ start-index j))
+                         (line-num (1+ line-index))
+                         (line-content (nth line-index lines))
+                         (is-match-line (= line-num match-line-num)))
+                    (when is-match-line
+                      (setq match-found-at-line line-num))
+                    (push (format "%4d%s %s"
+                                 line-num
+                                 (if is-match-line "*" ":")
+                                 line-content)
+                          context-lines-with-nums)))
+                
+                ;; Format the result block
+                (let ((result-block 
+                       (format "File: %s\nMatch at line %d:\n%s\n"
+                              path
+                              match-found-at-line
+                              (mapconcat #'identity 
+                                       (nreverse context-lines-with-nums) 
+                                       "\n"))))
+                  (push result-block results))))))
       (nreverse results))))
 
+(defun smv-tool/read-file (path &optional start-line end-line)
+  "Read file content with optional line range specification and line numbers.
+Optimized for LLM follow-up analysis after grep results.
 
+INPUT:
+  - path (string): Full path to the file to read
+  - start-line (integer, optional): Starting line number (1-based, inclusive)
+  - end-line (integer, optional): Ending line number (1-based, inclusive)
+
+RETURNS:
+  String with line numbers and content. If line range specified, shows only
+  that range. Otherwise shows entire file."
+  (unless (file-exists-p path)
+    (error "File does not exist: %s" path))
+  
+  (with-temp-buffer
+    (insert-file-contents path)
+    (let* ((lines (split-string (buffer-string) "\n"))
+           (total-lines (length lines))
+           (actual-start (if start-line (max 1 start-line) 1))
+           (actual-end (if end-line (min end-line total-lines) total-lines))
+           (result-lines '()))
+      
+      ;; Add header with file info
+      (if (and start-line end-line)
+          (push (format "File: %s (lines %d-%d of %d total)\n" 
+                       path actual-start actual-end total-lines) result-lines)
+        (push (format "File: %s (%d lines)\n" path total-lines) result-lines))
+      
+      ;; Add numbered content lines
+      (dotimes (i (- actual-end actual-start -1))
+        (let* ((line-index (+ actual-start i -1))
+               (line-num (1+ line-index))
+               (line-content (if (< line-index total-lines)
+                               (nth line-index lines)
+                             "")))
+          (push (format "%4d: %s" line-num line-content) result-lines)))
+      
+      (mapconcat #'identity (nreverse result-lines) "\n"))))
+
+(defun smv-tool/read-multiple-files (file-specs)
+  "Read multiple files or file ranges in a single operation.
+Efficient for comparing implementations or gathering related context.
+
+INPUT:
+  - file-specs (list): List of file specifications, where each spec is:
+    - A list [file-path] - reads entire file
+    - A list [file-path start-line-str end-line-str] - reads line range
+
+RETURNS:
+  String with all file contents, separated by clear delimiters."
+  (let ((results '()))
+    (dolist (spec file-specs)
+      (let ((file-content
+             (cond
+              ;; List with 1 element - entire file
+              ((and (listp spec) (= (length spec) 1))
+               (let ((path (nth 0 spec)))
+                 (smv-tool/read-file path)))
+              ;; List with 3 elements - file with line range
+              ((and (listp spec) (= (length spec) 3))
+               (let ((path (nth 0 spec))
+                     (start (string-to-number (nth 1 spec)))
+                     (end (string-to-number (nth 2 spec))))
+                 (smv-tool/read-file path start end)))
+              (t
+               (error "Invalid file spec: %s. Expected [path] or [path, start-line, end-line]" spec)))))
+        (push file-content results)
+        (push "\n========================================\n" results)))
+    
+    ;; Remove the last separator and join
+    (when results
+      (pop results))
+    (mapconcat #'identity (nreverse results) "")))
+
+
+;; grep-regex
 (gptel-make-tool
  :name "grep-regex"
  :function #'smv-tool/grep-regex
- :description "Searches for a specific string within a given path. If the path points to a directory, the function recursively finds all files containing the string and returns a list of those file paths. If the path is a single file, it returns the matching lines, with the option to include a specified number of lines of context before and after each match. You could for example use that function to get the file where a particular function is implemented then use that result to get the implementation of that function (call the tool with 0 for the above value and 30, to be safe, for below)."
+ :description "Search for code symbols, functions, classes, or patterns
+
+OPTIMAL CODING WORKFLOW (ADAPT FOR OTHER USE CASES):
+1. START with directory search to locate relevant files: grep-regex('ClassName', '/project/src/')
+2. THEN search specific files with context: grep-regex('function myFunc', 'path/to/file.js', [2, 5])
+3. USE line numbers from results with read-file for detailed examination
+
+SEARCH STRATEGIES:
+- Function definitions: Search for 'def functionName' or 'function functionName' depending on the way functions are defined in the language
+- Class definitions: Search for 'class ClassName' or 'public class ClassName' depending on the language keywords
+- Variable usage: Search for exact variable name
+- Import/require statements: Search for 'import' or 'require' (language specific)
+- Comments/docs: Search for distinctive comment patterns
+
+Returns file paths (directory search) or formatted blocks with line numbers (file search)."
  :confirm nil
  :include t
  :args (list
         '(:name "search-string"
                 :type string
-                :description "The literal text string to search for. Be as specific as possible to avoid context wasting")
+                :description "Literal text to search for. Be specific to avoid noise. Examples: 'def process_data', 'class UserModel', 'import pandas'")
         '(:name "path"
                 :type string
-                :description "The full path to the file or directory to search in.")
+                :description "Full path to file or directory. Use directory for discovery, file for detailed analysis.")
         '(:name "context-lines"
                 :type array
-                :items (:type integer) 
+                :items (:type integer)
                 :optional t
-                :description "An optional list of two integers `[before, after]` that specifies the number of context lines to show. This is only applicable when `path` is a file and is ignored for directory searches."))
+                :description "Optional [before, after] context lines for file searches. Recommended: [2, 5] for functions, [1, 3] for variables."))
  :category "filesystem")
 
+;; read-file
 (gptel-make-tool
- :name "read_file"
+ :name "read-file"
  :function #'smv-tool/read-file
- :description "Read complete contents of a file with UTF-8 encoding"
+ :description "Read file content with line numbers. Essential follow-up tool after grep-regex.
+
+USE CASES:
+- Read entire files found: read-file('/path/to/relevant-file.py')
+- Read specific ranges: read-file('/path/file.js', 45, 65)
+- Examine context around matches: read-file('/path/file.py', match_line-5, match_line+10). e.g(match_line = 20): read-file('/path/file.py', 15, 30)
+
+EFFICIENCY TIPS:
+- Use line ranges to focus on relevant sections
+- Start with smaller ranges, expand if needed
+- Line numbers from grep results guide precise reading"
  :confirm nil
  :include t
- :args (list '(:name "path"
-                     :type string
-                     :description "Full path to the file to read"))
+ :args (list
+        '(:name "path"
+                :type string
+                :description "Full path to the file to read")
+        '(:name "start-line"
+                :type integer
+                :optional t
+                :description "Starting line number (1-based, inclusive). Omit to read from beginning.")
+        '(:name "end-line"
+                :type integer
+                :optional t
+                :description "Ending line number (1-based, inclusive). Omit to read to end."))
  :category "filesystem")
 
-;; Read multiple files
+;; read-multiple-files
 (gptel-make-tool
- :name "read_multiple_files"
+ :name "read-multiple-files"
  :function #'smv-tool/read-multiple-files
- :description "Read multiple files simultaneously. Failed reads won't stop the entire operation"
+ :description "Read multiple files or file sections efficiently in one operation.
+
+OPTIMAL FOR:
+- Comparing related implementations: read-multiple-files([['file1.py'], ['file2.py']])
+- Gathering distributed context: read-multiple-files([['main.js', '10', '30'], ['utils.js', '45', '60']])
+- Following import chains or inheritance hierarchies
+
+REDUCES TOKEN USAGE by batching related reads vs. multiple separate read-file calls."
  :confirm nil
  :include t
- :args (list '(:name "paths"
-                     :type array
-                     :items (:type string)
-                     :description "Comma separated list of full file paths to read"))
+ :args (list
+        '(:name "file-specs"
+                :type array
+                :items (:type array :items (:type string))
+                :description "Array of file specifications. Each item is an array of strings: [filepath] for entire file, or [filepath, start_line, end_line] for line range. Examples: [['main.py'], ['utils.js', '20', '50']]"))
  :category "filesystem")
+
+
+;; grep-regex
+(gptel-make-tool
+ :name "grep-regex"
+ :function #'smv-tool/grep-regex
+ :description "Search for code symbols, functions, classes, or patterns across codebases. 
+
+OPTIMAL WORKFLOW:
+1. START with directory search to locate relevant files: grep-regex('ClassName', '/project/src/')
+2. THEN search specific files with context: grep-regex('function myFunc', 'path/to/file.js', [2, 5])
+3. USE line numbers from results with read-file for detailed examination
+
+SEARCH STRATEGIES:
+- Function definitions: Search for 'def functionName' or 'function functionName'
+- Class definitions: Search for 'class ClassName' or 'public class ClassName'  
+- Variable usage: Search for exact variable name
+- Import/require statements: Search for 'import' or 'require'
+- Comments/docs: Search for distinctive comment patterns
+
+Returns file paths (directory search) or formatted blocks with line numbers (file search)."
+ :confirm nil
+ :include t
+ :args (list
+        '(:name "search-string"
+                :type string
+                :description "Literal text to search for. Be specific to avoid noise. Examples: 'def process_data', 'class UserModel', 'import pandas'")
+        '(:name "path"
+                :type string
+                :description "Full path to file or directory. Use directory for discovery, file for detailed analysis.")
+        '(:name "context-lines"
+                :type array
+                :items (:type integer)
+                :optional t
+                :description "Optional [before, after] context lines for file searches. Recommended: [2, 5] for functions, [1, 3] for variables."))
+ :category "filesystem")
+
+;; read-file
+(gptel-make-tool
+ :name "read-file"
+ :function #'smv-tool/read-file
+ :description "Read file content with line numbers. Essential follow-up tool after grep-regex.
+
+USE CASES:
+- Read entire files found via grep: read-file('/path/to/relevant-file.py')  
+- Read specific ranges from grep results: read-file('/path/file.js', 45, 65)
+- Examine context around matches: read-file('/path/file.py', match_line-5, match_line+10)
+
+EFFICIENCY TIPS:
+- Use line ranges to focus on relevant sections
+- Start with smaller ranges, expand if needed
+- Line numbers from grep results guide precise reading"
+ :confirm nil
+ :include t
+ :args (list
+        '(:name "path"
+                :type string
+                :description "Full path to the file to read")
+        '(:name "start-line"
+                :type integer
+                :optional t
+                :description "Starting line number (1-based, inclusive). Omit to read from beginning.")
+        '(:name "end-line"
+                :type integer
+                :optional t
+                :description "Ending line number (1-based, inclusive). Omit to read to end."))
+ :category "filesystem")
+
+;; read-multiple-files
+(gptel-make-tool
+ :name "read-multiple-files"
+ :function #'smv-tool/read-multiple-files
+ :description "Read multiple files or file sections efficiently in one operation.
+
+OPTIMAL FOR:
+- Comparing related implementations: read-multiple-files([['file1.py'], ['file2.py']])
+- Gathering distributed context: read-multiple-files([['main.js', '10', '30'], ['utils.js', '45', '60']])
+- Following import chains or inheritance hierarchies
+
+REDUCES TOKEN USAGE by batching related reads vs. multiple separate read-file calls."
+ :confirm nil
+ :include t
+ :args (list
+        '(:name "file-specs"
+                :type array
+                :items (:type array :items (:type string))
+                :description "Array of file specifications. Each item is an array of strings: [filepath] for entire file, or [filepath, start_line, end_line] for line range. Examples: [['main.py'], ['utils.js', '20', '50']]"))
+ :category "filesystem")
+
 
 ;; Write file
 (gptel-make-tool
@@ -407,8 +614,8 @@ RETURNS:
 (gptel-make-tool
  :name "edit_file"
  :function #'smv-tool/edit-file
- :description "Make selective edits using advanced pattern matching and formatting."
- :confirm t  ; Confirm because it modifies files
+ :description "Make selective edits using advanced pattern matching and formatting. The best practice is to run it with dry-run activated to preview the changes, then reuse without it to apply changes. This preserves file integrity"
+ :confirm t
  :include t
  :args (list '(:name "path"
                      :type string
@@ -417,7 +624,7 @@ RETURNS:
                      :type array
                      :items (:type array
                                   :items (:type string))
-                     :description "List of edit operations. Can be simple comma separated pair like [\"old\", \"new\"] for one edit or list of comma separated pairs like [[\"old\", \"new\"], [\"old2\", \"new2\"]] for multiple edits")
+                     :description "List of edit operations. Can be simple comma separated pair like [[\"old\", \"new\"]] for one edit or list of comma separated pairs like [[\"old\", \"new\"], [\"old2\", \"new2\"]] for multiple edits")
              '(:name "dry-run"
                      :type boolean
                      :description "Preview changes without applying them (default: false)"
@@ -494,5 +701,3 @@ RETURNS:
                      :type string
                      :description "Path to file or directory"))
  :category "filesystem")
-
-
