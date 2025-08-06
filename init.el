@@ -691,7 +691,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 (use-package standard-themes
   :ensure t
   :demand t
-  :config (load-theme 'modus-vivendi-tinted t));; meltbus
+  :config (load-theme 'leuven-dark t));; meltbus
 
 (use-package all-the-icons
   :ensure t
@@ -891,7 +891,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 
    ;; Org styling, hide markup etc.
    org-hide-emphasis-markers t
-   org-pretty-entities t
    org-agenda-tags-column 0
    org-ellipsis "…")
 
@@ -1290,6 +1289,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
               anthropic/claude-opus-4 ;; 15 in - 75 out
               perplexity/sonar-pro ;; 3 in - 15 out
               anthropic/claude-sonnet-4 ;; 3 in - 15 out
+              anthropic/claude-3.7-sonnet ;; 3 in - 15 out
               x-ai/grok-3 ;; 3 in - 15 out
               google/gemini-2.5-pro ;; 1.25 in - 10 out
               openai/gpt-4.1 ;; 2 in - 8 out
@@ -1303,6 +1303,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
               deepseek/deepseek-chat-v3-0324 ;; 0.33 in - 1.30 out
               qwen/qwen3-coder  ;; 0.302 in - 0.302 out
               minimax/minimax-m1 ;; 0.30 in - 1.65 out
+              moonshotai/kimi-k2 ;; 0.14 in - 2.49 out
               qwen/qwen3-coder ;; 0.30 in - 1.20 out
               x-ai/grok-3-mini ;; 0.30 in - 0.50 out
               deepseek/deepseek-chat-v3-0324 ;; 0.27 in - 1.10 out
