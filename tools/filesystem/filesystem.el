@@ -301,6 +301,7 @@ Returns detailed metadata including size, timestamps, type, and permissions."
     regex))
 
 
+
 (defun smv-tool/grep-regex (search-string path &optional context-lines)
   "LLM-optimized search tool for finding code symbols and patterns in codebases.
 Returns structured results with file paths, line numbers, and context to enable
@@ -326,14 +327,15 @@ RETURNS:
   (if (file-directory-p path)
       ;; === DIRECTORY SEARCH ===
       ;; Use ripgrep (rg) if available, fallback to grep
-      (let* ((use-rg (executable-find "rg"))
+      (let* ((expanded-path (expand-file-name path))
+             (use-rg (executable-find "rg"))
              (command (if use-rg
                          (format "rg -l %s %s"
                                 (shell-quote-argument search-string)
-                                (shell-quote-argument path))
+                                (shell-quote-argument expanded-path))
                        (format "grep -r -l %s %s"
                               (shell-quote-argument search-string)
-                              (shell-quote-argument path))))
+                              (shell-quote-argument expanded-path))))
              (output (shell-command-to-string command)))
         (when (> (length output) 0)
           (split-string output "\n" t)))
@@ -378,7 +380,8 @@ RETURNS:
                                        (nreverse context-lines-with-nums) 
                                        "\n"))))
                   (push result-block results))))))
-        (nreverse results)))))
+      (nreverse results)))))
+
 
 (defun smv-tool/read-file (path &optional start-line end-line)
   "Read file content with optional line range specification and line numbers.
@@ -463,56 +466,11 @@ RETURNS:
     (mapconcat #'identity (nreverse results) "")))
 
 
-;; grep-regex
-(gptel-make-tool
- :name "grep-regex"
- :function #'smv-tool/grep-regex
- :description "Search for code symbols, functions, classes, or patterns
-
-OPTIMAL CODING WORKFLOW (ADAPT FOR OTHER USE CASES):
-1. START with directory search to locate relevant files: grep-regex('ClassName', '/project/src/')
-2. THEN search specific files with context: grep-regex('function myFunc', 'path/to/file.js', [2, 5])
-3. USE line numbers from results with read-file for detailed examination
-
-SEARCH STRATEGIES:
-- Function definitions: Search for 'def functionName' or 'function functionName' depending on the way functions are defined in the language
-- Class definitions: Search for 'class ClassName' or 'public class ClassName' depending on the language keywords
-- Variable usage: Search for exact variable name
-- Import/require statements: Search for 'import' or 'require' (language specific)
-- Comments/docs: Search for distinctive comment patterns
-
-Returns file paths (directory search) or formatted blocks with line numbers (file search)."
- :confirm nil
- :include t
- :args (list
-        '(:name "search-string"
-                :type string
-                :description "Literal text to search for. Be specific to avoid noise. Examples: 'def process_data', 'class UserModel', 'import pandas'")
-        '(:name "path"
-                :type string
-                :description "Full path to file or directory. Use directory for discovery, file for detailed analysis.")
-        '(:name "context-lines"
-                :type array
-                :items (:type integer)
-                :optional t
-                :description "Optional [before, after] context lines for file searches. Recommended: [2, 5] for functions, [1, 3] for variables."))
- :category "filesystem")
-
 ;; read-file
 (gptel-make-tool
  :name "read-file"
  :function #'smv-tool/read-file
- :description "Read file content with line numbers. Essential follow-up tool after grep-regex.
-
-USE CASES:
-- Read entire files found: read-file('/path/to/relevant-file.py')
-- Read specific ranges: read-file('/path/file.js', 45, 65)
-- Examine context around matches: read-file('/path/file.py', match_line-5, match_line+10). e.g(match_line = 20): read-file('/path/file.py', 15, 30)
-
-EFFICIENCY TIPS:
-- Use line ranges to focus on relevant sections
-- Start with smaller ranges, expand if needed
-- Line numbers from grep results guide precise reading"
+ :description "Read file content with line numbers. Essential follow-up tool after grep-regex. USE CASES: - Read entire files found: read-file('/path/to/relevant-file.py') - Read specific ranges: read-file('/path/file.js', 45, 65) - Examine context around matches: read-file('/path/file.py', match_line-5, match_line+10). e.g(match_line = 20): read-file('/path/file.py', 15, 30)"
  :confirm nil
  :include t
  :args (list
@@ -533,14 +491,7 @@ EFFICIENCY TIPS:
 (gptel-make-tool
  :name "read-multiple-files"
  :function #'smv-tool/read-multiple-files
- :description "Read multiple files or file sections efficiently in one operation.
-
-OPTIMAL FOR:
-- Comparing related implementations: read-multiple-files([['file1.py'], ['file2.py']])
-- Gathering distributed context: read-multiple-files([['main.js', '10', '30'], ['utils.js', '45', '60']])
-- Following import chains or inheritance hierarchies
-
-REDUCES TOKEN USAGE by batching related reads vs. multiple separate read-file calls."
+ :description "Read multiple files or file sections efficiently in one operation. OPTIMAL FOR: - Comparing related implementations: read-multiple-files([['file1.py'], ['file2.py']]) - Gathering distributed context: read-multiple-files([['main.js', '10', '30'], ['utils.js', '45', '60']]) - Following import chains or inheritance hierarchies REDUCES TOKEN USAGE by batching related reads vs. multiple separate read-file calls."
  :confirm nil
  :include t
  :args (list
@@ -555,21 +506,7 @@ REDUCES TOKEN USAGE by batching related reads vs. multiple separate read-file ca
 (gptel-make-tool
  :name "grep-regex"
  :function #'smv-tool/grep-regex
- :description "Search for code symbols, functions, classes, or patterns across codebases. 
-
-OPTIMAL WORKFLOW:
-1. START with directory search to locate relevant files: grep-regex('ClassName', '/project/src/')
-2. THEN search specific files with context: grep-regex('function myFunc', 'path/to/file.js', [2, 5])
-3. USE line numbers from results with read-file for detailed examination
-
-SEARCH STRATEGIES:
-- Function definitions: Search for 'def functionName' or 'function functionName'
-- Class definitions: Search for 'class ClassName' or 'public class ClassName'  
-- Variable usage: Search for exact variable name
-- Import/require statements: Search for 'import' or 'require'
-- Comments/docs: Search for distinctive comment patterns
-
-Returns file paths (directory search) or formatted blocks with line numbers (file search)."
+ :description "Search for code symbols, functions, classes, or patterns across codebases. OPTIMAL WORKFLOW: 1. START with directory search to locate relevant files: grep-regex('ClassName', '/project/src/') 2. THEN search specific files with context: grep-regex('function myFunc', 'path/to/file.js', [2, 5]) 3. USE line numbers from results with read-file for detailed examination Returns file paths (directory search) or formatted blocks with line numbers (file search)."
  :confirm nil
  :include t
  :args (list
@@ -585,65 +522,12 @@ Returns file paths (directory search) or formatted blocks with line numbers (fil
                 :optional t
                 :description "Optional [before, after] context lines for file searches. Recommended: [2, 5] for functions, [1, 3] for variables."))
  :category "filesystem")
-
-;; read-file
-(gptel-make-tool
- :name "read-file"
- :function #'smv-tool/read-file
- :description "Read file content with line numbers. Essential follow-up tool after grep-regex.
-
-USE CASES:
-- Read entire files found via grep: read-file('/path/to/relevant-file.py')  
-- Read specific ranges from grep results: read-file('/path/file.js', 45, 65)
-- Examine context around matches: read-file('/path/file.py', match_line-5, match_line+10)
-
-EFFICIENCY TIPS:
-- Use line ranges to focus on relevant sections
-- Start with smaller ranges, expand if needed
-- Line numbers from grep results guide precise reading"
- :confirm nil
- :include t
- :args (list
-        '(:name "path"
-                :type string
-                :description "Full path to the file to read")
-        '(:name "start-line"
-                :type integer
-                :optional t
-                :description "Starting line number (1-based, inclusive). Omit to read from beginning.")
-        '(:name "end-line"
-                :type integer
-                :optional t
-                :description "Ending line number (1-based, inclusive). Omit to read to end."))
- :category "filesystem")
-
-;; read-multiple-files
-(gptel-make-tool
- :name "read-multiple-files"
- :function #'smv-tool/read-multiple-files
- :description "Read multiple files or file sections efficiently in one operation.
-
-OPTIMAL FOR:
-- Comparing related implementations: read-multiple-files([['file1.py'], ['file2.py']])
-- Gathering distributed context: read-multiple-files([['main.js', '10', '30'], ['utils.js', '45', '60']])
-- Following import chains or inheritance hierarchies
-
-REDUCES TOKEN USAGE by batching related reads vs. multiple separate read-file calls."
- :confirm nil
- :include t
- :args (list
-        '(:name "file-specs"
-                :type array
-                :items (:type array :items (:type string))
-                :description "Array of file specifications. Each item is an array of strings: [filepath] for entire file, or [filepath, start_line, end_line] for line range. Examples: [['main.py'], ['utils.js', '20', '50']]"))
- :category "filesystem")
-
 
 ;; Write file
 (gptel-make-tool
  :name "write_file"
  :function #'smv-tool/write-file
- :description "Create new file or overwrite existing file (exercise caution with this)"
+ :description "Create new file or overwrite existing file (exercise with caution, prefer edit_file)"
  :confirm t  ; Confirm because it overwrites files
  :include t
  :args (list '(:name "path"
@@ -691,20 +575,7 @@ REDUCES TOKEN USAGE by batching related reads vs. multiple separate read-file ca
 (gptel-make-tool
  :name "list-directory"
  :function #'smv-tool/list-directory
- :description "List directory contents with clear [FILE] and [DIR] prefixes.
-
-FEATURES:
-- Shows hidden files and directories (starting with .) by default
-- Always excludes .git directory to avoid clutter
-- Sorts results: directories first, then files, alphabetically
-- Clear [DIR] and [FILE] prefixes for easy identification
-
-OPTIMAL FOR:
-- Exploring project structure: list-directory('./src')
-- Finding configuration files: list-directory('.', true) 
-- Browsing unknown codebases to understand organization
-
-Use this before search-files when you need to understand directory structure."
+ :description "List directory contents with clear [FILE] and [DIR] prefixes."
  :confirm nil
  :include t
  :args (list
@@ -736,13 +607,7 @@ Use this before search-files when you need to understand directory structure."
 (gptel-make-tool
  :name "search_files"
  :function #'smv-tool/search-files
- :description "Recursively search for files/directories with case-insensitive pattern matching. Returns results with [FILE] or [DIR] prefixes
-PATTERN EXAMPLES:
-- '*.js' - all JavaScript files
-- 'file*.txt' - files starting with 'file' and ending with .txt
-- '*config*' - files containing 'config' in name
-- 'test_*.py' - Python test files
-"
+ :description "Recursively search for files/directories with case-insensitive pattern matching. Returns results with [FILE] or [DIR] prefixes. PATTERN EXAMPLES: - '*.js' - all JavaScript files - 'file*.txt' - files starting with 'file' and ending with .txt - '*config*' - files containing 'config' in name - 'test_*.py' - Python test files"
  :confirm nil
  :include t
  :args (list '(:name "path"
