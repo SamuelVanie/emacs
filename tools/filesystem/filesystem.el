@@ -152,22 +152,60 @@ Creates parent directories if needed. Succeeds silently if directory already exi
   (unless (file-directory-p path)
     (error "Path exists but is not a directory: %s" path)))
 
-(defun smv-tool/list-directory (path)
+
+(defun smv-tool/list-directory (path &optional show-hidden)
   "List directory contents with [FILE] or [DIR] prefixes.
-INPUT: path (string) - Directory path to list
+Shows hidden files/directories but excludes .git directory by default.
+
+INPUT: 
+  - path (string): Directory path to list
+  - show-hidden (boolean, optional): If t, show hidden files (starting with .)
+    Default is nil (hide hidden files)
+
 Returns a list of strings with [FILE] or [DIR] prefixes for each entry."
   (unless (file-exists-p path)
     (error "Directory does not exist: %s" path))
   (unless (file-directory-p path)
     (error "Path is not a directory: %s" path))
   
-  (let ((entries (directory-files path nil))) ; Exclude . and ..
-    (mapcar (lambda (entry)
-              (let ((full-path (expand-file-name entry path)))
-                (if (file-directory-p full-path)
-                    (format "[DIR] %s" entry)
-                  (format "[FILE] %s" entry))))
-            entries)))
+  ;; Get all entries including hidden ones (but still exclude . and ..)
+  (let ((all-entries (directory-files path nil nil t)))
+    ;; Filter entries based on criteria
+    (let ((filtered-entries 
+           (cl-remove-if 
+            (lambda (entry)
+              (or
+               ;; Always exclude . and ..
+               (string= entry ".")
+               (string= entry "..")
+               ;; Always exclude .git directory
+               (string= entry ".git")
+               ;; Exclude hidden files/dirs if show-hidden is nil
+               (and (not show-hidden)
+                    (string-prefix-p "." entry))))
+            all-entries)))
+      
+      ;; Sort entries: directories first, then files, both alphabetically
+      (let ((sorted-entries 
+             (sort filtered-entries
+                   (lambda (a b)
+                     (let ((a-is-dir (file-directory-p (expand-file-name a path)))
+                           (b-is-dir (file-directory-p (expand-file-name b path))))
+                       (cond
+                        ;; Both are dirs or both are files - sort alphabetically
+                        ((eq a-is-dir b-is-dir) (string< a b))
+                        ;; Directories come first
+                        (a-is-dir t)
+                        (b-is-dir nil)))))))
+        
+        ;; Format with prefixes
+        (mapcar (lambda (entry)
+                  (let ((full-path (expand-file-name entry path)))
+                    (if (file-directory-p full-path)
+                        (format "[DIR] %s" entry)
+                      (format "[FILE] %s" entry))))
+                sorted-entries)))))
+
 
 (defun smv-tool/move-file (source destination)
   "Move or rename files and directories.
@@ -649,16 +687,34 @@ REDUCES TOKEN USAGE by batching related reads vs. multiple separate read-file ca
                      :description "Directory path to create"))
  :category "filesystem")
 
-;; List directory
+
 (gptel-make-tool
- :name "list_directory"
+ :name "list-directory"
  :function #'smv-tool/list-directory
- :description "List directory contents with [FILE] or [DIR] prefixes"
+ :description "List directory contents with clear [FILE] and [DIR] prefixes.
+
+FEATURES:
+- Shows hidden files and directories (starting with .) by default
+- Always excludes .git directory to avoid clutter
+- Sorts results: directories first, then files, alphabetically
+- Clear [DIR] and [FILE] prefixes for easy identification
+
+OPTIMAL FOR:
+- Exploring project structure: list-directory('./src')
+- Finding configuration files: list-directory('.', true) 
+- Browsing unknown codebases to understand organization
+
+Use this before search-files when you need to understand directory structure."
  :confirm nil
  :include t
- :args (list '(:name "path"
-                     :type string
-                     :description "Directory path to list"))
+ :args (list
+        '(:name "path"
+                :type string
+                :description "Directory path to list. Use '.' for current directory.")
+        '(:name "show-hidden"
+                :type boolean
+                :optional t
+                :description "Optional. If true, shows hidden files/directories (starting with .). Default is false."))
  :category "filesystem")
 
 ;; Move file
