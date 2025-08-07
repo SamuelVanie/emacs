@@ -300,6 +300,8 @@ Returns detailed metadata including size, timestamps, type, and permissions."
     (setq regex (replace-regexp-in-string "\\\\\\?" "." regex))
     regex))
 
+
+
 (defun smv-tool/grep-regex (search-string path &optional context-lines)
   "LLM-optimized search tool for finding code symbols and patterns in codebases.
 Returns structured results with file paths, line numbers, and context to enable
@@ -317,7 +319,7 @@ INPUT:
     Only applies to file searches. Recommended: [2, 3] for function definitions
 
 RETURNS:
-  - Directory search: List of file paths containing matches
+  - Directory search: List of matches with file paths, line numbers, and matched content
   - File search: Structured blocks with file path, line numbers, and content"
   (unless (file-exists-p path)
     (error "Path does not exist: %s" path))
@@ -349,9 +351,14 @@ RETURNS:
                    lines))))
     
     ;; === FILE SEARCH ===
-    (let ((before (or (nth 0 context-lines) 0))
-          (after (or (nth 1 context-lines) 0))
-          (results '()))
+    ;; Convert vector to list if needed (GPTel passes JSON arrays as vectors)
+    (let* ((context-list (cond
+                          ((vectorp context-lines) (append context-lines nil))
+                          ((listp context-lines) context-lines)
+                          (t nil)))
+           (before (if context-list (nth 0 context-list) 0))
+           (after (if context-list (nth 1 context-list) 0))
+           (results '()))
       (with-temp-buffer
         (insert-file-contents path)
         (let ((lines (split-string (buffer-string) "\n"))
@@ -535,7 +542,7 @@ RETURNS:
 (gptel-make-tool
  :name "write_file"
  :function #'smv-tool/write-file
- :description "Create new file or overwrite existing file (exercise with caution, use it when 4+ edits to the same file is necessary)"
+ :description "Create new file or overwrite existing file (exercise with caution, use it when 4+ independant edits to the same file is necessary)"
  :confirm t  ; Confirm because it overwrites files
  :include t
  :args (list '(:name "path"
@@ -550,7 +557,7 @@ RETURNS:
 (gptel-make-tool
  :name "edit_file"
  :function #'smv-tool/edit-file
- :description "Make selective edits using advanced pattern matching and formatting. The best practice is to run it with dry-run activated to preview the changes, then reuse without it to apply changes. This preserves file integrity. Prefer write_file when you need to 4+ edits to the same file"
+ :description "Make selective edits using advanced pattern matching and formatting. The best practice is to run it with dry-run activated to preview the changes, then reuse without it to apply changes. This preserves file integrity. Prefer write_file when you need to 4+ independant edits to the same file"
  :confirm t
  :include t
  :args (list '(:name "path"

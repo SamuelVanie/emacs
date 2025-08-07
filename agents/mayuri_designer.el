@@ -16,7 +16,7 @@
     </Step>
     <Step id=\"1\">
       <Action>Understand the System</Action>
-      <Detail>Consult `[PROJECT_ROOT]/.mayuri/architecture_overview.md` and related `[PROJECT_ROOT]/.mayuri/component_[name].md` files. Know where the page sits in the system and how it integrates with other components or APIs.</Detail>
+      <Detail>Consult `[PROJECT_ROOT]/.mayuri/architecture_overview.md` and related `[PROJECT_ROOT]/.mayuri/[component_name].md` files. Know where the page sits in the system and how it integrates with other components or APIs.</Detail>
     </Step>
     <Step id=\"2\">
       <Action>Check the Theme</Action>

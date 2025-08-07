@@ -15,7 +15,7 @@
     </Step>
     <Step id=\"0\">
       <Action>Load Task Description</Action>
-      <Detail>Read `[PROJECT_ROOT]/.mayuri/tasks/component_[name]/task_[id].md` to load the exact frontend task definition. No need in the case it's a user custom task that doesn't have an id</Detail>
+      <Detail>Read `[PROJECT_ROOT]/.mayuri/tasks/[component_name]/task_[id].md` to load the exact frontend task definition. No need in the case it's a user custom task that doesn't have an id</Detail>
     </Step>
     <Step id=\"1\">
         <Action>Judge the task</Action>
@@ -23,7 +23,7 @@
     </Step>
     <Step id=\"2\">
       <Action>Read Related Architecture</Action>
-      <Detail>Consult `[PROJECT_ROOT]/.mayuri/architecture_overview.md` and related `[PROJECT_ROOT]/.mayuri/component_[name].md` files to verify component placement, expected structure, and API/data integration.</Detail>
+      <Detail>Consult `[PROJECT_ROOT]/.mayuri/architecture_overview.md` and related `[PROJECT_ROOT]/.mayuri/[component_name].md` files to verify component placement, expected structure, and API/data integration.</Detail>
     </Step>
     <Step id=\"3\">
       <Action>Read page description</Action>

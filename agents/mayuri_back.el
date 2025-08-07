@@ -15,7 +15,7 @@
     </Step>
     <Step id=\"0\">
       <Action>Read Task Specification</Action>
-      <Detail>Locate and read `[PROJECT_ROOT]/.mayuri/tasks/component_[name]/task_[id].md` to understand implementation requirements and expected output.</Detail>
+      <Detail>Locate and read `[PROJECT_ROOT]/.mayuri/tasks/[component_name]/task_[id].md` to understand implementation requirements and expected output.</Detail>
     </Step>
     <Step id=\"1\">
       <Action>Confirm responsability</Action>
@@ -23,7 +23,7 @@
     </Step>
     <Step id=\"2\">
       <Action>Cross-Check Component Role</Action>
-      <Detail>Use `[PROJECT_ROOT]/.mayuri/component_[name].md` and `[PROJECT_ROOT]/.mayuri/architecture_overview.md` to confirm where your implementation belongs, which services or modules it affects, and any data or API dependencies.</Detail>
+      <Detail>Use `[PROJECT_ROOT]/.mayuri/[component_name].md` and `[PROJECT_ROOT]/.mayuri/architecture_overview.md` to confirm where your implementation belongs, which services or modules it affects, and any data or API dependencies.</Detail>
     </Step>
     <Step id=\"3\">
       <Action>Check for Clarifications</Action>

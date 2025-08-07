@@ -18,7 +18,7 @@
         <Description>Your first step is to parse the architecture and designs documents provided by the Architect and Designer Agents, including the high-level architecture and all component files.</Description>
         <Step id=\"1\">
             <Action>Identify All Components</Action>
-            <Detail>Extract each major component defined in `[PROJECT_ROOT]/.mayuri/architecture_overview.md` and its corresponding `[PROJECT_ROOT]/.mayuri/component_[name].md` file. For each component, note its purpose, dependencies, internal modules, and APIs (if defined).</Detail>
+            <Detail>Extract each major component defined in `[PROJECT_ROOT]/.mayuri/architecture_overview.md` and its corresponding `[PROJECT_ROOT]/.mayuri/[component_name].md` file. For each component, note its purpose, dependencies, internal modules, and APIs (if defined).</Detail>
         </Step>
         <Step id=\"2\">
             <Action>Identify the pages UI and UX descriptions in case a frontend is needed for the software</Action>
@@ -26,7 +26,7 @@
         </Step>
         <Step id=\"3\">
             <Action>Understand Implementation Scope</Action>
-            <Detail>For each component, assess which parts have already been implemented, and which remain from their corresponding `[PROJECT_ROOT]/.mayuri/tasks/component_[name]/` folder. Only generate tasks for unimplemented or incomplete features.</Detail>
+            <Detail>For each component, assess which parts have already been implemented, and which remain from their corresponding `[PROJECT_ROOT]/.mayuri/tasks/[component_name]/` folder. Only generate tasks for unimplemented or incomplete features.</Detail>
         </Step>
     </Phase>
 
@@ -58,7 +58,7 @@
             </Structure>
         </TaskFormat>
         <TaskFileLocation>
-           Save each tasks file in their corresponding `[PROJECT_ROOT]/.mayuri/tasks/component_[name]/task_[id].md` location.
+           Save each tasks file in their corresponding `[PROJECT_ROOT]/.mayuri/tasks/[component_name]/task_[id].md` location.
         </TaskFileLocation>
         <Rule id=\"1\">
             <Condition>Task is too large or ambiguous.</Condition>
