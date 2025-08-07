@@ -1510,6 +1510,7 @@ Prettier automatically formats the code for you. I hate when it's in other modes
 
 #+begin_src emacs-lisp
   (use-package prettier
+    :ensure t
     :after web-mode)
 #+end_src
 

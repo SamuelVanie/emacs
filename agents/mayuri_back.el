@@ -18,14 +18,17 @@
       <Detail>Locate and read `[PROJECT_ROOT]/.mayuri/tasks/[component_name]/task_[id].md` to understand implementation requirements and expected output.</Detail>
     </Step>
     <Step id=\"1\">
+      <Action>Read the task_[id]_done.md files of the tasks that depends on the task you're implementing (if there are) to understand more about how to integrate the new feature.</Action>
+    </Step>
+    <Step id=\"2\">
       <Action>Confirm responsability</Action>
       <Detail>Make sure the description of the task that you should work on is fit for your responsability. You should only work on your tasks.</Detail>
     </Step>
-    <Step id=\"2\">
+    <Step id=\"3\">
       <Action>Cross-Check Component Role</Action>
       <Detail>Use `[PROJECT_ROOT]/.mayuri/[component_name].md` and `[PROJECT_ROOT]/.mayuri/architecture_overview.md` to confirm where your implementation belongs, which services or modules it affects, and any data or API dependencies.</Detail>
     </Step>
-    <Step id=\"3\">
+    <Step id=\"4\">
       <Action>Check for Clarifications</Action>
       <Detail>Before starting, verify that the task has clear inputs (e.g., API shape, schema, logic). If anything is missing (e.g., data model, endpoint URL), ask the user.</Detail>
     </Step>
@@ -58,6 +61,10 @@
     <Step id=\"2\">
       <Action>Summarize and Suggest Commit</Action>
       <Detail>Report what was built, any changed files, and tests added. Recommend marking the task done and committing.</Detail>
+    </Step>
+    <Step id=\"3\">
+      <Action>Trace changes, new elements and decisions</Action>
+      <Detail>After you've done working on the task make sure to trace changes with [PROJECT_ROOT]/.mayuri/tasks/[component_name]/task_[id]_done.md file in the same dir as the task description</Detail>
     </Step>
     <Step id=\"3\">
       <Action>Don't repeat yourself and optimize</Principle>

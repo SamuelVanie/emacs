@@ -1130,6 +1130,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (rjsx-mode . prettier-mode))
 
 (use-package prettier
+  :ensure t
   :after web-mode)
 
 (use-package rust-ts-mode
