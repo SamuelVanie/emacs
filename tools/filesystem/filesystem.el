@@ -102,7 +102,7 @@ Returns detailed information about changes made or would be made."
 
 (defun smv-tool/normalize-edits (edits)
   "Normalize edits to consistent alist format."
-  (message "DEBUG normalize-edits: type=%S, value=%S" (type-of edits) edits)
+  ;; (message "DEBUG normalize-edits: type=%S, value=%S" (type-of edits) edits)
   
   ;; Convert vector to list if needed
   (when (vectorp edits)
@@ -300,8 +300,6 @@ Returns detailed metadata including size, timestamps, type, and permissions."
     (setq regex (replace-regexp-in-string "\\\\\\?" "." regex))
     regex))
 
-
-
 (defun smv-tool/grep-regex (search-string path &optional context-lines)
   "LLM-optimized search tool for finding code symbols and patterns in codebases.
 Returns structured results with file paths, line numbers, and context to enable
@@ -330,15 +328,25 @@ RETURNS:
       (let* ((expanded-path (expand-file-name path))
              (use-rg (executable-find "rg"))
              (command (if use-rg
-                         (format "rg -l %s %s"
+                         (format "rg -n %s %s"
                                 (shell-quote-argument search-string)
                                 (shell-quote-argument expanded-path))
-                       (format "grep -r -l %s %s"
+                       (format "grep -rn %s %s"
                               (shell-quote-argument search-string)
                               (shell-quote-argument expanded-path))))
              (output (shell-command-to-string command)))
         (when (> (length output) 0)
-          (split-string output "\n" t)))
+          (let ((lines (split-string output "\n" t)))
+            (mapcar (lambda (line)
+                     ;; Format: filepath:line_number:content
+                     (if (string-match "^\\(.*\\):\\([0-9]+\\):\\(.*\\)$" line)
+                         (format "[MATCH] %s:%s - %s"
+                                (match-string 1 line)
+                                (match-string 2 line)
+                                (string-trim (match-string 3 line)))
+                       ;; Fallback if regex doesn't match
+                       line))
+                   lines))))
     
     ;; === FILE SEARCH ===
     (let ((before (or (nth 0 context-lines) 0))
@@ -527,7 +535,7 @@ RETURNS:
 (gptel-make-tool
  :name "write_file"
  :function #'smv-tool/write-file
- :description "Create new file or overwrite existing file (exercise with caution, prefer edit_file)"
+ :description "Create new file or overwrite existing file (exercise with caution, use it when 4+ edits to the same file is necessary)"
  :confirm t  ; Confirm because it overwrites files
  :include t
  :args (list '(:name "path"
@@ -542,7 +550,7 @@ RETURNS:
 (gptel-make-tool
  :name "edit_file"
  :function #'smv-tool/edit-file
- :description "Make selective edits using advanced pattern matching and formatting. The best practice is to run it with dry-run activated to preview the changes, then reuse without it to apply changes. This preserves file integrity"
+ :description "Make selective edits using advanced pattern matching and formatting. The best practice is to run it with dry-run activated to preview the changes, then reuse without it to apply changes. This preserves file integrity. Prefer write_file when you need to 4+ edits to the same file"
  :confirm t
  :include t
  :args (list '(:name "path"
