@@ -1372,7 +1372,8 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   
   :bind
   ("C-c RET" . gptel-send)
-  ("C-c g" . gptel))
+  ("C-c g g" . gptel)
+  ("C-c g a" . gptel-abort))
 
 ;; load tools
 (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "fetch_url" ".el"))

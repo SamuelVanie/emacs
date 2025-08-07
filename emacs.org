@@ -1829,7 +1829,8 @@ Mode to interact with different llms in emacs.
     
     :bind
     ("C-c RET" . gptel-send)
-    ("C-c g" . gptel))
+    ("C-c g g" . gptel)
+    ("C-c g a" . gptel-abort))
 #+end_src
 
 
