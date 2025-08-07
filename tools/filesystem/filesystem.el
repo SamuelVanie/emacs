@@ -468,7 +468,7 @@ RETURNS:
 
 ;; read-file
 (gptel-make-tool
- :name "read-file"
+ :name "read_file"
  :function #'smv-tool/read-file
  :description "Read file content with line numbers. Essential follow-up tool after grep-regex. USE CASES: - Read entire files found: read-file('/path/to/relevant-file.py') - Read specific ranges: read-file('/path/file.js', 45, 65) - Examine context around matches: read-file('/path/file.py', match_line-5, match_line+10). e.g(match_line = 20): read-file('/path/file.py', 15, 30)"
  :confirm nil
@@ -489,7 +489,7 @@ RETURNS:
 
 ;; read-multiple-files
 (gptel-make-tool
- :name "read-multiple-files"
+ :name "read_multiple_files"
  :function #'smv-tool/read-multiple-files
  :description "Read multiple files or file sections efficiently in one operation. OPTIMAL FOR: - Comparing related implementations: read-multiple-files([['file1.py'], ['file2.py']]) - Gathering distributed context: read-multiple-files([['main.js', '10', '30'], ['utils.js', '45', '60']]) - Following import chains or inheritance hierarchies REDUCES TOKEN USAGE by batching related reads vs. multiple separate read-file calls."
  :confirm nil
@@ -504,7 +504,7 @@ RETURNS:
 
 ;; grep-regex
 (gptel-make-tool
- :name "grep-regex"
+ :name "grep_regex"
  :function #'smv-tool/grep-regex
  :description "Search for code symbols, functions, classes, or patterns across codebases. OPTIMAL WORKFLOW: 1. START with directory search to locate relevant files: grep-regex('ClassName', '/project/src/') 2. THEN search specific files with context: grep-regex('function myFunc', 'path/to/file.js', [2, 5]) 3. USE line numbers from results with read-file for detailed examination Returns file paths (directory search) or formatted blocks with line numbers (file search)."
  :confirm nil
@@ -573,7 +573,7 @@ RETURNS:
 
 
 (gptel-make-tool
- :name "list-directory"
+ :name "list_directory"
  :function #'smv-tool/list-directory
  :description "List directory contents with clear [FILE] and [DIR] prefixes."
  :confirm nil
