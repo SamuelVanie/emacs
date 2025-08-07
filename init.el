@@ -1273,7 +1273,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (setq gptel-default-mode 'org-mode)
   (setq gptel-use-context 'user)
   ;; (setq gptel-confirm-tool-calls t)
-  (setq gptel-include-tool-results t)
+  (setq gptel-include-tool-results nil)
   (gptel-make-gemini "Gemini"
     :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
     :stream t)
