@@ -692,7 +692,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 (use-package standard-themes
   :ensure t
   :demand t
-  :config (load-theme 'leuven-dark t));; meltbus
+  :config (load-theme 'ef-day t));; meltbus
 
 (use-package all-the-icons
   :ensure t
@@ -1167,17 +1167,24 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :defer t
   :after lsp-mode)
 
+(use-package dabbrev
+  ;; Swap M-/ and C-M-/
+  :bind (("M-/" . dabbrev-completion)
+         ("C-M-/" . dabbrev-expand))
+  :config
+  (add-to-list 'dabbrev-ignored-buffer-regexps "\\` ")
+  ;; Available since Emacs 29 (Use `dabbrev-ignored-buffer-regexps' on older Emacs)
+  (add-to-list 'dabbrev-ignored-buffer-modes 'authinfo-mode)
+  (add-to-list 'dabbrev-ignored-buffer-modes 'doc-view-mode)
+  (add-to-list 'dabbrev-ignored-buffer-modes 'pdf-view-mode)
+  (add-to-list 'dabbrev-ignored-buffer-modes 'tags-table-mode))
+
 (use-package cape
   :ensure t
   :demand t
   ;; Bind prefix keymap providing all Cape commands under a mnemonic key.
   ;; Press C-c p ? to for help.
   :bind ("C-c p" . cape-prefix-map) ;; Alternative key: M-<tab>, M-p, M-+
-  ;; Alternatively bind Cape commands individually.
-  ;; :bind (("C-c p d" . cape-dabbrev)
-  ;;        ("C-c p h" . cape-history)
-  ;;        ("C-c p f" . cape-file)
-  ;;        ...)
   :init
   ;; Add to the global default value of `completion-at-point-functions' which is
   ;; used by `completion-at-point'.  The order of the functions matters, the
@@ -1188,35 +1195,46 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (add-hook 'completion-at-point-functions #'cape-keyword)
   (add-hook 'completion-at-point-functions #'cape-history)
   (add-hook 'completion-at-point-functions #'cape-elisp-symbol)
-  ;; ...
   )
 
-(use-package company
+(use-package orderless
   :ensure t
   :demand t
-  :bind
-  ("C-z C-z" . company-mode)
-  ("C-z C-c" . company-complete)
-  ("C-M-i" . completion-at-point)
   :custom
-  (company-minimum-prefix-length 1)
-  (company-idle-delay 0.0)
-  (company-tooltip-flip-when-above t)
-  :config
-  (add-to-list 'company-backends #'company-yasnippet t)
-  (add-to-list 'company-backends #'company-files t)
-  (add-to-list 'company-backends #'company-dabbrev t)
+  (orderless-style-dispatchers '(orderless-affix-dispatch))
+  (orderless-component-separator #'orderless-escapable-split-on-space)
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles partial-completion)))))
+
+(use-package corfu
+  :demand t
+  :ensure t
+  ;; Optional customizations
+  :custom
+  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+  (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+  (corfu-preview-current nil)    ;; Disable current candidate preview
+  (corfu-preselect 'prompt)      ;; Preselect the prompt
+  (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+
+  ;; Enable Corfu only for certain modes. See also `global-corfu-modes'.
+  :hook ((prog-mode . corfu-mode)
+         (shell-mode . corfu-mode)
+         (eshell-mode . corfu-mode))
+
+  :init
+
+  ;; Recommended: Enable Corfu globally.  Recommended since many modes provide
+  ;; Capfs and Dabbrev can be used globally (M-/).  See also the customization
+  ;; variable `global-corfu-modes' to exclude certain modes.
+  (global-corfu-mode)
+
+  ;; Enable optional extension modes:
+  (corfu-history-mode)
+  (corfu-popupinfo-mode)
   )
-
-(use-package company-box
-  :ensure t
-  :hook
-  (company-mode . company-box-mode))
-
-(use-package company-tabnine
-  :ensure t
-  :config
-  (add-to-list 'company-backends #'company-tabnine t))
 
 (use-package dap-mode
   :ensure t
