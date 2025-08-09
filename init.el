@@ -1489,5 +1489,4 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :config
   (require 'eaf)
   (require 'eaf-markdown-previewer)
-  (require 'eaf-org-previewer)
-  (require 'eaf-pyqterminal))
+  (require 'eaf-org-previewer))

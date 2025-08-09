@@ -1996,6 +1996,5 @@ Something to manage the todos elements in the current project I am working on. V
     :config
     (require 'eaf)
     (require 'eaf-markdown-previewer)
-    (require 'eaf-org-previewer)
-    (require 'eaf-pyqterminal))
+    (require 'eaf-org-previewer))
 #+end_src
