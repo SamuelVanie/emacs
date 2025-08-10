@@ -1224,6 +1224,12 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
          (shell-mode . corfu-mode)
          (eshell-mode . corfu-mode))
 
+  :bind
+  (:map corfu-map
+        ("TAB" . corfu-next)
+        ([tab] . corfu-next)
+        ("S-TAB" . corfu-previous)
+        ([backtab] . corfu-previous))
   :init
 
   ;; Recommended: Enable Corfu globally.  Recommended since many modes provide
