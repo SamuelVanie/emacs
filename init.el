@@ -36,6 +36,7 @@
 ;; auto refresh buffers when files changes
 (global-auto-revert-mode t)
 (global-visual-line-mode t)
+(delete-selection-mode t)
 
 ;; Prevent dired-find-alternative warning message
 (put 'dired-find-alternate-file 'disabled nil)
@@ -241,7 +242,6 @@
 (tooltip-mode -1) ; Disable tooltips
 (set-fringe-mode 10) ; Give some breathing room
 (menu-bar-mode -1) ; Disable menu bar
-
 
 (column-number-mode)
 (global-display-line-numbers-mode t) ;; print line numbers for files
@@ -1095,7 +1095,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (setq web-mode-code-indent-offset 2)
   (setq web-mode-enable-current-column-highlight t)
   (setq web-mode-enable-current-element-highlight t)
-  (set (make-local-variable 'company-backends) '(company-css company-web-html company-yasnippet company-files dap-ui-repl-company))
   )
 
 (use-package web-mode
@@ -1194,6 +1193,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (add-hook 'completion-at-point-functions #'cape-elisp-block)
   (add-hook 'completion-at-point-functions #'cape-keyword)
   (add-hook 'completion-at-point-functions #'cape-history)
+  (add-hook 'completion-at-point-functions #'cape-file)
   (add-hook 'completion-at-point-functions #'cape-elisp-symbol)
   )
 
