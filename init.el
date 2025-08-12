@@ -692,7 +692,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 (use-package standard-themes
   :ensure t
   :demand t
-  :config (load-theme 'ef-day t));; meltbus
+  :config (ef-themes-load-random));; meltbus
 
 (use-package all-the-icons
   :ensure t

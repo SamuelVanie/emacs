@@ -861,7 +861,7 @@ Permit to expand region quickly, making it less painful to mark some region.
   (use-package standard-themes
     :ensure t
     :demand t
-    :config (load-theme 'ef-day t));; meltbus
+    :config (ef-themes-load-random));; meltbus
 #+end_src
 
 ** Adding icons to emacs
