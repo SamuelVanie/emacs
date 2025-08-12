@@ -1332,12 +1332,10 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
               moonshotai/kimi-k2 ;; 0.14 in - 2.49 out
               qwen/qwen3-coder ;; 0.30 in - 1.20 out
               x-ai/grok-3-mini ;; 0.30 in - 0.50 out
-              deepseek/deepseek-chat-v3-0324 ;; 0.27 in - 1.10 out
               minimax/minimax-01 ;; 0.20 in - 1.10 out
               z-ai/glm-4.5 ;; 0.2 in - 0.2 out
               google/gemini-2.5-flash-preview:thinking ;; 0.15 in - 3.50 out
               google/gemini-2.5-flash-preview ;; 0.15 in - 0.60 out
-              google/gemini-2.5-flash-lite-preview-06-17
               openai/gpt-4.1-nano ;; 0.10 in - 0.40 out
               google/gemini-2.0-flash-lite-001 ;; 0.075 in - 0.30 out
               deepseek/deepseek-chat-v3-0324:free ;; free
@@ -1424,7 +1422,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (gptel-make-tool
    :name "run_command"                    ; javascript-style  snake_case name
    :function #'smv-tool/run_command
-   :description "Execute a shell command on the system and get the corresponding output"
+   :description "Execute a shell command on the system and get the corresponding output. IMPORTANT: ***MAKE SURE TO ALWAYS USE FULL PATHS IF YOUR COMMAND CONTAINS SOME***"
    :confirm t
    :include t
    :args (list '(:name "command"             ; a list of argument specifications
