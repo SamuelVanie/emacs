@@ -370,7 +370,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    '("C" . meow-pop-to-mark)
    '("V" . meow-unpop-to-mark)
    '("<" . previous-buffer)
-   '("t" . meow-temp-normal)
+   '("<home>" . meow-temp-normal)
    '(";" . meow-reverse)
    '("," . meow-inner-of-thing)
    '("." . meow-bounds-of-thing)
