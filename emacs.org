@@ -674,25 +674,6 @@ Some commands for completing meow, adding the ones I'm used to.
      "r m"  #'avy-move-region))
 #+end_src
 
-** Ace window
-
-Quickly switch between windows
-
-#+begin_src emacs-lisp
-  (use-package ace-window
-    :ensure t
-    :demand t
-    :after meow
-    :bind
-    ("C-z w" . ace-window)
-    :config
-    (general-define-key
-     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-     :prefix "@"
-     "w"  #'ace-window
-     ))
-#+end_src
-
 ** Multicursors
 
 Made modification on multiple places quicker in emacs.
@@ -739,6 +720,14 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
 
 There's no unified bindings that permits to manage windows, so here's mine
 
+*** Configuration
+
+#+begin_src emacs-lisp
+(winner-mode 1) ;; activate the package that recalls the current layout to redo it
+#+end_src
+
+*** windmove
+
 #+begin_src emacs-lisp
   (use-package windmove
     :after meow
@@ -767,6 +756,27 @@ There's no unified bindings that permits to manage windows, so here's mine
     )
 
 #+end_src
+
+*** winum mode
+
+Quickly switch between windows
+
+#+begin_src emacs-lisp
+  (use-package winum
+    :ensure t
+    :demand t
+    :bind (("M-1" . winum-select-window-1)
+           ("M-2" . winum-select-window-2)
+           ("M-3" . winum-select-window-3)
+           ("M-4" . winum-select-window-4)
+           ("M-5" . winum-select-window-5)
+           ("M-6" . winum-select-window-6)
+           ("M-7" . winum-select-window-7)
+           ("M-8" . winum-select-window-8))
+    :config
+    (winum-mode))
+#+end_src
+
 
 
 ** vterm
@@ -807,7 +817,7 @@ Another terminal emulator
                               ("integration" "integration/*")
                               (:exclude ".dir-locals.el" "*-tests.el")))
     :bind
-    ("<f7>" . eat-project))
+    ("<f7>" . eat))
                #+end_src
 
 ** Browsing
