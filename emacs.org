@@ -776,9 +776,7 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
 #+begin_src emacs-lisp
   (use-package vterm
     :ensure t
-    :defer t
-    :bind
-    ("<f7>" . vterm))
+    :defer t)
 
   (use-package multi-vterm
     :after vterm
@@ -791,6 +789,26 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
 
 #+end_src
 
+
+
+
+** EAT
+
+Another terminal emulator
+
+#+begin_src emacs-lisp
+  (use-package eat
+    :demand t
+    :ensure (:fetcher codeberg
+                      :repo "akib/emacs-eat"
+                      :files ("*.el" ("term" "term/*.el") "*.texi"
+                              "*.ti" ("terminfo/e" "terminfo/e/*")
+                              ("terminfo/65" "terminfo/65/*")
+                              ("integration" "integration/*")
+                              (:exclude ".dir-locals.el" "*-tests.el")))
+    :bind
+    ("<f7>" . eat-project))
+               #+end_src
 
 ** Browsing
 

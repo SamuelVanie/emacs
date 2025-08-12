@@ -631,9 +631,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 
 (use-package vterm
   :ensure t
-  :defer t
-  :bind
-  ("<f7>" . vterm))
+  :defer t)
 
 (use-package multi-vterm
   :after vterm
@@ -643,6 +641,18 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
          ("C-x C-y" . multi-vterm-dedicated-toggle))
   :config
   (define-key vterm-mode-map [return]                      #'vterm-send-return))
+
+(use-package eat
+  :demand t
+  :ensure (:fetcher codeberg
+                    :repo "akib/emacs-eat"
+                    :files ("*.el" ("term" "term/*.el") "*.texi"
+                            "*.ti" ("terminfo/e" "terminfo/e/*")
+                            ("terminfo/65" "terminfo/65/*")
+                            ("integration" "integration/*")
+                            (:exclude ".dir-locals.el" "*-tests.el")))
+  :bind
+  ("<f7>" . eat-project))
 
 (setq browse-url-generic-program "MicrosoftEdge.exe")
 (defun smv/browse-search ()
