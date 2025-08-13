@@ -883,7 +883,8 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 
 (use-package phscroll
   :ensure (:fetcher github :repo "misohena/phscroll" :files ("*.el"))
-  :after org-mode
+  :demand t
+  :hook (org-mode . org-phscroll-mode)
   :config
   (setq org-startup-truncated nil))
 
