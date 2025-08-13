@@ -889,7 +889,7 @@ Permit to expand region quickly, making it less painful to mark some region.
   (use-package standard-themes
     :ensure t
     :demand t
-    :config (ef-themes-load-random));; meltbus
+    :config (load-theme 'doom-Iosvkem t));; meltbus
 #+end_src
 
 ** Adding icons to emacs
@@ -1119,6 +1119,20 @@ This section contains the basic configuration for org-mode plus the configuratio
 
 #+end_src
 
+
+
+
+** Org phscroll
+
+Permits to scroll horizontally, this helps in the rendering of tables in org mode.
+
+#+begin_src emacs-lisp
+  (use-package phscroll
+    :ensure (:fetcher github :repo "misohena/phscroll" :files ("*.el"))
+    :after org-mode
+    :config
+    (setq org-startup-truncated nil))
+#+end_src
 
 ** Org modern
 

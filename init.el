@@ -705,7 +705,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 (use-package standard-themes
   :ensure t
   :demand t
-  :config (ef-themes-load-random));; meltbus
+  :config (load-theme 'doom-Iosvkem t));; meltbus
 
 (use-package all-the-icons
   :ensure t
@@ -880,6 +880,12 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 
   (global-set-key (kbd "C-c a") 'org-agenda)
   (global-set-key (kbd "M-i") 'org-insert-item))
+
+(use-package phscroll
+  :ensure (:fetcher github :repo "misohena/phscroll" :files ("*.el"))
+  :after org-mode
+  :config
+  (setq org-startup-truncated nil))
 
 (use-package org-modern
   :ensure t
