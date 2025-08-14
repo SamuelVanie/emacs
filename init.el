@@ -29,9 +29,6 @@
 (setq custom-file (locate-user-emacs-file "custom-vars.el"))
 (load custom-file 'noerror 'nomessage)
 
-(setq-default indent-tabs-mode nil)
-(global-set-key (kbd "C-<tab>") 'tab-to-tab-stop)
-
 
 ;; auto refresh buffers when files changes
 (global-auto-revert-mode t)
@@ -277,6 +274,33 @@
 (use-package rainbow-delimiters
   :ensure t
   :hook (prog-mode . rainbow-delimiters-mode))
+
+;; This ensures that pressing Enter will insert a new line and indent it.
+(global-set-key (kbd "RET") #'newline-and-indent)
+
+;; Indentation based on the indentation of the previous non-blank line.
+(setq-default indent-line-function #'indent-relative-first-indent-point)
+
+;; In modes such as `text-mode', pressing Enter multiple times removes
+;; the indentation. The following fixes the issue and ensures that text
+;; is properly indented using `indent-relative' or
+;; `indent-relative-first-indent-point'.
+(setq-default indent-line-ignored-functions '())
+
+(global-set-key (kbd "C-<tab>") 'tab-to-tab-stop)
+
+
+(use-package dtrt-indent
+  :ensure t
+  :demand t
+  :commands (dtrt-indent-global-mode
+             dtrt-indent-mode
+             dtrt-indent-adapt
+             dtrt-indent-undo
+             dtrt-indent-diagnosis
+             dtrt-indent-highlight)
+  :config
+  (dtrt-indent-global-mode))
 
 (use-package hydra
   :ensure t
@@ -783,7 +807,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    ("C-c h n" . helm-complete-file-name-at-point)
    ("C-c h t" . helm-magit-todos))
   )
-(fido-mode 1)
 
 (defun smv/helm-zoxide-candidates ()
   "Generate a list of zoxide query candidates."
