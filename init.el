@@ -704,8 +704,37 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :demand t)
 (use-package standard-themes
   :ensure t
+  :demand t)
+(use-package acme-theme
+  :ensure t
+  :demand t)
+(use-package kaolin-themes
+  :ensure t
   :demand t
-  :config (load-theme 'doom-Iosvkem t));; meltbus
+  :config
+  (load-theme 'kaolin-mono-dark t)
+  (kaolin-treemacs-theme))
+(use-package catppuccin-theme
+  :ensure t
+  :demand t)
+(use-package challenger-deep-theme
+  :ensure t
+  :demand t)
+(use-package solo-jazz-theme
+  :ensure t
+  :demand t)
+(use-package stimmung-themes
+  :ensure (:fetcher github :repo "motform/stimmung-themes" :files ("*.el"))
+  :demand t)
+(use-package rebecca-theme
+  :ensure t
+  :demand t)
+(use-package stimmung-themes
+  :ensure (:fetcher github :repo "monkeyjunglejuice/matrix-emacs-theme" :files ("*.el"))
+  :demand t)
+(use-package pink-bliss-uwu-theme
+  :ensure (:fetcher github :repo "themkat/pink-bliss-uwu" :files ("*.el"))
+  :demand t)
 
 (use-package all-the-icons
   :ensure t
