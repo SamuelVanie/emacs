@@ -1444,6 +1444,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_front" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_back" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_setup" ".el"))
+  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_reverse_archi" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_designer" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "architect" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "tasker" ".el"))

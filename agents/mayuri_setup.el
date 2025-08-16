@@ -1,5 +1,5 @@
-(gptel-make-preset 'techlead_mayuri
-  :description "The tech lead will explain the project" :backend "Copilot" :model
+(gptel-make-preset 'mayuri_setup
+  :description "The tech lead will explain the project to the junior engineer" :backend "Copilot" :model
   'claude-sonnet-4 :system
   "<SystemPrompt>
 <Persona>
