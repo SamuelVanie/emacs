@@ -225,11 +225,13 @@
   (setq popper-display-control nil)
   ;; Match eshell, shell, term and/or vterm buffers
   (setq popper-reference-buffers
-        (append popper-reference-buffers
-                '("^\\*eshell.*\\*$" eshell-mode ;eshell as a popup
-                  "^\\*shell.*\\*$"  shell-mode  ;shell as a popup
-                  "^\\*term.*\\*$"   term-mode   ;term as a popup
-                  )))
+  (append popper-reference-buffers
+  '("^\\*eshell.*\\*$" eshell-mode ;eshell as a popup
+  "^\\*shell.*\\*$"  shell-mode  ;shell as a popup
+  "^\\*term.*\\*$"   term-mode   ;term as a popup
+  "^\\*vterm.*\\*$"  vterm-mode  ;vterm as a popup
+                "^\\*eat.*\\*$"    eat-mode    ;eat as a popup
+                )))
 
   (popper-mode +1)
   (popper-echo-mode +1))
@@ -258,8 +260,11 @@
                 shell-mode-hook
                 dired-mode-hook
                 vterm-mode-hook
+                eat-mode-hook
                 eshell-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode 0))))
+  (add-hook mode (lambda () 
+                   (display-line-numbers-mode 0)
+                   (setq-local global-hl-line-mode nil))))
 
 (if (eq system-type 'darwin)
     (progn
@@ -656,9 +661,34 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :config
   (winum-mode))
 
+(use-package eterm-256color
+  :ensure t
+  :demand t
+  :config
+  (add-hook 'term-mode-hook #'eterm-256color-mode))
+
 (use-package vterm
   :ensure t
-  :defer t)
+  :defer t
+  :config
+  ;; Set proper terminal capabilities
+  (setq vterm-term-environment-variable "eterm-color")
+  
+  ;; Memory management - prevent buffer overflow
+  (setq vterm-max-scrollback 10000)  ; Balanced size instead of unlimited
+  (setq vterm-kill-buffer-on-exit t) ; Prevent accumulation of dead buffers
+  
+  ;; Fix window resizing issues
+  (setq vterm-copy-exclude-prompt t)
+  
+  ;; Better Unicode handling
+  (add-hook 'vterm-mode-hook 
+            (lambda ()
+              (setq-local buffer-face-mode-face '(:family "FantasqueSansM Nerd Font Mono"))
+              (buffer-face-mode t)))
+  
+  ;; Disable problematic features that cause corruption
+  (setq vterm-use-vterm-prompt-detection-method 'none))
 
 (use-package multi-vterm
   :after vterm
@@ -667,7 +697,18 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
          ("C-c v r" . multi-vterm-rename-buffer)
          ("C-x C-y" . multi-vterm-dedicated-toggle))
   :config
-  (define-key vterm-mode-map [return]                      #'vterm-send-return))
+  ;; Prevent key binding conflicts
+  (define-key vterm-mode-map [return] #'vterm-send-return)
+  
+  ;; Better buffer management
+  (setq multi-vterm-buffer-name "vterm")
+  (setq multi-vterm-dedicated-window-height-percent 30)
+  
+  ;; Fix for meow mode conflicts
+  (add-hook 'vterm-mode-hook
+            (lambda ()
+              (when (fboundp 'meow-insert-mode)
+                (meow-insert-mode 1)))))
 
 (use-package eat
   :demand t
@@ -679,7 +720,13 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
                             ("integration" "integration/*")
                             (:exclude ".dir-locals.el" "*-tests.el")))
   :bind
-  ("<f7>" . eat))
+  ("<f7>" . eat)
+  :config
+  ;; Fix TERM environment for better compatibility
+  (setq eat-term-name "eterm-color")
+  
+  ;; Better scrollback management
+  (setq eat-kill-buffer-on-exit t))
 
 (setq browse-url-generic-program "MicrosoftEdge.exe")
 (defun smv/browse-search ()
@@ -1022,6 +1069,10 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 (require 'ansi-color)
 (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
 
+;; Ensure ANSI colors work properly in shell-mode too
+(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+(add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
+
 (use-package undo-tree
   :ensure (:wait t)
   :init
@@ -1033,6 +1084,67 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (unless (file-exists-p "~/.emacs.d/undo")
     (make-directory "~/.emacs.d/undo" t)))
 ;; Enable global undo-tree mode
+
+;; Critical Unicode and encoding fixes
+(prefer-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(setq locale-coding-system 'utf-8)
+
+;; Memory management for all terminal modes
+(setq comint-buffer-maximum-size 5000)
+(add-hook 'comint-output-filter-functions 'comint-truncate-buffer)
+
+;; Better eshell configuration to prevent corruption
+(with-eval-after-load 'eshell
+  ;; Prevent eshell from becoming too large and causing issues
+  (add-hook 'eshell-output-filter-functions 'eshell-truncate-buffer)
+  (setq eshell-buffer-maximum-lines 5000)
+  
+  ;; Better prompt handling
+  (setq eshell-highlight-prompt t)
+  (setq eshell-cmpl-ignore-case t)
+  
+  ;; Fix visual line issues
+  (add-hook 'eshell-mode-hook 
+            (lambda ()
+              (setq-local global-hl-line-mode nil)
+              (setq-local line-spacing 0))))
+
+;; Recovery function when corruption occurs
+(defun smv/fix-terminal-corruption ()
+  "Fix visual corruption in terminal buffers."
+  (interactive)
+  (when (derived-mode-p 'vterm-mode 'eat-mode 'term-mode)
+    (recenter)
+    (redraw-display)
+    (set-char-table-range char-width-table '(#x1fb00 . #x1fbf9) 1)
+    (when (derived-mode-p 'vterm-mode)
+      (vterm-clear-scrollback))
+    (message "Terminal corruption fixes applied")))
+
+(global-set-key (kbd "C-c t r") 'smv/fix-terminal-corruption)
+
+;; Window management to prevent corruption
+(setq split-width-threshold 120)
+(setq split-height-threshold 80)
+(setq window-combination-resize nil)
+
+;; Fix meow mode integration with terminals
+(with-eval-after-load 'meow
+  ;; Don't apply meow keys in terminal modes
+  (add-to-list 'meow-mode-state-list '(vterm-mode . insert))
+  (add-to-list 'meow-mode-state-list '(eat-mode . insert))
+  (add-to-list 'meow-mode-state-list '(term-mode . insert)))
+
+;; Font configuration with proper fallbacks for terminal content
+(when (display-graphic-p)
+  ;; Font fallback for Unicode symbols in terminals
+  (set-fontset-font "fontset-default" 'unicode
+                    (font-spec :name "VictorMono Nerd Font") nil)
+  (set-fontset-font "fontset-default" 'unicode
+                    (font-spec :name "Noto Color Emoji") nil 'append))
 
 ;; Store all backup files in a centralized directory
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
