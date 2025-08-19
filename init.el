@@ -104,28 +104,6 @@
 (add-hook 'dired-mode-hook #'dired-hide-details-mode)
 (add-hook 'dired-mode-hook #'all-the-icons-dired-mode)
 
-
-(use-package dired-sidebar
-  :bind (
-         ("C-x C-n" . dired-sidebar-toggle-sidebar)
-         (:map dired-mode-map
-               ("k" . dired-create-empty-file)
-               ("<tab>" . dired-subtree-toggle))
-         )
-  :ensure t
-  :commands (dired-sidebar-toggle-sidebar)
-  :init
-  (add-hook 'dired-sidebar-mode-hook
-            (lambda ()
-              (unless (file-remote-p default-directory)
-                (auto-revert-mode))))
-  :config
-  (push 'toggle-window-split dired-sidebar-toggle-hidden-commands)
-  (push 'rotate-windows dired-sidebar-toggle-hidden-commands)
-  (setq dired-sidebar-use-term-integration t))
-
-
-
 (setq read-file-name-completion-ignore-case t)
 (setq hippie-expand-try-functions-list
       '(
@@ -665,7 +643,8 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :ensure t
   :demand t
   :config
-  (add-hook 'term-mode-hook #'eterm-256color-mode))
+  (add-hook 'term-mode-hook #'eterm-256color-mode)
+  (add-hook 'eat-mode-hook #'eterm-256color-mode))
 
 (use-package vterm
   :ensure t
@@ -674,22 +653,9 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   ;; Set proper terminal capabilities
   (setq vterm-term-environment-variable "eterm-color")
   
-  ;; Memory management - prevent buffer overflow
-  (setq vterm-max-scrollback 10000)  ; Balanced size instead of unlimited
   (setq vterm-kill-buffer-on-exit t) ; Prevent accumulation of dead buffers
+  (setq vterm-copy-exclude-prompt t))
   
-  ;; Fix window resizing issues
-  (setq vterm-copy-exclude-prompt t)
-  
-  ;; Better Unicode handling
-  (add-hook 'vterm-mode-hook 
-            (lambda ()
-              (setq-local buffer-face-mode-face '(:family "FantasqueSansM Nerd Font Mono"))
-              (buffer-face-mode t)))
-  
-  ;; Disable problematic features that cause corruption
-  (setq vterm-use-vterm-prompt-detection-method 'none))
-
 (use-package multi-vterm
   :after vterm
   :bind (("C-c v n" . multi-vterm-project)
@@ -702,13 +668,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   
   ;; Better buffer management
   (setq multi-vterm-buffer-name "vterm")
-  (setq multi-vterm-dedicated-window-height-percent 30)
-  
-  ;; Fix for meow mode conflicts
-  (add-hook 'vterm-mode-hook
-            (lambda ()
-              (when (fboundp 'meow-insert-mode)
-                (meow-insert-mode 1)))))
+  (setq multi-vterm-dedicated-window-height-percent 40))
 
 (use-package eat
   :demand t
@@ -722,9 +682,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :bind
   ("<f7>" . eat)
   :config
-  ;; Fix TERM environment for better compatibility
-  (setq eat-term-name "eterm-color")
-  
   ;; Better scrollback management
   (setq eat-kill-buffer-on-exit t))
 
@@ -1125,11 +1082,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
     (message "Terminal corruption fixes applied")))
 
 (global-set-key (kbd "C-c t r") 'smv/fix-terminal-corruption)
-
-;; Window management to prevent corruption
-(setq split-width-threshold 120)
-(setq split-height-threshold 80)
-(setq window-combination-resize nil)
 
 ;; Fix meow mode integration with terminals
 (with-eval-after-load 'meow
@@ -1661,6 +1613,15 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (add-hook 'after-init-hook
         (lambda ()
           (mcp-hub-start-all-server nil '("filesystem")))))
+
+(use-package claude-code-ide
+  :ensure (:fetcher github :repo "manzaltu/claude-code-ide.el" :files ("*.el" "scripts/*"))
+  :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
+  :config
+  (setq claude-code-ide-terminal-backend 'eat)
+  (setq claude-code-ide-window-width 50)
+  (setq claude-code-ide-vterm-anti-flicker t)
+  (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
 
 (use-package magit
   :ensure (:wait t)
