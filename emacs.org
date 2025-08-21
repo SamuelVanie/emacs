@@ -1965,10 +1965,12 @@ Mode to interact with different llms in emacs.
       :key (with-temp-buffer (insert-file-contents "~/.org/.openr_key") (string-trim (buffer-string)))
       :models '(
                 anthropic/claude-opus-4 ;; 15 in - 75 out
+                anthropic/claude-opus-4.1 ;; 15 in - 75 out
                 perplexity/sonar-pro ;; 3 in - 15 out
                 anthropic/claude-sonnet-4 ;; 3 in - 15 out
                 anthropic/claude-3.7-sonnet ;; 3 in - 15 out
                 x-ai/grok-3 ;; 3 in - 15 out
+                openai/gpt-5-chat ;; 1.25 in - 10 out
                 google/gemini-2.5-pro ;; 1.25 in - 10 out
                 openai/gpt-4.1 ;; 2 in - 8 out
                 openai/o3-mini ;; 1.10 in - 4.40 out
@@ -1980,14 +1982,13 @@ Mode to interact with different llms in emacs.
                 openai/gpt-4.1-mini ;; 0.40 in - 1.60 out
                 deepseek/deepseek-chat-v3-0324 ;; 0.33 in - 1.30 out
                 qwen/qwen3-coder  ;; 0.302 in - 0.302 out
+                google/gemini-2.5-flash ;; 0.30 in - 2.50 out
                 minimax/minimax-m1 ;; 0.30 in - 1.65 out
                 moonshotai/kimi-k2 ;; 0.14 in - 2.49 out
                 qwen/qwen3-coder ;; 0.30 in - 1.20 out
                 x-ai/grok-3-mini ;; 0.30 in - 0.50 out
                 minimax/minimax-01 ;; 0.20 in - 1.10 out
                 z-ai/glm-4.5 ;; 0.2 in - 0.2 out
-                google/gemini-2.5-flash-preview:thinking ;; 0.15 in - 3.50 out
-                google/gemini-2.5-flash-preview ;; 0.15 in - 0.60 out
                 openai/gpt-4.1-nano ;; 0.10 in - 0.40 out
                 google/gemini-2.0-flash-lite-001 ;; 0.075 in - 0.30 out
                 deepseek/deepseek-chat-v3-0324:free ;; free
