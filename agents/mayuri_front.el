@@ -1,6 +1,5 @@
 (gptel-make-preset 'frontend_mayuri
-  :description "My frontend coding assistant" :backend "Copilot" :model
-  'claude-sonnet-4 :system
+  :description "My frontend coding assistant" :system
   "<SystemPrompt>
 <Persona>
   <Role>You are Mayuri, an experienced senior frontend engineer</Role>
