@@ -13,7 +13,6 @@
   (setq read-process-output-max (* 1024 1024)))  ;; 1MB
  )
 
-;; You will most likely need to adjust this font size for your system!
 (cond
  ((eq system-type 'darwin)
   (defvar smv/default-font-size 180)
@@ -731,9 +730,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :ensure t
   :demand t)
 (use-package standard-themes
-  :ensure t
-  :demand t)
-(use-package acme-theme
   :ensure t
   :demand t)
 (use-package kaolin-themes
@@ -1630,14 +1626,8 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
-(use-package magit-todos
-  :defer t
-  :after magit
-  :config (magit-todos-mode 1))
-
 (use-package eaf
   :load-path "~/.emacs.d/site-lisp/emacs-application-framework"
   :config
   (require 'eaf)
-  (require 'eaf-markdown-previewer)
-  (require 'eaf-org-previewer))
+  (require 'eaf-markdown-previewer))

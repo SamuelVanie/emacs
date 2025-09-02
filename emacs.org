@@ -20,7 +20,6 @@
     (setq read-process-output-max (* 1024 1024)))  ;; 1MB
    )
 
-  ;; You will most likely need to adjust this font size for your system!
   (cond
    ((eq system-type 'darwin)
     (defvar smv/default-font-size 180)
@@ -71,6 +70,7 @@ Emacs has a built in package manager but it doesn’t make it easy to automatica
 I don't know why but quelpa doesn't get install automatically (maybe a problem only on mac ?), you should install it manually by running `M-x package-install` then type quelpa
 
 #+BEGIN_SRC emacs-lisp
+
   (defvar elpaca-installer-version 0.11)
   (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
   (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
@@ -924,9 +924,6 @@ Permit to expand region quickly, making it less painful to mark some region.
     :ensure t
     :demand t)
   (use-package standard-themes
-    :ensure t
-    :demand t)
-  (use-package acme-theme
     :ensure t
     :demand t)
   (use-package kaolin-themes
@@ -2144,8 +2141,6 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
 
 
 
-
-
 ** claude code
 
 integration of claude code in emacs
@@ -2175,26 +2170,12 @@ integration of claude code in emacs
 #+end_src
 
 
-** Magit-todos
-
-Something to manage the todos elements in the current project I am working on. Visit the github page : [[https://github.com/alphapapa/magit-todos][magit-todos]]
-
-#+begin_src emacs-lisp
-  (use-package magit-todos
-    :defer t
-    :after magit
-    :config (magit-todos-mode 1))
-#+end_src
-
-
 * EAF
-
 
 #+begin_src emacs-lisp
   (use-package eaf
     :load-path "~/.emacs.d/site-lisp/emacs-application-framework"
     :config
     (require 'eaf)
-    (require 'eaf-markdown-previewer)
-    (require 'eaf-org-previewer))
+    (require 'eaf-markdown-previewer))
 #+end_src

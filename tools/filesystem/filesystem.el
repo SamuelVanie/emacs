@@ -542,7 +542,7 @@ RETURNS:
 (gptel-make-tool
  :name "write_file"
  :function #'smv-tool/write-file
- :description "Create new file or overwrite existing file (exercise with caution, use it when 4+ independant edits to the same file is necessary)"
+ :description "Create new file with some content"
  :confirm t  ; Confirm because it overwrites files
  :include t
  :args (list '(:name "path"
