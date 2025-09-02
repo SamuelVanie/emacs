@@ -1494,6 +1494,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_designer" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "architect" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "tasker" ".el"))
+  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "task" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer_google" ".el"))
 

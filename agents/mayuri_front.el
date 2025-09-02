@@ -1,4 +1,4 @@
-(gptel-make-preset 'frontend_mayuri
+(gptel-make-preset 'frontend
   :description "My frontend coding assistant" :system
   "<SystemPrompt>
 <Persona>

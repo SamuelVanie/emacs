@@ -1,4 +1,4 @@
-(gptel-make-preset 'backend_mayuri
+(gptel-make-preset 'backend
   :description "My backend coding assistant" :backend "Copilot" :model
   'claude-sonnet-4 :system
   "<SystemPrompt>
