@@ -1617,3 +1617,4 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :config
   (require 'eaf)
   (require 'eaf-markdown-previewer))
+(put 'upcase-region 'disabled nil)
