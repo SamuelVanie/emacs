@@ -774,6 +774,14 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :demand t
   :after all-the-icons)
 
+;; to install emoji rendering in emacs
+;; some external packages to install are : fonts-noto-color-emoji and fonts-emojione on ubuntu
+;; noto-fonts-emoji and ttf-joypixels on archlinux
+(use-package unicode-fonts
+  :ensure t
+  :demand t
+  :config (unicode-fonts-setup))
+
 (use-package which-key ;; print next keybindings
   :ensure t
   :demand t
@@ -1085,14 +1093,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (add-to-list 'meow-mode-state-list '(vterm-mode . insert))
   (add-to-list 'meow-mode-state-list '(eat-mode . insert))
   (add-to-list 'meow-mode-state-list '(term-mode . insert)))
-
-;; Font configuration with proper fallbacks for terminal content
-(when (display-graphic-p)
-  ;; Font fallback for Unicode symbols in terminals
-  (set-fontset-font "fontset-default" 'unicode
-                    (font-spec :name "VictorMono Nerd Font") nil)
-  (set-fontset-font "fontset-default" 'unicode
-                    (font-spec :name "Noto Color Emoji") nil 'append))
 
 ;; Store all backup files in a centralized directory
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
