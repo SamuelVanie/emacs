@@ -2116,6 +2116,7 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
                ;; playwright install --with-deps # installs browsers in playwright (and their deps) if required
                ("playwright" . (:command "npx" :args ("@playwright/mcp@latest" "--isolated")))
                ("pyautogui" . (:url "http://172.20.224.1:8000/mcp/"))
+               ("sequential-thinking" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-sequential-thinking")))
                ))
     :config
     (require 'mcp-hub)
