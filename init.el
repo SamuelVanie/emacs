@@ -360,12 +360,31 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
     ("q" nil "quit" :color red))
   )
 
+
+
 (defun meow-setup ()
   (setq meow-cheatsheet-layout meow-cheatsheet-layout-colemak)
 
+
   (meow-motion-define-key
    '("<escape>" . ignore)
+   '("e" . meow-next)
+   '("u" . meow-prev)
+   '("n" . meow-left)
+   '("s" . meow-insert)
+   '("i" . meow-right)
+   '("m" . meow-mark-word)
+   '("M" . meow-mark-symbol)
+   '("J" . hydra-surround/body)
+   '("C" . meow-pop-to-mark)
+   '("V" . meow-unpop-to-mark)
+   '("<" . previous-buffer)
    '("<home>" . meow-temp-normal)
+   '(";" . meow-reverse)
+   '("," . meow-inner-of-thing)
+   '("." . meow-bounds-of-thing)
+   '(">" . next-buffer)
+   '("K" . kill-current-buffer)
    )
 
   (meow-leader-define-key
@@ -381,7 +400,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    '("9" . meow-digit-argument)
    '("0" . meow-digit-argument)
    '("SPC" . smv/remove-overlays))
-  
+
   (meow-normal-define-key
    '("0" . meow-expand-0)
    '("1" . meow-expand-1)
@@ -410,13 +429,12 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    '("C" . meow-pop-to-mark)
    '("d" . duplicate-line)
    '("D" . delete-pair)
-   '("e" . meow-prev)
+   '("e" . meow-next)        ;; Down (next line)
    '("E" . meow-prev-expand)
    '("f" . meow-find)
    '("F" . yank-media)
    '("g" . meow-cancel-selection)
    '("G" . meow-grab)
-   '("h" . meow-left)
    '("H" . meow-left-expand)
    '("i" . meow-right) ;; Right (forward char)
    '("I" . meow-right-expand)
@@ -424,11 +442,11 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    '("J" . hydra-surround/body)
    '("k" . meow-kill)
    '("K" . kill-current-buffer)
-   '("l" . meow-visual-line)
-   '("L" . meow-line)
+   '("l" . meow-line)
+   '("L" . meow-visual-line)
    '("m" . meow-mark-word)
    '("M" . meow-mark-symbol)
-   '("n" . meow-next) ;; Left (backward char)
+   '("n" . meow-left) ;; Left (backward char)
    '("N" . meow-next-expand)
    '("o" . meow-block)
    '("O" . meow-to-block)
@@ -440,8 +458,8 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    '("s" . meow-insert)
    '("S" . meow-open-above)
    '("t" . meow-till)
-   '("u" . meow-undo)
-   '("U" . meow-undo-in-selection)        ;; Undo moved to U <button class="citation-flag" data-index="1">
+   '("u" . meow-prev)        ;; Up (prev line)
+   '("U" . meow-undo)        ;; Undo moved to U
    '("v" . meow-search)
    '("V" . meow-unpop-to-mark)
    '("w" . meow-next-word)
@@ -454,6 +472,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    '("<" . previous-buffer)
    '(">" . next-buffer)
    '("<escape>" . ignore)))
+
 
 (use-package meow
   :ensure t
@@ -713,7 +732,9 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :demand t)
 (use-package ef-themes
   :ensure t
-  :demand t)
+  :demand t
+  :config
+  (load-theme 'ef-winter))
 (use-package standard-themes
   :ensure t
   :demand t)
@@ -721,7 +742,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :ensure t
   :demand t
   :config
-  (load-theme 'kaolin-mono-dark t)
   (kaolin-treemacs-theme))
 (use-package catppuccin-theme
   :ensure t
