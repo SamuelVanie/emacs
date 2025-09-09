@@ -1144,6 +1144,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :config
   (lsp-enable-which-key-integration t)
   (setq lsp-ui-doc-show-with-mouse nil)
+  (setq lsp-headerline-breadcrumb-enable nil)
   (general-define-key
    :keymaps 'meow-normal-state-keymap
    :prefix "h"
@@ -1161,6 +1162,23 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :ensure t
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
+
+(use-package dap-mode
+  :ensure t
+  :defer t
+  :after (lsp-mode general)
+  :custom
+  (lsp-enable-dap-auto-configure nil)
+  :config
+  (dap-ui-mode 1)
+  (general-define-key
+   :keymaps 'meow-normal-state-keymap
+   :prefix "%"
+   "d" #'dap-hydra)
+  (general-define-key
+   :keymaps 'lsp-mode-map
+   :prefix lsp-keymap-prefix
+   "d" '(dap-hydra t :wk "debugger")))
 
 (use-package nix-mode
   :ensure t
@@ -1221,6 +1239,12 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :mode (("\\.yml\\'" . yaml-mode)
          ("\\.yaml\\'" . yaml-mode)
          ))
+
+(use-package lsp-java
+  :ensure t
+  :hook (java-ts-mode . lsp-deferred))
+
+(use-package dap-java :defer t)
 
 (use-package emmet-mode
   :ensure t)
@@ -1378,23 +1402,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (corfu-history-mode)
   (corfu-popupinfo-mode)
   )
-
-(use-package dap-mode
-  :ensure t
-  :defer t
-  :after (lsp-mode general)
-  :custom
-  (lsp-enable-dap-auto-configure nil)
-  :config
-  (dap-ui-mode 1)
-  (general-define-key
-   :keymaps 'meow-normal-state-keymap
-   :prefix "%"
-   "d" #'dap-hydra)
-  (general-define-key
-   :keymaps 'lsp-mode-map
-   :prefix lsp-keymap-prefix
-   "d" '(dap-hydra t :wk "debugger")))
 
 (use-package docker
   :bind ("C-c d" . docker))
