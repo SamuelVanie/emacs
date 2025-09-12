@@ -2164,6 +2164,9 @@ integration of claude code in emacs
 [[https://magit.vc/][Magit]] is a git interface for emacs. It's very handy and fun to use.
 
 #+begin_src emacs-lisp
+  (setq project-find-functions 
+      (remq 'project-try-vc project-find-functions))
+  
   (use-package magit
     :ensure (:wait t)
     :commands magit-status
