@@ -1,4 +1,4 @@
-(setq gc-const-threshold (* 80 1000 1000))
+(setq gc-const-threshold (* 100 1000 1000))
 (global-unset-key (kbd "C-z"))
 (global-unset-key (kbd "C-x C-z"))
 (setopt use-short-answers t)
