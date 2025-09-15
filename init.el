@@ -28,6 +28,8 @@
 (setq custom-file (locate-user-emacs-file "custom-vars.el"))
 (load custom-file 'noerror 'nomessage)
 
+;; prevent emacs from hanging on when long lines are present in the current file
+(global-so-long-mode t)
 
 ;; auto refresh buffers when files changes
 (global-auto-revert-mode t)
