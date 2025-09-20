@@ -1,4 +1,4 @@
-(setq gc-const-threshold (* 100 1000 1000))
+(setq gc-const-threshold (* 90 1000 1000))
 (global-unset-key (kbd "C-z"))
 (global-unset-key (kbd "C-x C-z"))
 (setopt use-short-answers t)
@@ -97,8 +97,7 @@
 (use-package dired-x
   :bind
   (:map dired-mode-map
-        ("k" . dired-create-empty-file)
-        ("<tab>" . dired-subtree-toggle)))
+        ("k" . dired-create-empty-file)))
 
 (add-hook 'dired-mode-hook #'dired-hide-details-mode)
 (add-hook 'dired-mode-hook #'all-the-icons-dired-mode)
@@ -333,7 +332,8 @@
 
 (with-eval-after-load 'hydra
   (defhydra hydra-surround (:color blue :hint nil)
-    "
+    "Surround region with
+
 ^Quotes^          ^Brackets^        ^Symbols^         ^Custom^
 ^^^^^^^^--------------------------------------------------------
 _\"_: double       _(_: parentheses  _<_: angles       _c_: custom pair
@@ -1375,10 +1375,10 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-  (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
   (corfu-preview-current nil)    ;; Disable current candidate preview
   (corfu-preselect 'prompt)      ;; Preselect the prompt
-  (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+  (corfu-on-exact-match 'quit)     ;; Configure handling of exact matches
+  (corfu-quit-no-match t) ;; quit when there's no match
 
   ;; Enable Corfu only for certain modes. See also `global-corfu-modes'.
   :hook ((prog-mode . corfu-mode)
@@ -1619,8 +1619,9 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (setq claude-code-ide-vterm-anti-flicker t)
   (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
 
+(setq project-vc-extra-root-markers '(".dir-locals.el" "pom.xml" "Gemfile"))
 (setq project-find-functions 
-    (remq 'project-try-vc project-find-functions))
+      (remq 'project-try-vc project-find-functions))
 
 (use-package magit
   :ensure (:wait t)
