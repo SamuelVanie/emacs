@@ -32,7 +32,6 @@
 ;; auto refresh buffers when files changes
 (global-auto-revert-mode t)
 (global-visual-line-mode t)
-(delete-selection-mode t)
 
 ;; Prevent dired-find-alternative warning message
 (put 'dired-find-alternate-file 'disabled nil)
@@ -688,7 +687,12 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   ;; Better scrollback management
   (setq eat-kill-buffer-on-exit t))
 
-(setq browse-url-generic-program "MicrosoftEdge.exe")
+(if (eq system-type 'darwin)
+  (progn
+    (setq browse-url-generic-program "open")
+    (setq browse-url-generic-args '("-a" "Microsoft Edge")))
+(setq browse-url-generic-program "MicrosoftEdge.exe"))
+
 (defun smv/browse-search ()
   "Unified search across multiple websites."
   (interactive)
