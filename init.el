@@ -1476,6 +1476,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
               moonshotai/kimi-k2 ;; 0.14 in - 2.49 out
               deepseek/deepseek-chat-v3.1 ;; 0.2 in - 0.8 out
               z-ai/glm-4.5 ;; 0.2 in - 0.2 out
+              x-ai/grok-4-fast:free
               ))
 
   (setq
@@ -1610,9 +1611,10 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
              ))
   :config
   (require 'mcp-hub)
-  (add-hook 'after-init-hook
-        (lambda ()
-          (mcp-hub-start-all-server nil '("filesystem")))))
+  ;; (add-hook 'after-init-hook
+  ;;       (lambda ()
+  ;;         (mcp-hub-start-all-server nil '("filesystem"))))
+  )
 
 (use-package claude-code-ide
   :ensure (:fetcher github :repo "manzaltu/claude-code-ide.el" :files ("*.el" "scripts/*"))
