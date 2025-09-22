@@ -1321,6 +1321,24 @@ Typst is a markup language better than latex and org in my point of view due to 
 #+end_src
 
 
+
+
+** Convert files using pandoc
+
+Pandoc permits to convert to a variety of documents, so really interesting.
+Consult this page for customization : [[https://arnesonium.com/2022/10/org-mode-to-docx-pipeline][Org mode document to different types of files]]
+
+The official repository is : [[https://github.com/emacsorphanage/ox-pandoc][ox-pandoc]]
+
+
+#+begin_src emacs-lisp
+  (use-package ox-pandoc
+    :ensure t
+    :after org)
+#+end_src
+
+
+
 ** Auto-tangle Configuration files
 
 This snippets adds a hook to `org-mode` buffers so that efs/org-babel-tangle-config gets executed each time such a buffer gets saved. This function checks to see if the file being saved is the Emacs.org file you’re looking at right now, and if so, automatically exports the configuration here to the associated output files. Tangle is use to export org mode files into the configuration init.el file.

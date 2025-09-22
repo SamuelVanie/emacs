@@ -1028,6 +1028,10 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :ensure t
   :after org)
 
+(use-package ox-pandoc
+  :ensure t
+  :after org)
+
 ;; Automatically tangle our Emacs.org config file when we save it
 (defun smv/org-babel-tangle-config ()
   (when (string-equal (buffer-file-name)

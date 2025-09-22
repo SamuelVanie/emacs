@@ -43,6 +43,8 @@ Returns detailed information about changes made or would be made."
             (let ((old-text (cdr (assoc 'oldText edit)))
                   (new-text (cdr (assoc 'newText edit)))
                   (matches 0))
+              (message "DEBUG: Searching for old-text: [%s] (length %d)" old-text (length old-text))  ; Inspect exact string
+              (message "DEBUG: File size before edit: %d" (buffer-size))  ; Confirm buffer loaded
               (goto-char (point-min))
               (while (search-forward old-text nil t)
                 (replace-match new-text nil t)
@@ -86,6 +88,8 @@ Returns detailed information about changes made or would be made."
             
             ;; Save if changes were made
             (when (> changes-made 0)
+              (message "saving %s..." path)
+              (condition-case err (save-buffer) (error (message "Save error: %s" err)))
               (save-buffer))
             
             ;; Clean up buffer if it wasn't already open
