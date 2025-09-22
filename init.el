@@ -1632,8 +1632,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
 
 (setq project-vc-extra-root-markers '(".dir-locals.el" "pom.xml" "Gemfile"))
-(setq project-find-functions 
-      (remq 'project-try-vc project-find-functions))
 
 (use-package magit
   :ensure (:wait t)

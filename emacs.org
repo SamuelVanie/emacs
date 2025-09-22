@@ -2191,8 +2191,6 @@ integration of claude code in emacs
 
 #+begin_src emacs-lisp
   (setq project-vc-extra-root-markers '(".dir-locals.el" "pom.xml" "Gemfile"))
-  (setq project-find-functions 
-        (remq 'project-try-vc project-find-functions))
 #+end_src
 
 ** Magit
