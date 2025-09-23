@@ -12,6 +12,7 @@
 
   (setq warning-minimum-level :error)
   (global-hl-line-mode 1)
+  (text-mode-ispell-word-completion nil)
 
   (cond
    ((eq system-type 'darwin)  ;; macOS
@@ -1894,6 +1895,7 @@ A simple package that permits to get fast completion in emacs.
           ([tab] . corfu-next)
           ("S-TAB" . corfu-previous)
           ([backtab] . corfu-previous))
+    
     :init
 
     ;; Recommended: Enable Corfu globally.  Recommended since many modes provide

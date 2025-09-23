@@ -5,6 +5,7 @@
 
 (setq warning-minimum-level :error)
 (global-hl-line-mode 1)
+(text-mode-ispell-word-completion nil)
 
 (cond
  ((eq system-type 'darwin)  ;; macOS
@@ -1401,6 +1402,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
         ([tab] . corfu-next)
         ("S-TAB" . corfu-previous)
         ([backtab] . corfu-previous))
+  
   :init
 
   ;; Recommended: Enable Corfu globally.  Recommended since many modes provide
