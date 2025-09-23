@@ -1520,6 +1520,8 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "task" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer" ".el"))
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer_google" ".el"))
+  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "yt_script_writter" ".el"))
+  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "writter" ".el"))
 
   ;; configuring the window size
   (add-to-list 'display-buffer-alist
