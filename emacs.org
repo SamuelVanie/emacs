@@ -12,7 +12,6 @@
 
   (setq warning-minimum-level :error)
   (global-hl-line-mode 1)
-  (text-mode-ispell-word-completion nil)
 
   (cond
    ((eq system-type 'darwin)  ;; macOS
