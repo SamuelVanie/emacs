@@ -609,20 +609,11 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :config
   (winum-mode))
 
-(use-package eterm-256color
-  :ensure t
-  :demand t
-  :config
-  (add-hook 'term-mode-hook #'eterm-256color-mode)
-  (add-hook 'eat-mode-hook #'eterm-256color-mode))
-
 (use-package vterm
   :ensure t
   :defer t
   :config
-  ;; Set proper terminal capabilities
-  (setq vterm-term-environment-variable "eterm-color")
-  
+
   (setq vterm-kill-buffer-on-exit t) ; Prevent accumulation of dead buffers
   (setq vterm-copy-exclude-prompt t))
   

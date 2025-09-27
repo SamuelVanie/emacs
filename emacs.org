@@ -753,20 +753,6 @@ Quickly switch between windows
     (winum-mode))
 #+end_src
 
-
-
-
-**** eterm terminal color management
-
-#+begin_src emacs-lisp
-  (use-package eterm-256color
-    :ensure t
-    :demand t
-    :config
-    (add-hook 'term-mode-hook #'eterm-256color-mode)
-    (add-hook 'eat-mode-hook #'eterm-256color-mode))
-#+end_src
-
 ** vterm
 
 Vterm is a better terminal emulator that will permit good rendering of all terminal commands
@@ -776,9 +762,7 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
     :ensure t
     :defer t
     :config
-    ;; Set proper terminal capabilities
-    (setq vterm-term-environment-variable "eterm-color")
-    
+
     (setq vterm-kill-buffer-on-exit t) ; Prevent accumulation of dead buffers
     (setq vterm-copy-exclude-prompt t))
     
