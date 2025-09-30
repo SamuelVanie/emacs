@@ -1375,13 +1375,6 @@ Additional fixes for terminal emulator visual corruption issues.
       (message "Terminal corruption fixes applied")))
 
   (global-set-key (kbd "C-c t r") 'smv/fix-terminal-corruption)
-
-  ;; Fix meow mode integration with terminals
-  (with-eval-after-load 'meow
-    ;; Don't apply meow keys in terminal modes
-    (add-to-list 'meow-mode-state-list '(vterm-mode . insert))
-    (add-to-list 'meow-mode-state-list '(eat-mode . insert))
-    (add-to-list 'meow-mode-state-list '(term-mode . insert)))
 #+end_src
 
 

@@ -1059,13 +1059,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 
 (global-set-key (kbd "C-c t r") 'smv/fix-terminal-corruption)
 
-;; Fix meow mode integration with terminals
-(with-eval-after-load 'meow
-  ;; Don't apply meow keys in terminal modes
-  (add-to-list 'meow-mode-state-list '(vterm-mode . insert))
-  (add-to-list 'meow-mode-state-list '(eat-mode . insert))
-  (add-to-list 'meow-mode-state-list '(term-mode . insert)))
-
 ;; Store all backup files in a centralized directory
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
 
