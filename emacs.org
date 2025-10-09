@@ -2096,12 +2096,13 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
                ("playwright" . (:command "npx" :args ("@playwright/mcp@latest" "--isolated" "--browser" "msedge")))
                ("pyautogui" . (:url "http://172.20.224.1:8000/mcp/"))
                ("sequential-thinking" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-sequential-thinking")))
+               ("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "~/projects")))
                ))
     :config
     (require 'mcp-hub)
-    ;; (add-hook 'after-init-hook
-    ;;       (lambda ()
-    ;;         (mcp-hub-start-all-server nil '("filesystem"))))
+    (add-hook 'after-init-hook
+          (lambda ()
+            (mcp-hub-start-all-server nil '("filesystem"))))
     )
 #+end_src
 
@@ -2136,6 +2137,9 @@ integration of claude code in emacs
 [[https://magit.vc/][Magit]] is a git interface for emacs. It's very handy and fun to use.
 
 #+begin_src emacs-lisp
+  (setq project-find-functions 
+        (remq 'project-try-vc project-find-functions))
+
   (use-package magit
     :ensure (:wait t)
     :commands magit-status
