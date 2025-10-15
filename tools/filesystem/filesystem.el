@@ -14,6 +14,10 @@ Creates parent directories if they don't exist."
   (message "File written: %s" path))
 
 
+(defun smv-tool/pwd ()
+  "Get the current working directory"
+  (shell-command-to-string "pwd"))
+
 (defun smv-tool/edit-file (path edits &optional dry-run)
   "Make selective edits using advanced pattern matching.
 INPUT:
@@ -43,8 +47,8 @@ Returns detailed information about changes made or would be made."
             (let ((old-text (cdr (assoc 'oldText edit)))
                   (new-text (cdr (assoc 'newText edit)))
                   (matches 0))
-              (message "DEBUG: Searching for old-text: [%s] (length %d)" old-text (length old-text))  ; Inspect exact string
-              (message "DEBUG: File size before edit: %d" (buffer-size))  ; Confirm buffer loaded
+              (message "DEBUG: Searching for old-text: [%s] (length %d)" old-text (length old-text))
+              (message "DEBUG: File size before edit: %d" (buffer-size))
               (goto-char (point-min))
               (while (search-forward old-text nil t)
                 (replace-match new-text nil t)
@@ -62,39 +66,57 @@ Returns detailed information about changes made or would be made."
                 :original-size original-size
                 :new-size new-size
                 :preview (if (> changes-made 0)
-                             (buffer-substring 1 (min 501 (1+ (buffer-size))))
+                             (buffer-substring-no-properties 1 (min 501 (1+ (buffer-size))))
                            "No changes would be made")))
       
-      ;; Real edit: use find-file to properly handle the file
-      (save-excursion
-        (let ((buffer (find-file-noselect path)))
-          (with-current-buffer buffer
-            (setq original-size (buffer-size))
-            
-            ;; Apply edits
-            (dolist (edit normalized-edits)
-              (let ((old-text (cdr (assoc 'oldText edit)))
-                    (new-text (cdr (assoc 'newText edit)))
-                    (matches 0))
-                (goto-char (point-min))
-                (while (search-forward old-text nil t)
-                  (replace-match new-text nil t)
-                  (setq matches (1+ matches)))
-                (when (> matches 0)
-                  (setq changes-made (+ changes-made matches))
-                  (push (list :old old-text :new new-text :matches matches) change-details))))
-            
-            (setq new-size (buffer-size))
-            
-            ;; Save if changes were made
-            (when (> changes-made 0)
-              (message "saving %s..." path)
-              (condition-case err (save-buffer) (error (message "Save error: %s" err)))
-              (save-buffer))
-            
-            ;; Clean up buffer if it wasn't already open
-            (unless (get-file-buffer path)
-              (kill-buffer buffer)))))
+      ;; Real edit: use a more robust approach
+      (let ((buffer-was-open (get-file-buffer path))
+            (buffer nil))
+        (unwind-protect
+            (progn
+              ;; Open or get existing buffer
+              (setq buffer (or buffer-was-open (find-file-noselect path)))
+              
+              (with-current-buffer buffer
+                (setq original-size (buffer-size))
+                
+                ;; Ensure buffer is not read-only
+                (when buffer-read-only
+                  (error "Buffer is read-only: %s" path))
+                
+                ;; Apply edits
+                (save-excursion
+                  (dolist (edit normalized-edits)
+                    (let ((old-text (cdr (assoc 'oldText edit)))
+                          (new-text (cdr (assoc 'newText edit)))
+                          (matches 0))
+                      (goto-char (point-min))
+                      (while (search-forward old-text nil t)
+                        (replace-match new-text t t)
+                        (setq matches (1+ matches)))
+                      (when (> matches 0)
+                        (setq changes-made (+ changes-made matches))
+                        (push (list :old old-text :new new-text :matches matches) change-details)))))
+                
+                (setq new-size (buffer-size))
+                
+                ;; Save if changes were made
+                (when (> changes-made 0)
+                  (message "Saving %s with %d changes..." path changes-made)
+                  ;; Force buffer to be marked as modified
+                  (set-buffer-modified-p t)
+                  ;; Save the buffer
+                  (condition-case err
+                      (progn
+                        (basic-save-buffer)
+                        (message "Successfully saved %s" path))
+                    (error
+                     (message "Save error: %s" err)
+                     (signal (car err) (cdr err)))))))
+          
+          ;; Cleanup: kill buffer only if we opened it
+          (when (and buffer (not buffer-was-open))
+            (kill-buffer buffer))))
       
       ;; Return results
       (list :path path
@@ -566,7 +588,7 @@ RETURNS:
  :include t
  :args (list '(:name "path"
                      :type string
-                     :description "File to edit")
+                     :description "Full path of the File to edit")
              '(:name "edits"
                      :type array
                      :items (:type array
@@ -640,6 +662,14 @@ RETURNS:
                      :items (:type string)
                      :description "Patterns to exclude (glob format supported)"
                      :optional t))
+ :category "filesystem")
+
+(gptel-make-tool
+ :name "pwd"
+ :function #'smv-tool/pwd
+ :description "Get the current working directory full path"
+ :confirm nil
+ :include t
  :category "filesystem")
 
 ;; Get file info

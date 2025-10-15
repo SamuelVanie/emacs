@@ -349,9 +349,6 @@ Rainbow permits to match pairs delimiters with the same color.
 ** Indentation configuration
 
 #+begin_src emacs-lisp
-  ;; This ensures that pressing Enter will insert a new line and indent it.
-  (global-set-key (kbd "RET") #'newline-and-indent)
-
   ;; Indentation based on the indentation of the previous non-blank line.
   (setq-default indent-line-function #'indent-relative-first-indent-point)
 
@@ -362,8 +359,7 @@ Rainbow permits to match pairs delimiters with the same color.
   (setq-default indent-line-ignored-functions '())
 
   (global-set-key (kbd "C-<tab>") 'tab-to-tab-stop)
-
-
+  
   (use-package dtrt-indent
     :ensure t
     :demand t
@@ -762,23 +758,8 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
     :ensure t
     :defer t
     :config
-
-    (setq vterm-kill-buffer-on-exit t) ; Prevent accumulation of dead buffers
+    (setq vterm-kill-buffer-on-exit t)
     (setq vterm-copy-exclude-prompt t))
-    
-  (use-package multi-vterm
-    :after vterm
-    :bind (("C-c v n" . multi-vterm-project)
-           ("C-c v f" . multi-vterm)
-           ("C-c v r" . multi-vterm-rename-buffer)
-           ("C-x C-y" . multi-vterm-dedicated-toggle))
-    :config
-    ;; Prevent key binding conflicts
-    (define-key vterm-mode-map [return] #'vterm-send-return)
-    
-    ;; Better buffer management
-    (setq multi-vterm-buffer-name "vterm")
-    (setq multi-vterm-dedicated-window-height-percent 40))    
 #+end_src
 
 
@@ -802,7 +783,7 @@ Another terminal emulator
     :config
     ;; Better scrollback management
     (setq eat-kill-buffer-on-exit t))
-               #+end_src
+              #+end_src
 
 ** Browsing
 
@@ -979,6 +960,7 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
     (
      ("C-x C-f" . helm-find-files)
      ("C-x b" . helm-buffers-list)
+     ("C-c h o" . helm-occur-mode)
      ("C-c h c" . smv/helm-zoxide-cd)
      ("C-c h m" . helm-mark-ring)
      ("C-c h k" . helm-show-kill-ring)
@@ -1939,20 +1921,23 @@ Mode to interact with different llms in emacs.
       :models '(
                 perplexity/sonar-pro ;; 3 in - 15 out
                 anthropic/claude-sonnet-4 ;; 3 in - 15 out
-                anthropic/claude-3.7-sonnet ;; 3 in - 15 out
+                anthropic/claude-sonnet-4.5 ;; 3 in - 15 out
                 openai/gpt-5 ;; 1.25 in - 10 out
                 google/gemini-2.5-pro ;; 1.25 in - 10 out
                 openai/gpt-4.1 ;; 2 in - 8 out
+                qwen/qwen3-coder-plus ;; 1 in - 5 out
                 switchpoint/router ;; 0.85 in - 3.40 out
-                openai/gpt-4.1-mini ;; 0.40 in - 1.60 out
+                z-ai/glm-4.6 ;; 0.7 in - 1.75 out
                 x-ai/grok-code-fast-1 ;; 0.2 in - 1.5 out
                 qwen/qwen3-coder  ;; 0.302 in - 0.302 out
                 google/gemini-2.5-flash ;; 0.30 in - 2.50 out
                 minimax/minimax-m1 ;; 0.30 in - 1.65 out
-                moonshotai/kimi-k2 ;; 0.14 in - 2.49 out
-                deepseek/deepseek-chat-v3.1 ;; 0.2 in - 0.8 out
+                qwen/qwen3-coder-flash ;; 0.3 in - 1.50 out
+                moonshotai/kimi-dev-72b ;; 0.29 in - 1.15 out
                 z-ai/glm-4.5 ;; 0.2 in - 0.2 out
-                x-ai/grok-4-fast:free
+                z-ai/glm-4.5-air:free
+                qwen/qwen3-coder:free
+                deepseek/deepseek-chat-v3.1:free
                 ))
 
     (setq
@@ -2023,9 +2008,17 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
   ;; load tools
   (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "fetch_url" ".el"))
 
-  ;; My custom emacs tools
-  (defun smv-tool/get_project_root ()
-    (if (project-current) (project-root (project-current)) default-directory))
+  (defun smv-tool/list_projects ()
+    (shell-command-to-string "ls ~/projects/"))
+
+  (defun smv-tool/project_diagnostics ()
+    (let ((buffer nil))
+    (unwind-protect
+     (progn
+       (lsp-ui-flycheck-list)
+       (setq buffer (buffer-string))
+       (kill-buffer)
+       buffer))))
 
   (defun smv-tool/run_command (command)
     (shell-command-to-string (format "cd %s && %s" (smv-tool/get_project_root) command)))
@@ -2053,9 +2046,15 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
      :category "system")
 
     (gptel-make-tool
-     :name "get_project_root"
-     :function #'smv-tool/get_project_root
-     :description "Get the full path of the current project rootdir. Could be interesting to run at the beginning of work, because all the following work depends on it."
+     :name "list_projects"
+     :function #'smv-tool/list_projects
+     :description "List the paths of the projects that are available on the system"
+     :category "project-info")
+
+    (gptel-make-tool
+     :name "get_project_diagnostics"
+     :function #'smv-tool/project_diagnostics
+     :description "List the diagnostics inside the current project (liting errors and others)"
      :category "project-info")
 
     (gptel-make-tool
@@ -2096,34 +2095,15 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
                ("playwright" . (:command "npx" :args ("@playwright/mcp@latest" "--isolated" "--browser" "msedge")))
                ("pyautogui" . (:url "http://172.20.224.1:8000/mcp/"))
                ("sequential-thinking" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-sequential-thinking")))
-               ("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "~/projects")))
+               ;; ("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "~/projects")))
                ))
     :config
     (require 'mcp-hub)
     (add-hook 'after-init-hook
           (lambda ()
-            (mcp-hub-start-all-server nil '("filesystem"))))
+            (mcp-hub-start-all-server nil '("sequential-thinking"))))
     )
 #+end_src
-
-
-
-** claude code
-
-integration of claude code in emacs
-
-#+begin_src emacs-lisp
-  (use-package claude-code-ide
-    :ensure (:fetcher github :repo "manzaltu/claude-code-ide.el" :files ("*.el" "scripts/*"))
-    :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
-    :config
-    (setq claude-code-ide-terminal-backend 'eat)
-    (setq claude-code-ide-window-width 50)
-    (setq claude-code-ide-vterm-anti-flicker t)
-    (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
-#+end_src
-
-
 
 
 ** Configuring project.el
@@ -2145,6 +2125,19 @@ integration of claude code in emacs
     :commands magit-status
     :custom
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+#+end_src
+
+
+
+
+** Configuration for ediff
+
+#+begin_src emacs-lisp
+  ;; Split windows horizontally for side-by-side comparison
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+
+  ;; Split windows horizontally for side-by-side comparison
+  (setq ediff-split-window-function 'split-window-horizontally)
 #+end_src
 
 
