@@ -2099,9 +2099,9 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
                ))
     :config
     (require 'mcp-hub)
-    (add-hook 'after-init-hook
-          (lambda ()
-            (mcp-hub-start-all-server nil '("sequential-thinking"))))
+    ;; (add-hook 'after-init-hook
+    ;;       (lambda ()
+    ;;         (mcp-hub-start-all-server nil '("sequential-thinking"))))
     )
 #+end_src
 

@@ -1570,9 +1570,9 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
              ))
   :config
   (require 'mcp-hub)
-  (add-hook 'after-init-hook
-        (lambda ()
-          (mcp-hub-start-all-server nil '("sequential-thinking"))))
+  ;; (add-hook 'after-init-hook
+  ;;       (lambda ()
+  ;;         (mcp-hub-start-all-server nil '("sequential-thinking"))))
   )
 
 (setq project-vc-extra-root-markers '(".dir-locals.el" "pom.xml" "Gemfile"))

@@ -583,7 +583,7 @@ RETURNS:
 (gptel-make-tool
  :name "edit_file"
  :function #'smv-tool/edit-file
- :description "Make selective edits using advanced pattern matching and formatting inside a file. The best practice is to run it with dry-run activated to preview the changes, then reuse without it to apply changes. This preserves file integrity."
+ :description "Make selective edits using advanced pattern matching and formatting inside a file. You may need dryRun parameter for massive edits."
  :confirm t
  :include t
  :args (list '(:name "path"
