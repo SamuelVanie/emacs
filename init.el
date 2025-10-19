@@ -1494,14 +1494,14 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
      (kill-buffer)
      buffer))))
 
-(defun smv-tool/run_command (command)
-  (shell-command-to-string (format "cd %s && %s" (smv-tool/get_project_root) command)))
+(defun smv-tool/run_command (command pwd)
+  (shell-command-to-string (format "cd %s && %s" pwd command)))
 
 (defun smv-tool/ask_partner (question)
   "Call gemini given the prompt"
   (let ((command (concat "gemini -p " 
                          (shell-quote-argument question))))
-    (shell-command-to-string (format "cd %s && %s" (smv-tool/get_project_root) command))))
+    (shell-command-to-string (format "sleep 5 && %s" command))))
 
 (defun smv-tool/fetch_url_content (url)
   (smv/fetch-content url))
@@ -1516,7 +1516,10 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    :include t
    :args (list '(:name "command"             ; a list of argument specifications
                        :type string
-                       :description "The shell command to execute. e.g: echo 'test'"))
+                       :description "The shell command to execute. e.g: echo 'test'")
+               '(:name "pwd"
+                       :type string
+                       :description "directory from where to execute the command."))
    :category "system")
 
   (gptel-make-tool
