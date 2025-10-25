@@ -1080,8 +1080,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :ensure t
   :init
   (setq lsp-keymap-prefix "M-l")
-  :bind
-  ("M-p M-p" . lsp-mode)
   :commands (lsp lsp-deferred)
   :config
   (lsp-enable-which-key-integration t)
@@ -1286,7 +1284,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   :demand t
   ;; Bind prefix keymap providing all Cape commands under a mnemonic key.
   ;; Press C-c p ? to for help.
-  :bind ("C-c p" . cape-prefix-map) ;; Alternative key: M-<tab>, M-p, M-+
+  :bind ("M-p" . cape-prefix-map) ;; Alternative key: M-<tab>, M-p, M-+
   :init
   ;; Add to the global default value of `completion-at-point-functions' which is
   ;; used by `completion-at-point'.  The order of the functions matters, the
@@ -1578,7 +1576,11 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   ;;         (mcp-hub-start-all-server nil '("sequential-thinking"))))
   )
 
-(setq project-vc-extra-root-markers '(".dir-locals.el" "pom.xml" "Gemfile"))
+(use-package projectile
+  :bind ("C-c p" . projectile-command-map)
+  :ensure t
+  :config
+  (projectile-mode))
 
 (setq project-find-functions 
       (remq 'project-try-vc project-find-functions))
