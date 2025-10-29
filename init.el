@@ -627,12 +627,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   ;; Better scrollback management
   (setq eat-kill-buffer-on-exit t))
 
-(if (eq system-type 'darwin)
-  (progn
-    (setq browse-url-generic-program "open")
-    (setq browse-url-generic-args '("-a" "Microsoft Edge")))
-(setq browse-url-generic-program "MicrosoftEdge.exe"))
-
+(setq browse-url-generic-program "microsoft-edge-stable")
 (defun smv/browse-search ()
   "Unified search across multiple websites."
   (interactive)
@@ -1454,7 +1449,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "task" ".el"))
   ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer" ".el"))
   ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer_google" ".el"))
-  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "yt_script_writter" ".el"))
+  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "yt_script_writter" ".el"))
   ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "writter" ".el"))
 
   ;; configuring the window size
@@ -1579,6 +1574,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
 (use-package projectile
   :bind ("C-c p" . projectile-command-map)
   :ensure t
+  :demand t
   :config
   (projectile-mode))
 

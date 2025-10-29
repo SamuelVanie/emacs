@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: gtelnewtool
+# key: gtelnewtool
+# --
+(gptel-make-tool
+     :name "${1:tool_name}"                    ; javascript-style  snake_case name
+     :function #'smv-tool/$1
+     :description "${2:tool_description}"
+     :confirm t
+     :include t
+     :args (list '(:name "${3:arg1}"             ; a list of argument specifications
+                         :type ${4:string}
+                         :description "${5:arg1_description}"))
+     :category "${6:tool_category}")
