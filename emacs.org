@@ -1503,7 +1503,7 @@ This is a better flymake, it has many features. That permits to better see the e
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
      :prefix "("
-     "(" #'flycheck-clear
+     "(" #'flycheck-buffer
      "d" #'flycheck-disable-checker
      ")" #'flycheck-list-errors)
     )

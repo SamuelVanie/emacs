@@ -1129,7 +1129,7 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    :prefix "("
-   "(" #'flycheck-clear
+   "(" #'flycheck-buffer
    "d" #'flycheck-disable-checker
    ")" #'flycheck-list-errors)
   )
