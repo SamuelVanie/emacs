@@ -300,7 +300,7 @@
 
 (defun smv/surround-with-pair (open close)
   "Surround the active region or insert pair at point using insert-pair.
-    OPEN is the opening character, CLOSE is the closing character."
+        OPEN is the opening character, CLOSE is the closing character."
   (interactive)
   (if (use-region-p)
       (insert-pair 1 open close)
@@ -331,14 +331,14 @@
   (defhydra hydra-surround (:color blue :hint nil)
     "Surround region with
 
-^Quotes^          ^Brackets^        ^Symbols^         ^Custom^
-^^^^^^^^--------------------------------------------------------
-_\"_: double       _(_: parentheses  _<_: angles       _c_: custom pair
-_'_: single        _[_: square       _`_: backticks    _t_: HTML tag
-_~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
-                                   _=_: equals
-                                   _+_: plus
-"
+    ^Quotes^          ^Brackets^        ^Symbols^         ^Custom^
+    ^^^^^^^^--------------------------------------------------------
+    _\"_: double       _(_: parentheses  _<_: angles       _c_: custom pair
+    _'_: single        _[_: square       _`_: backticks    _t_: HTML tag
+    _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
+                                       _=_: equals
+                                       _+_: plus
+    "
     ("\"" (smv/surround-with-pair ?\" ?\"))
     ("'" (smv/surround-with-pair ?' ?'))
     ("~" (smv/surround-with-pair ?~ ?~))
@@ -356,7 +356,6 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
            (smv/surround-with-string open close)))
     ("q" nil "quit" :color red))
   )
-
 
 
 (defun meow-setup ()
@@ -470,12 +469,91 @@ _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
    '(">" . next-buffer)
    '("<escape>" . ignore)))
 
+(defun meow--tag-find-bounds ()
+  "Find bounds of the current HTML/XML tag.
+Returns (BEG . END) cons cell or nil if not found."
+  (save-excursion
+    (let ((start-pos (point))
+          opening-tag-start
+          opening-tag-end
+          closing-tag-start
+          closing-tag-end
+          tag-name)
+      
+      ;; Try to find if we're inside a tag
+      ;; First, look backward for opening tag
+      (when (re-search-backward "<\\([[:alnum:]:_-]+\\)[^>]*>" nil t)
+        (setq opening-tag-start (match-beginning 0))
+        (setq opening-tag-end (match-end 0))
+        (setq tag-name (match-string 1))
+        
+        ;; Now search forward for the matching closing tag
+        (let ((depth 1))
+          (goto-char opening-tag-end)
+          (while (and (> depth 0)
+                      (re-search-forward 
+                       (concat "</?\\(" (regexp-quote tag-name) "\\)[^>]*>") 
+                       nil t))
+            (if (string= (substring (match-string 0) 0 2) "</")
+                (setq depth (1- depth))
+              ;; Check if it's not a self-closing tag
+              (unless (string= (substring (match-string 0) -2) "/>")
+                (setq depth (1+ depth))))
+            (when (= depth 0)
+              (setq closing-tag-end (match-end 0))
+              (setq closing-tag-start (match-beginning 0)))))
+        
+        ;; Verify the original position is within bounds
+        (when (and closing-tag-end
+                   (>= start-pos opening-tag-start)
+                   (<= start-pos closing-tag-end))
+          (cons opening-tag-start closing-tag-end))))))
+
+(defun meow--tag-find-inner ()
+  "Find inner bounds of the current HTML/XML tag (content only).
+Returns (BEG . END) cons cell or nil if not found."
+  (save-excursion
+    (let ((start-pos (point))
+          opening-tag-start
+          opening-tag-end
+          closing-tag-start
+          tag-name)
+      
+      ;; Find opening tag
+      (when (re-search-backward "<\\([[:alnum:]:_-]+\\)[^>]*>" nil t)
+        (setq opening-tag-start (match-beginning 0))
+        (setq opening-tag-end (match-end 0))
+        (setq tag-name (match-string 1))
+        
+        ;; Find matching closing tag
+        (let ((depth 1))
+          (goto-char opening-tag-end)
+          (while (and (> depth 0)
+                      (re-search-forward 
+                       (concat "</?\\(" (regexp-quote tag-name) "\\)[^>]*>") 
+                       nil t))
+            (if (string= (substring (match-string 0) 0 2) "</")
+                (setq depth (1- depth))
+              (unless (string= (substring (match-string 0) -2) "/>")
+                (setq depth (1+ depth))))
+            (when (= depth 0)
+              (setq closing-tag-start (match-beginning 0)))))
+        
+        ;; Verify position is within bounds and return inner content
+        (when (and closing-tag-start
+                   (>= start-pos opening-tag-end)
+                   (<= start-pos closing-tag-start))
+          (cons opening-tag-end closing-tag-start))))))
 
 (use-package meow
   :ensure t
   :demand t
   :after hydra
   :config
+  (add-to-list 'meow-char-thing-table '(?t . tag))
+  (meow-thing-register 'tag
+                       'meow--tag-find-inner
+                       'meow--tag-find-bounds)
   (meow-setup)
   ;; remove those hints that clutter vision
   (setq meow-expand-hint-remove-delay 0)
