@@ -1735,6 +1735,18 @@ Prettier automatically formats the code for you. I hate when it's in other modes
 #+end_src
 
 
+
+**** Testing rest apis
+
+#+begin_src emacs-lisp
+(use-package restclient
+  :ensure t
+  :defer t
+  :mode (("\\.http\\'" . restclient-mode))
+  :bind (:map restclient-mode-map
+	      ("C-c C-f" . json-mode-beautify)))
+#+end_src
+
 *** RUST
 
 #+begin_src emacs-lisp

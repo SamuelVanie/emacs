@@ -1306,6 +1306,13 @@ Returns (BEG . END) cons cell or nil if not found."
   :ensure t
   :after web-mode)
 
+(use-package restclient
+  :ensure t
+  :defer t
+  :mode (("\\.http\\'" . restclient-mode))
+  :bind (:map restclient-mode-map
+	      ("C-c C-f" . json-mode-beautify)))
+
 (use-package rust-ts-mode
   :defer t
   :mode "\\.rs\\'"
