@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: file_record
+# key: frecord
+# --
+${1:public} record `(file-name-nondirectory (file-name-sans-extension (buffer-file-name)))`($2){}
