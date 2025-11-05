@@ -561,17 +561,7 @@ Returns (BEG . END) cons cell or nil if not found."
 
 ;; tabs manipulations
 (with-eval-after-load 'general    
-  (general-define-key
-   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-   :prefix "#"
-   "l" #'tab-new
-   "d" #'dired-other-tab
-   "f" #'find-file-other-tab
-   "r" #'tab-rename
-   "u" #'tab-close
-   "i" #'tab-next
-   "n" #'tab-previous)
-
+  
   ;; Some more complex commands
   (general-define-key
    :keymaps 'meow-normal-state-keymap
@@ -1556,6 +1546,12 @@ Returns (BEG . END) cons cell or nil if not found."
   ("C-c RET" . gptel-send)
   ("C-c g g" . gptel)
   ("C-c g a" . gptel-abort))
+
+(use-package gptel-magit
+  :ensure t
+  :hook (magit-mode . gptel-magit-install)
+  :config
+  (load-file (format "%s%s/%s%s" user-emacs-directory "config" "gptel-magit-message" ".el")))
 
 ;; load tools
 (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "fetch_url" ".el"))
