@@ -196,19 +196,20 @@
           "\\*Async Shell Command\\*"
           help-mode
           compilation-mode
+	  agent-shell-mode
           (lambda (buf) (with-current-buffer buf
                           (bound-and-true-p gptel-mode)))))
   (setq popper-window-height "40")
   (setq popper-display-control nil)
   ;; Match eshell, shell, term and/or vterm buffers
   (setq popper-reference-buffers
-  (append popper-reference-buffers
-  '("^\\*eshell.*\\*$" eshell-mode ;eshell as a popup
-  "^\\*shell.*\\*$"  shell-mode  ;shell as a popup
-  "^\\*term.*\\*$"   term-mode   ;term as a popup
-  "^\\*vterm.*\\*$"  vterm-mode  ;vterm as a popup
-                "^\\*eat.*\\*$"    eat-mode    ;eat as a popup
-                )))
+	(append popper-reference-buffers
+		'("^\\*eshell.*\\*$" eshell-mode ;eshell as a popup
+		  "^\\*shell.*\\*$"  shell-mode  ;shell as a popup
+		  "^\\*term.*\\*$"   term-mode   ;term as a popup
+		  "^\\*vterm.*\\*$"  vterm-mode  ;vterm as a popup
+                  "^\\*eat.*\\*$"    eat-mode    ;eat as a popup
+                  )))
 
   (popper-mode +1)
   (popper-echo-mode +1))
@@ -237,6 +238,7 @@
                 shell-mode-hook
                 dired-mode-hook
                 vterm-mode-hook
+		agent-shell-mode-hook
                 eat-mode-hook
                 eshell-mode-hook))
   (add-hook mode (lambda () 
@@ -270,7 +272,6 @@
 
 (use-package dtrt-indent
   :ensure t
-  :demand t
   :commands (dtrt-indent-global-mode
              dtrt-indent-mode
              dtrt-indent-adapt
@@ -736,41 +737,30 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (use-package doom-themes
   :ensure t
-  :demand t)
-(use-package ef-themes
-  :ensure t
-  :demand t
   :config
   (load-theme 'ef-winter))
+(use-package ef-themes
+  :ensure t)
 (use-package standard-themes
-  :ensure t
-  :demand t)
+  :ensure t)
 (use-package kaolin-themes
   :ensure t
-  :demand t
   :config
   (kaolin-treemacs-theme))
 (use-package catppuccin-theme
-  :ensure t
-  :demand t)
+  :ensure t)
 (use-package challenger-deep-theme
-  :ensure t
-  :demand t)
+  :ensure t)
 (use-package solo-jazz-theme
-  :ensure t
-  :demand t)
+  :ensure t)
 (use-package stimmung-themes
-  :ensure (:fetcher github :repo "motform/stimmung-themes" :files ("*.el"))
-  :demand t)
+  :ensure (:fetcher github :repo "motform/stimmung-themes" :files ("*.el")))
 (use-package rebecca-theme
-  :ensure t
-  :demand t)
+  :ensure t)
 (use-package stimmung-themes
-  :ensure (:fetcher github :repo "monkeyjunglejuice/matrix-emacs-theme" :files ("*.el"))
-  :demand t)
+  :ensure (:fetcher github :repo "monkeyjunglejuice/matrix-emacs-theme" :files ("*.el")))
 (use-package pink-bliss-uwu-theme
-  :ensure (:fetcher github :repo "themkat/pink-bliss-uwu" :files ("*.el"))
-  :demand t)
+  :ensure (:fetcher github :repo "themkat/pink-bliss-uwu" :files ("*.el")))
 
 (use-package all-the-icons
   :ensure t
@@ -814,6 +804,9 @@ Returns (BEG . END) cons cell or nil if not found."
   (setq helm-split-window-inside-p t)
   (setq helm-always-two-windows nil)
   (setq helm-completion-in-region-fuzzy-match t)
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   "#" #'helm-show-kill-ring)
   (helm-mode)
   :bind
   (
@@ -991,7 +984,6 @@ Returns (BEG . END) cons cell or nil if not found."
   (global-org-modern-mode))
 
 (use-package org-journal
-  :ensure t
   :defer t
   :init
   ;; Set the directory where journal files will be stored
@@ -1203,8 +1195,7 @@ Returns (BEG . END) cons cell or nil if not found."
   )
 
 (use-package markdown-mode
-  :ensure t
-  :demand t)
+  :ensure t)
 
 (use-package yasnippet
   :ensure t
@@ -1247,10 +1238,10 @@ Returns (BEG . END) cons cell or nil if not found."
   :ensure t
   :hook (java-ts-mode . lsp-deferred))
 
-(use-package dap-java :defer t)
+(use-package dap-java :defer t :after lsp-java)
 
 (use-package emmet-mode
-  :ensure t)
+  :defer t)
 
 (defun smv/web-mode-hook ()
   "Hooks for Web mode."
@@ -1293,7 +1284,7 @@ Returns (BEG . END) cons cell or nil if not found."
   (rjsx-mode . prettier-mode))
 
 (use-package prettier
-  :ensure t
+  :defer t
   :after web-mode)
 
 (use-package restclient
@@ -1314,7 +1305,6 @@ Returns (BEG . END) cons cell or nil if not found."
   :hook (ruby-ts-mode . lsp-deferred))
 
 (use-package typst-ts-mode
-  :ensure t
   :defer t
   :mode "\\.typ\\'")
 
@@ -1327,13 +1317,11 @@ Returns (BEG . END) cons cell or nil if not found."
                     :server-id 'tinymist)))
 
 (use-package dart-mode
-  :ensure t
   :defer t
   :mode "\\.dart\\'"
   :hook (dart-mode . lsp-deferred))
 
 (use-package lsp-dart
-  :ensure t
   :defer t
   :after lsp-mode)
 
@@ -1415,6 +1403,7 @@ Returns (BEG . END) cons cell or nil if not found."
   )
 
 (use-package docker
+  :defer t
   :bind ("C-c d" . docker))
 
 (use-package dockerfile-mode
@@ -1513,8 +1502,8 @@ Returns (BEG . END) cons cell or nil if not found."
 
   ;; loads agents
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "command_line" ".el"))
-  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "lite_mayuri" ".el"))
-  (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri" ".el"))
+  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "lite_mayuri" ".el"))
+  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri" ".el"))
   ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_front" ".el"))
   ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_back" ".el"))
   ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_reverse_archi" ".el"))
@@ -1554,7 +1543,7 @@ Returns (BEG . END) cons cell or nil if not found."
   (load-file (format "%s%s/%s%s" user-emacs-directory "config" "gptel-magit-message" ".el")))
 
 ;; load tools
-(load-file (format "%s%s/%s%s" user-emacs-directory "tools" "fetch_url" ".el"))
+;; (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "fetch_url" ".el"))
 
 (defun smv-tool/list_projects ()
   (shell-command-to-string "ls ~/projects/"))
@@ -1651,6 +1640,16 @@ Returns (BEG . END) cons cell or nil if not found."
   ;;       (lambda ()
   ;;         (mcp-hub-start-all-server nil '("sequential-thinking"))))
   )
+
+(use-package agent-shell
+  :demand t
+  :ensure t
+  :config
+  (add-to-list 'display-buffer-alist
+               '((major-mode . agent-shell-mode)
+		 (display-buffer-reuse-window display-buffer-in-side-window)
+		 (side . right)
+		 (window-width . 0.37))))
 
 (use-package projectile
   :bind ("C-c p" . projectile-command-map)
