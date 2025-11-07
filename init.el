@@ -806,7 +806,11 @@ Returns (BEG . END) cons cell or nil if not found."
   (setq helm-completion-in-region-fuzzy-match t)
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-   "#" #'helm-show-kill-ring)
+   :prefix "#"
+   "#" #'helm-show-kill-ring
+   "i" #'helm-imenu
+   "t" #'helm-magit-todos
+   "c" #'helm-zoxide-cd)
   (helm-mode)
   :bind
   (
@@ -816,10 +820,7 @@ Returns (BEG . END) cons cell or nil if not found."
    ("C-c h c" . smv/helm-zoxide-cd)
    ("C-c h m" . helm-mark-ring)
    ("C-c h k" . helm-show-kill-ring)
-   ("C-c h s" . helm-do-grep-ag)
-   ("C-c h f" . helm-find)
-   ("C-c h n" . helm-complete-file-name-at-point)
-   ("C-c h t" . helm-magit-todos))
+   ("C-c h s" . helm-do-grep-ag))
   )
 
 (defun smv/helm-zoxide-candidates ()
@@ -1472,6 +1473,7 @@ Returns (BEG . END) cons cell or nil if not found."
               minimax/minimax-m1 ;; 0.30 in - 1.65 out
               qwen/qwen3-coder-flash ;; 0.3 in - 1.50 out
               moonshotai/kimi-dev-72b ;; 0.29 in - 1.15 out
+	      deepseek/deepseek-v3.1-terminus ;; 0.23 in - 0.9 out
               z-ai/glm-4.5 ;; 0.2 in - 0.2 out
               z-ai/glm-4.5-air:free
               qwen/qwen3-coder:free
