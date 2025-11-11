@@ -1473,7 +1473,7 @@ Returns (BEG . END) cons cell or nil if not found."
               minimax/minimax-m1 ;; 0.30 in - 1.65 out
               qwen/qwen3-coder-flash ;; 0.3 in - 1.50 out
               moonshotai/kimi-dev-72b ;; 0.29 in - 1.15 out
-	      deepseek/deepseek-v3.1-terminus ;; 0.23 in - 0.9 out
+  	      deepseek/deepseek-v3.1-terminus ;; 0.23 in - 0.9 out
               z-ai/glm-4.5 ;; 0.2 in - 0.2 out
               z-ai/glm-4.5-air:free
               qwen/qwen3-coder:free
@@ -1504,19 +1504,22 @@ Returns (BEG . END) cons cell or nil if not found."
 
   ;; loads agents
   (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "command_line" ".el"))
-  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "lite_mayuri" ".el"))
-  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri" ".el"))
-  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_front" ".el"))
-  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_back" ".el"))
-  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_reverse_archi" ".el"))
-  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_designer" ".el"))
-  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "architect" ".el"))
-  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "tasker" ".el"))
-  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "task" ".el"))
-  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer" ".el"))
-  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer_google" ".el"))
-  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "yt_script_writter" ".el"))
-  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "writter" ".el"))
+  (general-define-key
+   :prefix "&"
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   "l" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "lite_mayuri" ".el")))
+   "m" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri" ".el")))
+   "f" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_front" ".el")))
+   "b" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_back" ".el")))
+   "r" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_reverse_archi" ".el")))
+   "d" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_designer" ".el")))
+   "a" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "architect" ".el")))
+   "t" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "tasker" ".el")))
+   "k" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "task" ".el")))
+   "s" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer" ".el")))
+   "g" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer_google" ".el")))
+   "y" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "yt_script_writter" ".el")))
+   "w" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "writter" ".el"))))
 
   ;; configuring the window size
   (add-to-list 'display-buffer-alist
