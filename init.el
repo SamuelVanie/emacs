@@ -50,55 +50,24 @@
               (interactive)
               (scroll-other-window-down 2)))
 
-(defvar elpaca-installer-version 0.11)
-(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
-(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
-(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                              :ref nil :depth 1 :inherit ignore
-                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                              :build (:not elpaca--activate-package)))
-(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
-       (build (expand-file-name "elpaca/" elpaca-builds-directory))
-       (order (cdr elpaca-order))
-       (default-directory repo))
-  (add-to-list 'load-path (if (file-exists-p build) build repo))
-  (unless (file-exists-p repo)
-    (make-directory repo t)
-    (when (<= emacs-major-version 28) (require 'subr-x))
-    (condition-case-unless-debug err
-        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
-                                                  ,@(when-let* ((depth (plist-get order :depth)))
-                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
-                                                  ,(plist-get order :repo) ,repo))))
-                  ((zerop (call-process "git" nil buffer t "checkout"
-                                        (or (plist-get order :ref) "--"))))
-                  (emacs (concat invocation-directory invocation-name))
-                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                  ((require 'elpaca))
-                  ((elpaca-generate-autoloads "elpaca" repo)))
-            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
-          (error "%s" (with-current-buffer buffer (buffer-string))))
-      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
-  (unless (require 'elpaca-autoloads nil t)
-    (require 'elpaca)
-    (elpaca-generate-autoloads "elpaca" repo)
-    (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
-(add-hook 'after-init-hook #'elpaca-process-queues)
-(elpaca `(,@elpaca-order))
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name
+        "straight/repos/straight.el/bootstrap.el"
+        (or (bound-and-true-p straight-base-dir)
+            user-emacs-directory)))
+      (bootstrap-version 7))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
-(setq package-enable-at-startup nil)
 
-(elpaca elpaca-use-package
-  ;; Enable use-package :ensure support for Elpaca.
-  (elpaca-use-package-mode))
-
-(use-package dired-x
-  :bind
-  (:map dired-mode-map
-        ("k" . dired-create-empty-file)))
+(straight-use-package 'use-package)
 
 (add-hook 'dired-mode-hook #'dired-hide-details-mode)
 (add-hook 'dired-mode-hook #'all-the-icons-dired-mode)
@@ -117,23 +86,8 @@
 
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 
-(use-package dashboard
-  :ensure t
-  :demand t
-  :after nerd-icons
-  :config
-  (dashboard-setup-startup-hook)
-  (setq dashboard-display-icons-p t)
-  (setq dashboard-startup-banner 'logo)
-  (setq dashboard-banner-logo-title "My safe place")
-  (setq dashboard-icon-type 'nerd-icons)
-  (setq dashboard-set-file-icons t))
-
-(setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
-
 (use-package treesit-auto
-  :demand t
-  :ensure t
+  :straight t
   :custom
   (treesit-auto-install 'prompt)
   :config
@@ -142,7 +96,7 @@
 
 (if (eq system-type 'darwin)
     (use-package exec-path-from-shell
-      :ensure t
+      :straight t
       :init
       (exec-path-from-shell-initialize)))
 
@@ -185,7 +139,7 @@
 (global-set-key (kbd "C-k") 'kill-line)
 
 (use-package popper
-  :ensure t ; or :straight t
+  :straight t ; or :straight t
   :bind (("C-`"   . popper-toggle)
          ("C-M-`"   . popper-cycle)
          ("M-`" . popper-toggle-type))
@@ -256,40 +210,26 @@
 ;; (set-face-attribute 'variable-pitch nil :family "FantasqueSansM Nerd Font")
 
 (use-package rainbow-delimiters
-  :ensure t
+  :straight t
   :hook (prog-mode . rainbow-delimiters-mode))
 
 ;; Indentation based on the indentation of the previous non-blank line.
 (setq-default indent-line-function #'indent-relative-first-indent-point)
 
 ;; In modes such as `text-mode', pressing Enter multiple times removes
-;; the indentation. The following fixes the issue and ensures that text
+;; the indentation. The following fixes the issue and straights that text
 ;; is properly indented using `indent-relative' or
 ;; `indent-relative-first-indent-point'.
 (setq-default indent-line-ignored-functions '())
-
 (global-set-key (kbd "C-<tab>") 'tab-to-tab-stop)
 
-(use-package dtrt-indent
-  :ensure t
-  :commands (dtrt-indent-global-mode
-             dtrt-indent-mode
-             dtrt-indent-adapt
-             dtrt-indent-undo
-             dtrt-indent-diagnosis
-             dtrt-indent-highlight)
-  :config
-  (dtrt-indent-global-mode))
-
 (use-package hydra
-  :ensure t
-  :demand t) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
+  :straight t) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
 (use-package general
-  :ensure t
-  :demand t) ;; permit to define bindings under another one easily
+  :straight t) ;; permit to define bindings under another one easily
 
 (use-package repeat
-  :ensure nil
+  :straight nil
   :hook (after-init . repeat-mode)
   :custom
   (repeat-too-dangerous '(kill-this-buffer))
@@ -547,8 +487,7 @@ Returns (BEG . END) cons cell or nil if not found."
           (cons opening-tag-end closing-tag-start))))))
 
 (use-package meow
-  :ensure t
-  :demand t
+  :straight t
   :after hydra
   :config
   (add-to-list 'meow-char-thing-table '(?t . tag))
@@ -598,8 +537,7 @@ Returns (BEG . END) cons cell or nil if not found."
    "s" #'ffap-menu))
 
 (use-package avy
-  :ensure t
-  :demand t
+  :straight t
   :after meow
   :config
   (general-define-key
@@ -636,7 +574,7 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (use-package windmove
   :after meow
-  :ensure nil
+  :straight nil
   :config
   (setq windmove-wrap-around t)
   (general-define-key
@@ -661,8 +599,7 @@ Returns (BEG . END) cons cell or nil if not found."
   )
 
 (use-package winum
-  :ensure t
-  :demand t
+  :straight t
   :bind (("M-1" . winum-select-window-1)
          ("M-2" . winum-select-window-2)
          ("M-3" . winum-select-window-3)
@@ -675,7 +612,6 @@ Returns (BEG . END) cons cell or nil if not found."
   (winum-mode))
 
 (use-package vterm
-  :ensure t
   :defer t
   :config
   (setq vterm-kill-buffer-on-exit t)
@@ -683,7 +619,8 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (use-package eat
   :demand t
-  :ensure (:fetcher codeberg
+  :straight (eat :type git
+		 :host codeberg
                     :repo "akib/emacs-eat"
                     :files ("*.el" ("term" "term/*.el") "*.texi"
                             "*.ti" ("terminfo/e" "terminfo/e/*")
@@ -716,8 +653,7 @@ Returns (BEG . END) cons cell or nil if not found."
 (global-set-key (kbd "C-c b") 'smv/browse-search)
 
 (use-package expand-region
-  :ensure t
-  :demand t
+  :straight t
   :config
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
@@ -736,65 +672,58 @@ Returns (BEG . END) cons cell or nil if not found."
    "m" #'er/mark-email))
 
 (use-package doom-themes
-  :ensure t
-  :config
-  (load-theme 'ef-winter))
+  :straight t)
 (use-package ef-themes
-  :ensure t)
+  :straight t)
 (use-package standard-themes
-  :ensure t)
+  :straight t
+  :config
+  (load-theme 'standard-light))
 (use-package kaolin-themes
-  :ensure t
+  :straight t
   :config
   (kaolin-treemacs-theme))
 (use-package catppuccin-theme
-  :ensure t)
-(use-package challenger-deep-theme
-  :ensure t)
+  :straight t)
 (use-package solo-jazz-theme
-  :ensure t)
+  :straight t)
 (use-package stimmung-themes
-  :ensure (:fetcher github :repo "motform/stimmung-themes" :files ("*.el")))
+  :straight (stimmung-themes :type git :host github :repo "motform/stimmung-themes" :files ("*.el")))
 (use-package rebecca-theme
-  :ensure t)
-(use-package stimmung-themes
-  :ensure (:fetcher github :repo "monkeyjunglejuice/matrix-emacs-theme" :files ("*.el")))
+  :straight t)
+
 (use-package pink-bliss-uwu-theme
-  :ensure (:fetcher github :repo "themkat/pink-bliss-uwu" :files ("*.el")))
+  :straight (pink-bliss-uwu-theme :type git :host github :repo "themkat/pink-bliss-uwu" :files ("*.el")))
 
 (use-package all-the-icons
-  :ensure t
-  :demand t
+  :straight t
   :if (display-graphic-p))
 
 (use-package nerd-icons
-  :ensure t
-  :demand t)
+  :straight t)
 
 (use-package all-the-icons-dired
-  :ensure t
-  :demand t
+  :straight t
   :after all-the-icons)
 
 ;; to install emoji rendering in emacs
 ;; some external packages to install are : fonts-noto-color-emoji and fonts-emojione on ubuntu
 ;; noto-fonts-emoji and ttf-joypixels on archlinux
 (use-package unicode-fonts
-  :ensure t
-  :demand t
+  :straight t
   :config (unicode-fonts-setup))
 
 (use-package which-key ;; print next keybindings
-  :ensure t
-  :demand t
+  :straight t
   :diminish which-key-mode
   :config ;; only runs after the mode is loaded
   (setq which-key-idle-delay 0.3)
   (which-key-mode))
 
 (use-package helm
-  :ensure t
+  :straight t
   :demand t
+  :after general
   :bind
   ("M-x" . helm-M-x)
   ("C-s" . helm-occur)
@@ -877,8 +806,7 @@ Returns (BEG . END) cons cell or nil if not found."
   ([remap describe-key] . helpful-key))
 
 (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
-  :demand t
-  :ensure (:wait org-contrib)
+  :straight t
   :config
   (setq org-agenda-files
         '("~/.org/todo.org"
@@ -949,15 +877,15 @@ Returns (BEG . END) cons cell or nil if not found."
   (global-set-key (kbd "M-i") 'org-insert-item))
 
 (use-package phscroll
-  :ensure (:fetcher github :repo "misohena/phscroll" :files ("*.el"))
-  :demand t
+  :straight (phscroll :type git :host github :repo "misohena/phscroll" :files ("*.el"))
+  :after org
   :hook (org-mode . org-phscroll-mode)
   :config
   (setq org-startup-truncated nil))
 
 (use-package org-modern
-  :ensure t
-  :demand t
+  :straight t
+  :after org
   :config
   (modify-all-frames-parameters
    '((right-divider-width . 30)
@@ -986,6 +914,7 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (use-package org-journal
   :defer t
+  :after org
   :init
   ;; Set the directory where journal files will be stored
   (setq org-journal-dir "~/.org/journal/")
@@ -996,7 +925,7 @@ Returns (BEG . END) cons cell or nil if not found."
   :config
   ;; Optional: Automatically add a timestamp to new entries
   (setq org-journal-enable-timestamp t)
-  ;; Ensure the directory exists
+  ;; Straight the directory exists
   (make-directory org-journal-dir t))
 
 (with-eval-after-load 'org
@@ -1020,11 +949,13 @@ Returns (BEG . END) cons cell or nil if not found."
 (add-to-list 'org-structure-template-alist '("cpp" . "src cpp"))
 
 (use-package ox-typst
-  :ensure t
+  :straight t
+  :defer t
   :after org)
 
 (use-package ox-pandoc
-  :ensure t
+  :straight t
+  :defer t
   :after org)
 
 ;; Automatically tangle our Emacs.org config file when we save it
@@ -1040,12 +971,12 @@ Returns (BEG . END) cons cell or nil if not found."
 (require 'ansi-color)
 (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
 
-;; Ensure ANSI colors work properly in shell-mode too
+;; Straight ANSI colors work properly in shell-mode too
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
 
 (use-package undo-tree
-  :ensure (:wait t)
+  :straight t
   :init
   (global-undo-tree-mode)
   :config
@@ -1066,22 +997,6 @@ Returns (BEG . END) cons cell or nil if not found."
 ;; Memory management for all terminal modes
 (setq comint-buffer-maximum-size 5000)
 (add-hook 'comint-output-filter-functions 'comint-truncate-buffer)
-
-;; Better eshell configuration to prevent corruption
-(with-eval-after-load 'eshell
-  ;; Prevent eshell from becoming too large and causing issues
-  (add-hook 'eshell-output-filter-functions 'eshell-truncate-buffer)
-  (setq eshell-buffer-maximum-lines 5000)
-  
-  ;; Better prompt handling
-  (setq eshell-highlight-prompt t)
-  (setq eshell-cmpl-ignore-case t)
-  
-  ;; Fix visual line issues
-  (add-hook 'eshell-mode-hook 
-            (lambda ()
-              (setq-local global-hl-line-mode nil)
-              (setq-local line-spacing 0))))
 
 ;; Recovery function when corruption occurs
 (defun smv/fix-terminal-corruption ()
@@ -1117,7 +1032,8 @@ Returns (BEG . END) cons cell or nil if not found."
 (global-set-key (kbd "C-M-;") 'comment-region)
 
 (use-package wgrep
-  :ensure t
+  :straight t
+  :defer t
   :bind
   ("C-x C-," . wgrep-change-to-wgrep-mode)
   :config
@@ -1133,7 +1049,8 @@ Returns (BEG . END) cons cell or nil if not found."
      (add-to-list 'grep-find-ignored-directories "*.git")))
 
 (use-package lsp-mode
-  :ensure t
+  :straight t
+  :demand t
   :init
   (setq lsp-keymap-prefix "M-l")
   :commands (lsp lsp-deferred)
@@ -1155,14 +1072,15 @@ Returns (BEG . END) cons cell or nil if not found."
   (define-key lsp-mode-map [remap xref-find-apropos] #'helm-lsp-workspace-symbol))
 
 (use-package lsp-ui
-  :ensure t
+  :straight t
+  :after lsp
   :commands lsp-ui-mode
   :hook (lsp-mode . lsp-ui-mode))
 
 (use-package dap-mode
-  :ensure t
+  :straight t
   :defer t
-  :after (lsp-mode general)
+  :after (lsp general)
   :custom
   (lsp-enable-dap-auto-configure nil)
   :config
@@ -1177,14 +1095,13 @@ Returns (BEG . END) cons cell or nil if not found."
    "d" '(dap-hydra t :wk "debugger")))
 
 (use-package nix-mode
-  :ensure t
+  :straight t
   :mode "\\.nix\\'"
   :config
   :hook (nix-mode . lsp-deferred))
 
 (use-package flycheck
-  :ensure t
-  :demand t
+  :straight t
   :config
   (setq flycheck-error-list-minimum-level 'error)
   (general-define-key
@@ -1196,10 +1113,10 @@ Returns (BEG . END) cons cell or nil if not found."
   )
 
 (use-package markdown-mode
-  :ensure t)
+  :straight t)
 
 (use-package yasnippet
-  :ensure t
+  :straight t
   :demand t
   :config
   (yas-global-mode)
@@ -1209,13 +1126,12 @@ Returns (BEG . END) cons cell or nil if not found."
    "r" #'yas-reload-all))
 
 (use-package yasnippet-snippets
-  :ensure t
+  :straight t
   :after yasnippet)
 
 (use-package auto-yasnippet
   :after general
-  :ensure t
-  :demand t
+  :straight t
   :config
   (general-define-key
    :prefix "C-z *"
@@ -1231,12 +1147,15 @@ Returns (BEG . END) cons cell or nil if not found."
    ))
 
 (use-package yaml-mode
+  :straight t
+  :defer t
   :mode (("\\.yml\\'" . yaml-mode)
          ("\\.yaml\\'" . yaml-mode)
          ))
 
 (use-package lsp-java
-  :ensure t
+  :straight t
+  :after lsp
   :hook (java-ts-mode . lsp-deferred))
 
 (use-package dap-java :defer t :after lsp-java)
@@ -1254,7 +1173,7 @@ Returns (BEG . END) cons cell or nil if not found."
   )
 
 (use-package web-mode
-  :ensure t
+  :straight t
   :defer t
   :mode (("\\.html?\\'" . web-mode)
          ("\\.css?\\'" . web-mode)
@@ -1289,7 +1208,6 @@ Returns (BEG . END) cons cell or nil if not found."
   :after web-mode)
 
 (use-package restclient
-  :ensure t
   :defer t
   :mode (("\\.http\\'" . restclient-mode))
   :bind (:map restclient-mode-map
@@ -1339,8 +1257,7 @@ Returns (BEG . END) cons cell or nil if not found."
   (add-to-list 'dabbrev-ignored-buffer-modes 'tags-table-mode))
 
 (use-package cape
-  :ensure t
-  :demand t
+  :straight t
   ;; Bind prefix keymap providing all Cape commands under a mnemonic key.
   ;; Press C-c p ? to for help.
   :bind ("M-p" . cape-prefix-map) ;; Alternative key: M-<tab>, M-p, M-+
@@ -1358,8 +1275,7 @@ Returns (BEG . END) cons cell or nil if not found."
   )
 
 (use-package orderless
-  :ensure t
-  :demand t
+  :straight t
   :custom
   (orderless-style-dispatchers '(orderless-affix-dispatch))
   (orderless-component-separator #'orderless-escapable-split-on-space)
@@ -1368,8 +1284,7 @@ Returns (BEG . END) cons cell or nil if not found."
   (completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package corfu
-  :demand t
-  :ensure t
+  :straight t
   ;; Optional customizations
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
@@ -1411,8 +1326,8 @@ Returns (BEG . END) cons cell or nil if not found."
   :after docker)
 
 (use-package copilot
-  :defer t
-  :ensure (:fetcher github :repo "copilot-emacs/copilot.el" :files ("*.el"))
+  :straight (:type git :host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
+  :demand t
   :bind
   (:map copilot-completion-map
         ("C-M-x" . copilot-accept-completion)
@@ -1422,10 +1337,10 @@ Returns (BEG . END) cons cell or nil if not found."
         ))
 
 (use-package transient
-  :ensure t)
+  :straight t)
 
 (use-package direnv
-  :ensure t)
+  :straight t)
 
 (setenv "GROQ_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gq_key") (string-trim (buffer-string))))
 (setenv "ANTHROPIC_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string))))
@@ -1434,8 +1349,8 @@ Returns (BEG . END) cons cell or nil if not found."
 (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string))))
 
 (use-package gptel
-  :ensure t
-  :demand t
+  :straight t
+  :after general
   :config
   ;; something that makes it more convenient to add mcp tools in gptel
   (require 'gptel-integrations)
@@ -1542,7 +1457,7 @@ Returns (BEG . END) cons cell or nil if not found."
   ("C-c g a" . gptel-abort))
 
 (use-package gptel-magit
-  :ensure t
+  :after (magit gptel)
   :hook (magit-mode . gptel-magit-install)
   :config
   (load-file (format "%s%s/%s%s" user-emacs-directory "config" "gptel-magit-message" ".el")))
@@ -1627,8 +1542,7 @@ Returns (BEG . END) cons cell or nil if not found."
 
 ;; tools from mcp servers
 (use-package mcp
-  :ensure (:fetcher github :repo "lizqwerscott/mcp.el" :files ("*.el"))
-  :demand t
+  :straight (mcp :type git :host github :repo "lizqwerscott/mcp.el" :files ("*.el"))
   :after gptel
   :custom (mcp-hub-servers
            `(
@@ -1647,8 +1561,7 @@ Returns (BEG . END) cons cell or nil if not found."
   )
 
 (use-package agent-shell
-  :demand t
-  :ensure t
+  :defer t
   :config
   (add-to-list 'display-buffer-alist
                '((major-mode . agent-shell-mode)
@@ -1658,8 +1571,7 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (use-package projectile
   :bind ("C-c p" . projectile-command-map)
-  :ensure t
-  :demand t
+  :straight t
   :config
   (projectile-mode))
 
@@ -1667,7 +1579,7 @@ Returns (BEG . END) cons cell or nil if not found."
       (remq 'project-try-vc project-find-functions))
 
 (use-package magit
-  :ensure (:wait t)
+  :straight t
   :commands magit-status
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
