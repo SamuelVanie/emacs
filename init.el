@@ -1457,6 +1457,7 @@ Returns (BEG . END) cons cell or nil if not found."
   ("C-c g a" . gptel-abort))
 
 (use-package gptel-magit
+  :straight t
   :after (magit gptel)
   :hook (magit-mode . gptel-magit-install)
   :config

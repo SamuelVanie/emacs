@@ -511,7 +511,7 @@ RETURNS:
 (gptel-make-tool
  :name "read_file"
  :function #'smv-tool/read-file
- :description "Read file content with line numbers. Essential follow-up tool after grep-regex. USE CASES: - Read entire files found: read-file('/path/to/relevant-file.py') - Read specific ranges: read-file('/path/file.js', 45, 65) - Examine context around matches: read-file('/path/file.py', match_line-5, match_line+10). e.g(match_line = 20): read-file('/path/file.py', 15, 30)"
+ :description "Read file content with line numbers. MAKE SURE TO KNOW THE WORKING DIRECTORY(pwd) BEFORE. Essential follow-up tool after grep-regex. USE CASES: - Read entire files found: read-file('/path/to/relevant-file.py') - Read specific ranges: read-file('/path/file.js', 45, 65) - Examine context around matches: read-file('/path/file.py', match_line-5, match_line+10). e.g(match_line = 20): read-file('/path/file.py', 15, 30)"
  :confirm nil
  :include t
  :args (list
@@ -532,7 +532,7 @@ RETURNS:
 (gptel-make-tool
  :name "read_multiple_files"
  :function #'smv-tool/read-multiple-files
- :description "Read multiple files or file sections efficiently in one operation. OPTIMAL FOR: - Comparing related implementations: read-multiple-files([['file1.py'], ['file2.py']]) - Gathering distributed context: read-multiple-files([['main.js', '10', '30'], ['utils.js', '45', '60']]) - Following import chains or inheritance hierarchies REDUCES TOKEN USAGE by batching related reads vs. multiple separate read-file calls."
+ :description "Read multiple files or file sections efficiently in one operation.MAKE SURE TO KNOW THE WORKING DIRECTORY(pwd) BEFORE. OPTIMAL FOR: - Comparing related implementations: read-multiple-files([['file1.py'], ['file2.py']]) - Gathering distributed context: read-multiple-files([['main.js', '10', '30'], ['utils.js', '45', '60']]) - Following import chains or inheritance hierarchies REDUCES TOKEN USAGE by batching related reads vs. multiple separate read-file calls."
  :confirm nil
  :include t
  :args (list
@@ -547,7 +547,7 @@ RETURNS:
 (gptel-make-tool
  :name "grep_regex"
  :function #'smv-tool/grep-regex
- :description "Search for code symbols, functions, classes, or patterns across codebases. OPTIMAL WORKFLOW: 1. START with directory search to locate relevant files: grep-regex('ClassName', '/project/src/') 2. THEN search specific files with context: grep-regex('function myFunc', 'path/to/file.js', [2, 5]) 3. USE line numbers from results with read-file for detailed examination Returns file paths (directory search) or formatted blocks with line numbers (file search)."
+ :description "Search for code symbols, functions, classes, or patterns across codebases. MAKE SURE TO KNOW THE WORKING DIRECTORY(pwd) BEFORE.  OPTIMAL WORKFLOW: 1. START with directory search to locate relevant files: grep-regex('ClassName', '/project/src/') 2. THEN search specific files with context: grep-regex('function myFunc', 'path/to/file.js', [2, 5]) 3. USE line numbers from results with read-file for detailed examination Returns file paths (directory search) or formatted blocks with line numbers (file search)."
  :confirm nil
  :include t
  :args (list
@@ -568,7 +568,7 @@ RETURNS:
 (gptel-make-tool
  :name "write_file"
  :function #'smv-tool/write-file
- :description "Create new file with some content"
+ :description "Create new file with some content. MAKE SURE TO KNOW THE WORKING DIRECTORY(pwd) BEFORE"
  :confirm t  ; Confirm because it overwrites files
  :include t
  :args (list '(:name "path"
@@ -583,7 +583,7 @@ RETURNS:
 (gptel-make-tool
  :name "edit_file"
  :function #'smv-tool/edit-file
- :description "Make selective edits using advanced pattern matching and formatting inside a file. You may need dryRun parameter for massive edits."
+ :description "Make selective edits using advanced pattern matching and formatting inside a file.MAKE SURE TO KNOW THE WORKING DIRECTORY(pwd) BEFORE. You may need dryRun parameter for massive edits."
  :confirm t
  :include t
  :args (list '(:name "path"
@@ -604,7 +604,7 @@ RETURNS:
 (gptel-make-tool
  :name "create_directory"
  :function #'smv-tool/create-directory
- :description "Create new directory or ensure it exists. Creates parent directories if needed"
+ :description "Create new directory or ensure it exists. Creates parent directories if needed. MAKE SURE TO KNOW THE WORKING DIRECTORY(pwd) BEFORE."
  :confirm nil
  :include t
  :args (list '(:name "path"
@@ -616,7 +616,7 @@ RETURNS:
 (gptel-make-tool
  :name "list_directory"
  :function #'smv-tool/list-directory
- :description "List directory contents with clear [FILE] and [DIR] prefixes."
+ :description "List directory contents with clear [FILE] and [DIR] prefixes. MAKE SURE TO KNOW THE WORKING DIRECTORY(pwd) BEFORE"
  :confirm nil
  :include t
  :args (list
@@ -633,7 +633,7 @@ RETURNS:
 (gptel-make-tool
  :name "move_file"
  :function #'smv-tool/move-file
- :description "Move or rename files and directories. Fails if destination exists"
+ :description "Move or rename files and directories. MAKE SURE TO KNOW THE WORKING DIRECTORY(pwd) BEFORE. It fails if destination exists"
  :confirm t  ; Confirm because it moves files
  :include t
  :args (list '(:name "source"
@@ -648,7 +648,7 @@ RETURNS:
 (gptel-make-tool
  :name "search_files"
  :function #'smv-tool/search-files
- :description "Recursively search for files/directories with case-insensitive pattern matching. Returns results with [FILE] or [DIR] prefixes. PATTERN EXAMPLES: - '*.js' - all JavaScript files - 'file*.txt' - files starting with 'file' and ending with .txt - '*config*' - files containing 'config' in name - 'test_*.py' - Python test files"
+ :description "Recursively search for files/directories with case-insensitive pattern matching. Returns results with [FILE] or [DIR] prefixes. MAKE SURE TO KNOW THE WORKING DIRECTORY (pwd) BEFORE. PATTERN EXAMPLES: - '*.js' - all JavaScript files - 'file*.txt' - files starting with 'file' and ending with .txt - '*config*' - files containing 'config' in name - 'test_*.py' - Python test files"
  :confirm nil
  :include t
  :args (list '(:name "path"
