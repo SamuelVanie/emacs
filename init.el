@@ -1465,7 +1465,7 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (use-package gptel-agent
   :after gptel
-  :straight (:host github :repo "karthink/gptel-agent")
+  :straight (:host github :repo "karthink/gptel-agent" :files ("*"))
   :config (gptel-agent-update))
 
 ;; load tools

@@ -1992,7 +1992,7 @@ Make gptel work as an agent
 #+begin_src emacs-lisp
   (use-package gptel-agent
     :after gptel
-    :straight (:host github :repo "karthink/gptel-agent")
+    :straight (:host github :repo "karthink/gptel-agent" :files ("*"))
     :config (gptel-agent-update))
 #+end_src
 
