@@ -1987,6 +1987,15 @@ Mode to interact with different llms in emacs.
     (load-file (format "%s%s/%s%s" user-emacs-directory "config" "gptel-magit-message" ".el")))
 #+end_src
 
+Make gptel work as an agent
+
+#+begin_src emacs-lisp
+  (use-package gptel-agent
+    :after gptel
+    :straight (:host github :repo "karthink/gptel-agent")
+    :config (gptel-agent-update))
+#+end_src
+
 
 ** MCP integration
 

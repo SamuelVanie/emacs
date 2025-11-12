@@ -1463,6 +1463,11 @@ Returns (BEG . END) cons cell or nil if not found."
   :config
   (load-file (format "%s%s/%s%s" user-emacs-directory "config" "gptel-magit-message" ".el")))
 
+(use-package gptel-agent
+  :after gptel
+  :straight (:host github :repo "karthink/gptel-agent")
+  :config (gptel-agent-update))
+
 ;; load tools
 ;; (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "fetch_url" ".el"))
 
