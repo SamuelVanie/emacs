@@ -1940,24 +1940,24 @@ Mode to interact with different llms in emacs.
                 deepseek/deepseek-r1-0528-qwen3-8b
                 ))
 
-    ;; loads agents
-    (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "command_line" ".el"))
+    ;; loads presets
+    (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "command_line" ".el"))
     (general-define-key
      :prefix "&"
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-     "l" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "lite_mayuri" ".el")))
-     "m" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri" ".el")))
-     "f" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_front" ".el")))
-     "b" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_back" ".el")))
-     "r" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_reverse_archi" ".el")))
-     "d" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "mayuri_designer" ".el")))
-     "a" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "architect" ".el")))
-     "t" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "tasker" ".el")))
-     "k" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "task" ".el")))
-     "s" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer" ".el")))
-     "g" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "summarizer_google" ".el")))
-     "y" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "yt_script_writter" ".el")))
-     "w" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "agents" "writter" ".el"))))
+     "l" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "lite_mayuri" ".el")))
+     "m" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "mayuri" ".el")))
+     "f" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "mayuri_front" ".el")))
+     "b" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "mayuri_back" ".el")))
+     "r" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "mayuri_reverse_archi" ".el")))
+     "d" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "mayuri_designer" ".el")))
+     "a" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "architect" ".el")))
+     "t" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "tasker" ".el")))
+     "k" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "task" ".el")))
+     "s" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "summarizer" ".el")))
+     "g" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "summarizer_google" ".el")))
+     "y" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "yt_script_writter" ".el")))
+     "w" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "writter" ".el"))))
 
     ;; configuring the window size
     (add-to-list 'display-buffer-alist
