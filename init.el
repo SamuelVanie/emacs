@@ -1373,26 +1373,30 @@ Returns (BEG . END) cons cell or nil if not found."
     :stream t
     :key (with-temp-buffer (insert-file-contents "~/.org/.openr_key") (string-trim (buffer-string)))
     :models '(
-              perplexity/sonar-pro ;; 3 in - 15 out
-              anthropic/claude-sonnet-4 ;; 3 in - 15 out
-              anthropic/claude-sonnet-4.5 ;; 3 in - 15 out
-              openai/gpt-5 ;; 1.25 in - 10 out
-              google/gemini-2.5-pro ;; 1.25 in - 10 out
-              openai/gpt-4.1 ;; 2 in - 8 out
-              qwen/qwen3-coder-plus ;; 1 in - 5 out
-              switchpoint/router ;; 0.85 in - 3.40 out
-              z-ai/glm-4.6 ;; 0.7 in - 1.75 out
-              x-ai/grok-code-fast-1 ;; 0.2 in - 1.5 out
-              qwen/qwen3-coder  ;; 0.302 in - 0.302 out
-              google/gemini-2.5-flash ;; 0.30 in - 2.50 out
-              minimax/minimax-m1 ;; 0.30 in - 1.65 out
-              qwen/qwen3-coder-flash ;; 0.3 in - 1.50 out
-              moonshotai/kimi-dev-72b ;; 0.29 in - 1.15 out
+	      perplexity/sonar-pro ;; 3 in - 15 out
+	      anthropic/claude-sonnet-4 ;; 3 in - 15 out
+	      anthropic/claude-sonnet-4.5 ;; 3 in - 15 out
+	      openai/gpt-5.1 ;; 1.25 in - 10 out
+	      openai/gpt-5.1-codex ;; 1.25 in - 10 out
+	      google/gemini-2.5-pro ;; 1.25 in - 10 out
+	      openai/gpt-4.1 ;; 2 in - 8 out
+	      qwen/qwen3-coder-plus ;; 1 in - 5 out
+	      anthropic/claude-haiku-4.5 ;; 1 in - 5 out
+	      switchpoint/router ;; 0.85 in - 3.40 out
+	      z-ai/glm-4.6 ;; 0.7 in - 1.75 out
+	      moonshotai/kimi-k2-thinking ;; 0.6 in - 2.5 out
+	      qwen/qwen3-coder  ;; 0.302 in - 0.302 out
+	      minimax/minimax-m1 ;; 0.30 in - 1.65 out
+	      qwen/qwen3-coder-flash ;; 0.3 in - 1.50 out
+	      moonshotai/kimi-dev-72b ;; 0.29 in - 1.15 out
+	      x-ai/grok-code-fast-1 ;; 0.2 in - 1.5 out
+	      minimax/minimax-m2 ;; 0.255 in - 1.02 out
   	      deepseek/deepseek-v3.1-terminus ;; 0.23 in - 0.9 out
-              z-ai/glm-4.5 ;; 0.2 in - 0.2 out
-              z-ai/glm-4.5-air:free
-              qwen/qwen3-coder:free
-              deepseek/deepseek-chat-v3.1:free
+	      google/gemini-2.5-flash-lite ;; 0.10 in - 0.4 out
+	      z-ai/glm-4.5-air:free
+	      qwen/qwen3-coder:free
+	      deepseek/deepseek-chat-v3.1:free
+	      openrouter/sherlock-think-alpha
               ))
 
   (setq
@@ -1472,16 +1476,23 @@ Returns (BEG . END) cons cell or nil if not found."
 ;; (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "fetch_url" ".el"))
 
 (defun smv-tool/list_projects ()
-  (shell-command-to-string "ls ~/projects/"))
+  "Return a list of full paths to directories in ~/projects/."
+  (let ((projects-dir (expand-file-name "~/projects/")))
+    (when (file-directory-p projects-dir)
+      (seq-filter
+       (lambda (path)
+         (and (file-directory-p path)
+              (not (string-match-p "/\\.\\.?$" path))))
+       (directory-files projects-dir t "^[^.]")))))
 
 (defun smv-tool/project_diagnostics ()
   (let ((buffer nil))
-  (unwind-protect
-   (progn
-     (lsp-ui-flycheck-list)
-     (setq buffer (buffer-string))
-     (kill-buffer)
-     buffer))))
+    (unwind-protect
+	(progn
+	  (lsp-ui-flycheck-list)
+	  (setq buffer (buffer-string))
+	  (kill-buffer)
+	  buffer))))
 
 (defun smv-tool/run_command (command pwd)
   (shell-command-to-string (format "cd %s && %s" pwd command)))
