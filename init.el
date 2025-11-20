@@ -1366,12 +1366,6 @@ Returns (BEG . END) cons cell or nil if not found."
   ;; (setq gptel-confirm-tool-calls t)
   (setq gptel-include-tool-results t)
   (setq gptel-include-reasoning nil)
-
-  (let ((fname (expand-file-name "gptel-gemini-oauth-v3.el")))
-    (if (file-exists-p fname)
-	(progn
-	  (load-file fname)
-	  (gptel-make-gemini-oauth "Gemini-OAuth" :stream t))))
   
   (gptel-make-gemini "Gemini"
     :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
@@ -1468,6 +1462,11 @@ Returns (BEG . END) cons cell or nil if not found."
    ")" #'gptel-add
    "!" #'gptel-send
    "(" #'gptel)
+
+  (let ((fname (expand-file-name "gptel-gemini-oauth-v3.el" user-emacs-directory)))
+	   (when (file-exists-p fname)
+	     (load-file fname)
+	     (gptel-make-gemini-oauth "Gemini-OAuth" :stream t)))
   
   :bind
   ("C-c RET" . gptel-send)
