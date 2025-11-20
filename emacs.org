@@ -1889,6 +1889,13 @@ Mode to interact with different llms in emacs.
     ;; (setq gptel-confirm-tool-calls t)
     (setq gptel-include-tool-results t)
     (setq gptel-include-reasoning nil)
+
+    (let ((fname (expand-file-name "gptel-gemini-oauth-v3.el")))
+      (if (file-exists-p fname)
+  	(progn
+  	  (load-file fname)
+  	  (gptel-make-gemini-oauth "Gemini-OAuth" :stream t))))
+    
     (gptel-make-gemini "Gemini"
       :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
       :stream t)
@@ -1996,13 +2003,6 @@ Mode to interact with different llms in emacs.
     :hook (magit-mode . gptel-magit-install)
     :config
     (load-file (format "%s%s/%s%s" user-emacs-directory "config" "gptel-magit-message" ".el")))
-
-  (with-eval-after-load 'gptel
-    (let ((fname (expand-file-name "gptel-gemini-oauth-v3.el")))
-      (if (file-exists-p fname)
-  	(progn
-  	  (load-file fname)
-  	  (gptel-make-gemini-oauth "Gemini-OAuth" :stream t)))))
 #+end_src
 
 Make gptel work as an agent
