@@ -1161,6 +1161,7 @@ Returns (BEG . END) cons cell or nil if not found."
 (use-package dap-java :defer t :after lsp-java)
 
 (use-package emmet-mode
+  :straight t
   :defer t)
 
 (defun smv/web-mode-hook ()
@@ -1195,6 +1196,7 @@ Returns (BEG . END) cons cell or nil if not found."
                  (setq emmet-use-css-transform nil)))))
 
 (use-package rjsx-mode
+  :straight t
   :defer t
   :after prettier
   :mode (("\\.js\\'" . rjsx-mode)
@@ -1204,27 +1206,31 @@ Returns (BEG . END) cons cell or nil if not found."
   (rjsx-mode . prettier-mode))
 
 (use-package prettier
+  :straight t
   :defer t
   :after web-mode)
 
 (use-package restclient
+  :straight t
   :defer t
   :mode (("\\.http\\'" . restclient-mode))
   :bind (:map restclient-mode-map
 	      ("C-c C-f" . json-mode-beautify)))
 
 (use-package rust-ts-mode
+  :straight t
   :defer t
   :mode "\\.rs\\'"
   :hook (rust-ts-mode . lsp-deferred))
 
 (use-package ruby-ts-mode
+  :straight t
   :defer t
   :mode "\\.rb\\'"
   :hook (ruby-ts-mode . lsp-deferred))
 
 (use-package typst-ts-mode
-  :defer t
+  :straight t
   :mode "\\.typ\\'")
 
 (with-eval-after-load 'lsp-mode
@@ -1242,7 +1248,7 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (use-package lsp-dart
   :defer t
-  :after lsp-mode)
+  :after (lsp-mode dart-mode))
 
 (use-package dabbrev
   ;; Swap M-/ and C-M-/
@@ -1376,6 +1382,7 @@ Returns (BEG . END) cons cell or nil if not found."
 	      perplexity/sonar-pro ;; 3 in - 15 out
 	      anthropic/claude-sonnet-4 ;; 3 in - 15 out
 	      anthropic/claude-sonnet-4.5 ;; 3 in - 15 out
+	      google/gemini-3-pro-preview ;; ;; 2 in - 12 out
 	      openai/gpt-5.1 ;; 1.25 in - 10 out
 	      openai/gpt-5.1-codex ;; 1.25 in - 10 out
 	      google/gemini-2.5-pro ;; 1.25 in - 10 out
@@ -1466,6 +1473,13 @@ Returns (BEG . END) cons cell or nil if not found."
   :hook (magit-mode . gptel-magit-install)
   :config
   (load-file (format "%s%s/%s%s" user-emacs-directory "config" "gptel-magit-message" ".el")))
+
+(with-eval-after-load 'gptel
+  (let ((fname (expand-file-name "gptel-gemini-oauth-v3.el")))
+    (if (file-exists-p fname)
+	(progn
+	  (load-file fname)
+	  (gptel-make-gemini-oauth "Gemini-OAuth" :stream t)))))
 
 (use-package gptel-agent
   :after gptel
