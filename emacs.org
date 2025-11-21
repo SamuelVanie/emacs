@@ -2156,18 +2156,6 @@ A tool that permits to communicate with terminal agents directly from emacs.
   		 (window-width . 0.37))))
   #+end_src
 
-** Projectile
-
-Project management in emacs
-
-#+begin_src emacs-lisp
-  (use-package projectile
-    :bind ("C-c p" . projectile-command-map)
-    :straight t
-    :config
-    (projectile-mode))
-#+end_src
-
 ** Magit
 
 [[https://magit.vc/][Magit]] is a git interface for emacs. It's very handy and fun to use.
