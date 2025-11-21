@@ -1608,6 +1608,12 @@ Returns (BEG . END) cons cell or nil if not found."
 		 (side . right)
 		 (window-width . 0.37))))
 
+(use-package projectile
+  :bind ("C-c p" . projectile-command-map)
+  :straight t
+  :config
+  (projectile-mode))
+
 (setq project-find-functions 
       (remq 'project-try-vc project-find-functions))
 
