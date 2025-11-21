@@ -1373,6 +1373,12 @@ Returns (BEG . END) cons cell or nil if not found."
   (gptel-make-deepseek "DeepSeek"       ;Any name you want
     :stream t                           ;for streaming responses
     :key (with-temp-buffer (insert-file-contents "~/.org/.deep_key") (string-trim (buffer-string))))
+  (gptel-make-openai "qwen"
+    :host "dashscope-intl.aliyuncs.com"
+    :endpoint "/compatible-mode/v1/chat/completions"
+    :protocol "https"
+    :key (with-temp-buffer (insert-file-contents "~/.org/.qw_key") (string-trim (buffer-string)))
+    :models '("qwen3-coder-plus" "qwen-plus-latest"))
   (gptel-make-openai "OpenRouter"
     ;; :online in the language slug to add the search plugin
     :host "openrouter.ai"
@@ -1463,10 +1469,10 @@ Returns (BEG . END) cons cell or nil if not found."
    "!" #'gptel-send
    "(" #'gptel)
 
-  (let ((fname (expand-file-name "gptel-gemini-oauth-v3.el" user-emacs-directory)))
-	   (when (file-exists-p fname)
-	     (load-file fname)
-	     (gptel-make-gemini-oauth "Gemini-OAuth" :stream t)))
+  (let ((fname (expand-file-name "gptel-gemini-oauth-vertex.el" user-emacs-directory)))
+    (when (file-exists-p fname)
+      (load-file fname)
+      (gptel-make-gemini-oauth "Gemini-OAuth" :stream t)))
   
   :bind
   ("C-c RET" . gptel-send)

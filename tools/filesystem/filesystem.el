@@ -667,7 +667,7 @@ RETURNS:
 (gptel-make-tool
  :name "pwd"
  :function #'smv-tool/pwd
- :description "Get the current working directory full path"
+ :description "Get the current working directory from the current project"
  :confirm nil
  :include t
  :category "filesystem")
