@@ -1469,7 +1469,7 @@ Returns (BEG . END) cons cell or nil if not found."
    "!" #'gptel-send
    "(" #'gptel)
 
-  (let ((fname (expand-file-name "gptel-gemini-oauth-vertex.el" user-emacs-directory)))
+  (let ((fname (expand-file-name "gptel-gemini-oauth-vertex.el" "~/.org/")))
     (when (file-exists-p fname)
       (load-file fname)
       (gptel-make-gemini-oauth "Gemini-OAuth" :stream t)))
@@ -1489,7 +1489,10 @@ Returns (BEG . END) cons cell or nil if not found."
 (use-package gptel-agent
   :after gptel
   :straight (:host github :repo "karthink/gptel-agent" :files ("*"))
-  :config (gptel-agent-update))
+  :config
+  (add-to-list 'gptel-agent-dirs (expand-file-name "agents/" user-emacs-directory))
+  (gptel-agent-update)
+  )
 
 ;; load tools
 ;; (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "fetch_url" ".el"))
