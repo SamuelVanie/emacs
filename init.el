@@ -1469,7 +1469,7 @@ Returns (BEG . END) cons cell or nil if not found."
    "!" #'gptel-send
    "(" #'gptel)
 
-  (let ((fname (expand-file-name "gptel-gemini-oauth-vertex.el" "~/.org/")))
+  (let ((fname (expand-file-name "gptel-gemini-oauth-vertex.el" "~/.org/auth/")))
     (when (file-exists-p fname)
       (load-file fname)
       (gptel-make-gemini-oauth "Gemini-OAuth" :stream t)))
