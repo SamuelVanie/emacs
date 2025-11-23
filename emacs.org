@@ -2138,6 +2138,7 @@ A tool that permits to communicate with terminal agents directly from emacs.
 
 #+begin_src emacs-lisp
   (use-package agent-shell
+    :straight t
     :defer t
     :config
     (add-to-list 'display-buffer-alist

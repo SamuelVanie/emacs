@@ -1591,6 +1591,7 @@ Returns (BEG . END) cons cell or nil if not found."
   )
 
 (use-package agent-shell
+  :straight t
   :defer t
   :config
   (add-to-list 'display-buffer-alist
