@@ -676,13 +676,12 @@ Returns (BEG . END) cons cell or nil if not found."
 (use-package ef-themes
   :straight t)
 (use-package standard-themes
-  :straight t
-  :config
-  (load-theme 'standard-light))
+  :straight t)
 (use-package kaolin-themes
   :straight t
   :config
-  (kaolin-treemacs-theme))
+  (kaolin-treemacs-theme)
+  (load-theme 'kaolin-dark))
 (use-package catppuccin-theme
   :straight t)
 (use-package solo-jazz-theme
@@ -987,13 +986,6 @@ Returns (BEG . END) cons cell or nil if not found."
     (make-directory "~/.emacs.d/undo" t)))
 ;; Enable global undo-tree mode
 
-;; Critical Unicode and encoding fixes
-(prefer-coding-system 'utf-8)
-(set-default-coding-systems 'utf-8)
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(setq locale-coding-system 'utf-8)
-
 ;; Memory management for all terminal modes
 (setq comint-buffer-maximum-size 5000)
 (add-hook 'comint-output-filter-functions 'comint-truncate-buffer)
@@ -1079,7 +1071,6 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (use-package dap-mode
   :straight t
-  :defer t
   :after (lsp general)
   :custom
   (lsp-enable-dap-auto-configure nil)

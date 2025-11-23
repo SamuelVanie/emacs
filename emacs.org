@@ -854,13 +854,12 @@ Permit to expand region quickly, making it less painful to mark some region.
   (use-package ef-themes
     :straight t)
   (use-package standard-themes
-    :straight t
-    :config
-    (load-theme 'standard-light))
+    :straight t)
   (use-package kaolin-themes
     :straight t
     :config
-    (kaolin-treemacs-theme))
+    (kaolin-treemacs-theme)
+    (load-theme 'kaolin-dark))
   (use-package catppuccin-theme
     :straight t)
   (use-package solo-jazz-theme
@@ -1303,13 +1302,6 @@ Some day undo tree saved my self from losing my progress.
 Additional fixes for terminal emulator visual corruption issues.
 
 #+begin_src emacs-lisp
-  ;; Critical Unicode and encoding fixes
-  (prefer-coding-system 'utf-8)
-  (set-default-coding-systems 'utf-8)
-  (set-terminal-coding-system 'utf-8)
-  (set-keyboard-coding-system 'utf-8)
-  (setq locale-coding-system 'utf-8)
-
   ;; Memory management for all terminal modes
   (setq comint-buffer-maximum-size 5000)
   (add-hook 'comint-output-filter-functions 'comint-truncate-buffer)
@@ -1430,7 +1422,6 @@ Switching to dap-mode because it's more convenient to work with lsp-mode
 #+begin_src emacs-lisp
   (use-package dap-mode
     :straight t
-    :defer t
     :after (lsp general)
     :custom
     (lsp-enable-dap-auto-configure nil)
