@@ -1413,17 +1413,13 @@ Returns (BEG . END) cons cell or nil if not found."
 
   ;; ;; local models
   (gptel-make-openai "lmstudio"
-    :host "http://10.32.68.169:1234"
+    :host "localhost:1234"
     :endpoint "/v1/chat/completions"
+    :protocol "http"
     :stream t
     :key "dummy"
     :models '(
-              microsoft/phi-4-reasoning-plus
-              deepseek-coder-7b-instruct-v1.5
-              google/gemma-3-12b
-              whisper-large-v3
-              llama-3-groq-8b-tool-use
-              deepseek/deepseek-r1-0528-qwen3-8b
+	      qwen/qwen2.5-coder-14b
               ))
 
   ;; loads presets
