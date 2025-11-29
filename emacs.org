@@ -304,6 +304,15 @@ Rainbow permits to match pairs delimiters with the same color.
 ** Indentation configuration
 
 #+begin_src emacs-lisp
+  ;; a function to highlight indentation
+  (use-package highlight-indent-guides
+    :straight t
+    :config
+    (add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
+    (setq highlight-indent-guides-auto-character-face-perc 95)
+    (setq highlight-indent-guides-method 'character)
+    )
+
   ;; Indentation based on the indentation of the previous non-blank line.
   (setq-default indent-line-function #'indent-relative-first-indent-point)
 
@@ -941,7 +950,7 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
      "#" #'helm-show-kill-ring
      "i" #'helm-imenu
      "t" #'helm-magit-todos
-     "c" #'helm-zoxide-cd)
+     "c" #'smv/helm-zoxide-cd)
     (helm-mode)
     :bind
     (
@@ -1936,13 +1945,15 @@ Mode to interact with different llms in emacs.
 
     ;; ;; local models
     (gptel-make-openai "lmstudio"
-      :host "localhost:1234"
+      :host "127.0.0.1:1234"
       :endpoint "/v1/chat/completions"
       :protocol "http"
       :stream t
       :key "dummy"
       :models '(
   	      qwen/qwen2.5-coder-14b
+  	      deepseek-coder-6.7b-instruct
+  	      qwen/qwen3-vl-8b
                 ))
 
     ;; loads presets

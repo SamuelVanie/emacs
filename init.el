@@ -213,6 +213,15 @@
   :straight t
   :hook (prog-mode . rainbow-delimiters-mode))
 
+;; a function to highlight indentation
+(use-package highlight-indent-guides
+  :straight t
+  :config
+  (add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
+  (setq highlight-indent-guides-auto-character-face-perc 95)
+  (setq highlight-indent-guides-method 'character)
+  )
+
 ;; Indentation based on the indentation of the previous non-blank line.
 (setq-default indent-line-function #'indent-relative-first-indent-point)
 
@@ -738,7 +747,7 @@ Returns (BEG . END) cons cell or nil if not found."
    "#" #'helm-show-kill-ring
    "i" #'helm-imenu
    "t" #'helm-magit-todos
-   "c" #'helm-zoxide-cd)
+   "c" #'smv/helm-zoxide-cd)
   (helm-mode)
   :bind
   (
@@ -1413,13 +1422,15 @@ Returns (BEG . END) cons cell or nil if not found."
 
   ;; ;; local models
   (gptel-make-openai "lmstudio"
-    :host "localhost:1234"
+    :host "127.0.0.1:1234"
     :endpoint "/v1/chat/completions"
     :protocol "http"
     :stream t
     :key "dummy"
     :models '(
 	      qwen/qwen2.5-coder-14b
+	      deepseek-coder-6.7b-instruct
+	      qwen/qwen3-vl-8b
               ))
 
   ;; loads presets

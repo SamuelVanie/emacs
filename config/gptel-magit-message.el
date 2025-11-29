@@ -12,6 +12,6 @@ The commit message should be structured as follows:
 - An optional scope MAY be provided after a type. A scope is a phrase describing a section of the codebase enclosed in parenthesis, e.g., fix(parser):
 - A description MUST immediately follow the type/scope prefix. The description is a short description of the code changes, e.g., fix: array parsing issue when multiple spaces were contained in string.
 - Do not end the subject line with any punctuation
-- A longer commit body MAY be provided after the short description, providing additional contextual information about the code changes. The body MUST begin one blank line after the description. PREFER A LIST OF CHANGES USING BULLET POINTS separating each subject or changes.
+- A longer commit body MAY be provided after the short description, providing additional contextual information about the code changes. The body MUST begin one blank line after the description. THE FORMAT IS A LIST OF CHANGES USING BULLET POINTS separating each subject or changes.
 - Use the imperative mood in the subject line
 - Keep the body short and concise (OMIT IT ENTIRELY IF NOT USEFUL)")
