@@ -69,9 +69,6 @@
 
 (straight-use-package 'use-package)
 
-(add-hook 'dired-mode-hook #'dired-hide-details-mode)
-(add-hook 'dired-mode-hook #'all-the-icons-dired-mode)
-
 (setq read-file-name-completion-ignore-case t)
 (setq hippie-expand-try-functions-list
       '(
@@ -537,13 +534,7 @@ Returns (BEG . END) cons cell or nil if not found."
    "b" #'smerge-keep-all
    "r" #'smerge-refine
    "s" #'smerge-resolve)
-
-  
-  (general-define-key
-   :keymaps 'global-map
-   :prefix "C-c f"
-   "f" #'ffap
-   "s" #'ffap-menu))
+  )
 
 (use-package avy
   :straight t
@@ -552,20 +543,6 @@ Returns (BEG . END) cons cell or nil if not found."
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    :prefix "@"
-   "@"  #'avy-goto-char-in-line
-   "#"  #'avy-goto-char
-   "l d"  #'avy-kill-whole-line
-   "l l"  #'avy-goto-end-of-line
-   "u"  #'avy-goto-line-above
-   "e"  #'avy-goto-line-below
-   "l y"  #'avy-copy-line
-   "r d"  #'avy-kill-region
-   "r y"  #'avy-copy-region
-   "r t"  #'avy-transpose-lines-in-region
-   "r r"  #'avy-resume
-   "r m"  #'avy-move-region)
-  (general-define-key
-   :prefix "C-z @"
    "@"  #'avy-goto-char-in-line
    "#"  #'avy-goto-char
    "l d"  #'avy-kill-whole-line
@@ -679,6 +656,108 @@ Returns (BEG . END) cons cell or nil if not found."
    "'" #'er/mark-inside-quotes
    "\"" #'er/mark-outside-quotes
    "m" #'er/mark-email))
+
+(use-package visual-replace
+  :straight t
+  :config
+  (visual-replace-global-mode 1))
+
+(use-package drag-stuff
+  :straight t
+  :config
+  (drag-stuff-global-mode 1)
+  (drag-stuff-define-keys))
+
+(use-package dired
+  :config
+  (setq dired-listing-switches
+        "-l --almost-all --human-readable --group-directories-first --no-group")
+  ;; this command is useful when you want to close the window of `dirvish-side'
+  ;; automatically when opening a file
+  (put 'dired-find-alternate-file 'disabled nil))
+
+(use-package dirvish
+  :straight t
+  :init
+  (dirvish-override-dired-mode)
+  :custom
+  (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
+   '(("h" "~/"                          "Home")
+     ("d" "~/Downloads/"                "Downloads")
+     ("m" "/mnt/"                       "Drives")
+     ("p" "~/projects/"		  "Projects")
+     ("s" "/ssh:my-remote-server")      "SSH server"
+     ("e" "/sudo:root@localhost:/etc")  "Modify program settings"
+     ("t" "~/.local/share/Trash/files/" "TrashCan")))
+  :config
+  ;; (dirvish-peek-mode)             ; Preview files in minibuffer
+  ;; (dirvish-side-follow-mode)      ; similar to `treemacs-follow-mode'
+  (setq dirvish-mode-line-format
+        '(:left (sort symlink) :right (omit yank index)))
+  (setq dirvish-attributes           ; The order *MATTERS* for some attributes
+        '(vc-state subtree-state nerd-icons collapse git-msg file-time file-size)
+        dirvish-side-attributes
+        '(vc-state nerd-icons collapse file-size))
+  ;; open large directory (over 20000 files) asynchronously with `fd' command
+  (setq dirvish-large-directory-threshold 20000)
+  :bind ; Bind `dirvish-fd|dirvish-side|dirvish-dwim' as you see fit
+  (("C-c f f" . dirvish-side)
+   ("C-c f d" . dirvish)
+   :map dirvish-mode-map               ; Dirvish inherits `dired-mode-map'
+   (";"   . dired-up-directory)        ; So you can adjust `dired' bindings here
+   ("?"   . dirvish-dispatch)          ; [?] a helpful cheatsheet
+   ("a"   . dirvish-setup-menu)        ; [a]ttributes settings:`t' toggles mtime, `f' toggles fullframe, etc.
+   ("f"   . dirvish-file-info-menu)    ; [f]ile info
+   ("o"   . dirvish-quick-access)      ; [o]pen `dirvish-quick-access-entries'
+   ("s"   . dirvish-quicksort)         ; [s]ort flie list
+   ("r"   . dirvish-history-jump)      ; [r]ecent visited
+   ("l"   . dirvish-ls-switches-menu)  ; [l]s command flags
+   ("v"   . dirvish-vc-menu)           ; [v]ersion control commands
+   ("*"   . dirvish-mark-menu)
+   ("y"   . dirvish-yank-menu)
+   ("N"   . dirvish-narrow)
+   ("q"   . dirvish-quit)
+   ("^"   . dirvish-history-last)
+   ("TAB" . dirvish-subtree-toggle)
+   ("M-f" . dirvish-history-go-forward)
+   ("M-b" . dirvish-history-go-backward)
+   ("M-e" . dirvish-emerge-menu)))
+
+(use-package minuet
+  :straight t
+  :bind
+  (("M-y" . #'minuet-complete-with-minibuffer) ;; use minibuffer for completion
+   ("M-i" . #'minuet-show-suggestion) ;; use overlay for completion
+   ("C-c m" . #'minuet-configure-provider)
+   :map minuet-active-mode-map
+   ;; These keymaps activate only when a minuet suggestion is displayed in the current buffer
+   ("M-p" . #'minuet-previous-suggestion) ;; invoke completion or cycle to next completion
+   ("M-n" . #'minuet-next-suggestion) ;; invoke completion or cycle to previous completion
+   ("M-A" . #'minuet-accept-suggestion) ;; accept whole completion
+   ;; Accept the first line of completion, or N lines with a numeric-prefix:
+   ;; e.g. C-u 2 M-a will accepts 2 lines of completion.
+   ("M-a" . #'minuet-accept-suggestion-line)
+   ("M-e" . #'minuet-dismiss-suggestion))
+  :config
+  (setq minuet-provider 'openai-fim-compatible)
+  (setq minuet-n-completions 1)
+  (setq minuet-context-window 512)
+  (plist-put minuet-openai-fim-compatible-options :end-point "http://localhost:1234/v1/completions")
+  (plist-put minuet-openai-fim-compatible-options :name "LMStudio")
+  (plist-put minuet-openai-fim-compatible-options :api-key "TERM")
+  (plist-put minuet-openai-fim-compatible-options :model "deepseek-coder-6.7b-instruct")
+
+  (minuet-set-optional-options minuet-openai-fim-compatible-options :max_tokens 64))
+
+(use-package kirigami
+  :straight t
+  :bind
+  ("C-c k o" . kirigami-open-fold)
+  ("C-c k O" . kirigami-open-fold-rec)
+  ("C-c k m" . kirigami-close-folds)
+  ("C-c k c" . kirigami-close-fold)
+  ("C-c k r" . kirigami-open-folds)
+  ("C-c k TAB" . kirigami-toggle-fold))
 
 (use-package doom-themes
   :straight t)
@@ -1134,7 +1213,7 @@ Returns (BEG . END) cons cell or nil if not found."
   :straight t
   :config
   (general-define-key
-   :prefix "C-z *"
+   :prefix "+"
    "w" #'aya-create
    "x" #'aya-expand
    "h" #'aya-expand-from-history
