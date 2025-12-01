@@ -1133,56 +1133,38 @@ Returns (BEG . END) cons cell or nil if not found."
   '(when (boundp 'grep-find-ignored-directories)
      (add-to-list 'grep-find-ignored-directories "*.git")))
 
-(use-package lsp-mode
-  :straight t
-  :demand t
-  :init
-  (setq lsp-keymap-prefix "M-l")
-  :commands (lsp lsp-deferred)
+(defun enable-lsp-bridge()
+  (when-let* ((project (project-current))
+              (project-root (nth 2 project)))
+    (setq-local lsp-bridge-user-langserver-dir project-root
+                lsp-bridge-user-multiserver-dir project-root))
+  (lsp-bridge-mode))
+
+(use-package lsp-bridge
+  :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
+  			 :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
+  			 :build (:not compile))
+  :after (markdown yasnippet)
   :config
-  (lsp-enable-which-key-integration t)
-  (setq lsp-ui-doc-show-with-mouse nil)
-  (setq lsp-headerline-breadcrumb-enable nil)
+  (add-hook 'lsp-bridge-mode-hook #'enable-lsp-bridge)
   (general-define-key
    :keymaps 'meow-normal-state-keymap
    :prefix "h"
-   "h" #'lsp-ui-doc-toggle
-   "q" #'lsp-ui-doc-hide
-   "f" #'lsp-ui-doc-focus-frame
-   "u" #'lsp-ui-doc-unfocus-frame
-   "d" #'lsp-ui-peek-find-definitions
-   "e" #'lsp-ui-flycheck-list
-   "r" #'lsp-ui-peek-find-references
-   "i" #'lsp-ui-peek-find-implementations)
-  (define-key lsp-mode-map [remap xref-find-apropos] #'helm-lsp-workspace-symbol))
+   "h" #'lsp-bridge-show-documentation
+   "d d" #'lsp-bridge-find-def
+   "d o" #'lsp-bridge-find-def-other-window
+   "r" #'lsp-bridge-find-references
+   "m" #'lsp-bridge-imenu
+   "i" #'lsp-bridge-find-impl)
+  :init
+  (global-lsp-bridge-mode))
 
-(use-package lsp-ui
-  :straight t
-  :after lsp
-  :commands lsp-ui-mode
-  :hook (lsp-mode . lsp-ui-mode))
-
-(use-package dap-mode
-  :straight t
-  :after (lsp general)
-  :custom
-  (lsp-enable-dap-auto-configure nil)
-  :config
-  (dap-ui-mode 1)
-  (general-define-key
-   :keymaps 'meow-normal-state-keymap
-   :prefix "%"
-   "d" #'dap-hydra)
-  (general-define-key
-   :keymaps 'lsp-mode-map
-   :prefix lsp-keymap-prefix
-   "d" '(dap-hydra t :wk "debugger")))
+(use-package dape
+  :straight t)
 
 (use-package nix-mode
   :straight t
-  :mode "\\.nix\\'"
-  :config
-  :hook (nix-mode . lsp-deferred))
+  :mode "\\.nix\\'")
 
 (use-package flycheck
   :straight t
@@ -1237,13 +1219,6 @@ Returns (BEG . END) cons cell or nil if not found."
   :mode (("\\.yml\\'" . yaml-mode)
          ("\\.yaml\\'" . yaml-mode)
          ))
-
-(use-package lsp-java
-  :straight t
-  :after lsp
-  :hook (java-ts-mode . lsp-deferred))
-
-(use-package dap-java :defer t :after lsp-java)
 
 (use-package emmet-mode
   :straight t
@@ -1305,35 +1280,20 @@ Returns (BEG . END) cons cell or nil if not found."
 (use-package rust-ts-mode
   :straight t
   :defer t
-  :mode "\\.rs\\'"
-  :hook (rust-ts-mode . lsp-deferred))
+  :mode "\\.rs\\'")
 
 (use-package ruby-ts-mode
   :straight t
   :defer t
-  :mode "\\.rb\\'"
-  :hook (ruby-ts-mode . lsp-deferred))
+  :mode "\\.rb\\'")
 
 (use-package typst-ts-mode
   :straight t
   :mode "\\.typ\\'")
 
-(with-eval-after-load 'lsp-mode
-  (add-to-list 'lsp-language-id-configuration '(".*\\.typ" . "typst"))
-
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection '("tinymist")) ; Or the command to run your LSP server
-                    :activation-fn (lsp-activate-on "typst")
-                    :server-id 'tinymist)))
-
 (use-package dart-mode
   :defer t
-  :mode "\\.dart\\'"
-  :hook (dart-mode . lsp-deferred))
-
-(use-package lsp-dart
-  :defer t
-  :after (lsp-mode dart-mode))
+  :mode "\\.dart\\'")
 
 (use-package dabbrev
   ;; Swap M-/ and C-M-/
@@ -1590,15 +1550,6 @@ Returns (BEG . END) cons cell or nil if not found."
               (not (string-match-p "/\\.\\.?$" path))))
        (directory-files projects-dir t "^[^.]")))))
 
-(defun smv-tool/project_diagnostics ()
-  (let ((buffer nil))
-    (unwind-protect
-	(progn
-	  (lsp-ui-flycheck-list)
-	  (setq buffer (buffer-string))
-	  (kill-buffer)
-	  buffer))))
-
 (defun smv-tool/run_command (command pwd)
   (shell-command-to-string (format "cd %s && %s" pwd command)))
 
@@ -1633,12 +1584,7 @@ Returns (BEG . END) cons cell or nil if not found."
    :description "List the paths of the projects that are available on the system"
    :category "project-info")
 
-  (gptel-make-tool
-   :name "get_project_diagnostics"
-   :function #'smv-tool/project_diagnostics
-   :description "List the diagnostics inside the current project (liting errors and others)"
-   :category "project-info")
-
+  
   (gptel-make-tool
    :name "ask_partner"
    :function #'smv-tool/ask_partner
