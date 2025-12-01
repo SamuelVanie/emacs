@@ -691,8 +691,8 @@ Returns (BEG . END) cons cell or nil if not found."
      ("d" "~/Downloads/"                "Downloads")
      ("m" "/mnt/"                       "Drives")
      ("p" "~/projects/"		  "Projects")
-     ("s" "/ssh:my-remote-server")      "SSH server"
-     ("e" "/sudo:root@localhost:/etc")  "Modify program settings"
+     ("s" "/ssh:my-remote-server"      "SSH server")
+     ("e" "/sudo:root@localhost:/etc"  "Modify program settings")
      ("t" "~/.local/share/Trash/files/" "TrashCan")))
   :config
   ;; (dirvish-peek-mode)             ; Preview files in minibuffer
@@ -1713,8 +1713,10 @@ Returns (BEG . END) cons cell or nil if not found."
 ;; Split windows horizontally for side-by-side comparison
 (setq ediff-split-window-function 'split-window-horizontally)
 
-(use-package eaf
-  :load-path "~/.emacs.d/site-lisp/emacs-application-framework"
+(use-package grip-mode
+  :straight t
   :config
-  (require 'eaf)
-  (require 'eaf-markdown-previewer))
+  (setq grip-command 'auto) ;; auto, grip, go-grip or mdopen
+  (setq grip-preview-use-webkit t)
+  :bind (:map markdown-mode-command-map
+              ("g" . grip-mode)))
