@@ -91,6 +91,11 @@
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
 
+(use-package treesit-fold
+  :straight (treesit-fold :type git :host github :repo "emacs-tree-sitter/treesit-fold")
+  :config
+  (global-treesit-fold-mode))
+
 (if (eq system-type 'darwin)
     (use-package exec-path-from-shell
       :straight t
@@ -876,7 +881,7 @@ Returns (BEG . END) cons cell or nil if not found."
     :action (helm-make-actions
              "Change Directory" 
              (lambda (candidate)
-               (cd candidate)
+               (dired candidate)
                (message "Changed directory to %s" candidate)))))
 
 (defun smv/helm-zoxide-cd ()
@@ -1213,6 +1218,7 @@ Returns (BEG . END) cons cell or nil if not found."
   :straight t
   :config
   (general-define-key
+   :keymaps 'meow-normal-state-keymap
    :prefix "+"
    "w" #'aya-create
    "x" #'aya-expand

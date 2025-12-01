@@ -122,6 +122,16 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
 #+end_src
 
 
+fold text using treesitter syntax tree
+
+#+begin_src emacs-lisp
+  (use-package treesit-fold
+    :straight (treesit-fold :type git :host github :repo "emacs-tree-sitter/treesit-fold")
+    :config
+    (global-treesit-fold-mode))
+#+end_src
+
+
 * Shell
 
 ** Getting the exec path from shell
@@ -1123,7 +1133,7 @@ I have zoxide installed on my computer, I want something that will help me quick
       :action (helm-make-actions
                "Change Directory" 
                (lambda (candidate)
-                 (cd candidate)
+                 (dired candidate)
                  (message "Changed directory to %s" candidate)))))
 
   (defun smv/helm-zoxide-cd ()
@@ -1639,6 +1649,7 @@ A way to create temporary snippet to prevent rewriting code
     :straight t
     :config
     (general-define-key
+     :keymaps 'meow-normal-state-keymap
      :prefix "+"
      "w" #'aya-create
      "x" #'aya-expand
