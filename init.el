@@ -2,6 +2,7 @@
 (global-unset-key (kbd "C-z"))
 (global-unset-key (kbd "C-x C-z"))
 (setopt use-short-answers t)
+(setq delete-selection-temporary-region t)
 
 (setq warning-minimum-level :error)
 (global-hl-line-mode 1)
@@ -9,7 +10,7 @@
 ;; an indicator that will help in not writing really long lines
 ;; while programming
 (setq-default fill-column 80)
-(setq-default display-fill-column-indicator-character ?┃)
+(setq display-fill-column-indicator-character ?\u2588)
 
 (cond
  ((eq system-type 'darwin)  ;; macOS
