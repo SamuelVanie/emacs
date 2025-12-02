@@ -10,7 +10,6 @@
 ;; while programming
 (setq-default fill-column 80)
 (setq-default display-fill-column-indicator-character ?┃)
-(add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 
 (cond
  ((eq system-type 'darwin)  ;; macOS
