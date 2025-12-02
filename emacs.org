@@ -1554,6 +1554,18 @@ lsp-bridge, a blazingly fast and plug and play lsp client for emacs.
     (global-lsp-bridge-mode))
 #+end_src
 
+
+** Mason
+
+A package that install lsp servers for you. This rocks.
+
+#+begin_src emacs-lisp
+  (use-package mason
+    :straight t
+    :config
+    (mason-ensure))
+#+end_src
+
 ** Debugger configuration
 
 Dape mode works with lsp-bridge, so mothing to that instead
@@ -2060,6 +2072,7 @@ Mode to interact with different llms in emacs.
      "a" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "architect" ".el")))
      "t" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "tasker" ".el")))
      "k" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "task" ".el")))
+     "p" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "partner" ".el")))
      "s" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "summarizer" ".el")))
      "g" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "summarizer_google" ".el")))
      "y" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "yt_script_writter" ".el")))

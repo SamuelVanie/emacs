@@ -1167,6 +1167,11 @@ Returns (BEG . END) cons cell or nil if not found."
   :init
   (global-lsp-bridge-mode))
 
+(use-package mason
+  :straight t
+  :config
+  (mason-ensure))
+
 (use-package dape
   :straight t)
 
@@ -1500,6 +1505,7 @@ Returns (BEG . END) cons cell or nil if not found."
    "a" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "architect" ".el")))
    "t" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "tasker" ".el")))
    "k" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "task" ".el")))
+   "p" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "partner" ".el")))
    "s" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "summarizer" ".el")))
    "g" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "summarizer_google" ".el")))
    "y" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "yt_script_writter" ".el")))
