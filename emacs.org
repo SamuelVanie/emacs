@@ -13,6 +13,12 @@
   (setq warning-minimum-level :error)
   (global-hl-line-mode 1)
 
+  ;; an indicator that will help in not writing really long lines
+  ;; while programming
+  (setq-default fill-column 80)
+  (setq-default display-fill-column-indicator-character ?┃)
+  (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
+
   (cond
    ((eq system-type 'darwin)  ;; macOS
     (setq read-process-output-max (* 64 1024)))  ;; 64KB
@@ -29,7 +35,7 @@
     (defvar smv/default-variable-font-size 139))
    )
 
-  ;; remove noise for not non allowed command in emacs if your system make them
+  ;; remove noise for non allowed command in emacs if your system make them
   (setq ring-bell-function 'ignore)
 
   (setq custom-file (locate-user-emacs-file "custom-vars.el"))
