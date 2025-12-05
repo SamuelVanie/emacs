@@ -1422,7 +1422,7 @@ Returns (BEG . END) cons cell or nil if not found."
   (setq gptel-default-mode 'org-mode)
   (setq gptel-use-context 'user)
   ;; (setq gptel-confirm-tool-calls t)
-  (setq gptel-include-tool-results t)
+  (setq gptel-include-tool-results nil)
   (setq gptel-include-reasoning nil)
   
   (gptel-make-gemini "Gemini"
@@ -1524,6 +1524,7 @@ Returns (BEG . END) cons cell or nil if not found."
    :prefix "!"
    ")" #'gptel-add
    "!" #'gptel-send
+   "r" #'gptel-rewrite
    "(" #'gptel)
 
   ;; (let ((fname (expand-file-name "gptel-gemini-oauth-vertex.el" "~/.org/auth/")))
