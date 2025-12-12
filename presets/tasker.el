@@ -106,5 +106,4 @@
         </Guideline>
     </Phase>
 </Instructions>
-</SystemPrompt>"
-  :tools '("filesystem" "project-info" "info-gathering"))
+</SystemPrompt>")

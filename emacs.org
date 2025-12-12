@@ -848,18 +848,6 @@ Permit to expand region quickly, making it less painful to mark some region.
 #+end_src
 
 
-** Visual replace
-
-Something that help while you're doing regexp replace in emacs. It gives visual feedback in the current buffer
-
-#+begin_src emacs-lisp
-  (use-package visual-replace
-    :straight t
-    :config
-    (visual-replace-global-mode 1))
-#+end_src
-
-
 ** Drag stuff
 
 A tool that help moving things around in emacs. Lines, words, region...
@@ -935,6 +923,28 @@ make emacs' dired mode better by adding some features on top of it.
 
 #+end_src
 
+
+
+** Vimtab mode
+
+style the tab bar as in vim
+
+#+begin_src emacs-lisp
+  (use-package vim-tab-bar
+    :straight t
+    :after general
+    :commands vim-tab-bar-mode
+    :hook
+    (tab-bar-mode . vim-tab-bar-mode)
+    :config
+    (general-define-key
+     :keymaps 'meow-normal-state-keymap
+     :prefix "#"
+     "l" #'tab-bar-new-tab
+     "n" #'tab-bar-switch-to-prev-tab
+     "i" #'tab-bar-switch-to-next-tab
+     "u" #'tab-bar-close-tab))
+#+end_src
 
 ** Minuet
 
@@ -1080,7 +1090,7 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
     (setq helm-completion-in-region-fuzzy-match t)
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-     :prefix "#"
+     :prefix "^"
      "#" #'helm-show-kill-ring
      "i" #'helm-imenu
      "t" #'helm-magit-todos
@@ -1090,11 +1100,11 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
     (
      ("C-x C-f" . helm-find-files)
      ("C-x b" . helm-buffers-list)
-     ("C-c h o" . helm-occur-mode)
-     ("C-c h c" . smv/helm-zoxide-cd)
-     ("C-c h m" . helm-mark-ring)
-     ("C-c h k" . helm-show-kill-ring)
-     ("C-c h s" . helm-do-grep-ag))
+     ("M-g a o" . helm-occur-mode)
+     ("M-g a c" . smv/helm-zoxide-cd)
+     ("M-g a m" . helm-mark-ring)
+     ("M-g a k" . helm-show-kill-ring)
+     ("M-g a s" . helm-do-grep-ag))
     )
 #+end_src
 
@@ -1989,7 +1999,7 @@ Mode to interact with different llms in emacs.
     (setq gptel-default-mode 'org-mode)
     (setq gptel-use-context 'user)
     ;; (setq gptel-confirm-tool-calls t)
-    (setq gptel-include-tool-results nil)
+    (setq gptel-include-tool-results t)
     (setq gptel-include-reasoning nil)
     
     (gptel-make-gemini "Gemini"
@@ -2098,6 +2108,11 @@ Mode to interact with different llms in emacs.
     ;;   (when (file-exists-p fname)
     ;;     (load-file fname)
     ;;     (gptel-make-gemini-oauth "Gemini-OAuth" :stream t)))
+
+    (let ((fname (expand-file-name "gptel-anthropic-oauth.el" "~/.org/auth/")))
+      (when (file-exists-p fname)
+        (load-file fname)
+        (gptel-make-anthropic-oauth "Claude-OAuth" :stream t)))
     
     :bind
     ("C-c RET" . gptel-send)

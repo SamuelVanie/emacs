@@ -670,11 +670,6 @@ Returns (BEG . END) cons cell or nil if not found."
    "\"" #'er/mark-outside-quotes
    "m" #'er/mark-email))
 
-(use-package visual-replace
-  :straight t
-  :config
-  (visual-replace-global-mode 1))
-
 (use-package drag-stuff
   :straight t
   :config
@@ -735,6 +730,21 @@ Returns (BEG . END) cons cell or nil if not found."
    ("M-f" . dirvish-history-go-forward)
    ("M-b" . dirvish-history-go-backward)
    ("M-e" . dirvish-emerge-menu)))
+
+(use-package vim-tab-bar
+  :straight t
+  :after general
+  :commands vim-tab-bar-mode
+  :hook
+  (tab-bar-mode . vim-tab-bar-mode)
+  :config
+  (general-define-key
+   :keymaps 'meow-normal-state-keymap
+   :prefix "#"
+   "l" #'tab-bar-new-tab
+   "n" #'tab-bar-switch-to-prev-tab
+   "i" #'tab-bar-switch-to-next-tab
+   "u" #'tab-bar-close-tab))
 
 (use-package minuet
   :straight t
@@ -835,7 +845,7 @@ Returns (BEG . END) cons cell or nil if not found."
   (setq helm-completion-in-region-fuzzy-match t)
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-   :prefix "#"
+   :prefix "^"
    "#" #'helm-show-kill-ring
    "i" #'helm-imenu
    "t" #'helm-magit-todos
@@ -845,11 +855,11 @@ Returns (BEG . END) cons cell or nil if not found."
   (
    ("C-x C-f" . helm-find-files)
    ("C-x b" . helm-buffers-list)
-   ("C-c h o" . helm-occur-mode)
-   ("C-c h c" . smv/helm-zoxide-cd)
-   ("C-c h m" . helm-mark-ring)
-   ("C-c h k" . helm-show-kill-ring)
-   ("C-c h s" . helm-do-grep-ag))
+   ("M-g a o" . helm-occur-mode)
+   ("M-g a c" . smv/helm-zoxide-cd)
+   ("M-g a m" . helm-mark-ring)
+   ("M-g a k" . helm-show-kill-ring)
+   ("M-g a s" . helm-do-grep-ag))
   )
 
 (defun smv/helm-zoxide-candidates ()
@@ -1422,7 +1432,7 @@ Returns (BEG . END) cons cell or nil if not found."
   (setq gptel-default-mode 'org-mode)
   (setq gptel-use-context 'user)
   ;; (setq gptel-confirm-tool-calls t)
-  (setq gptel-include-tool-results nil)
+  (setq gptel-include-tool-results t)
   (setq gptel-include-reasoning nil)
   
   (gptel-make-gemini "Gemini"
@@ -1531,6 +1541,11 @@ Returns (BEG . END) cons cell or nil if not found."
   ;;   (when (file-exists-p fname)
   ;;     (load-file fname)
   ;;     (gptel-make-gemini-oauth "Gemini-OAuth" :stream t)))
+
+  (let ((fname (expand-file-name "gptel-anthropic-oauth.el" "~/.org/auth/")))
+    (when (file-exists-p fname)
+      (load-file fname)
+      (gptel-make-anthropic-oauth "Claude-OAuth" :stream t)))
   
   :bind
   ("C-c RET" . gptel-send)
