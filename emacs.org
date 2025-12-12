@@ -1003,9 +1003,7 @@ Emacs has default folding builtin, but this package aims to be an unified interf
 
 #+begin_src emacs-lisp
   (use-package doom-themes
-    :straight t
-    :config
-    (load-theme 'doom-dark+))
+    :straight t)
   (use-package ef-themes
     :straight t)
   (use-package standard-themes
@@ -1013,7 +1011,8 @@ Emacs has default folding builtin, but this package aims to be an unified interf
   (use-package kaolin-themes
     :straight t
     :config
-    (kaolin-treemacs-theme))
+    (kaolin-treemacs-theme)
+    (load-theme 'kaolin-mono-light))
   (use-package catppuccin-theme
     :straight t)
   (use-package solo-jazz-theme
@@ -2002,6 +2001,20 @@ Mode to interact with different llms in emacs.
     ;; (setq gptel-confirm-tool-calls t)
     (setq gptel-include-tool-results t)
     (setq gptel-include-reasoning nil)
+
+    (defun gptel-ignore-tool-results (beg end)
+      "Mark tool results between BEG and END as ignored by gptel."
+      (let ((prop))
+        (save-excursion
+  	(goto-char beg)
+  	(while (and (<= (point) end)
+                      (setq prop (text-property-search-forward
+  				'gptel 'tool
+  				(lambda (vtest vactual) (eq vtest (car-safe vactual))))))
+            (put-text-property (prop-match-beginning prop) (prop-match-end prop)
+                               'gptel 'ignore)))))
+
+    (add-hook 'gptel-post-response-functions 'gptel-ignore-tool-results)
     
     (gptel-make-gemini "Gemini"
       :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
@@ -2022,31 +2035,31 @@ Mode to interact with different llms in emacs.
       :stream t
       :key (with-temp-buffer (insert-file-contents "~/.org/.openr_key") (string-trim (buffer-string)))
       :models '(
-  	      perplexity/sonar-pro ;; 3 in - 15 out
-  	      anthropic/claude-sonnet-4 ;; 3 in - 15 out
-  	      anthropic/claude-sonnet-4.5 ;; 3 in - 15 out
-  	      google/gemini-3-pro-preview ;; ;; 2 in - 12 out
-  	      openai/gpt-5.1 ;; 1.25 in - 10 out
-  	      openai/gpt-5.1-codex ;; 1.25 in - 10 out
-  	      google/gemini-2.5-pro ;; 1.25 in - 10 out
-  	      openai/gpt-4.1 ;; 2 in - 8 out
-  	      qwen/qwen3-coder-plus ;; 1 in - 5 out
-  	      anthropic/claude-haiku-4.5 ;; 1 in - 5 out
-  	      switchpoint/router ;; 0.85 in - 3.40 out
-  	      z-ai/glm-4.6 ;; 0.7 in - 1.75 out
-  	      moonshotai/kimi-k2-thinking ;; 0.6 in - 2.5 out
-  	      qwen/qwen3-coder  ;; 0.302 in - 0.302 out
-  	      minimax/minimax-m1 ;; 0.30 in - 1.65 out
-  	      qwen/qwen3-coder-flash ;; 0.3 in - 1.50 out
-  	      moonshotai/kimi-dev-72b ;; 0.29 in - 1.15 out
-  	      x-ai/grok-code-fast-1 ;; 0.2 in - 1.5 out
-  	      minimax/minimax-m2 ;; 0.255 in - 1.02 out
-    	      deepseek/deepseek-v3.1-terminus ;; 0.23 in - 0.9 out
-  	      google/gemini-2.5-flash-lite ;; 0.10 in - 0.4 out
-  	      z-ai/glm-4.5-air:free
-  	      qwen/qwen3-coder:free
-  	      deepseek/deepseek-chat-v3.1:free
-  	      openrouter/sherlock-think-alpha
+    	      perplexity/sonar-pro ;; 3 in - 15 out
+    	      anthropic/claude-sonnet-4 ;; 3 in - 15 out
+    	      anthropic/claude-sonnet-4.5 ;; 3 in - 15 out
+    	      google/gemini-3-pro-preview ;; ;; 2 in - 12 out
+    	      openai/gpt-5.1 ;; 1.25 in - 10 out
+    	      openai/gpt-5.1-codex ;; 1.25 in - 10 out
+    	      google/gemini-2.5-pro ;; 1.25 in - 10 out
+    	      openai/gpt-4.1 ;; 2 in - 8 out
+    	      qwen/qwen3-coder-plus ;; 1 in - 5 out
+    	      anthropic/claude-haiku-4.5 ;; 1 in - 5 out
+    	      switchpoint/router ;; 0.85 in - 3.40 out
+    	      z-ai/glm-4.6 ;; 0.7 in - 1.75 out
+    	      moonshotai/kimi-k2-thinking ;; 0.6 in - 2.5 out
+    	      qwen/qwen3-coder  ;; 0.302 in - 0.302 out
+    	      minimax/minimax-m1 ;; 0.30 in - 1.65 out
+    	      qwen/qwen3-coder-flash ;; 0.3 in - 1.50 out
+    	      moonshotai/kimi-dev-72b ;; 0.29 in - 1.15 out
+    	      x-ai/grok-code-fast-1 ;; 0.2 in - 1.5 out
+    	      minimax/minimax-m2 ;; 0.255 in - 1.02 out
+      	      deepseek/deepseek-v3.1-terminus ;; 0.23 in - 0.9 out
+    	      google/gemini-2.5-flash-lite ;; 0.10 in - 0.4 out
+    	      z-ai/glm-4.5-air:free
+    	      qwen/qwen3-coder:free
+    	      deepseek/deepseek-chat-v3.1:free
+    	      openrouter/sherlock-think-alpha
                 ))
 
     (setq
@@ -2064,9 +2077,9 @@ Mode to interact with different llms in emacs.
       :stream t
       :key "dummy"
       :models '(
-  	      qwen/qwen2.5-coder-14b
-  	      deepseek-coder-6.7b-instruct
-  	      qwen/qwen3-vl-8b
+    	      qwen/qwen2.5-coder-14b
+    	      deepseek-coder-6.7b-instruct
+    	      qwen/qwen3-vl-8b
                 ))
 
     ;; loads presets
