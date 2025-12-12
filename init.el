@@ -783,7 +783,9 @@ Returns (BEG . END) cons cell or nil if not found."
   ("C-c k TAB" . kirigami-toggle-fold))
 
 (use-package doom-themes
-  :straight t)
+  :straight t
+  :config
+  (load-theme 'doom-dark+))
 (use-package ef-themes
   :straight t)
 (use-package standard-themes
@@ -791,8 +793,7 @@ Returns (BEG . END) cons cell or nil if not found."
 (use-package kaolin-themes
   :straight t
   :config
-  (kaolin-treemacs-theme)
-  (load-theme 'kaolin-dark))
+  (kaolin-treemacs-theme))
 (use-package catppuccin-theme
   :straight t)
 (use-package solo-jazz-theme
