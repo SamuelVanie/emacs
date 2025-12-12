@@ -862,6 +862,10 @@ Returns (BEG . END) cons cell or nil if not found."
    ("M-g a s" . helm-do-grep-ag))
   )
 
+(use-package wgrep-helm
+  :straight t
+  :after helm)
+
 (defun smv/helm-zoxide-candidates ()
   "Generate a list of zoxide query candidates."
   (when-let ((zoxide (executable-find "zoxide")))
@@ -1133,23 +1137,6 @@ Returns (BEG . END) cons cell or nil if not found."
   (make-directory "~/.emacs.d/auto-save-list" t))
 
 (global-set-key (kbd "C-M-;") 'comment-region)
-
-(use-package wgrep
-  :straight t
-  :defer t
-  :bind
-  ("C-x C-," . wgrep-change-to-wgrep-mode)
-  :config
-  (global-set-key (kbd "C-c r") 'rgrep))
-
-;; Permit to get the first results directly in the compilation buffer
-;; This kind of buffer is the one used for grep
-(setq compilation-scroll-output 'first-error)
-
-;; Ignore some directories
-(eval-after-load 'grep
-  '(when (boundp 'grep-find-ignored-directories)
-     (add-to-list 'grep-find-ignored-directories "*.git")))
 
 (defun enable-lsp-bridge()
   (when-let* ((project (project-current))

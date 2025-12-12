@@ -1109,6 +1109,15 @@ Permit to check the list of things like the pop mark. Pretty neat for me as I pr
 #+end_src
 
 
+Edit helm buffers
+
+#+begin_src emacs-lisp
+  (use-package wgrep-helm
+    :straight t
+    :after helm)
+#+end_src
+
+
 ** Navigating between folders
 
 I have zoxide installed on my computer, I want something that will help me quickly switch between the folders I use the most in emacs.
@@ -1505,31 +1514,6 @@ To help me comment code region quickly I set up this keyboard shortcut. The func
 
 #+begin_src emacs-lisp
   (global-set-key (kbd "C-M-;") 'comment-region)
-#+end_src
-
-** Search project wide
-
-wgrep will permit to make grep buffers editable so that you can just modify the occurences of what you're looking for.
-
-I use the built-in rgrep to do my search and replace so I'm binding it to =C-c r=.
-
-#+begin_src emacs-lisp
-  (use-package wgrep
-    :straight t
-    :defer t
-    :bind
-    ("C-x C-," . wgrep-change-to-wgrep-mode)
-    :config
-    (global-set-key (kbd "C-c r") 'rgrep))
-
-  ;; Permit to get the first results directly in the compilation buffer
-  ;; This kind of buffer is the one used for grep
-  (setq compilation-scroll-output 'first-error)
-
-  ;; Ignore some directories
-  (eval-after-load 'grep
-    '(when (boundp 'grep-find-ignored-directories)
-       (add-to-list 'grep-find-ignored-directories "*.git")))
 #+end_src
 
 ** Lsp-bridge
