@@ -1635,6 +1635,17 @@ When DISABLED:
   (gptel-agent-update)
   )
 
+(use-package gptel-quick
+  :after gptel
+  :bind
+  ("C-c g q" . gptel-quick)
+  :config
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   :prefix "!"
+   "q" #'gptel-quick)
+  :straight (gptel-quick :type git :host github :repo "karthink/gptel-quick" :files ("*.el")))
+
 ;; load tools
 ;; (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "fetch_url" ".el"))
 
