@@ -1435,19 +1435,73 @@ Returns (BEG . END) cons cell or nil if not found."
   (setq gptel-include-tool-results t)
   (setq gptel-include-reasoning nil)
 
-  (defun gptel-ignore-tool-results (beg end)
-    "Mark tool results between BEG and END as ignored by gptel."
+  (defun gptel--hide-tool-results-in-region (beg end)
+    "Helper: Hide tool results in range by backing up their property and setting to ignore."
     (let ((prop))
       (save-excursion
 	(goto-char beg)
 	(while (and (<= (point) end)
+                    ;; Search for gptel property where value is a list starting with 'tool
                     (setq prop (text-property-search-forward
 				'gptel 'tool
-				(lambda (vtest vactual) (eq vtest (car-safe vactual))))))
-          (put-text-property (prop-match-beginning prop) (prop-match-end prop)
-                             'gptel 'ignore)))))
+				(lambda (val actual) (eq val (car-safe actual))))))
+          (let* ((start (prop-match-beginning prop))
+		 (finish (prop-match-end prop))
+		 (original-val (prop-match-value prop)))
+            ;; 1. Save the original 'tool' value to a backup property
+            (put-text-property start finish 'gptel-tool-backup original-val)
+            ;; 2. Set the main property to 'ignore so gptel skips it
+            (put-text-property start finish 'gptel 'ignore))))))
 
-  (add-hook 'gptel-post-response-functions 'gptel-ignore-tool-results)
+  (defun gptel--restore-tool-results-in-region (beg end)
+    "Helper: Restore tool results in range from the backup property."
+    (let ((prop))
+      (save-excursion
+	(goto-char beg)
+	(while (and (<= (point) end)
+                    ;; Search for gptel property explicitly set to 'ignore
+                    (setq prop (text-property-search-forward
+				'gptel 'ignore #'eq)))
+          (let* ((start (prop-match-beginning prop))
+		 (finish (prop-match-end prop))
+		 ;; Check if we have a backup for this region
+		 (backup (get-text-property start 'gptel-tool-backup)))
+            (when backup
+              ;; 1. Restore the original value
+              (put-text-property start finish 'gptel backup)
+              ;; 2. Remove the backup property to clean up
+              (remove-text-properties start finish '(gptel-tool-backup nil))))))))
+
+  (defun gptel-auto-hide-tool-results (beg end)
+    "Hook function: automatically hide tool results in new responses."
+    (gptel--hide-tool-results-in-region beg end))
+
+  (define-minor-mode gptel-no-tool-history-mode
+    "Toggle excluding tool results from the conversation history context.
+
+When ENABLED:
+1. Existing tool results in the buffer are marked 'ignore'.
+2. New tool results (via hook) are marked 'ignore'.
+
+When DISABLED:
+1. The hook is removed.
+2. All ignored tool results are restored to their original state."
+    :global nil
+    :lighter " NoTool"
+    (if gptel-no-tool-history-mode
+	(progn
+          ;; 1. Add hook locally for future responses
+          (add-hook 'gptel-post-response-functions #'gptel-auto-hide-tool-results 0 t)
+          ;; 2. Process the whole buffer immediately to hide existing ones
+          (gptel--hide-tool-results-in-region (point-min) (point-max)))
+      
+      ;; ELSE (Turning off)
+      (progn
+	;; 1. Remove the hook locally
+	(remove-hook 'gptel-post-response-functions #'gptel-auto-hide-tool-results t)
+	;; 2. Restore all hidden items in the buffer
+	(gptel--restore-tool-results-in-region (point-min) (point-max)))))
+  
   
   (gptel-make-gemini "Gemini"
     :key (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string)))
@@ -1468,31 +1522,31 @@ Returns (BEG . END) cons cell or nil if not found."
     :stream t
     :key (with-temp-buffer (insert-file-contents "~/.org/.openr_key") (string-trim (buffer-string)))
     :models '(
-  	      perplexity/sonar-pro ;; 3 in - 15 out
-  	      anthropic/claude-sonnet-4 ;; 3 in - 15 out
-  	      anthropic/claude-sonnet-4.5 ;; 3 in - 15 out
-  	      google/gemini-3-pro-preview ;; ;; 2 in - 12 out
-  	      openai/gpt-5.1 ;; 1.25 in - 10 out
-  	      openai/gpt-5.1-codex ;; 1.25 in - 10 out
-  	      google/gemini-2.5-pro ;; 1.25 in - 10 out
-  	      openai/gpt-4.1 ;; 2 in - 8 out
-  	      qwen/qwen3-coder-plus ;; 1 in - 5 out
-  	      anthropic/claude-haiku-4.5 ;; 1 in - 5 out
-  	      switchpoint/router ;; 0.85 in - 3.40 out
-  	      z-ai/glm-4.6 ;; 0.7 in - 1.75 out
-  	      moonshotai/kimi-k2-thinking ;; 0.6 in - 2.5 out
-  	      qwen/qwen3-coder  ;; 0.302 in - 0.302 out
-  	      minimax/minimax-m1 ;; 0.30 in - 1.65 out
-  	      qwen/qwen3-coder-flash ;; 0.3 in - 1.50 out
-  	      moonshotai/kimi-dev-72b ;; 0.29 in - 1.15 out
-  	      x-ai/grok-code-fast-1 ;; 0.2 in - 1.5 out
-  	      minimax/minimax-m2 ;; 0.255 in - 1.02 out
-    	      deepseek/deepseek-v3.1-terminus ;; 0.23 in - 0.9 out
-  	      google/gemini-2.5-flash-lite ;; 0.10 in - 0.4 out
-  	      z-ai/glm-4.5-air:free
-  	      qwen/qwen3-coder:free
-  	      deepseek/deepseek-chat-v3.1:free
-  	      openrouter/sherlock-think-alpha
+      	      perplexity/sonar-pro ;; 3 in - 15 out
+      	      anthropic/claude-sonnet-4 ;; 3 in - 15 out
+      	      anthropic/claude-sonnet-4.5 ;; 3 in - 15 out
+      	      google/gemini-3-pro-preview ;; ;; 2 in - 12 out
+      	      openai/gpt-5.1 ;; 1.25 in - 10 out
+      	      openai/gpt-5.1-codex ;; 1.25 in - 10 out
+      	      google/gemini-2.5-pro ;; 1.25 in - 10 out
+      	      openai/gpt-4.1 ;; 2 in - 8 out
+      	      qwen/qwen3-coder-plus ;; 1 in - 5 out
+      	      anthropic/claude-haiku-4.5 ;; 1 in - 5 out
+      	      switchpoint/router ;; 0.85 in - 3.40 out
+      	      z-ai/glm-4.6 ;; 0.7 in - 1.75 out
+      	      moonshotai/kimi-k2-thinking ;; 0.6 in - 2.5 out
+      	      qwen/qwen3-coder  ;; 0.302 in - 0.302 out
+      	      minimax/minimax-m1 ;; 0.30 in - 1.65 out
+      	      qwen/qwen3-coder-flash ;; 0.3 in - 1.50 out
+      	      moonshotai/kimi-dev-72b ;; 0.29 in - 1.15 out
+      	      x-ai/grok-code-fast-1 ;; 0.2 in - 1.5 out
+      	      minimax/minimax-m2 ;; 0.255 in - 1.02 out
+              deepseek/deepseek-v3.1-terminus ;; 0.23 in - 0.9 out
+      	      google/gemini-2.5-flash-lite ;; 0.10 in - 0.4 out
+      	      z-ai/glm-4.5-air:free
+      	      qwen/qwen3-coder:free
+      	      deepseek/deepseek-chat-v3.1:free
+      	      openrouter/sherlock-think-alpha
               ))
 
   (setq
@@ -1510,9 +1564,9 @@ Returns (BEG . END) cons cell or nil if not found."
     :stream t
     :key "dummy"
     :models '(
-  	      qwen/qwen2.5-coder-14b
-  	      deepseek-coder-6.7b-instruct
-  	      qwen/qwen3-vl-8b
+      	      qwen/qwen2.5-coder-14b
+      	      deepseek-coder-6.7b-instruct
+      	      qwen/qwen3-vl-8b
               ))
 
   ;; loads presets
