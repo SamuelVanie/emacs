@@ -768,7 +768,7 @@ Returns (BEG . END) cons cell or nil if not found."
   (plist-put minuet-openai-fim-compatible-options :end-point "http://localhost:1234/v1/completions")
   (plist-put minuet-openai-fim-compatible-options :name "LMStudio")
   (plist-put minuet-openai-fim-compatible-options :api-key "TERM")
-  (plist-put minuet-openai-fim-compatible-options :model "deepseek-coder-6.7b-instruct")
+  (plist-put minuet-openai-fim-compatible-options :model "essentialai/rnj-1")
 
   (minuet-set-optional-options minuet-openai-fim-compatible-options :max_tokens 64))
 
@@ -1551,9 +1551,10 @@ When DISABLED:
     :stream t
     :key "dummy"
     :models '(
-      	      qwen/qwen2.5-coder-14b
-      	      deepseek-coder-6.7b-instruct
-      	      qwen/qwen3-vl-8b
+	      qwen/qwen2.5-coder-14b
+	      deepseek-coder-6.7b-instruct
+	      qwen/qwen3-vl-8b
+	      essentialai/rnj-1
               ))
 
   ;; loads presets
