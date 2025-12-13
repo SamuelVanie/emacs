@@ -2268,11 +2268,22 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
   (defun smv-tool/run_command (command pwd)
     (shell-command-to-string (format "cd %s && %s" pwd command)))
 
-  (defun smv-tool/ask_partner (question)
+  (defun smv-tool/ask_partner (question &optional directory)
     "Call gemini given the prompt"
-    (let ((command (concat "gemini -p " 
-                           (shell-quote-argument question))))
-      (shell-command-to-string (format "sleep 5 && %s" command))))
+    (let* ((partner-prompt-content
+            (with-temp-buffer
+              (insert-file-contents (format "%s%s" user-emacs-directory "presets/partner_prompt.el"))
+              (string-trim (buffer-string))))
+  	 (full-gemini-argument
+            (concat partner-prompt-content
+                    "\n\nHere is your task:\n\n"
+                    question))
+  	 (quoted-gemini-argument
+            (shell-quote-argument full-gemini-argument))
+  	 (command
+            (concat "gemini " quoted-gemini-argument " --yolo 2> /dev/null"))
+  	 (default-directory (or directory default-directory)))
+      (shell-command-to-string (format "%s" command))))
 
   (defun smv-tool/fetch_url_content (url)
     (smv/fetch-content url))
@@ -2304,9 +2315,13 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
      :name "ask_partner"
      :function #'smv-tool/ask_partner
      :description "Get any information from the internet or the current project using natural language. It's like your big brother who knows everything, you call him when you're really stuck, you got no alternative to get info."
-     :args (list '(:name "question"             ; a list of argument specifications
+     :args (list '(:name "question"
                          :type string
-                         :description "Your info gathering request. e.g What is the most up to date way of writing slidemasters using pptxgenjs library?"))
+                         :description "Your info gathering request. e.g What is the most up to date way of writing slidemasters using pptxgenjs library?")
+                 '(:name "directory"
+                         :type string
+                         :optional t
+                         :description "Directory path to search in for project exploration tasks. Omit for online research."))
      :category "info-gathering")
 
     (gptel-make-tool
