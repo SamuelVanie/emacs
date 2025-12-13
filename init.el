@@ -1734,10 +1734,10 @@ When DISABLED:
   (gptel-make-tool
    :name "ask_partner"
    :function #'smv-tool/ask_partner
-   :description "Get any information from the internet or the current project using natural language. It's like your big brother who knows everything, you call him when you're really stuck, you got no alternative to get info."
+   :description "Get any information from the internet or explore the current project. Give full summary information asked. You should be as precise as possible about what you need"
    :args (list '(:name "question"
                        :type string
-                       :description "Your info gathering request. e.g What is the most up to date way of writing slidemasters using pptxgenjs library?")
+                       :description "Your request. e.g What is the most up to date way of writing slidemasters using pptxgenjs library?")
                '(:name "directory"
                        :type string
                        :optional t
