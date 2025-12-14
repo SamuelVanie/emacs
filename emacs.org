@@ -20,6 +20,7 @@
   (setq-default display-fill-column-indicator-character ?\u2588)
 
   (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
+  (setq enable-recursive-minibuffers t)
 
   (cond
    ((eq system-type 'darwin)  ;; macOS
@@ -1960,27 +1961,17 @@ Do not tell me about anything else, direnv is the best package if you want nix t
 
 ** Custom add to load path function
 
-There are some packages that I don't want to add to my emacs configuration, because they're disposable functionalities. Using nix, I can download such packages. The issue that arise, is how to load those package in my current emacs session ? I've written this function that automatically add their path to my load path, it automatically get the appropriate package version too.
+There are some packages that I don't want to add to my emacs configuration, because they're disposable functionalities. Using nix, I can download such packages. The issue that arise, is how to load those package in my current emacs session ? I've adviced direnv-update-environment function such that it adds the directories inside the EMACSLOADPATH variable to the load-path.
 
 #+begin_src emacs-lisp
-(defun smv/add-nix-pkg-to-lpath (PKG_ENV)
-    "Load the PKG_ENV directory to the load path of current emacs session
-    it permits to then require the package"
-
-    (let ((pkg-nix-path (getenv PKG_ENV)))
-
-      (unless pkg-nix-path
-        (user-error "Environment variable '%s' is not set" PKG_ENV))
-
-      (let ((pkg-suffix "/share/emacs/site-lisp/elpa/"))
-
-        (string-match "-emacs-\\([^/]+\\)" pkg-nix-path)
-
-        (let* ((pkg-full-path (match-string 1 pkg-nix-path))
-               (path-to-add (concat pkg-nix-path pkg-suffix pkg-full-path)))
-          (unless (member path-to-add load-path)
-            (add-to-list 'load-path path-to-add))))))
-#+end_src
+  (with-eval-after-load 'direnv
+    (advice-add 'direnv-update-environment :after
+                (lambda (&rest _)
+  		(when (getenv "EMACSLOADPATH")
+                    (let ((paths (split-string (getenv "EMACSLOADPATH") ":")))
+                      (dolist (path (reverse paths))
+                        (add-to-list 'load-path path)))))))
+  #+end_src
 
 ** AI API
 

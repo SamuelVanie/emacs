@@ -13,6 +13,7 @@
 (setq-default display-fill-column-indicator-character ?\u2588)
 
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
+(setq enable-recursive-minibuffers t)
 
 (cond
  ((eq system-type 'darwin)  ;; macOS
@@ -1403,23 +1404,13 @@ Returns (BEG . END) cons cell or nil if not found."
 (use-package direnv
   :straight t)
 
-(defun smv/add-nix-pkg-to-lpath (PKG_ENV)
-    "Load the PKG_ENV directory to the load path of current emacs session
-    it permits to then require the package"
-
-    (let ((pkg-nix-path (getenv PKG_ENV)))
-
-      (unless pkg-nix-path
-        (user-error "Environment variable '%s' is not set" PKG_ENV))
-
-      (let ((pkg-suffix "/share/emacs/site-lisp/elpa/"))
-
-        (string-match "-emacs-\\([^/]+\\)" pkg-nix-path)
-
-        (let* ((pkg-full-path (match-string 1 pkg-nix-path))
-               (path-to-add (concat pkg-nix-path pkg-suffix pkg-full-path)))
-          (unless (member path-to-add load-path)
-            (add-to-list 'load-path path-to-add))))))
+(with-eval-after-load 'direnv
+  (advice-add 'direnv-update-environment :after
+              (lambda (&rest _)
+		(when (getenv "EMACSLOADPATH")
+                  (let ((paths (split-string (getenv "EMACSLOADPATH") ":")))
+                    (dolist (path (reverse paths))
+                      (add-to-list 'load-path path)))))))
 
 (setenv "GROQ_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gq_key") (string-trim (buffer-string))))
 (setenv "ANTHROPIC_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string))))
