@@ -1958,6 +1958,30 @@ Do not tell me about anything else, direnv is the best package if you want nix t
 #+end_src
 
 
+** Custom add to load path function
+
+There are some packages that I don't want to add to my emacs configuration, because they're disposable functionalities. Using nix, I can download such packages. The issue that arise, is how to load those package in my current emacs session ? I've written this function that automatically add their path to my load path, it automatically get the appropriate package version too.
+
+#+begin_src emacs-lisp
+(defun smv/add-nix-pkg-to-lpath (PKG_ENV)
+    "Load the PKG_ENV directory to the load path of current emacs session
+    it permits to then require the package"
+
+    (let ((pkg-nix-path (getenv PKG_ENV)))
+
+      (unless pkg-nix-path
+        (user-error "Environment variable '%s' is not set" PKG_ENV))
+
+      (let ((pkg-suffix "/share/emacs/site-lisp/elpa/"))
+
+        (string-match "-emacs-\\([^/]+\\)" pkg-nix-path)
+
+        (let* ((pkg-full-path (match-string 1 pkg-nix-path))
+               (path-to-add (concat pkg-nix-path pkg-suffix pkg-full-path)))
+          (unless (member path-to-add load-path)
+            (add-to-list 'load-path path-to-add))))))
+#+end_src
+
 ** AI API
 
 #+begin_src emacs-lisp

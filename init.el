@@ -1403,6 +1403,24 @@ Returns (BEG . END) cons cell or nil if not found."
 (use-package direnv
   :straight t)
 
+(defun smv/add-nix-pkg-to-lpath (PKG_ENV)
+    "Load the PKG_ENV directory to the load path of current emacs session
+    it permits to then require the package"
+
+    (let ((pkg-nix-path (getenv PKG_ENV)))
+
+      (unless pkg-nix-path
+        (user-error "Environment variable '%s' is not set" PKG_ENV))
+
+      (let ((pkg-suffix "/share/emacs/site-lisp/elpa/"))
+
+        (string-match "-emacs-\\([^/]+\\)" pkg-nix-path)
+
+        (let* ((pkg-full-path (match-string 1 pkg-nix-path))
+               (path-to-add (concat pkg-nix-path pkg-suffix pkg-full-path)))
+          (unless (member path-to-add load-path)
+            (add-to-list 'load-path path-to-add))))))
+
 (setenv "GROQ_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gq_key") (string-trim (buffer-string))))
 (setenv "ANTHROPIC_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string))))
 (setenv "DEEPSEEK_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.deep_key") (string-trim (buffer-string))))
