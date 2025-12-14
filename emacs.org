@@ -2245,23 +2245,6 @@ Make gptel work as an agent
     )
 #+end_src
 
-
-Query request on any highlighted text in emacs
-
-#+begin_src emacs-lisp
-  (use-package gptel-quick
-    :after gptel
-    :bind
-    ("C-c g q" . gptel-quick)
-    :config
-    (general-define-key
-     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-     :prefix "!"
-     "q" #'gptel-quick)
-    :straight (gptel-quick :type git :host github :repo "karthink/gptel-quick" :files ("*.el")))
-#+end_src
-
-
 ** MCP integration
 
 This permits to add interaction capabilities to my llm. LLMs will be able to use some tools to get more context if needed.
