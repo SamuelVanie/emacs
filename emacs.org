@@ -1543,10 +1543,9 @@ lsp-bridge, a blazingly fast and plug and play lsp client for emacs.
 #+begin_src emacs-lisp
   (defun enable-lsp-bridge()
     (when-let* ((project (project-current))
-                (project-root (nth 2 project)))
+                (project-root (rest project)))
       (setq-local lsp-bridge-user-langserver-dir project-root
-                  lsp-bridge-user-multiserver-dir project-root))
-    (lsp-bridge-mode))
+                  lsp-bridge-user-multiserver-dir project-root)))
 
   (use-package lsp-bridge
     :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
@@ -1554,7 +1553,6 @@ lsp-bridge, a blazingly fast and plug and play lsp client for emacs.
     			 :build (:not compile))
     :after (markdown yasnippet)
     :config
-    (add-hook 'lsp-bridge-mode-hook #'enable-lsp-bridge)
     (general-define-key
      :keymaps 'meow-normal-state-keymap
      :prefix "h"
@@ -1563,9 +1561,7 @@ lsp-bridge, a blazingly fast and plug and play lsp client for emacs.
      "d o" #'lsp-bridge-find-def-other-window
      "r" #'lsp-bridge-find-references
      "m" #'lsp-bridge-imenu
-     "i" #'lsp-bridge-find-impl)
-    :init
-    (global-lsp-bridge-mode))
+     "i" #'lsp-bridge-find-impl))
 #+end_src
 
 
@@ -1665,7 +1661,7 @@ A way to create temporary snippet to prevent rewriting code
     :config
     (general-define-key
      :keymaps 'meow-normal-state-keymap
-     :prefix "!"
+     :prefix "_"
      "w" #'aya-create
      "x" #'aya-expand
      "h" #'aya-expand-from-history

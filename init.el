@@ -1155,10 +1155,9 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (defun enable-lsp-bridge()
   (when-let* ((project (project-current))
-              (project-root (nth 2 project)))
+              (project-root (rest project)))
     (setq-local lsp-bridge-user-langserver-dir project-root
-                lsp-bridge-user-multiserver-dir project-root))
-  (lsp-bridge-mode))
+                lsp-bridge-user-multiserver-dir project-root)))
 
 (use-package lsp-bridge
   :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
@@ -1166,7 +1165,6 @@ Returns (BEG . END) cons cell or nil if not found."
   			 :build (:not compile))
   :after (markdown yasnippet)
   :config
-  (add-hook 'lsp-bridge-mode-hook #'enable-lsp-bridge)
   (general-define-key
    :keymaps 'meow-normal-state-keymap
    :prefix "h"
@@ -1175,9 +1173,7 @@ Returns (BEG . END) cons cell or nil if not found."
    "d o" #'lsp-bridge-find-def-other-window
    "r" #'lsp-bridge-find-references
    "m" #'lsp-bridge-imenu
-   "i" #'lsp-bridge-find-impl)
-  :init
-  (global-lsp-bridge-mode))
+   "i" #'lsp-bridge-find-impl))
 
 (use-package mason
   :straight t
@@ -1226,7 +1222,7 @@ Returns (BEG . END) cons cell or nil if not found."
   :config
   (general-define-key
    :keymaps 'meow-normal-state-keymap
-   :prefix "!"
+   :prefix "_"
    "w" #'aya-create
    "x" #'aya-expand
    "h" #'aya-expand-from-history
