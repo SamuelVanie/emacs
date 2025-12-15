@@ -856,11 +856,11 @@ Returns (BEG . END) cons cell or nil if not found."
   (
    ("C-x C-f" . helm-find-files)
    ("C-x b" . helm-buffers-list)
-   ("M-g a o" . helm-occur-mode)
-   ("M-g a c" . smv/helm-zoxide-cd)
-   ("M-g a m" . helm-mark-ring)
-   ("M-g a k" . helm-show-kill-ring)
-   ("M-g a s" . helm-do-grep-ag))
+   ("M-g h o" . helm-occur-mode)
+   ("M-g h c" . smv/helm-zoxide-cd)
+   ("M-g h m" . helm-mark-ring)
+   ("M-g h k" . helm-show-kill-ring)
+   ("M-g h s" . helm-do-grep-ag))
   )
 
 (use-package wgrep-helm
