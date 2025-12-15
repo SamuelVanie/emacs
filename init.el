@@ -550,26 +550,6 @@ Returns (BEG . END) cons cell or nil if not found."
    "s" #'smerge-resolve)
   )
 
-(use-package avy
-  :straight t
-  :after meow
-  :config
-  (general-define-key
-   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-   :prefix "@"
-   "@"  #'avy-goto-char-in-line
-   "#"  #'avy-goto-char
-   "l d"  #'avy-kill-whole-line
-   "l l"  #'avy-goto-end-of-line
-   "u"  #'avy-goto-line-above
-   "e"  #'avy-goto-line-below
-   "l y"  #'avy-copy-line
-   "r d"  #'avy-kill-region
-   "r y"  #'avy-copy-region
-   "r t"  #'avy-transpose-lines-in-region
-   "r r"  #'avy-resume
-   "r m"  #'avy-move-region))
-
 (winner-mode 1) ;; activate the package that recalls the current layout to redo it
 
 (use-package windmove
@@ -782,6 +762,40 @@ Returns (BEG . END) cons cell or nil if not found."
   ("C-c k c" . kirigami-close-fold)
   ("C-c k r" . kirigami-open-folds)
   ("C-c k TAB" . kirigami-toggle-fold))
+
+(use-package multiple-cursors
+  :straight t
+  :after (general hydra)
+  :config
+  (setq mc/always-run-for-all t)
+  (defhydra hydra-multiple-cursors (:hint nil)
+    "
+ ^Mark^             ^Skip^               ^Edit^
+ ^^^^^^^^-----------------------------------------
+ _>_: next like this    _i_: to next like this   _+_: edit lines
+ _<_: prev like this    _n_: to prev like this   _=_: mark all like this
+ _q_: quit
+ "
+    ("+" mc/edit-lines)
+    (">" mc/mark-next-like-this)
+    ("<" mc/mark-previous-like-this)
+    ("=" mc/mark-all-like-this)
+    ("i" mc/skip-to-next-like-this)
+    ("n" mc/skip-to-previous-like-this)
+    ("q" nil))
+  (define-key mc/keymap (kbd "<return>") nil)
+  (general-define-key
+   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+   "+" #'hydra-multiple-cursors/body)
+  (setq mc/cmds-to-run-once
+        (append mc/cmds-to-run-once
+                '(hydra-multiple-cursors/body
+                  hydra-multiple-cursors/mc/edit-lines
+                  hydra-multiple-cursors/mc/mark-next-like-this
+                  hydra-multiple-cursors/mc/mark-previous-like-this
+                  hydra-multiple-cursors/mc/mark-all-like-this
+                  hydra-multiple-cursors/mc/skip-to-next-like-this
+                  hydra-multiple-cursors/mc/skip-to-previous-like-this))))
 
 (use-package doom-themes
   :straight t)
@@ -1212,7 +1226,7 @@ Returns (BEG . END) cons cell or nil if not found."
   :config
   (general-define-key
    :keymaps 'meow-normal-state-keymap
-   :prefix "+"
+   :prefix "!"
    "w" #'aya-create
    "x" #'aya-expand
    "h" #'aya-expand-from-history
