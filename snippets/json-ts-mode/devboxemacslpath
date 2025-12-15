@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: devboxemacslpath
+# key: devboxinit
+# --
+      "EMACS_LOAD_PATHS=''",
+      "for pkg in $(printenv buildInputs | tr ' ' '\\n' | grep -E 'emacs.*-mode'); do",
+      "  PKG_NAME=$(basename $pkg | awk -F- '{ printf \"%s-%s\", $3, $4 }')",
+      "  PKG_VERSION=$(devbox info emacsPackages.$PKG_NAME 2>/dev/null | awk '{print $2}' || echo '')",
+      "  if [ -n \"$PKG_VERSION\" ]; then",
+      "    EMACS_LOAD_PATHS=\"$pkg/share/emacs/site-lisp/elpa/$PKG_NAME-$PKG_VERSION:$EMACS_LOAD_PATHS\"",
+      "  fi",
+      "done",
+      "export EMACSLOADPATH=\"$EMACS_LOAD_PATHS$EMACSLOADPATH\"",
+      "echo \"✓ Emacs packages loaded\""
