@@ -267,7 +267,7 @@
     (insert-pair nil open close)))
 
 (with-eval-after-load 'hydra
-  (defhydra hydra-surround (:hint nil)
+  (defhydra hydra-surround (:color blue :hint nil)
     "
 
     ^Quotes^          ^Brackets^        ^Symbols^         ^Custom^
