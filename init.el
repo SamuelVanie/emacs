@@ -772,9 +772,9 @@ Returns (BEG . END) cons cell or nil if not found."
     "
  ^Mark^             ^Skip^               ^Edit^
  ^^^^^^^^-----------------------------------------
- _>_: next like this    _i_: to next like this   _+_: edit lines
- _<_: prev like this    _n_: to prev like this   _=_: mark all like this
- _q_: quit
+ _>_: next like this        _i_: to next like this   _+_: edit lines
+ _<_: prev like this        _n_: to prev like this   _=_: mark all like this
+ _g_: mark regexp in region _q_: quit		  
  "
     ("+" mc/edit-lines)
     (">" mc/mark-next-like-this)
@@ -782,6 +782,7 @@ Returns (BEG . END) cons cell or nil if not found."
     ("=" mc/mark-all-like-this)
     ("i" mc/skip-to-next-like-this)
     ("n" mc/skip-to-previous-like-this)
+    ("g" mc/mark-all-in-region-regexp)
     ("q" nil))
   (define-key mc/keymap (kbd "<return>") nil)
   (general-define-key
@@ -807,7 +808,7 @@ Returns (BEG . END) cons cell or nil if not found."
   :straight t
   :config
   (kaolin-treemacs-theme)
-  (load-theme 'kaolin-mono-light))
+  (load-theme 'kaolin-ocean))
 (use-package catppuccin-theme
   :straight t)
 (use-package solo-jazz-theme
