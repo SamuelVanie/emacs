@@ -377,60 +377,36 @@ Trying the modal editor meow
   (defun smv/surround-with-pair (open close)
     "Surround the active region or insert pair at point using insert-pair.
           OPEN is the opening character, CLOSE is the closing character."
-    (interactive)
     (if (use-region-p)
         (insert-pair 1 open close)
       (insert-pair nil open close)))
 
-
-  (defun smv/surround-custom ()
-    "Prompt for custom opening and closing characters to surround text."
-    (interactive)
-    (let ((open (read-char "Opening character: "))
-          (close (read-char "Closing character: ")))
-      (smv/surround-with-pair open close)))
-
-
-  (defun smv/surround-with-string (open-str close-str)
-    "Surround region or point with arbitrary strings."
-    (if (use-region-p)
-        (let ((beg (region-beginning))
-              (end (region-end)))
-          (goto-char end)
-          (insert close-str)
-          (goto-char beg)
-          (insert open-str))
-      (insert open-str close-str)
-      (backward-char (length close-str))))
-
   (with-eval-after-load 'hydra
-    (defhydra hydra-surround (:color blue :hint nil)
-      "Surround region with
+    (defhydra hydra-surround (:hint nil)
+      "
 
       ^Quotes^          ^Brackets^        ^Symbols^         ^Custom^
       ^^^^^^^^--------------------------------------------------------
       _\"_: double       _(_: parentheses  _<_: angles       _c_: custom pair
-      _'_: single        _[_: square       _`_: backticks    _t_: HTML tag
+      _'_: single        _[_: square       _`_: backticks    _=_: equals
       _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
-                                         _=_: equals
-                                         _+_: plus
+                                           _+_: plus	     
       "
-      ("\"" (smv/surround-with-pair ?\" ?\"))
-      ("'" (smv/surround-with-pair ?' ?'))
-      ("~" (smv/surround-with-pair ?~ ?~))
-      ("(" (smv/surround-with-pair ?\( ?\)))
-      ("[" (smv/surround-with-pair ?\[ ?\]))
-      ("{" (smv/surround-with-pair ?\{ ?\}))
-      ("<" (smv/surround-with-pair ?\< ?\>))
-      ("`" (smv/surround-with-pair ?` ?`))
-      ("*" (smv/surround-with-pair ?* ?*))
-      ("=" (smv/surround-with-pair ?= ?=))
-      ("+" (smv/surround-with-pair ?+ ?+))
-      ("c" smv/surround-custom)
+      ("\"" (smv/surround-with-pair "\"" "\""))
+      ("'" (smv/surround-with-pair "'" "'"))
+      ("~" (smv/surround-with-pair "~" "~"))
+      ("(" (smv/surround-with-pair "(" ")"))
+      ("[" (smv/surround-with-pair "[" "]"))
+      ("{" (smv/surround-with-pair "{" "}"))
+      ("<" (smv/surround-with-pair "<" ">"))
+      ("`" (smv/surround-with-pair "`" "`"))
+      ("*" (smv/surround-with-pair "*" "*"))
+      ("=" (smv/surround-with-pair "=" "="))
+      ("+" (smv/surround-with-pair "+" "+"))
       ("s" (let ((open (read-string "Opening string: "))
                  (close (read-string "Closing string: ")))
-             (smv/surround-with-string open close)))
-      ("q" nil "quit" :color red))
+             (smv/surround-with-pair open close)))
+      ("q" nil "quit"))
     )
 
 
@@ -447,7 +423,7 @@ Trying the modal editor meow
      '("i" . meow-right)
      '("m" . meow-mark-word)
      '("M" . meow-mark-symbol)
-     '("J" . hydra-surround/body)
+     '("S" . hydra-surround/body)
      '("C" . meow-pop-to-mark)
      '("V" . meow-unpop-to-mark)
      '("<" . previous-buffer)
