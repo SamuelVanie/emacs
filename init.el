@@ -505,14 +505,34 @@ Returns (BEG . END) cons cell or nil if not found."
    "e" #'split-window-below
    "i" #'split-window-right)
 
-
-  ;; Some more complex commands
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    :prefix "="
-   "=" #'meow-indent
-   "t" #'repeat
-   "r" #'repeat-complex-command)
+   "="		#'indent-region
+   "SPC"		#'point-to-register
+   "+"		#'increment-register
+   "M"		#'bookmark-set-no-overwrite
+   "N"		#'rectangle-number-lines
+   "b"		#'bookmark-jump
+   "c"		#'clear-rectangle
+   "d"		#'delete-rectangle
+   "f"		#'frameset-to-register
+   "g"		#'insert-register
+   "i"		#'insert-register
+   "j"		#'jump-to-register
+   "k"		#'kill-rectangle
+   "l"		#'bookmark-bmenu-list
+   "m"		#'bookmark-set
+   "n"		#'number-to-register
+   "o"		#'open-rectangle
+   "r"		#'copy-rectangle-to-register
+   "s"		#'copy-to-register
+   "t"		#'string-rectangle
+   "w"		#'window-configuration-to-register
+   "x"		#'copy-to-register
+   "y"		#'yank-rectangle
+   "M-w"	#'copy-rectangle-as-kill
+   )
 
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
@@ -701,32 +721,6 @@ Returns (BEG . END) cons cell or nil if not found."
    "n" #'tab-bar-switch-to-prev-tab
    "i" #'tab-bar-switch-to-next-tab
    "u" #'tab-bar-close-tab))
-
-(use-package minuet
-  :straight t
-  :bind
-  (("M-y" . #'minuet-complete-with-minibuffer) ;; use minibuffer for completion
-   ("M-i" . #'minuet-show-suggestion) ;; use overlay for completion
-   ("C-c m" . #'minuet-configure-provider)
-   :map minuet-active-mode-map
-   ;; These keymaps activate only when a minuet suggestion is displayed in the current buffer
-   ("M-p" . #'minuet-previous-suggestion) ;; invoke completion or cycle to next completion
-   ("M-n" . #'minuet-next-suggestion) ;; invoke completion or cycle to previous completion
-   ("M-A" . #'minuet-accept-suggestion) ;; accept whole completion
-   ;; Accept the first line of completion, or N lines with a numeric-prefix:
-   ;; e.g. C-u 2 M-a will accepts 2 lines of completion.
-   ("M-a" . #'minuet-accept-suggestion-line)
-   ("M-e" . #'minuet-dismiss-suggestion))
-  :config
-  (setq minuet-provider 'openai-fim-compatible)
-  (setq minuet-n-completions 1)
-  (setq minuet-context-window 512)
-  (plist-put minuet-openai-fim-compatible-options :end-point "http://localhost:1234/v1/completions")
-  (plist-put minuet-openai-fim-compatible-options :name "LMStudio")
-  (plist-put minuet-openai-fim-compatible-options :api-key "TERM")
-  (plist-put minuet-openai-fim-compatible-options :model "essentialai/rnj-1")
-
-  (minuet-set-optional-options minuet-openai-fim-compatible-options :max_tokens 64))
 
 (use-package kirigami
   :straight t
@@ -1129,35 +1123,55 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (global-set-key (kbd "C-M-;") 'comment-region)
 
-(defun enable-lsp-bridge()
-  (when-let* ((project (project-current))
-              (project-root (rest project)))
-    (setq-local lsp-bridge-user-langserver-dir project-root
-                lsp-bridge-user-multiserver-dir project-root)))
-
-(use-package lsp-bridge
-  :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
-  			 :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
-  			 :build (:not compile))
-  :after (markdown yasnippet)
-  :config
-  (general-define-key
-   :keymaps 'meow-normal-state-keymap
-   :prefix "h"
-   "h" #'lsp-bridge-show-documentation
-   "d d" #'lsp-bridge-find-def
-   "d o" #'lsp-bridge-find-def-other-window
-   "r" #'lsp-bridge-find-references
-   "m" #'lsp-bridge-imenu
-   "i" #'lsp-bridge-find-impl))
-
 (use-package mason
   :straight t
   :config
   (mason-ensure))
 
-(use-package dape
-  :straight t)
+(use-package lsp-mode
+  :straight t
+  :demand t
+  :init
+  (setq lsp-keymap-prefix "M-l")
+  :commands (lsp lsp-deferred)
+  :config
+  (lsp-enable-which-key-integration t)
+  (setq lsp-ui-doc-show-with-mouse nil)
+  (setq lsp-headerline-breadcrumb-enable nil)
+  (general-define-key
+   :keymaps 'meow-normal-state-keymap
+   :prefix "h"
+   "h" #'lsp-ui-doc-toggle
+   "q" #'lsp-ui-doc-hide
+   "f" #'lsp-ui-doc-focus-frame
+   "u" #'lsp-ui-doc-unfocus-frame
+   "d" #'lsp-ui-peek-find-definitions
+   "e" #'lsp-ui-flycheck-list
+   "r" #'lsp-ui-peek-find-references
+   "i" #'lsp-ui-peek-find-implementations)
+  (define-key lsp-mode-map [remap xref-find-apropos] #'helm-lsp-workspace-symbol))
+
+(use-package lsp-ui
+  :straight t
+  :after lsp
+  :commands lsp-ui-mode
+  :hook (lsp-mode . lsp-ui-mode))
+
+(use-package dap-mode
+  :straight t
+  :after (lsp general)
+  :custom
+  (lsp-enable-dap-auto-configure nil)
+  :config
+  (dap-ui-mode 1)
+  (general-define-key
+   :keymaps 'meow-normal-state-keymap
+   :prefix "%"
+   "d" #'dap-hydra)
+  (general-define-key
+   :keymaps 'lsp-mode-map
+   :prefix lsp-keymap-prefix
+   "d" '(dap-hydra t :wk "debugger")))
 
 (use-package nix-mode
   :straight t
