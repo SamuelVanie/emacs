@@ -224,15 +224,6 @@
   :straight t
   :hook (prog-mode . rainbow-delimiters-mode))
 
-;; a function to highlight indentation
-(use-package highlight-indent-guides
-  :straight t
-  :config
-  (add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
-  (setq highlight-indent-guides-auto-character-face-perc 95)
-  (setq highlight-indent-guides-method 'character)
-  )
-
 ;; Indentation based on the indentation of the previous non-blank line.
 (setq-default indent-line-function #'indent-relative-first-indent-point)
 
@@ -355,7 +346,9 @@
    '("[" . meow-beginning-of-thing)
    '("]" . meow-end-of-thing)
    '("}" . forward-paragraph)
+   '(")" . forward-sexp)
    '("{" . backward-paragraph)
+   '("(" . backward-sexp)
    '("/" . meow-visit)
    '("a" . meow-append)
    '("A" . meow-open-below)
@@ -539,7 +532,7 @@ Returns (BEG . END) cons cell or nil if not found."
 
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-   :prefix ")"
+   :prefix "~ s"
    "n" #'smerge-vc-next-conflict
    "u" #'smerge-keep-upper
    "l" #'smerge-keep-lower
@@ -1137,9 +1130,6 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (use-package lsp-mode
   :straight t
-  :demand t
-  :init
-  (setq lsp-keymap-prefix "C-c l")
   :commands (lsp lsp-deferred)
   :config
   (lsp-enable-which-key-integration t)
@@ -1190,7 +1180,7 @@ Returns (BEG . END) cons cell or nil if not found."
   (setq flycheck-error-list-minimum-level 'error)
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-   :prefix "("
+   :prefix "`"
    "(" #'flycheck-buffer
    "d" #'flycheck-disable-checker
    ")" #'flycheck-list-errors)
