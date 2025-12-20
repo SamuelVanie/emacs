@@ -238,6 +238,9 @@
 
 ;; In modes such as `text-mode', pressing Enter multiple times removes
 ;; the indentation. The following fixes the issue and straights that text
+;; should never add tabs but spaces
+(setq indent-tabs-mode nil)
+
 ;; is properly indented using `indent-relative' or
 ;; `indent-relative-first-indent-point'.
 (setq-default indent-line-ignored-functions '())
@@ -1132,7 +1135,7 @@ Returns (BEG . END) cons cell or nil if not found."
   :straight t
   :demand t
   :init
-  (setq lsp-keymap-prefix "M-l")
+  (setq lsp-keymap-prefix "C-c l")
   :commands (lsp lsp-deferred)
   :config
   (lsp-enable-which-key-integration t)

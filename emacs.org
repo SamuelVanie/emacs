@@ -334,6 +334,9 @@ Rainbow permits to match pairs delimiters with the same color.
 
   ;; In modes such as `text-mode', pressing Enter multiple times removes
   ;; the indentation. The following fixes the issue and straights that text
+  ;; should never add tabs but spaces
+  (setq indent-tabs-mode nil)
+
   ;; is properly indented using `indent-relative' or
   ;; `indent-relative-first-indent-point'.
   (setq-default indent-line-ignored-functions '())
@@ -1527,7 +1530,7 @@ To register a new one over tcp :
   (lambda (port)
     `("cobol-language-support" "--port" ,(number-to-string port))))
  :priority 5
- :activation-fn (lsp-activate-on "cob")
+ :activation-fn (lsp-activate-on "cobol")
  :server-id 'cobol-lsp))
 #+end_example
 
@@ -1538,7 +1541,7 @@ over stdio is simpler, just use (lsp-stdio-connection "name_of_server")
     :straight t
     :demand t
     :init
-    (setq lsp-keymap-prefix "M-l")
+    (setq lsp-keymap-prefix "C-c l")
     :commands (lsp lsp-deferred)
     :config
     (lsp-enable-which-key-integration t)
