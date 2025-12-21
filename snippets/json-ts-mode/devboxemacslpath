@@ -4,11 +4,11 @@
 # --
       "EMACS_LOAD_PATHS=''",
       "for pkg in $(printenv buildInputs | tr ' ' '\\n' | grep -E 'emacs.*-mode'); do",
-      "  PKG_NAME=$(basename $pkg | awk -F- '{ printf \"%s-%s\", $3, $4 }')",
-      "  PKG_VERSION=$(devbox info emacsPackages.$PKG_NAME 2>/dev/null | awk '{print $2}' || echo '')",
-      "  if [ -n \"$PKG_VERSION\" ]; then",
-      "    EMACS_LOAD_PATHS=\"$pkg/share/emacs/site-lisp/elpa/$PKG_NAME-$PKG_VERSION:$EMACS_LOAD_PATHS\"",
+      "  LONGEST_PATH=$(find \"$pkg\" -name '*.el' -type f -exec dirname {} \\; 2>/dev/null | awk '{ print length, \$0 }' | sort -rn | head -1 | cut -d' ' -f2-)",
+      "  if [ -n \"$LONGEST_PATH\" ]; then",
+      "    EMACS_LOAD_PATHS=\"$LONGEST_PATH:$EMACS_LOAD_PATHS\"",
       "  fi",
       "done",
       "export EMACSLOADPATH=\"$EMACS_LOAD_PATHS$EMACSLOADPATH\"",
       "echo \"✓ Emacs packages loaded\""
+      
