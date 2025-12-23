@@ -772,9 +772,20 @@ Calling my edge browser directly from emacs, to save up time
   (cond ((eq system-type 'darwin) ; macOS
          (setq browse-url-browser-function 'browse-url-default-macosx-browser
                browse-url-default-macosx-application "Microsoft Edge"))
-        ((eq system-type 'android) ; Linux / Android (Termux)
-         (setq browse-url-browser-function 'browse-url-generic
-  	     browse-url-generic-program "termux-open-url"))
+        ((eq system-type 'android)
+         (defun smv/termux-copy-url-to-clipboard (url &optional _new-window)
+  	 "Copy URL to Android clipboard via termux-clipboard-set."
+  	 (interactive "sURL: ")
+  	 (let ((process-connection-type nil)) ; Use pipes instead of pty
+  	   (with-temp-buffer
+  	     (insert url)
+  	     (call-process-region (point-min) (point-max)
+  				  "termux-clipboard-set"
+  				  nil 0 nil)))
+  	 (message "URL copied to clipboard: %s" url))
+
+         (setq browse-url-browser-function 'smv/termux-copy-url-to-clipboard)
+         )
         ((eq system-type 'gnu/linux)
          (setq browse-url-generic-program "microsoft-edge-stable")))
 
@@ -2220,7 +2231,7 @@ Mode to interact with different llms in emacs.
 
     ;; configuring the window size
     (setq gptel-display-buffer-action
-      '(display-buffer-in-side-window (side . right) (window-width . 0.37) (window-parameters (no-other-window . t))))
+  	'(display-buffer-in-side-window (side . right) (window-width . 0.37) (window-parameters (no-other-window . t))))
     
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
