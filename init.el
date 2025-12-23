@@ -604,7 +604,16 @@ Returns (BEG . END) cons cell or nil if not found."
   ;; Better scrollback management
   (setq eat-kill-buffer-on-exit t))
 
-(setq browse-url-generic-program "microsoft-edge-stable")
+;; android configuration
+(cond ((eq system-type 'darwin) ; macOS
+       (setq browse-url-browser-function 'browse-url-default-macosx-browser
+             browse-url-default-macosx-application "Microsoft Edge"))
+      ((eq system-type 'android) ; Linux / Android (Termux)
+       (setq browse-url-browser-function 'browse-url-generic
+	     browse-url-generic-program "termux-open-url"))
+      ((eq system-type 'gnu/linux)
+       (setq browse-url-generic-program "microsoft-edge-stable")))
+
 (defun smv/browse-search ()
   "Unified search across multiple websites."
   (interactive)
@@ -1508,82 +1517,83 @@ When DISABLED:
     :protocol "https"
     :key (with-temp-buffer (insert-file-contents "~/.org/.qw_key") (string-trim (buffer-string)))
     :models '("qwen3-coder-plus" "qwen-plus-latest"))
-  (gptel-make-openai "OpenRouter"
-    ;; :online in the language slug to add the search plugin
-    :host "openrouter.ai"
-    :endpoint "/api/v1/chat/completions"
-    :stream t
-    :key (with-temp-buffer (insert-file-contents "~/.org/.openr_key") (string-trim (buffer-string)))
-    :models '(
-	        (perplexity/sonar-pro
-		 :input-cost 3
-		 :output-cost 15)
-	        (anthropic/claude-sonnet-4
-		 :input-cost 3
-		 :output-cost 15)
-	        (anthropic/claude-sonnet-4.5
-		 :input-cost 3
-		 :output-cost 15)
-	        (google/gemini-3-pro-preview
-		 :input-cost 2
-		 :output-cost 12)
-	        (openai/gpt-5.1
-		 :input-cost 1.25
-		 :output-cost 10)
-	        (openai/gpt-5.1-codex
-		 :input-cost 1.25
-		 :output-cost 10)
-	        (google/gemini-2.5-pro
-		 :input-cost 1.25
-		 :output-cost 10)
-	        (openai/gpt-4.1
-		 :input-cost 2
-		 :output-cost 8)
-	        (qwen/qwen3-coder-plus
-		 :input-cost 1
-		 :output-cost 5)
-	        (anthropic/claude-haiku-4.5
-		 :input-cost 1
-		 :output-cost 5)
-	        (switchpoint/router
-		 :input-cost 0.85
-		 :output-cost 3.40)
-	        (z-ai/glm-4.6
-		 :input-cost 0.7
-		 :output-cost 1.75)
-	        (moonshotai/kimi-k2-thinking
-		 :input-cost 0.6
-		 :output-cost 2.5)
-	        (qwen/qwen3-coder
-		 :input-cost 0.302
-		 :output-cost 0.302)
-	        (minimax/minimax-m1
-		 :input-cost 0.30
-		 :output-cost 1.65)
-	        (qwen/qwen3-coder-flash
-		 :input-cost 0.3
-		 :output-cost 1.50)
-	        (moonshotai/kimi-dev-72b
-		 :input-cost 0.29
-		 :output-cost 1.15)
-	        (x-ai/grok-code-fast-1
-		 :input-cost 0.2
-		 :output-cost 1.5)
-	        (minimax/minimax-m2
-		 :input-cost 0.255
-		 :output-cost 1.02)
-	        (deepseek/deepseek-v3.1-terminus
-		 :input-cost 0.23
-		 :output-cost 0.9)
-	        (google/gemini-2.5-flash-lite
-		 :input-cost 0.10
-		 :output-cost 0.4)
-              ))
+  (setq gptel-backend
+	(gptel-make-openai "OpenRouter"
+	  ;; :online in the language slug to add the search plugin
+	  :host "openrouter.ai"
+	  :endpoint "/api/v1/chat/completions"
+	  :stream t
+	  :key (with-temp-buffer (insert-file-contents "~/.org/.openr_key") (string-trim (buffer-string)))
+	  :models '(
+		    (perplexity/sonar-pro
+		     :input-cost 3
+		     :output-cost 15)
+		    (anthropic/claude-sonnet-4
+		     :input-cost 3
+		     :output-cost 15)
+		    (anthropic/claude-sonnet-4.5
+		     :input-cost 3
+		     :output-cost 15)
+		    (google/gemini-3-pro-preview
+		     :input-cost 2
+		     :output-cost 12)
+		    (openai/gpt-5.1
+		     :input-cost 1.25
+		     :output-cost 10)
+		    (openai/gpt-5.1-codex
+		     :input-cost 1.25
+		     :output-cost 10)
+		    (google/gemini-2.5-pro
+		     :input-cost 1.25
+		     :output-cost 10)
+		    (openai/gpt-4.1
+		     :input-cost 2
+		     :output-cost 8)
+		    (qwen/qwen3-coder-plus
+		     :input-cost 1
+		     :output-cost 5)
+		    (anthropic/claude-haiku-4.5
+		     :input-cost 1
+		     :output-cost 5)
+		    (switchpoint/router
+		     :input-cost 0.85
+		     :output-cost 3.40)
+		    (z-ai/glm-4.6
+		     :input-cost 0.7
+		     :output-cost 1.75)
+		    (moonshotai/kimi-k2-thinking
+		     :input-cost 0.6
+		     :output-cost 2.5)
+		    (qwen/qwen3-coder
+		     :input-cost 0.302
+		     :output-cost 0.302)
+		    (minimax/minimax-m1
+		     :input-cost 0.30
+		     :output-cost 1.65)
+		    (qwen/qwen3-coder-flash
+		     :input-cost 0.3
+		     :output-cost 1.50)
+		    (moonshotai/kimi-dev-72b
+		     :input-cost 0.29
+		     :output-cost 1.15)
+		    (x-ai/grok-code-fast-1
+		     :input-cost 0.2
+		     :output-cost 1.5)
+		    (minimax/minimax-m2
+		     :input-cost 0.255
+		     :output-cost 1.02)
+		    (deepseek/deepseek-v3.1-terminus
+		     :input-cost 0.23
+		     :output-cost 0.9)
+		    (google/gemini-2.5-flash-lite
+		     :input-cost 0.10
+		     :output-cost 0.4)
+		    ))
+	)
 
-  (setq
-   gptel-backend (gptel-make-anthropic "Anthropic"
-                   :key (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string)))
-                   :stream t))
+  (gptel-make-anthropic "Anthropic"
+    :key (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string)))
+    :stream t)
   
   (gptel-make-gh-copilot "Copilot")
 
@@ -1622,12 +1632,8 @@ When DISABLED:
    "w" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "writter" ".el"))))
 
   ;; configuring the window size
-  (add-to-list 'display-buffer-alist
-               `(my-both-modes-active-p
-                 (display-buffer-in-side-window)
-                 (side . right)
-                 (window-width . 0.37)
-                 (window-parameters . ((no-other-window . t)))))
+  (setq gptel-display-buffer-action
+    '(display-buffer-in-side-window (side . right) (window-width . 0.37) (window-parameters (no-other-window . t))))
   
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
