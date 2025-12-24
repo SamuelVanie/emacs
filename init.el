@@ -1610,10 +1610,10 @@ When DISABLED:
    "r" #'gptel-rewrite
    "(" #'gptel)
 
-  ;; (let ((fname (expand-file-name "gptel-gemini-oauth-vertex.el" "~/.org/auth/")))
-  ;;   (when (file-exists-p fname)
-  ;;     (load-file fname)
-  ;;     (gptel-make-gemini-oauth "Gemini-OAuth" :stream t)))
+  (let ((fname (expand-file-name "gptel-gemini-oauth-cloudpa.el" "~/.org/auth/")))
+    (when (file-exists-p fname)
+      (load-file fname)
+      (gptel-make-gemini-oauth "Gemini-OAuth" :stream t)))
 
   (let ((fname (expand-file-name "gptel-anthropic-oauth.el" "~/.org/auth/")))
     (when (file-exists-p fname)
