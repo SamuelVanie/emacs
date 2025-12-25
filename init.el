@@ -200,6 +200,7 @@
                 term-mode-hook
                 doc-view-minor-mode-hook
                 gptel-mode-hook
+		org-mode-hook
                 shell-mode-hook
                 dired-mode-hook
                 vterm-mode-hook
@@ -998,7 +999,7 @@ Returns (BEG . END) cons cell or nil if not found."
 (use-package phscroll
   :straight (phscroll :type git :host github :repo "misohena/phscroll" :files ("*.el"))
   :after org
-  :hook (org-mode . org-phscroll-mode)
+  :commands (org-phscroll-mode)
   :config
   (setq org-startup-truncated nil))
 
@@ -1537,7 +1538,7 @@ When DISABLED:
 	  :key (with-temp-buffer (insert-file-contents "~/.org/.openr_key") (string-trim (buffer-string)))
 	  :models '(
 		    (anthropic/claude-haiku-4.5 :input-cost 1 :output-cost 5)
-		    (anthropic/claude-sonnet-4.5 :input-cost 3 :output-cost 1)
+		    (anthropic/claude-sonnet-4.5 :input-cost 3 :output-cost 10)
 		    (deepseek/deepseek-v3.2 :input-cost 0.224 :output-cost 0.32)
 		    (google/gemini-2.5-flash-lite :input-cost 0.10 :output-cost 0.4)
 		    (google/gemini-3-flash-preview :input-cost 0.5 :output-cost 3)
@@ -1613,7 +1614,7 @@ When DISABLED:
   (let ((fname (expand-file-name "gptel-gemini-oauth-cloudpa.el" "~/.org/auth/")))
     (when (file-exists-p fname)
       (load-file fname)
-      (gptel-make-gemini-oauth "Gemini-OAuth" :stream t)))
+      (gptel-make-gemini-oauth "Gemini-OAuth")))
 
   (let ((fname (expand-file-name "gptel-anthropic-oauth.el" "~/.org/auth/")))
     (when (file-exists-p fname)
