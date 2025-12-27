@@ -1752,6 +1752,7 @@ Returns (BEG . END) cons cell or nil if not found."
 
   
   (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "filesystem/filesystem" ".el"))
+  (load-file (format "%s%s/%s%s" user-emacs-directory "ask" ".el"))
   )
 
 ;; tools from mcp servers

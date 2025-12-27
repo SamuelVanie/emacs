@@ -2349,6 +2349,7 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
 
     
     (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "filesystem/filesystem" ".el"))
+    (load-file (format "%s%s/%s%s" user-emacs-directory "ask" ".el"))
     )
 #+end_src
 
