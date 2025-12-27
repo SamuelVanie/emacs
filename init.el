@@ -1600,9 +1600,13 @@ When DISABLED:
    "w" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "writter" ".el"))))
 
   ;; configuring the window size
-  (setq gptel-display-buffer-action
-	'(display-buffer-in-side-window (side . right) (window-width . 0.37) (window-parameters (no-other-window . t))))
-  
+  (add-to-list 'display-buffer-alist
+               `(my-both-modes-active-p
+                 (display-buffer-in-side-window)
+                 (side . right)
+                 (window-width . 0.37)
+                 (window-parameters . ((no-other-window . t)))))
+      
   (general-define-key
    :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
    :prefix "!"
@@ -1614,7 +1618,7 @@ When DISABLED:
   (let ((fname (expand-file-name "gptel-gemini-oauth-cloudpa.el" "~/.org/auth/")))
     (when (file-exists-p fname)
       (load-file fname)
-      (gptel-make-gemini-oauth "Gemini-OAuth")))
+      (gptel-make-gemini-oauth "Gemini-OAuth" :stream t)))
 
   (let ((fname (expand-file-name "gptel-anthropic-oauth.el" "~/.org/auth/")))
     (when (file-exists-p fname)
