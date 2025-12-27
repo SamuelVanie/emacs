@@ -220,8 +220,9 @@
     (cl-labels ((ask-next (idx)
                   (if (>= idx total)
                       ;; All done, format result as JSON string
-                      (funcall callback 
-                               (json-encode results))
+                      (funcall callback
+			       (format "User's Responses: %s"
+				       (json-encode results)))
                     
                     (let* ((item (nth idx qs))
                            (q (gptel-ask--get item "question"))
