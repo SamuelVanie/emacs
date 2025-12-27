@@ -1,25 +1,39 @@
 ;;; ask.el --- GPTel tools for asking user questions  -*- lexical-binding: t -*-
 
-;;; Commentary:
-;;
-;; This package provides tools for `gptel' that allow the LLM to
-;; ask the user questions with multiple-choice answers directly
-;; in the gptel buffer using overlays.
-
-;;; Code:
-
 (require 'gptel)
 (require 'cl-lib)
+(require 'map)
 
 ;; --- Helper Functions ---
 
-(defun gptel-word-wrap (text width)
+(defun gptel-ask--get (obj key)
+  "Get value of KEY from OBJ (handles alist, plist, or hash-table)."
+  (cond
+   ((hash-table-p obj) (gethash key obj))
+   ((listp obj)
+    ;; check if plist or alist
+    (if (and (cdr obj) (symbolp (car obj)))
+        (plist-get obj (intern (concat ":" key)))
+      (alist-get (intern key) obj nil nil #'string=)))
+   (t nil)))
+
+(defun gptel-ask--word-wrap (text width)
   "Wrap TEXT to a given WIDTH."
-  (let ((fill-column width))
+  (if (not (stringp text)) ""
     (with-temp-buffer
       (insert text)
-      (fill-paragraph nil)
+      (let ((fill-column width))
+        (fill-paragraph nil))
       (buffer-string))))
+
+(defun gptel-ask--block-bg ()
+  "Return a background face suitable for displaying the question UI."
+  (cond
+   ((derived-mode-p 'org-mode) 'org-block)
+   ((derived-mode-p 'markdown-mode) 'markdown-code-face)
+   (t `(:background ,(face-attribute 'mode-line-inactive :background)
+        :box (:line-width 2 :color "grey75" :style released-button)
+        :extend t))))
 
 (defun gptel-ask--overlay-at-point ()
   "Return the question overlay at point, if any."
@@ -27,10 +41,10 @@
             (overlays-at (point))))
 
 (defun gptel-ask--make-keymap (choices)
-  "Generate keymap for CHOICES overlay interaction."
+  "Generate keymap for CHOICES interaction."
   (let ((map (make-sparse-keymap)))
     (dotimes (i (min 9 (length choices)))
-      (let ((index i)) ; Capture index for the closure
+      (let ((index i)) 
         (define-key map (kbd (number-to-string (1+ i)))
           (lambda () (interactive) (gptel-ask--select-choice index)))))
     (define-key map (kbd "RET") 'gptel-ask--confirm-choice)
@@ -42,219 +56,198 @@
     (define-key map (kbd "C-c C-k") 'gptel-ask--cancel)
     map))
 
-(defun gptel-ask--create-overlay (from to choices)
-  "Create interactive overlay FROM TO with CHOICES."
-  (let ((ov (make-overlay from to nil t)))
-    (overlay-put ov 'evaporate t)
-    (overlay-put ov 'gptel-ask t)
-    (overlay-put ov 'gptel-ask--choices choices)
-    (overlay-put ov 'gptel-ask--selection 0)
-    (overlay-put ov 'priority 100)
-    (overlay-put ov 'keymap (gptel-ask--make-keymap choices))
-    ov))
+;; --- UI Construction ---
 
-(defun gptel-ask--update-display (ov)
-  "Update visual display of choices in OV to reflect selection."
-  (let* ((selection (overlay-get ov 'gptel-ask--selection))
-         (buffer (overlay-buffer ov))
-         (start (overlay-start ov)))
-    (with-current-buffer buffer
+(defun gptel-ask--draw-ui (question choices selection)
+  "Return the UI string for QUESTION and CHOICES with SELECTION."
+  (let* ((width (min (window-body-width) 80))
+         (wrap-width (- width 4))
+         (header (propertize (format " 🤖 AI ASKS: %s" 
+                                     (gptel-ask--word-wrap question wrap-width))
+                             'face 'font-lock-keyword-face))
+         (choice-strs
+          ;; Uses cl-loop which is standard in cl-lib
+          (cl-loop for choice in choices
+                   for idx from 0
+                   collect
+                   (let* ((selected (= idx selection))
+                          (val (or (gptel-ask--get choice "value") "Unknown"))
+                          (desc (gptel-ask--get choice "description"))
+                          (mark (if selected " ● " " ○ "))
+                          (face (if selected '(:inherit highlight :weight bold) 'default)))
+                     (concat
+                      (propertize mark 'face face)
+                      (propertize (format "[%d] %s" (1+ idx) val) 'face face)
+                      ;; Check for description existence without subr-x
+                      (when (and desc (not (equal desc "")))
+                        (concat "\n    " 
+                                (propertize (gptel-ask--word-wrap desc wrap-width)
+                                            'face 'font-lock-comment-face)))))))
+         (footer (propertize "\n [RET] Confirm  [1-9] Select  [C-c C-k] Cancel"
+                             'face '(:inherit shadow :height 0.8)))
+         ;; Use mapconcat which is built-in
+         (content (concat "\n" header "\n\n" (mapconcat #'identity choice-strs "\n") footer "\n")))
+    
+    ;; Apply block styling to the whole content
+    (propertize content 'face (gptel-ask--block-bg))))
+
+(defun gptel-ask--update-overlay (ov)
+  "Redraw the overlay OV based on its current properties."
+  (let* ((question (overlay-get ov 'gptel-ask--question))
+         (choices (overlay-get ov 'gptel-ask--choices))
+         (selection (overlay-get ov 'gptel-ask--selection))
+         (new-text (gptel-ask--draw-ui question choices selection)))
+    
+    ;; We must modify the buffer text covered by the overlay to update appearance
+    ;; because we are using a "covering" overlay, not just an after-string
+    (let ((inhibit-read-only t)
+          (beg (overlay-start ov))
+          (end (overlay-end ov)))
       (save-excursion
-        (goto-char start)
-        (let ((choice-idx -1))
-          ;; Search for the bullet character which is more robust
-          (while (re-search-forward "^..│ \\([○●]\\)" (overlay-end ov) t)
-            (setq choice-idx (1+ choice-idx))
-            (replace-match (if (= choice-idx selection) "●" "○") t t nil 1)))))))
+        (goto-char beg)
+        (delete-region beg end)
+        (insert new-text)
+        (move-overlay ov beg (point))))))
+
+;; --- Interaction Handlers ---
 
 (defun gptel-ask--select-choice (n)
-  "Select choice N in the overlay at point."
   (interactive)
   (when-let ((ov (gptel-ask--overlay-at-point)))
     (overlay-put ov 'gptel-ask--selection n)
-    (gptel-ask--update-display ov)))
+    (gptel-ask--update-overlay ov)))
 
 (defun gptel-ask--cycle-choice (&optional prev)
-  "Cycle to next or previous choice in overlay."
   (interactive)
   (when-let* ((ov (gptel-ask--overlay-at-point))
-              (choices (overlay-get ov 'gptel-ask--choices))
-              (current (overlay-get ov 'gptel-ask--selection)))
-    (let ((next (if prev
-                    (mod (1- current) (length choices))
-                  (mod (1+ current) (length choices)))))
+              (len (length (overlay-get ov 'gptel-ask--choices)))
+              (curr (overlay-get ov 'gptel-ask--selection)))
+    (let ((next (mod (+ curr (if prev -1 1)) len)))
       (overlay-put ov 'gptel-ask--selection next)
-      (gptel-ask--update-display ov))))
+      (gptel-ask--update-overlay ov))))
 
-(defun gptel-ask--next-choice ()
-  "Move to next choice."
-  (interactive)
-  (gptel-ask--cycle-choice))
+(defun gptel-ask--next-choice () (interactive) (gptel-ask--cycle-choice))
+(defun gptel-ask--prev-choice () (interactive) (gptel-ask--cycle-choice t))
 
-(defun gptel-ask--prev-choice ()
-  "Move to previous choice."
-  (interactive)
-  (gptel-ask--cycle-choice t))
+(defun gptel-ask--teardown (ov)
+  "Remove the UI and overlay completely, restoring buffer state."
+  (when (overlayp ov)
+    (let ((inhibit-read-only t)
+          ;; Get the true start/end we stored or the overlay bounds
+          (beg (overlay-start ov))
+          (end (overlay-end ov)))
+      (when (and beg end)
+        (delete-region beg end)))
+    (delete-overlay ov)))
 
-(defun gptel-ask--finalize-display (ov result)
-  "Update the overlay to show it's completed and non-interactive."
-  (let ((buffer (overlay-buffer ov))
-        (end (overlay-end ov)))
-    (with-current-buffer buffer
-      (let ((inhibit-read-only t))
-        ;; Make overlay non-interactive and grayed out
-        (overlay-put ov 'keymap nil)
-        (overlay-put ov 'face '(:foreground "gray50"))
-        (save-excursion
-          (goto-char end)
-          (insert (propertize (format "\n  ✓ You selected: %s\n" result)
-                              'face '(:foreground "green"))))))))
-
-(defun gptel-ask--return-result (ov result)
-  "Return RESULT from OV to the waiting tool callback."
-  (when-let ((callback (overlay-get ov 'gptel-ask--callback)))
-    (funcall callback result))
-  (gptel-ask--finalize-display ov result))
 
 (defun gptel-ask--confirm-choice ()
-  "Confirm current selection and return result to LLM."
+  "Confirm selection and call callback."
   (interactive)
   (when-let* ((ov (gptel-ask--overlay-at-point))
+              (callback (overlay-get ov 'gptel-ask--callback))
               (choices (overlay-get ov 'gptel-ask--choices))
-              (selection (overlay-get ov 'gptel-ask--selection))
-              (choice-text (nth selection choices)))
-    (if (string-match-p "\\b[Oo]ther\\b" choice-text) ; Case-insensitive 'Other'
-        (let ((custom (read-string "Enter custom response: ")))
-          (gptel-ask--return-result ov custom))
-      (gptel-ask--return-result ov choice-text))))
+              (sel-idx (overlay-get ov 'gptel-ask--selection))
+              (choice (nth sel-idx choices))
+              (val (gptel-ask--get choice "value")))
+    
+    (gptel-ask--teardown ov)
+    
+    ;; Handle "Other" specifically if needed, or just return value
+    (if (string-match-p "\\b[Oo]ther\\b" val)
+        (let ((custom (read-string "Please specify: ")))
+          (funcall callback custom))
+      (funcall callback val))))
 
 (defun gptel-ask--cancel ()
-  "Cancel the question."
   (interactive)
   (when-let ((ov (gptel-ask--overlay-at-point)))
-    (gptel-ask--return-result ov "User cancelled.")))
+    (when-let ((cb (overlay-get ov 'gptel-ask--callback)))
+      (funcall cb "User cancelled interaction."))
+    (gptel-ask--teardown ov)))
 
-
-;; --- UI Drawing Function ---
-
-(defun gptel-ask--draw-ui (question choices)
-  "Draw the question and choices UI into the current buffer."
-  (let ((indent "  "))
-    ;; Draw the box
-    (insert (format "%s┌%s┐\n" indent (make-string 60 ?─)))
-    (insert (format "%s│ %s%s│\n" indent
-                    (propertize "Question from AI" 'face 'font-lock-keyword-face)
-                    (make-string (- 59 (length "Question from AI")) ?\s)))
-    (insert (format "%s├%s┤\n" indent (make-string 60 ?─)))
-
-    ;; Insert question, wrapped
-    (let ((wrapped-question (gptel-word-wrap question 58)))
-      (dolist (line (split-string wrapped-question "\n" t))
-        (insert (format "%s│ %s%s │\n" indent line (make-string (- 58 (length line)) ?\s)))))
-
-    (insert (format "%s├%s┤\n" indent (make-string 60 ?─)))
-
-    ;; Insert choices
-    (dotimes (i (length choices))
-      (let* ((choice (nth i choices))
-             (selected (= i 0))
-             (prefix (format "%d. " (1+ i)))
-             (line (format "%s%s" prefix choice))
-             (wrapped-lines (gptel-word-wrap line (- 58 4)))
-             (lines (split-string wrapped-lines "\n" t)))
-        (insert (format "%s│ %s %s%s │\n" indent
-                        (if selected "●" "○")
-                        (propertize (nth 0 lines) 'face 'bold)
-                        (make-string (- 56 (length (nth 0 lines))) ?\s)))
-        (dolist (extra-line (cdr lines))
-          (insert (format "%s│    %s%s │\n" indent extra-line (make-string (- 56 (length extra-line)) ?\s))))))
-
-    (insert (format "%s└%s┘\n" indent (make-string 60 ?─)))
-    (insert (format "%s%s\n\n" indent
-                    (propertize "Select: 1-9, n/p, TAB. Confirm: RET. Cancel: C-c C-k"
-                                'face 'font-lock-comment-face)))))
-
-
-;; --- Tool Definitions ---
+;; --- Main Tool Functions ---
 
 (defun gptel-ask--question (callback question choices)
-  "Ask QUESTION with CHOICES, call CALLBACK with result."
-  (let* ((choices-list (if (vectorp choices) (append choices nil) choices))
-         (from (point)))
-    ;; 1. Draw the UI
-    (gptel-ask--draw-ui question choices-list)
-    ;; 2. Create the interactive overlay over the UI
-    (let ((ov (gptel-ask--create-overlay from (point) choices-list)))
-      ;; 3. Store the async callback in the overlay for later retrieval
-      (overlay-put ov 'gptel-ask--callback callback))))
+  "Implementation for ask_question tool with zero-trace cleanup."
+  (let* ((choices-list (append choices nil))
+         (ui-text (gptel-ask--draw-ui question choices-list 0))
+         (inhibit-read-only t))
+    
+    (goto-char (point-max))
+    
+    ;; 1. Capture exact start position BEFORE any insertion
+    (let ((start-pos (point)))
+      
+      ;; 2. Insert formatting newlines and UI
+      (unless (bolp) (insert "\n"))
+      (insert ui-text)
+      (insert "\n") ;; Trailing spacing
+      
+      ;; 3. Create overlay covering EVERYTHING (from start-pos to current point)
+      (let ((ov (make-overlay start-pos (point))))
+        (overlay-put ov 'gptel-ask t)
+        (overlay-put ov 'gptel-ask--question question)
+        (overlay-put ov 'gptel-ask--choices choices-list)
+        (overlay-put ov 'gptel-ask--selection 0)
+        (overlay-put ov 'gptel-ask--callback callback)
+        (overlay-put ov 'keymap (gptel-ask--make-keymap choices-list))
+        (overlay-put ov 'evaporate t)
+        ;; Make the face cover the whole block
+        (overlay-put ov 'face (gptel-ask--block-bg))
+        
+        ;; 4. Move point inside to activate keymap
+        (goto-char (overlay-start ov))
+        ;; Optional: Recenter to make sure user sees it
+        (recenter)))))
 
-(defun gptel-ask--multiple (callback questions-and-choices)
-  "Ask multiple QUESTIONS-AND-CHOICES, call CALLBACK with results."
-  (let* ((questions (if (vectorp questions-and-choices)
-                        (append questions-and-choices nil)
-                      questions-and-choices))
+(defun gptel-ask--multiple (callback questions)
+  "Implementation for ask_multiple tool."
+  (let* ((qs (append questions nil)) ;; Vector to list
          (results (make-hash-table :test 'equal))
-         (total (length questions)))
-    (cl-labels ((ask-next (index)
-                  (if (>= index total)
-                      ;; All done - call final callback with results
-                      (funcall callback (cl-loop for k being the hash-keys of results
-                                                 using (hash-value v)
-                                                 collect (list :question k :answer v)))
-                    ;; Ask next question
-                    (let* ((q-obj (nth index questions))
-                           (question (or (alist-get 'question q-obj) (gethash "question" q-obj)))
-                           (choices-vec (or (alist-get 'choices q-obj) (gethash "choices" q-obj)))
-                           (choices (if (vectorp choices-vec) (append choices-vec nil) choices-vec)))
-                      (gptel-ask--question
-                       (lambda (answer)
-                         (puthash question answer results)
-                         (ask-next (1+ index)))
-                       question
-                       choices)))))
+         (total (length qs)))
+    
+    (cl-labels ((ask-next (idx)
+                  (if (>= idx total)
+                      ;; All done, format result as JSON string
+                      (funcall callback 
+                               (json-encode results))
+                    
+                    (let* ((item (nth idx qs))
+                           (q (gptel-ask--get item "question"))
+                           (c (gptel-ask--get item "choices")))
+                      (gptel-ask--question 
+                       (lambda (ans)
+                         (puthash q ans results)
+                         (ask-next (1+ idx)))
+                       q c)))))
       (ask-next 0))))
-
 
 ;; --- Tool Registration ---
 
 (gptel-make-tool
  :name "ask_question"
  :async t
- :include t
+ :include nil
  :function #'gptel-ask--question
- :description "Ask the user a single question with predefined choices. The user will select one option from an interactive list in the buffer. Use this when you need specific user input to proceed. ALWAYS include a choice like 'None of the above' or 'Other (please specify)' for flexibility. The tool call will wait for the user to make a selection."
+ :description "Ask the user a single question with predefined choices. The tool waits for user input. REQUIRED: 'choices' must contain 'value' keys."
  :args (list
-        '(:name "question"
-          :type string
-          :description "The question to ask the user. Should be clear and concise.")
-        '(:name "choices"
-          :type array
-          :items (:type string)
-          :description "An array of strings representing the choices. Limit to 9 for keyboard shortcuts. The last choice can be 'Other' to allow free-form input."))
- :category "user-interaction")
+        '(:name "question" :type string :description "The question text.")
+        '(:name "choices" :type array :items 
+          (:type object :properties 
+                 (:value (:type string) :description (:type string))
+                 :required ["value"]))))
 
 (gptel-make-tool
  :name "ask_multiple"
  :async t
- :include t
+ :include nil
  :function #'gptel-ask--multiple
- :description "Ask the user a series of related questions sequentially. Each question is presented one at a time with its own set of choices. Use this for configurations, multi-step decisions, or gathering structured information from the user."
+ :description "Ask a series of questions sequentially."
  :args (list
-        '(:name "questions"
-          :type array
-          :items (:type object
-                  :properties (:question (:type string
-                                          :description "The text of the question.")
-                               :choices (:type array
-                                        :items (:type string)
-                                        :description "An array of choice strings for this question."))
-                  :required ["question" "choices"])
-          :description "An array of question objects. Each object must have 'question' and 'choices' keys."))
- :category "user-interaction")
-
-
-;; We are no longer using the preview system as the tool handles its own UI.
-;; The `with-eval-after-load` block has been removed.
+        '(:name "questions" :type array :items 
+          (:type object :properties 
+                 (:question (:type string)
+                  :choices (:type array :items (:type object :properties (:value (:type string)))))))))
 
 (provide 'gptel-ask)
-;;; ask.el ends here
