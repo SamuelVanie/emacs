@@ -41,12 +41,18 @@
             (overlays-at (point))))
 
 (defun gptel-ask--make-keymap (choices)
-  "Generate keymap for CHOICES interaction."
-  (let ((map (make-sparse-keymap)))
-    (dotimes (i (min 9 (length choices)))
-      (let ((index i)) 
-        (define-key map (kbd (number-to-string (1+ i)))
-          (lambda () (interactive) (gptel-ask--select-choice index)))))
+  "Generate keymap for CHOICES interaction with number keys."
+  (let ((map (make-sparse-keymap))
+        (count (min 9 (length choices))))
+    ;; Bind numbers 1-9
+    (dotimes (i count)
+      (let ((idx i)) ;; Capture loop variable for closure
+        (define-key map (kbd (format "%d" (1+ i)))
+          (lambda () (interactive) (gptel-ask--select-choice idx)))
+        (define-key map (kbd (format "<kp-%d>" (1+ i)))
+          (lambda () (interactive) (gptel-ask--select-choice idx)))))
+    
+    ;; Navigation and Confirmation
     (define-key map (kbd "RET") 'gptel-ask--confirm-choice)
     (define-key map (kbd "<return>") 'gptel-ask--confirm-choice)
     (define-key map (kbd "TAB") 'gptel-ask--cycle-choice)
@@ -55,6 +61,8 @@
     (define-key map (kbd "p") 'gptel-ask--prev-choice)
     (define-key map (kbd "C-c C-k") 'gptel-ask--cancel)
     map))
+
+
 
 ;; --- UI Construction ---
 
@@ -83,7 +91,7 @@
                         (concat "\n    " 
                                 (propertize (gptel-ask--word-wrap desc wrap-width)
                                             'face 'font-lock-comment-face)))))))
-         (footer (propertize "\n [RET] Confirm  [1-9] Select  [C-c C-k] Cancel"
+         (footer (propertize "\n [RET] Confirm [n] next [p] prev [1-9] Select  [C-c C-k] Cancel"
                              'face '(:inherit shadow :height 0.8)))
          ;; Use mapconcat which is built-in
          (content (concat "\n" header "\n\n" (mapconcat #'identity choice-strs "\n") footer "\n")))
@@ -112,10 +120,18 @@
 ;; --- Interaction Handlers ---
 
 (defun gptel-ask--select-choice (n)
+  "Select choice N and update display."
   (interactive)
-  (when-let ((ov (gptel-ask--overlay-at-point)))
-    (overlay-put ov 'gptel-ask--selection n)
-    (gptel-ask--update-overlay ov)))
+  (when-let ((ov (gptel-ask--overlay-at-point))
+             (choices (overlay-get ov 'gptel-ask--choices)))
+    (when (< n (length choices))
+      (overlay-put ov 'gptel-ask--selection n)
+      (gptel-ask--update-overlay ov)
+      ;; Visual feedback in minibuffer
+      (let* ((choice (nth n choices))
+             (val (or (gptel-ask--get choice "value") "Option")))
+        (message "Selected [%d]: %s" (1+ n) val)))))
+
 
 (defun gptel-ask--cycle-choice (&optional prev)
   (interactive)
@@ -167,24 +183,19 @@
     (gptel-ask--teardown ov)))
 
 ;; --- Main Tool Functions ---
-
 (defun gptel-ask--question (callback question choices)
-  "Implementation for ask_question tool with zero-trace cleanup."
+  "Implementation for ask_question tool with high-priority overlay."
   (let* ((choices-list (append choices nil))
          (ui-text (gptel-ask--draw-ui question choices-list 0))
          (inhibit-read-only t))
     
     (goto-char (point-max))
     
-    ;; 1. Capture exact start position BEFORE any insertion
     (let ((start-pos (point)))
-      
-      ;; 2. Insert formatting newlines and UI
       (unless (bolp) (insert "\n"))
       (insert ui-text)
-      (insert "\n") ;; Trailing spacing
+      (insert "\n") 
       
-      ;; 3. Create overlay covering EVERYTHING (from start-pos to current point)
       (let ((ov (make-overlay start-pos (point))))
         (overlay-put ov 'gptel-ask t)
         (overlay-put ov 'gptel-ask--question question)
@@ -193,12 +204,11 @@
         (overlay-put ov 'gptel-ask--callback callback)
         (overlay-put ov 'keymap (gptel-ask--make-keymap choices-list))
         (overlay-put ov 'evaporate t)
-        ;; Make the face cover the whole block
         (overlay-put ov 'face (gptel-ask--block-bg))
         
-        ;; 4. Move point inside to activate keymap
+        (overlay-put ov 'priority 1000)
+        
         (goto-char (overlay-start ov))
-        ;; Optional: Recenter to make sure user sees it
         (recenter)))))
 
 (defun gptel-ask--multiple (callback questions)
