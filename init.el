@@ -117,7 +117,17 @@
 (setq eshell-smart-space-goes-to-end t)
 (setq eshell-list-files-after-cd t)
 
-;; Watch out you should have fish installed on your computer
+
+(with-eval-after-load 'eshell
+  (if (eq system-type 'android)
+      (defalias 'eshell/manjaro-exec
+	(lambda (&rest args)
+	  (eshell-command-result
+	   (format "proot-distro login manjaro --bind %s:/root --bind /sdcard:/sdcard --isolated -- sh -c 'cd %s && %s'"
+		   (getenv "HOME")
+		   (string-replace (getenv "HOME") "/root" (eshell/pwd))
+		   (string-join args " ")))))))
+
 (setq eshell-aliases-file (format "%s%s" user-emacs-directory "aliases"))
 (global-set-key (kbd "C-c e") 'eshell)
 
@@ -1542,8 +1552,14 @@ Returns (BEG . END) cons cell or nil if not found."
               (not (string-match-p "/\\.\\.?$" path))))
        (directory-files projects-dir t "^[^.]")))))
 
-(defun smv-tool/run_command (command pwd)
-  (shell-command-to-string (format "cd %s && %s" pwd command)))
+(defun smv-tool/run_command (command)
+  (with-temp-buffer
+             (let* ((exit-code (call-process "bash" nil (current-buffer) nil "-ci" command))
+                    (output (buffer-string)))
+               (if (zerop exit-code)
+                   output
+                 (format "Command failed with exit code %d:\nSTDOUT+STDERR:\n%s" exit-code output)))))
+
 
 (defun smv-tool/ask_partner (question &optional directory)
   "Call gemini given the prompt"
@@ -1575,10 +1591,7 @@ Returns (BEG . END) cons cell or nil if not found."
    :include t
    :args (list '(:name "command"             ; a list of argument specifications
                        :type string
-                       :description "The shell command to execute. e.g: echo 'test'")
-               '(:name "pwd"
-                       :type string
-                       :description "directory from where to execute the command."))
+                       :description "The shell command to execute. For probably long output commands please use bash utilities like grep, tail, head... to retrieve only important parts."))
    :category "system")
 
   (gptel-make-tool
