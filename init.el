@@ -1554,12 +1554,11 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (defun smv-tool/run_command (command)
   (with-temp-buffer
-             (let* ((exit-code (call-process "bash" nil (current-buffer) nil "-ci" command))
+             (let* ((exit-code (call-process "bash" nil (current-buffer) nil "-c" (format "source ~/.bashrc && %s" command)))
                     (output (buffer-string)))
                (if (zerop exit-code)
                    output
                  (format "Command failed with exit code %d:\nSTDOUT+STDERR:\n%s" exit-code output)))))
-
 
 (defun smv-tool/ask_partner (question &optional directory)
   "Call gemini given the prompt"
