@@ -1554,11 +1554,21 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (defun smv-tool/run_command (command)
   (with-temp-buffer
-             (let* ((exit-code (call-process "bash" nil (current-buffer) nil "-c" (format "source ~/.bashrc && %s" command)))
-                    (output (buffer-string)))
-               (if (zerop exit-code)
-                   output
-                 (format "Command failed with exit code %d:\nSTDOUT+STDERR:\n%s" exit-code output)))))
+    (let* ((cd-match (string-match "^cd \\([^ ;&|]+\\) *&& *\\(.+\\)$" command))
+           (actual-command (if cd-match (match-string 2 command) command))
+           (working-dir (if cd-match
+                            (expand-file-name (match-string 1 command))
+                          default-directory))
+           (exit-code (call-process "bash" nil (current-buffer) nil
+                                    "-c"
+                                    (format "cd %s && source ~/.bashrc && %s"
+                                            (shell-quote-argument working-dir)
+                                            actual-command)))
+           (output (buffer-string)))
+      (if (zerop exit-code)
+          output
+	(format "Command failed with exit code %d:\nSTDOUT+STDERR:\n%s"
+		exit-code output)))))
 
 (defun smv-tool/ask_partner (question &optional directory)
   "Call gemini given the prompt"
@@ -1566,15 +1576,15 @@ Returns (BEG . END) cons cell or nil if not found."
           (with-temp-buffer
             (insert-file-contents (format "%s%s" user-emacs-directory "presets/partner_prompt.el"))
             (string-trim (buffer-string))))
-	 (full-gemini-argument
+    	 (full-gemini-argument
           (concat partner-prompt-content
                   "\n\nHere is your task:\n\n"
                   question))
-	 (quoted-gemini-argument
+    	 (quoted-gemini-argument
           (shell-quote-argument full-gemini-argument))
-	 (command
+    	 (command
           (concat "gemini " quoted-gemini-argument " --yolo 2> /dev/null"))
-	 (default-directory (or directory default-directory)))
+    	 (default-directory (or directory default-directory)))
     (shell-command-to-string (format "%s" command))))
 
 (defun smv-tool/fetch_url_content (url)
