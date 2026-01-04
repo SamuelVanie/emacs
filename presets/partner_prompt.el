@@ -1,5 +1,5 @@
 (defun smv/pair_partner ()
-  "This function will dynamically creates the system prompt for my agent that will help me in writing code, driven by my MAYURI system."
+  "My programming partner which will help me executing tasks based on the MAYURI workflow"
   (let (
 	(component_name (read-string "What's the component name we're working on ? : "))
 	(task_id (read-string "What's the task we're working on ? : "))
