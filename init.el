@@ -942,10 +942,6 @@ Returns (BEG . END) cons cell or nil if not found."
         '("~/.org/todo.org"
           "~/.org/projects.org"))
 
-  (setq org-todo-keywords
-        '((sequence "TODO(t!)" "NEXT(n!)" "|" "DONE(d!)")
-          (sequence "BACKLOG(b!)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v!)" "WAIT(w@/!)" "|" "COMPLETED(c)" "CANC(k@)")))
-
   ;; easily move task to another header
   (setq org-refile-targets
         '(("archive.org" :maxlevel . 1)
@@ -955,53 +951,6 @@ Returns (BEG . END) cons cell or nil if not found."
 
   ;; Save Org buffers after refiling!
   (advice-add 'org-refile :after 'org-save-all-org-buffers)
-
-  (setq org-tag-alist
-        '((:startgroup)
-                                        ; Put mutually exclusive tags here
-          (:endgroup)
-          ("@school" . ?s)
-          ("personal" . ?p)
-          ("note" . ?n)
-          ("idea" . ?i)))
-
-  (setq org-agenda-custom-commands
-        '(("d" "Dashboard"
-           ((agenda "" ((org-deadline-warning-days 7)))
-            (todo "TODO"
-                  ((org-agenda-overriding-header "All tasks")))))
-
-          ("n" "Next Tasks"
-           ((todo "NEXT"
-                  ((org-agenda-overriding-header "Next Tasks")))))
-          
-          ("a" "Active"
-           ((todo "ACTIVE"
-                  ((org-agenda-overriding-header "Ongoing Tasks")))))
-
-          ("st" "School todos" tags-todo "+@school/TODO")
-          ("sp" "School Projects" tags-todo "+@school/ACTIVE")
-          ("sr" "School Review" tags-todo "+@school/REVIEW")
-
-          ("pt" "Personal todos" tags-todo "+personal/TODO")
-          ("pl" "Personal Projects" tags-todo "+personal/ACTIVE")
-          ("pr" "Personal Review" tags-todo "+personal/REVIEW")
-          
-          ("oa" "OnePoint Archimind" tags "+archimind+@school+coding/TODO")
-
-          ;; Low-effort next actions
-          ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-           ((org-agenda-overriding-header "Low Effort Tasks")
-            (org-agenda-max-todos 20)
-            (org-agenda-files org-agenda-files)))))
-
-  (setq org-capture-templates ;; quickly add todos entries without going into the file
-        `(("t" "Tasks")
-          ("tt" "Task" entry (file+olp "~/.org/todo.org" "Tasks")
-           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
-          ("ta" "Archimind task" entry (file+regexp "~/.org/todo.org" "PHASE 5")
-           "**** TODO %?\n %T\n %a\n %i")))
-
 
   (global-set-key (kbd "C-c a") 'org-agenda)
   (global-set-key (kbd "M-i") 'org-insert-item))
@@ -1042,21 +991,15 @@ Returns (BEG . END) cons cell or nil if not found."
 
   (global-org-modern-mode))
 
-(use-package org-journal
-  :defer t
+(use-package denote
   :after org
-  :init
-  ;; Set the directory where journal files will be stored
-  (setq org-journal-dir "~/.org/journal/")
-  ;; Optional: Set a file name format (default is YYYYMMDD)
-  (setq org-journal-file-format "%Y-%m-%d.org")
-  :bind
-  ("C-c n j" . org-journal-new-entry)
+  :straight t
   :config
-  ;; Optional: Automatically add a timestamp to new entries
-  (setq org-journal-enable-timestamp t)
-  ;; Straight the directory exists
-  (make-directory org-journal-dir t))
+  (setq denote-directory "~/.org/notes"))
+
+(use-package denote-journal
+  :straight t
+  :after denote)
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
