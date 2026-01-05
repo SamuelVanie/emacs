@@ -1623,6 +1623,16 @@ Returns (BEG . END) cons cell or nil if not found."
 (use-package magit
   :straight t
   :commands magit-status
+  :config
+  (setq magit-refresh-status-buffer nil)
+  (setq magit-diff-highlight-indentation nil
+	magit-diff-highlight-trailing nil
+	magit-diff-paint-whitespace nil
+	magit-diff-highlight-hunk-body nil
+	magit-diff-refine-hunk nil)
+  ;; (remove-hook 'magit-refs-sections-hook 'magit-insert-tags)
+  ;; use C-c C-d if you want to see the diff
+  (remove-hook 'server-switch-hook 'magit-commit-diff)
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
