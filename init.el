@@ -1,7 +1,6 @@
 (setq gc-const-threshold (* 90 1000 1000))
 (global-unset-key (kbd "C-z"))
 (global-unset-key (kbd "C-x C-z"))
-(setopt use-short-answers t)
 (setq delete-selection-temporary-region t)
 
 (setq warning-minimum-level :error)
@@ -13,7 +12,6 @@
 (setq-default display-fill-column-indicator-character ?\u2588)
 
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
-(setq enable-recursive-minibuffers t)
 
 (cond
  ((eq system-type 'darwin)  ;; macOS
@@ -30,9 +28,6 @@
   (defvar smv/default-font-size 139)
   (defvar smv/default-variable-font-size 139))
  )
-
-;; remove noise for non allowed command in emacs if your system make them
-(setq ring-bell-function 'ignore)
 
 (setq custom-file (locate-user-emacs-file "custom-vars.el"))
 (load custom-file 'noerror 'nomessage)
@@ -189,21 +184,9 @@
   (popper-mode +1)
   (popper-echo-mode +1))
 
-(scroll-bar-mode -1) ; Disable visible scroll bar
-(tool-bar-mode -1) ; Disable the toolbar
-(tooltip-mode -1) ; Disable tooltips
-(set-fringe-mode 10) ; Give some breathing room
-(menu-bar-mode -1) ; Disable menu bar
-
 (column-number-mode)
 (global-display-line-numbers-mode t) ;; print line numbers for files
-
-
-;; Set frame transparency
-(set-frame-parameter (selected-frame) 'fullscreen 'maximized)
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
-
-
+(toggle-frame-fullscreen)
 
 ;; some modes doesn't have to start with lines enable
 (dolist (mode '(
@@ -247,6 +230,17 @@
 ;; `indent-relative-first-indent-point'.
 (setq-default indent-line-ignored-functions '())
 (global-set-key (kbd "C-<tab>") 'tab-to-tab-stop)
+
+(use-package doom-modeline
+  :straight t
+  :init
+  (doom-modeline-mode 1)
+  :config
+  (setq doom-modeline-height 45
+  	doom-modeline-hud nil
+  	doom-modeline-major-mode-icon nil
+  	doom-modeline-buffer-state-icon nil)
+  (setq inhibit-compacting-font-caches t))
 
 (use-package hydra
   :straight t) ;; hydra permit to repeat a command easily without repeating the keybindings multiple
@@ -749,16 +743,6 @@ Returns (BEG . END) cons cell or nil if not found."
    "i" #'tab-bar-switch-to-next-tab
    "u" #'tab-bar-close-tab))
 
-(use-package kirigami
-  :straight t
-  :bind
-  ("C-c k o" . kirigami-open-fold)
-  ("C-c k O" . kirigami-open-fold-rec)
-  ("C-c k m" . kirigami-close-folds)
-  ("C-c k c" . kirigami-close-fold)
-  ("C-c k r" . kirigami-open-folds)
-  ("C-c k TAB" . kirigami-toggle-fold))
-
 (use-package multiple-cursors
   :straight t
   :after (general hydra)
@@ -846,41 +830,144 @@ Returns (BEG . END) cons cell or nil if not found."
   (setq which-key-idle-delay 0.3)
   (which-key-mode))
 
-(use-package helm
+(use-package embark
   :straight t
-  :demand t
-  :after general
-  :bind
-  ("M-x" . helm-M-x)
-  ("C-s" . helm-occur)
-  :config
-  (setq helm-mode-fuzzy-match t)
-  (setq helm-full-frame nil)
-  (setq helm-split-window-inside-p t)
-  (setq helm-always-two-windows nil)
-  (setq helm-completion-in-region-fuzzy-match t)
-  (general-define-key
-   :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-   :prefix "^"
-   "#" #'helm-show-kill-ring
-   "i" #'helm-imenu
-   "t" #'helm-magit-todos
-   "c" #'smv/helm-zoxide-cd)
-  (helm-mode)
-  :bind
-  (
-   ("C-x C-f" . helm-find-files)
-   ("C-x b" . helm-buffers-list)
-   ("M-g h o" . helm-occur-mode)
-   ("M-g h c" . smv/helm-zoxide-cd)
-   ("M-g h m" . helm-mark-ring)
-   ("M-g h k" . helm-show-kill-ring)
-   ("M-g h s" . helm-do-grep-ag))
-  )
 
-(use-package wgrep-helm
+  :bind
+  (("C-." . embark-act)         ;; pick some comfortable binding
+   ("C-;" . embark-dwim)        ;; good alternative: M-.
+   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+  :init
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  :config
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+		 nil
+		 (window-parameters (mode-line-format . none)))))
+
+
+(use-package embark-consult
   :straight t
-  :after helm)
+  :after (embark consult)
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+
+(use-package orderless
+  :straight t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles partial-completion))))
+  (completion-pcm-leading-wildcard t))
+
+(use-package consult
+  ;; Replace bindings. Lazily loaded by `use-package'.
+  :bind (;; C-c bindings in `mode-specific-map'
+         ("C-c M-x" . consult-mode-command)
+         ("C-c h" . consult-history)
+         ("C-c k" . consult-kmacro)
+         ("C-c m" . consult-man)
+         ("C-c i" . consult-info)
+         ([remap Info-search] . consult-info)
+         ;; C-x bindings in `ctl-x-map'
+         ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+         ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+         ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+         ("C-x t b" . consult-buffer-other-tab)    ;; orig. switch-to-buffer-other-tab
+         ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+         ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+         ;; Custom M-# bindings for fast register access
+         ("M-#" . consult-register-load)
+         ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+         ("C-M-#" . consult-register)
+         ;; Other custom bindings
+         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+         ;; M-g bindings in `goto-map'
+         ("M-g e" . consult-compile-error)
+         ("M-g r" . consult-grep-match)
+         ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+         ("M-g g" . consult-goto-line)             ;; orig. goto-line
+         ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+         ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+         ("M-g m" . consult-mark)
+         ("M-g k" . consult-global-mark)
+         ("M-g i" . consult-imenu)
+         ("M-g I" . consult-imenu-multi)
+         ;; M-s bindings in `search-map'
+         ("M-s d" . consult-find)                  ;; Alternative: consult-fd
+         ("M-s c" . consult-locate)
+         ("M-s g" . consult-grep)
+         ("M-s G" . consult-git-grep)
+         ("M-s r" . consult-ripgrep)
+         ("M-s l" . consult-line)
+         ("M-s L" . consult-line-multi)
+         ("M-s k" . consult-keep-lines)
+         ("M-s u" . consult-focus-lines)
+         ;; Isearch integration
+         ("M-s e" . consult-isearch-history)
+         :map isearch-mode-map
+         ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+         ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+         ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+         ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
+         ;; Minibuffer history
+         :map minibuffer-local-map
+         ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+         ("M-r" . consult-history))                ;; orig. previous-matching-history-element
+
+  ;; The :init configuration is always executed (Not lazy)
+  :init
+  ;; Tweak the register preview for `consult-register-load',
+  ;; `consult-register-store' and the built-in commands.  This improves the
+  ;; register formatting, adds thin separator lines, register sorting and hides
+  ;; the window mode line.
+  (advice-add #'register-preview :override #'consult-register-window)
+  (setq register-preview-delay 0.5)
+
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+
+  ;; Configure other variables and modes in the :config section,
+  ;; after lazily loading the package.
+  :config
+
+  ;; For some commands and buffer sources it is useful to configure the
+  ;; :preview-key on a per-command basis using the `consult-customize' macro.
+  (consult-customize
+   consult-theme :preview-key '(:debounce 0.5 any)
+   consult-ripgrep consult-git-grep consult-grep consult-man
+   consult-bookmark consult-recent-file consult-xref
+   consult-source-bookmark consult-source-file-register
+   consult-source-recent-file consult-source-project-recent-file
+   :preview-key "M-."
+   :preview-key '(:debounce 0.4 any))
+
+  ;; Optionally configure the narrowing key.
+  ;; Both < and C-+ work reasonably well.
+  (setq consult-narrow-key "<") ;; "C-+"
+
+  ;; Optionally make narrowing help available in the minibuffer.
+  ;; You may want to use `embark-prefix-help-command' or which-key instead.
+  (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
+)
+
+(use-package vertico
+  :straight t
+  :init
+  (vertico-mode))
+
+(use-package marginalia
+  :after vertico
+  :straight t
+  :init
+  (marginalia-mode))
+
+(use-package wgrep
+  :straight t)
 
 (defun smv/helm-zoxide-candidates ()
   "Generate a list of zoxide query candidates."
@@ -962,35 +1049,6 @@ Returns (BEG . END) cons cell or nil if not found."
   :config
   (setq org-startup-truncated nil))
 
-(use-package org-modern
-  :straight t
-  :after org
-  :config
-  (modify-all-frames-parameters
-   '((right-divider-width . 30)
-     (internal-border-width . 30)))
-  (dolist (face '(window-divider
-                  window-divider-first-pixel
-                  window-divider-last-pixel))
-    (face-spec-reset-face face)
-    (set-face-foreground face (face-attribute 'default :background)))
-  (set-face-background 'fringe (face-attribute 'default :background))
-
-  (setq
-   ;; Edit settings
-   org-auto-align-tags nil
-   org-tags-column 0
-   org-catch-invisible-edits 'show-and-error
-   org-special-ctrl-a/e t
-   org-insert-heading-respect-content t
-
-   ;; Org styling, hide markup etc.
-   org-hide-emphasis-markers t
-   org-agenda-tags-column 0
-   org-ellipsis "…")
-
-  (global-org-modern-mode))
-
 (use-package denote
   :after org
   :straight t
@@ -1031,16 +1089,6 @@ Returns (BEG . END) cons cell or nil if not found."
   :defer t
   :after org)
 
-;; Automatically tangle our Emacs.org config file when we save it
-(defun smv/org-babel-tangle-config ()
-  (when (string-equal (buffer-file-name)
-                      (expand-file-name (format "%s%s" user-emacs-directory "emacs.org")))
-    ;; Dynamic scoping to the rescue
-    (let ((org-confirm-babel-evaluate nil))
-      (org-babel-tangle))))
-
-(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'smv/org-babel-tangle-config)))
-
 (require 'ansi-color)
 (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
 
@@ -1078,12 +1126,9 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (global-set-key (kbd "C-c t r") 'smv/fix-terminal-corruption)
 
-;; Store all backup files in a centralized directory
-(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
-
-;; Create the directory if it doesn't exist
-(unless (file-exists-p "~/.emacs.d/backups")
-  (make-directory "~/.emacs.d/backups" t))
+(setq make-backup-files nil)
+(setq backup-inhibited nil)
+(setq create-lockfiles nil)
 
 ;; Enable auto-save
 (setq auto-save-default t)
@@ -1094,6 +1139,19 @@ Returns (BEG . END) cons cell or nil if not found."
 ;; Create the directory if it doesn't exist
 (unless (file-exists-p "~/.emacs.d/auto-save-list")
   (make-directory "~/.emacs.d/auto-save-list" t))
+
+;; Enable these
+(mapc
+ (lambda (command)
+   (put command 'disabled nil))
+ '(list-timers narrow-to-region narrow-to-page upcase-region downcase-region))
+
+;; And disable these
+;; emacs will not ask whether or not they should be ran or not
+(mapc
+ (lambda (command)
+   (put command 'disabled t))
+ '(eshell project-eshell overwrite-mode iconify-frame diary))
 
 (global-set-key (kbd "C-M-;") 'comment-region)
 
@@ -1119,8 +1177,7 @@ Returns (BEG . END) cons cell or nil if not found."
    "d" #'lsp-ui-peek-find-definitions
    "e" #'lsp-ui-flycheck-list
    "r" #'lsp-ui-peek-find-references
-   "i" #'lsp-ui-peek-find-implementations)
-  (define-key lsp-mode-map [remap xref-find-apropos] #'helm-lsp-workspace-symbol))
+   "i" #'lsp-ui-peek-find-implementations))
 
 (use-package lsp-ui
   :straight t
@@ -1616,9 +1673,6 @@ Returns (BEG . END) cons cell or nil if not found."
   :straight t
   :config
   (projectile-mode))
-
-(setq project-find-functions 
-      (remq 'project-try-vc project-find-functions))
 
 (use-package magit
   :straight t
