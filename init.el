@@ -783,7 +783,9 @@ Returns (BEG . END) cons cell or nil if not found."
                   hydra-multiple-cursors/mc/skip-to-previous-like-this))))
 
 (use-package doom-themes
-  :straight t)
+  :straight t
+  :config
+  (load-theme 'doom-meltbus))
 (use-package ef-themes
   :straight t)
 (use-package standard-themes
@@ -791,8 +793,7 @@ Returns (BEG . END) cons cell or nil if not found."
 (use-package kaolin-themes
   :straight t
   :config
-  (kaolin-treemacs-theme)
-  (load-theme 'kaolin-ocean))
+  (kaolin-treemacs-theme))
 (use-package catppuccin-theme
   :straight t)
 (use-package solo-jazz-theme
@@ -968,53 +969,6 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (use-package wgrep
   :straight t)
-
-(defun smv/helm-zoxide-candidates ()
-  "Generate a list of zoxide query candidates."
-  (when-let ((zoxide (executable-find "zoxide")))
-    (with-temp-buffer
-      (call-process zoxide nil t nil "query" "-l")
-      (split-string (buffer-string) "\n" t))))
-
-
-(defun smv/zoxide-add-path (path-to-add)
-  "Internal helper to add a given PATH-TO-ADD to zoxide.
-  Returns t on success, nil on failure."
-  (let ((expanded-path (expand-file-name path-to-add)))
-    (if (file-directory-p expanded-path)
-        (progn
-          (call-process (executable-find "zoxide") nil nil nil "add" expanded-path)
-          (message "Added '%s' to zoxide." expanded-path)
-          t)
-      (message "'%s' is not a valid directory." expanded-path)
-      nil)))
-
-(defun smv/zoxide-add-prompt-directory ()
-  "Prompt for a directory and add it to zoxide."
-  (interactive)
-  (if-let ((zoxide (executable-find "zoxide")))
-      (let ((dir (read-directory-name "Directory to add to zoxide: " default-directory nil t)))
-        (when dir ; User didn't cancel
-          (smv/zoxide-add-path dir)))
-    (message "zoxide executable not found.")))
-
-(defun smv/helm-zoxide-source ()
-  "Create a Helm source for zoxide directories."
-  (helm-build-sync-source "Zoxide Directories"
-    :candidates #'smv/helm-zoxide-candidates
-    :fuzzy-match t
-    :action (helm-make-actions
-             "Change Directory" 
-             (lambda (candidate)
-               (dired candidate)
-               (message "Changed directory to %s" candidate)))))
-
-(defun smv/helm-zoxide-cd ()
-  "Use Helm to interactively select and change to a zoxide directory."
-  (interactive)
-  (if (executable-find "zoxide")
-      (helm :sources (smv/helm-zoxide-source)
-            :buffer "*helm zoxide*")))
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
@@ -1667,12 +1621,6 @@ Returns (BEG . END) cons cell or nil if not found."
 		 (display-buffer-reuse-window display-buffer-in-side-window)
 		 (side . right)
 		 (window-width . 0.37))))
-
-(use-package projectile
-  :bind ("C-c p" . projectile-command-map)
-  :straight t
-  :config
-  (projectile-mode))
 
 (use-package magit
   :straight t
