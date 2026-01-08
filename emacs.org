@@ -1320,6 +1320,20 @@ A package that helps in note taking easily
   (use-package denote-journal
     :straight t
     :after denote)
+
+  (use-package denote-silo
+    :straight t
+    :after denote
+    :config
+    (setq denote-silo-directories
+          (let ((projects-dir (expand-file-name "~/projects"))
+                (silo-root (expand-file-name "~/.org/notes")))
+            (mapcar (lambda (subdir)
+                      (file-name-concat silo-root subdir))
+                    (seq-filter (lambda (f)
+                                  (and (not (member f '("." "..")))
+                                       (file-directory-p (expand-file-name f projects-dir))))
+                                (directory-files projects-dir))))))
 #+end_src
 
 ** Configure Babel Languages

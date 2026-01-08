@@ -1013,6 +1013,20 @@ Returns (BEG . END) cons cell or nil if not found."
   :straight t
   :after denote)
 
+(use-package denote-silo
+  :straight t
+  :after denote
+  :config
+  (setq denote-silo-directories
+        (let ((projects-dir (expand-file-name "~/projects"))
+              (silo-root (expand-file-name "~/.org/notes")))
+          (mapcar (lambda (subdir)
+                    (file-name-concat silo-root subdir))
+                  (seq-filter (lambda (f)
+                                (and (not (member f '("." "..")))
+                                     (file-directory-p (expand-file-name f projects-dir))))
+                              (directory-files projects-dir))))))
+
 (with-eval-after-load 'org
   (org-babel-do-load-languages
    'org-babel-load-languages
