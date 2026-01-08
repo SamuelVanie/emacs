@@ -68,6 +68,8 @@
 
 ;; loads presets
 (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "command_line" ".el"))
+(load-file (format "%s%s/%s%s" user-emacs-directory "presets" "summarizer" ".el"))
+
 (general-define-key
  :prefix "&"
  :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
@@ -81,7 +83,6 @@
  "t" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "tasker" ".el")))
  "k" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "task" ".el")))
  "p" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "partner" ".el")))
- "s" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "summarizer" ".el")))
  "g" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "summarizer_google" ".el")))
  "y" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "yt_script_writter" ".el")))
  "w" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "writter" ".el"))))
