@@ -783,9 +783,7 @@ Returns (BEG . END) cons cell or nil if not found."
                   hydra-multiple-cursors/mc/skip-to-previous-like-this))))
 
 (use-package doom-themes
-  :straight t
-  :config
-  (load-theme 'doom-meltbus))
+  :straight t)
 (use-package ef-themes
   :straight t)
 (use-package standard-themes
@@ -802,9 +800,10 @@ Returns (BEG . END) cons cell or nil if not found."
   :straight (stimmung-themes :type git :host github :repo "motform/stimmung-themes" :files ("*.el")))
 (use-package rebecca-theme
   :straight t)
-
 (use-package pink-bliss-uwu-theme
-  :straight (pink-bliss-uwu-theme :type git :host github :repo "themkat/pink-bliss-uwu" :files ("*.el")))
+  :straight (pink-bliss-uwu-theme :type git :host github :repo "themkat/pink-bliss-uwu" :files ("*.el"))
+  :config
+  (load-theme 'pink-bliss-uwu))
 
 (use-package all-the-icons
   :straight t
@@ -976,12 +975,24 @@ Returns (BEG . END) cons cell or nil if not found."
   ([remap describe-command] . helpful-command)
   ([remap describe-key] . helpful-key))
 
+;; A directory under the notes folder representing each of my project
+(setq smv/project-note-roots (let ((projects-dir (expand-file-name "~/projects"))
+				   (silo-root (expand-file-name "~/.org/notes")))
+			       (mapcar (lambda (subdir)
+					 (file-name-concat silo-root subdir))
+				       (seq-filter (lambda (f)
+						     (and (not (member f '("." "..")))
+							  (file-directory-p (expand-file-name f projects-dir))))
+						   (directory-files projects-dir)))))
+
+
 (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
   :straight t
   :config
   (setq org-agenda-files
-        '("~/.org/todo.org"
-          "~/.org/projects.org"))
+	(append '("~/.org/todo.org"
+                    "~/.org/projects.org")
+		  smv/project-note-roots))
 
   ;; easily move task to another header
   (setq org-refile-targets
@@ -1018,14 +1029,7 @@ Returns (BEG . END) cons cell or nil if not found."
   :after denote
   :config
   (setq denote-silo-directories
-        (let ((projects-dir (expand-file-name "~/projects"))
-              (silo-root (expand-file-name "~/.org/notes")))
-          (mapcar (lambda (subdir)
-                    (file-name-concat silo-root subdir))
-                  (seq-filter (lambda (f)
-                                (and (not (member f '("." "..")))
-                                     (file-directory-p (expand-file-name f projects-dir))))
-                              (directory-files projects-dir))))))
+        (append smv/project-note-roots denote-silo-directories)))
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
