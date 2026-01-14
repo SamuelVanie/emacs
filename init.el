@@ -803,9 +803,7 @@ Returns (BEG . END) cons cell or nil if not found."
 (use-package rebecca-theme
   :straight t)
 (use-package pink-bliss-uwu-theme
-  :straight (pink-bliss-uwu-theme :type git :host github :repo "themkat/pink-bliss-uwu" :files ("*.el"))
-  :config
-  (load-theme 'pink-bliss-uwu))
+  :straight (pink-bliss-uwu-theme :type git :host github :repo "themkat/pink-bliss-uwu" :files ("*.el")))
 
 (use-package all-the-icons
   :straight t
