@@ -588,7 +588,7 @@ Returns (BEG . END) cons cell or nil if not found."
   (winum-mode))
 
 (use-package vterm
-  :defer t
+  :straight t
   :config
   (setq vterm-kill-buffer-on-exit t)
   (setq vterm-copy-exclude-prompt t))
@@ -783,7 +783,9 @@ Returns (BEG . END) cons cell or nil if not found."
                   hydra-multiple-cursors/mc/skip-to-previous-like-this))))
 
 (use-package doom-themes
-  :straight t)
+  :straight t
+  :config
+  (load-theme 'doom-dracula))
 (use-package ef-themes
   :straight t)
 (use-package standard-themes

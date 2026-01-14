@@ -742,12 +742,11 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
 
 #+begin_src emacs-lisp
   (use-package vterm
-    :defer t
+    :straight t
     :config
     (setq vterm-kill-buffer-on-exit t)
     (setq vterm-copy-exclude-prompt t))
 #+end_src
-
 
 
 ** EAT
@@ -999,7 +998,9 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
 
 #+begin_src emacs-lisp
   (use-package doom-themes
-    :straight t)
+    :straight t
+    :config
+    (load-theme 'doom-dracula))
   (use-package ef-themes
     :straight t)
   (use-package standard-themes
