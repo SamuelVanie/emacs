@@ -860,7 +860,9 @@ Returns (BEG . END) cons cell or nil if not found."
   :custom
   (completion-styles '(orderless basic))
   (completion-category-overrides '((file (styles partial-completion))))
-  (completion-pcm-leading-wildcard t))
+  (completion-pcm-leading-wildcard t)
+  :config
+  (add-to-list 'orderless-matching-styles 'orderless-flex))
 
 (use-package consult
   ;; Replace bindings. Lazily loaded by `use-package'.

@@ -1108,7 +1108,9 @@ Permits to match without taking care of the order in which the elements are writ
     :custom
     (completion-styles '(orderless basic))
     (completion-category-overrides '((file (styles partial-completion))))
-    (completion-pcm-leading-wildcard t))
+    (completion-pcm-leading-wildcard t)
+    :config
+    (add-to-list 'orderless-matching-styles 'orderless-flex))
 #+end_src
 
 ** Consult
