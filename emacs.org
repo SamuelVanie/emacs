@@ -161,7 +161,6 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
   (setq eshell-smart-space-goes-to-end t)
   (setq eshell-list-files-after-cd t)
 
-
   (with-eval-after-load 'eshell
     (if (eq system-type 'android)
         (defalias 'eshell/manjaro-exec
@@ -1634,9 +1633,17 @@ This is a better flymake, it has many features. That permits to better see the e
 
 **** markdown-mode
 
+For pandoc live conversion to work, you need to install pandoc and the mermaid-filter plugin for pandoc, which will convert the mermaid documents from the file.
+
 #+begin_src emacs-lisp
   (use-package markdown-mode
-    :straight t)
+    :straight t
+    :mode ("README\\.md\\'" . gfm-mode)
+    :init
+    (setq markdown-command "pandoc -s --filter mermaid-filter -f markdown -t html")
+    (setenv "MERMAID_FILTER_WIDTH" "1600")
+    :bind (:map markdown-mode-map
+  	      ("C-c C-e" . markdown-do)))
 #+end_src
 
 **** yasnippet
@@ -2292,17 +2299,3 @@ A tool that permits to communicate with terminal agents directly from emacs.
   (setq ediff-split-window-function 'split-window-horizontally)
 #+end_src
 
-
-* grip-mode
-
-A tool that let you review your markdown files before commiting them right inside emacs.
-
-#+begin_src emacs-lisp
-  (use-package grip-mode
-    :straight t
-    :config
-    (setq grip-command 'auto) ;; auto, grip, go-grip or mdopen
-    (setq grip-preview-use-webkit t)
-    :bind (:map markdown-mode-command-map
-                ("g" . grip-mode)))
-#+end_src

@@ -112,7 +112,6 @@
 (setq eshell-smart-space-goes-to-end t)
 (setq eshell-list-files-after-cd t)
 
-
 (with-eval-after-load 'eshell
   (if (eq system-type 'android)
       (defalias 'eshell/manjaro-exec
@@ -1192,7 +1191,13 @@ Returns (BEG . END) cons cell or nil if not found."
   )
 
 (use-package markdown-mode
-  :straight t)
+  :straight t
+  :mode ("README\\.md\\'" . gfm-mode)
+  :init
+  (setq markdown-command "pandoc -s --filter mermaid-filter -f markdown -t html")
+  (setenv "MERMAID_FILTER_WIDTH" "1600")
+  :bind (:map markdown-mode-map
+	      ("C-c C-e" . markdown-do)))
 
 (use-package yasnippet
   :straight t
@@ -1663,11 +1668,3 @@ Returns (BEG . END) cons cell or nil if not found."
 
 ;; Split windows horizontally for side-by-side comparison
 (setq ediff-split-window-function 'split-window-horizontally)
-
-(use-package grip-mode
-  :straight t
-  :config
-  (setq grip-command 'auto) ;; auto, grip, go-grip or mdopen
-  (setq grip-preview-use-webkit t)
-  :bind (:map markdown-mode-command-map
-              ("g" . grip-mode)))
