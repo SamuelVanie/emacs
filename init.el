@@ -170,6 +170,7 @@
                           (bound-and-true-p gptel-mode)))))
   (setq popper-window-height "40")
   (setq popper-display-control nil)
+  (setq popper-mode-line "")
   ;; Match eshell, shell, term and/or vterm buffers
   (setq popper-reference-buffers
 	(append popper-reference-buffers
