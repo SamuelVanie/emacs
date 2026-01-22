@@ -3,6 +3,8 @@
 (global-unset-key (kbd "C-x C-z"))
 (setq delete-selection-temporary-region t)
 
+(setq-default indent-tabs-mode nil)
+
 (setq warning-minimum-level :error)
 (global-hl-line-mode 1)
 
