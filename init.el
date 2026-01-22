@@ -612,11 +612,9 @@ Returns (BEG . END) cons cell or nil if not found."
   (setq eat-kill-buffer-on-exit t))
 
 ;; android configuration
-(cond ((eq system-type 'darwin) ; macOS
-       (setq browse-url-browser-function 'browse-url-default-macosx-browser
-             browse-url-default-macosx-application "Microsoft Edge"))
-      ((eq system-type 'android)
-       (defun smv/termux-copy-url-to-clipboard (url &optional _new-window)
+(if (eq system-type 'android)
+    (progn
+      (defun smv/termux-copy-url-to-clipboard (url &optional _new-window)
 	 "Copy URL to Android clipboard via termux-clipboard-set."
 	 (interactive "sURL: ")
 	 (let ((process-connection-type nil)) ; Use pipes instead of pty
@@ -627,10 +625,9 @@ Returns (BEG . END) cons cell or nil if not found."
 				  nil 0 nil)))
 	 (message "URL copied to clipboard: %s" url))
 
-       (setq browse-url-browser-function 'smv/termux-copy-url-to-clipboard)
-       )
-      ((eq system-type 'gnu/linux)
-       (setq browse-url-generic-program "microsoft-edge-stable")))
+       (setq browse-url-browser-function 'smv/termux-copy-url-to-clipboard))
+  (setq browse-url-generic-program "microsoft-edge-stable"))
+
 
 (defun smv/browse-search ()
   "Unified search across multiple websites."
