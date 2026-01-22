@@ -188,7 +188,7 @@
 
 (column-number-mode)
 (global-display-line-numbers-mode t) ;; print line numbers for files
-(toggle-frame-maximized)
+(toggle-frame-fullscreen)
 
 ;; some modes doesn't have to start with lines enable
 (dolist (mode '(
