@@ -1340,7 +1340,30 @@ A package that helps in note taking easily
     :after denote
     :config
     (setq denote-silo-directories
-          (append smv/project-note-roots denote-silo-directories)))
+          (append smv/project-note-roots denote-silo-directories))
+    
+    (defun smv/capture-file-location-link ()
+      "Return an org-link [[file:path::line]] pointing to the source buffer."
+      (let ((original-buffer (org-capture-get :original-buffer)))
+        (if (and original-buffer (buffer-file-name original-buffer))
+            (with-current-buffer original-buffer
+              (format "[[file:%s::%d]]" 
+                      (buffer-file-name) 
+                      (line-number-at-pos)))
+          "")))
+    
+    (add-to-list 'org-capture-templates
+                 '("c" "Coding Todo (Project)" plain
+                   (file denote-last-path)
+                   (function
+                    (lambda ()
+                      (let ((denote-org-capture-specifiers "* TODO %^{TODO|Fix That}\nRef: %(smv/capture-file-location-link)\n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?"))
+                        (denote-org-capture-with-prompts :title :keywords :subdirectory))))
+                   :no-save t
+                   :immediate-finish nil
+                   :kill-buffer t
+                   :jump-to-captured t))
+    )
 #+end_src
 
 ** Configure Babel Languages
