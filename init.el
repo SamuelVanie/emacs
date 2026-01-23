@@ -981,22 +981,57 @@ Returns (BEG . END) cons cell or nil if not found."
 
 ;; A directory under the notes folder representing each of my project
 (setq smv/project-note-roots (let ((projects-dir (expand-file-name "~/projects"))
-				   (silo-root (expand-file-name "~/.org/notes")))
-			       (mapcar (lambda (subdir)
-					 (file-name-concat silo-root subdir))
-				       (seq-filter (lambda (f)
-						     (and (not (member f '("." "..")))
-							  (file-directory-p (expand-file-name f projects-dir))))
-						   (directory-files projects-dir)))))
+  				   (silo-root (expand-file-name "~/.org/notes")))
+  			       (mapcar (lambda (subdir)
+  					 (file-name-concat silo-root subdir))
+  				       (seq-filter (lambda (f)
+  						     (and (not (member f '("." "..")))
+  							  (file-directory-p (expand-file-name f projects-dir))))
+  						   (directory-files projects-dir)))))
 
 
 (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
   :straight t
   :config
+  (setq org-agenda-skip-unavailable-files t)
+  
   (setq org-agenda-files
-	(append '("~/.org/todo.org"
-                    "~/.org/projects.org")
-		  smv/project-note-roots))
+  	(append '("~/.org/todo.org"
+                  "~/.org/projects.org")
+  		smv/project-note-roots))
+
+  (defun smv/denote-silo-category ()
+    "Set org category to the denote silo directory name."
+    (when (and (buffer-file-name)
+               (denote-file-is-note-p (buffer-file-name)))
+      (let* ((file (buffer-file-name))
+             (silo-dir (file-name-nondirectory 
+                        (directory-file-name 
+                         (file-name-directory file)))))
+        (setq-local org-category silo-dir))))
+
+  (add-hook 'org-mode-hook #'smv/denote-silo-category)
+
+  (setq org-agenda-custom-commands
+        '(("p" "Projects Overview"
+           ((tags-todo "TODO=\"TODO\""
+                       ((org-agenda-overriding-header "All Project TODOs")
+                        (org-agenda-sorting-strategy '(category-up priority-down))))))
+          
+          ("P" "Select Project"
+           ((tags-todo "TODO=\"TODO\""
+                       ((org-agenda-overriding-header "Project TODOs")
+                        (org-agenda-files 
+                         (list (completing-read "Select project: " 
+                                                smv/project-note-roots)))))))
+          
+          ("d" "Upcoming Deadlines (7 days)"
+           ((agenda ""
+                    ((org-agenda-span 'day)
+                     (org-deadline-warning-days 7)
+                     (org-agenda-entry-types '(:deadline))
+                     (org-agenda-overriding-header "Upcoming Deadlines by Project")
+                     (org-agenda-sorting-strategy '(category-up deadline-up))))))))
 
   ;; easily move task to another header
   (setq org-refile-targets
@@ -1030,10 +1065,33 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (use-package denote-silo
   :straight t
-  :after denote
+  :after (denote org-capture)
   :config
   (setq denote-silo-directories
-        (append smv/project-note-roots denote-silo-directories)))
+        (append smv/project-note-roots denote-silo-directories))
+  
+  (defun smv/capture-file-location-link ()
+    "Return an org-link [[file:path::line]] pointing to the source buffer."
+    (let ((original-buffer (org-capture-get :original-buffer)))
+      (if (and original-buffer (buffer-file-name original-buffer))
+          (with-current-buffer original-buffer
+            (format "[[file:%s::%d]]" 
+                    (buffer-file-name) 
+                    (line-number-at-pos)))
+        "")))
+  
+  (add-to-list 'org-capture-templates
+               '("c" "Coding Todo (Project)" plain
+                 (file denote-last-path)
+                 (function
+                  (lambda ()
+                    (let ((denote-org-capture-specifiers "* TODO %^{TODO|Fix That}\nRef: %(smv/capture-file-location-link)\n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?"))
+                      (denote-org-capture-with-prompts :title :keywords :subdirectory))))
+                 :no-save t
+                 :immediate-finish nil
+                 :kill-buffer t
+                 :jump-to-captured t))
+  )
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages

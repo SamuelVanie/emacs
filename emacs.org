@@ -1274,22 +1274,57 @@ This section contains the basic configuration for org-mode plus the configuratio
 #+begin_src emacs-lisp
   ;; A directory under the notes folder representing each of my project
   (setq smv/project-note-roots (let ((projects-dir (expand-file-name "~/projects"))
-  				   (silo-root (expand-file-name "~/.org/notes")))
-  			       (mapcar (lambda (subdir)
-  					 (file-name-concat silo-root subdir))
-  				       (seq-filter (lambda (f)
-  						     (and (not (member f '("." "..")))
-  							  (file-directory-p (expand-file-name f projects-dir))))
-  						   (directory-files projects-dir)))))
+    				   (silo-root (expand-file-name "~/.org/notes")))
+    			       (mapcar (lambda (subdir)
+    					 (file-name-concat silo-root subdir))
+    				       (seq-filter (lambda (f)
+    						     (and (not (member f '("." "..")))
+    							  (file-directory-p (expand-file-name f projects-dir))))
+    						   (directory-files projects-dir)))))
 
 
   (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
     :straight t
     :config
+    (setq org-agenda-skip-unavailable-files t)
+    
     (setq org-agenda-files
-  	(append '("~/.org/todo.org"
-                      "~/.org/projects.org")
-  		  smv/project-note-roots))
+    	(append '("~/.org/todo.org"
+                    "~/.org/projects.org")
+    		smv/project-note-roots))
+
+    (defun smv/denote-silo-category ()
+      "Set org category to the denote silo directory name."
+      (when (and (buffer-file-name)
+                 (denote-file-is-note-p (buffer-file-name)))
+        (let* ((file (buffer-file-name))
+               (silo-dir (file-name-nondirectory 
+                          (directory-file-name 
+                           (file-name-directory file)))))
+          (setq-local org-category silo-dir))))
+
+    (add-hook 'org-mode-hook #'smv/denote-silo-category)
+
+    (setq org-agenda-custom-commands
+          '(("p" "Projects Overview"
+             ((tags-todo "TODO=\"TODO\""
+                         ((org-agenda-overriding-header "All Project TODOs")
+                          (org-agenda-sorting-strategy '(category-up priority-down))))))
+            
+            ("P" "Select Project"
+             ((tags-todo "TODO=\"TODO\""
+                         ((org-agenda-overriding-header "Project TODOs")
+                          (org-agenda-files 
+                           (list (completing-read "Select project: " 
+                                                  smv/project-note-roots)))))))
+            
+            ("d" "Upcoming Deadlines (7 days)"
+             ((agenda ""
+                      ((org-agenda-span 'day)
+                       (org-deadline-warning-days 7)
+                       (org-agenda-entry-types '(:deadline))
+                       (org-agenda-overriding-header "Upcoming Deadlines by Project")
+                       (org-agenda-sorting-strategy '(category-up deadline-up))))))))
 
     ;; easily move task to another header
     (setq org-refile-targets
@@ -1337,7 +1372,7 @@ A package that helps in note taking easily
 
   (use-package denote-silo
     :straight t
-    :after denote
+    :after (denote org-capture)
     :config
     (setq denote-silo-directories
           (append smv/project-note-roots denote-silo-directories))
