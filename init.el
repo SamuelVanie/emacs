@@ -995,9 +995,12 @@ Returns (BEG . END) cons cell or nil if not found."
   :config
   (setq org-agenda-skip-unavailable-files t)
   
+  (setq org-todo-keywords
+      '((sequence "TODO(t!)" "NEXT(n!)" "|" "DONE(d!)")
+        (sequence "BACKLOG(b!)" "REVIEW(v!)" "WAIT(w@/!)" "|" "COMPLETED(c)" "CANC(k@)")))
+  
   (setq org-agenda-files
-  	(append '("~/.org/todo.org"
-                  "~/.org/projects.org")
+  	(append '("~/.org/todo.org")
   		smv/project-note-roots))
 
   (defun smv/denote-silo-category ()
