@@ -44,17 +44,17 @@
 ;; Prevent dired-find-alternative warning message
 (put 'dired-find-alternate-file 'disabled nil)
 
-;; to scroll down inside the popup
-(define-key global-map (kbd "C-M-'")
-            (lambda ()
-              (interactive)
-              (scroll-other-window 2)))
+(defun set-other-window-scroll-buffer ()
+  "Set the variable `other-window-scroll-buffer' dynamically using completion.
+  If nothing is selected, the value is set to nil."
+  (interactive)
+  (let* ((buffers (mapcar #'buffer-name (buffer-list)))
+         (selected (completing-read "Select buffer (or leave empty for nil): " buffers nil nil "")))
+    (if (string-empty-p selected)
+        (setq other-window-scroll-buffer nil)
+      (setq other-window-scroll-buffer (get-buffer selected)))))
 
-;; to scroll up side the popup
-(define-key global-map (kbd "C-M-\"")
-            (lambda ()
-              (interactive)
-              (scroll-other-window-down 2)))
+(global-set-key (kbd "C-M-'") #'set-other-window-scroll-buffer)
 
 (defvar bootstrap-version)
 (let ((bootstrap-file
