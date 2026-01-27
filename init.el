@@ -1502,7 +1502,7 @@ Returns (BEG . END) cons cell or nil if not found."
   (setq gptel-include-tool-results t)
   (setq gptel-include-reasoning nil)
   (setq gptel-track-media t)
-  (setq-local org-yank-image-save-method "/tmp")
+  (setq org-yank-image-save-method "/tmp")
   (setf (alist-get 'org-mode gptel-prompt-prefix-alist) "@user\n")
   (setf (alist-get 'org-mode gptel-response-prefix-alist) "@assistant\n")
   
