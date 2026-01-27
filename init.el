@@ -167,7 +167,6 @@
           "\\*Async Shell Command\\*"
           help-mode
           compilation-mode
-          eca-chat-mode
           (lambda (buf) (with-current-buffer buf
                           (bound-and-true-p gptel-mode)))))
   (setq popper-window-height "40")
