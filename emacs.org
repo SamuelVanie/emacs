@@ -236,7 +236,7 @@ A package that permits to transform some buffers into popups. Quite useful to qu
             "\\*Async Shell Command\\*"
             help-mode
             compilation-mode
-  	  agent-shell-mode
+            eca-chat-mode
             (lambda (buf) (with-current-buffer buf
                             (bound-and-true-p gptel-mode)))))
     (setq popper-window-height "40")
@@ -274,7 +274,6 @@ This section configures basic UI settings that remove unneeded elements to make 
                   shell-mode-hook
                   dired-mode-hook
                   vterm-mode-hook
-  		agent-shell-mode-hook
                   eat-mode-hook
                   eshell-mode-hook))
     (add-hook mode (lambda () 
@@ -2078,6 +2077,16 @@ There are some packages that I don't want to add to my emacs configuration, beca
   (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string))))
 #+end_src
 
+
+** ECA
+
+ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for Emacs. Inspired by lsp-mode’s JSONRPC handling, it connects to an external eca server process to provide interactive chat, code suggestions, context management and more. It's everything automatic and smooth as UX and re-usability across editors is the main goal of ECA.
+
+#+begin_src emacs-lisp
+  (use-package eca
+    :straight t)
+#+end_src
+
 ** Gptel
 
 Mode to interact with different llms in emacs.
@@ -2308,27 +2317,6 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
     ;;         (mcp-hub-start-all-server nil '("sequential-thinking"))))
     )
 #+end_src
-
-
-
-
-
-** Agent-shell
-
-A tool that permits to communicate with terminal agents directly from emacs.
-
-#+begin_src emacs-lisp
-  (use-package agent-shell
-    :straight t
-    :defer t
-    :config
-    (add-to-list 'display-buffer-alist
-                 '((major-mode . agent-shell-mode)
-  		 (display-buffer-reuse-window display-buffer-in-side-window)
-  		 (side . right)
-  		 (window-width . 0.37))))
-#+end_src
-
 
 ** Magit
 

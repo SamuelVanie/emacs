@@ -167,7 +167,7 @@
           "\\*Async Shell Command\\*"
           help-mode
           compilation-mode
-	  agent-shell-mode
+          eca-chat-mode
           (lambda (buf) (with-current-buffer buf
                           (bound-and-true-p gptel-mode)))))
   (setq popper-window-height "40")
@@ -199,7 +199,6 @@
                 shell-mode-hook
                 dired-mode-hook
                 vterm-mode-hook
-		agent-shell-mode-hook
                 eat-mode-hook
                 eshell-mode-hook))
   (add-hook mode (lambda () 
@@ -1489,6 +1488,9 @@ Returns (BEG . END) cons cell or nil if not found."
 (setenv "OPENROUTER_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.openr_key") (string-trim (buffer-string))))
 (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string))))
 
+(use-package eca
+  :straight t)
+
 (use-package gptel
   :straight t
   :after general
@@ -1700,16 +1702,6 @@ Returns (BEG . END) cons cell or nil if not found."
   ;;       (lambda ()
   ;;         (mcp-hub-start-all-server nil '("sequential-thinking"))))
   )
-
-(use-package agent-shell
-  :straight t
-  :defer t
-  :config
-  (add-to-list 'display-buffer-alist
-               '((major-mode . agent-shell-mode)
-		 (display-buffer-reuse-window display-buffer-in-side-window)
-		 (side . right)
-		 (window-width . 0.37))))
 
 (use-package magit
   :straight t
