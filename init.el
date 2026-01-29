@@ -37,8 +37,6 @@
 ;; prevent emacs from hanging on when long lines are present in the current file
 (global-so-long-mode t)
 
-;; auto refresh buffers when files changes
-(global-auto-revert-mode t)
 (global-visual-line-mode t)
 
 ;; Prevent dired-find-alternative warning message
@@ -88,6 +86,50 @@
         ))
 
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
+
+(use-package autorevert
+  :straight nil
+  ;; revert buffers when their files/state have changed
+  :hook (after-save . doom-auto-revert-buffers-h)
+  :hook (doom-switch-buffer . doom-auto-revert-buffer-h)
+  :hook (doom-switch-window . doom-auto-revert-buffer-h)
+  :hook (doom-switch-frame . doom-auto-revert-buffers-h)
+  :config
+  (setq auto-revert-verbose t ; let us know when it happens
+        auto-revert-use-notify nil
+        auto-revert-stop-on-user-input nil
+        ;; Only prompts for confirmation when buffer is unsaved.
+        revert-without-query (list "."))
+
+  ;; PERF: `auto-revert-mode' and `global-auto-revert-mode' would, normally,
+  ;;   abuse the heck out of file watchers _or_ aggressively poll your buffer
+  ;;   list every X seconds. Too many watchers can grind Emacs to a halt if you
+  ;;   preform expensive or batch processes on files outside of Emacs (e.g.
+  ;;   their mtime changes), and polling your buffer list is terribly
+  ;;   inefficient as your buffer list grows into the hundreds.
+  ;;
+  ;;   Doom does this lazily instead. i.e. All visible buffers are reverted
+  ;;   immediately when a) a file is saved or b) Emacs is refocused (after using
+  ;;   another app). Meanwhile, buried buffers are reverted only when they are
+  ;;   switched to. This way, Emacs only ever has to operate on, at minimum, a
+  ;;   single buffer and, at maximum, ~10 x F buffers, where F = number of open
+  ;;   frames (after all, when do you ever have more than 10 windows in any
+  ;;   single frame?).
+  (defun doom-auto-revert-buffer-h ()
+    "Auto revert current buffer, if necessary."
+    (unless (or auto-revert-mode
+                (active-minibuffer-window)
+                (and buffer-file-name
+                     auto-revert-remote-files
+                     (file-remote-p buffer-file-name nil t)))
+      (let ((auto-revert-mode t))
+        (auto-revert-handler))))
+
+  (defun doom-auto-revert-buffers-h ()
+    "Auto revert stale buffers in visible windows, if necessary."
+    (dolist (buf (doom-visible-buffers))
+      (with-current-buffer buf
+        (doom-auto-revert-buffer-h)))))
 
 (use-package treesit-auto
   :straight t
@@ -783,11 +825,11 @@ Returns (BEG . END) cons cell or nil if not found."
                   hydra-multiple-cursors/mc/skip-to-previous-like-this))))
 
 (use-package doom-themes
+  :straight t)
+(use-package ef-themes
   :straight t
   :config
-  (load-theme 'doom-dracula))
-(use-package ef-themes
-  :straight t)
+  (load-theme 'ef-summer))
 (use-package standard-themes
   :straight t)
 (use-package kaolin-themes
@@ -862,7 +904,7 @@ Returns (BEG . END) cons cell or nil if not found."
   (completion-category-overrides '((file (styles partial-completion))))
   (completion-pcm-leading-wildcard t)
   :config
-  (add-to-list 'orderless-matching-styles 'orderless-flex))
+  (add-to-list 'orderless-matching-styles 'orderless-prefixes))
 
 (use-package consult
   ;; Replace bindings. Lazily loaded by `use-package'.
