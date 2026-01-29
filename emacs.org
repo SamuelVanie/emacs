@@ -153,6 +153,19 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
         (let ((auto-revert-mode t))
           (auto-revert-handler))))
 
+    (defun doom-visible-buffers (&optional buffer-list all-frames)
+      "Return a list of visible buffers (i.e. not buried)."
+      (let ((buffers
+             (delete-dups
+              (cl-loop for frame in (if all-frames (visible-frame-list) (list (selected-frame)))
+                       if (window-list frame)
+                       nconc (mapcar #'window-buffer it)))))
+        (if buffer-list
+            (cl-loop for buf in buffers
+                     unless (memq buf buffer-list)
+                     collect buffers)
+          buffers)))
+    
     (defun doom-auto-revert-buffers-h ()
       "Auto revert stale buffers in visible windows, if necessary."
       (dolist (buf (doom-visible-buffers))
