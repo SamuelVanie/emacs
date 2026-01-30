@@ -1641,6 +1641,7 @@ A package that install lsp servers for you. This rocks.
 #+begin_src emacs-lisp
   (use-package mason
     :straight t
+    :demand t
     :config
     (mason-setup))
 #+end_src

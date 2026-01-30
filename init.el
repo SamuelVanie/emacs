@@ -1247,6 +1247,7 @@ Returns (BEG . END) cons cell or nil if not found."
 
 (use-package mason
   :straight t
+  :demand t
   :config
   (mason-setup))
 
