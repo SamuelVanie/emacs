@@ -1339,19 +1339,16 @@ Returns (BEG . END) cons cell or nil if not found."
   :after general
   :straight t
   :config
-  (general-define-key
-   :keymaps 'meow-normal-state-keymap
-   :prefix "_"
-   "w" #'aya-create
-   "x" #'aya-expand
-   "h" #'aya-expand-from-history
-   "d" #'aya-delete-from-history
-   "c" #'aya-clear-history
-   "n" #'aya-next-in-history
-   "p" #'aya-previous-in-history
-   "s" #'aya-persist-snippet
-   "o" #'aya-open-line
-   ))
+  (setq aya-case-fold t)
+  (global-set-key (kbd "C-c C-y w")   #'aya-create)
+  (global-set-key (kbd "C-c C-y TAB") #'aya-expand)
+  (global-set-key (kbd "C-c C-y SPC") #'aya-expand-from-history)
+  (global-set-key (kbd "C-c C-y d")   #'aya-delete-from-history)
+  (global-set-key (kbd "C-c C-y c")   #'aya-clear-history)
+  (global-set-key (kbd "C-c C-y n")   #'aya-next-in-history)
+  (global-set-key (kbd "C-c C-y p")   #'aya-previous-in-history)
+  (global-set-key (kbd "C-c C-y s")   #'aya-persist-snippet)
+  (global-set-key (kbd "C-c C-y o")   #'aya-open-line))
 
 (use-package yaml-mode
   :straight t
