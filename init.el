@@ -1,4 +1,4 @@
-(setq gc-const-threshold (* 90 1000 1000))
+(setq gc-cons-threshold (* 90 1000 1000))
 (global-unset-key (kbd "C-z"))
 (global-unset-key (kbd "C-x C-z"))
 (setq delete-selection-temporary-region t)
@@ -1248,7 +1248,7 @@ Returns (BEG . END) cons cell or nil if not found."
 (use-package mason
   :straight t
   :config
-  (mason-ensure))
+  (mason-setup))
 
 (use-package lsp-mode
   :straight t
@@ -1257,6 +1257,7 @@ Returns (BEG . END) cons cell or nil if not found."
   (lsp-enable-which-key-integration t)
   (setq lsp-ui-doc-show-with-mouse nil)
   (setq lsp-headerline-breadcrumb-enable nil)
+  (setq lsp-enable-suggest-server-download nil)
   (general-define-key
    :keymaps 'meow-normal-state-keymap
    :prefix "h"

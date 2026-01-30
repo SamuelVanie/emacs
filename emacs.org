@@ -5,7 +5,7 @@
 * Declare some global variables
 
 #+begin_src emacs-lisp
-  (setq gc-const-threshold (* 90 1000 1000))
+  (setq gc-cons-threshold (* 90 1000 1000))
   (global-unset-key (kbd "C-z"))
   (global-unset-key (kbd "C-x C-z"))
   (setq delete-selection-temporary-region t)
@@ -1642,7 +1642,7 @@ A package that install lsp servers for you. This rocks.
   (use-package mason
     :straight t
     :config
-    (mason-ensure))
+    (mason-setup))
 #+end_src
 
 
@@ -1664,7 +1664,7 @@ To register a new one over tcp :
  :server-id 'cobol-lsp))
 #+end_example
 
-over stdio is simpler, just use (lsp-stdio-connection "name_of_server")
+over stdio is simpler, just use (lsp-stdio-connection "name_of_server") or (lsp-stdio-connection '("name_of_server" "args1" ...))
 
 #+begin_src emacs-lisp
   (use-package lsp-mode
@@ -1674,6 +1674,7 @@ over stdio is simpler, just use (lsp-stdio-connection "name_of_server")
     (lsp-enable-which-key-integration t)
     (setq lsp-ui-doc-show-with-mouse nil)
     (setq lsp-headerline-breadcrumb-enable nil)
+    (setq lsp-enable-suggest-server-download nil)
     (general-define-key
      :keymaps 'meow-normal-state-keymap
      :prefix "h"
