@@ -1264,6 +1264,7 @@ Returns (BEG . END) cons cell or nil if not found."
    :prefix "h"
    "h" #'lsp-ui-doc-toggle
    "q" #'lsp-ui-doc-hide
+   "a" #'lsp-execute-code-action
    "f" #'lsp-ui-doc-focus-frame
    "u" #'lsp-ui-doc-unfocus-frame
    "d" #'lsp-ui-peek-find-definitions
@@ -1285,13 +1286,15 @@ Returns (BEG . END) cons cell or nil if not found."
   :config
   (dap-ui-mode 1)
   (general-define-key
-   :keymaps 'meow-normal-state-keymap
-   :prefix "%"
-   "d" #'dap-hydra)
-  (general-define-key
    :keymaps 'lsp-mode-map
    :prefix lsp-keymap-prefix
    "d" '(dap-hydra t :wk "debugger")))
+
+(with-eval-after-load 'dap-mode
+  (general-define-key
+   :keymaps 'meow-normal-state-keymap
+   :prefix "%"
+   "d" #'dap-hydra))
 
 (use-package nix-mode
   :straight t

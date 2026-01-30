@@ -1681,6 +1681,7 @@ over stdio is simpler, just use (lsp-stdio-connection "name_of_server") or (lsp-
      :prefix "h"
      "h" #'lsp-ui-doc-toggle
      "q" #'lsp-ui-doc-hide
+     "a" #'lsp-execute-code-action
      "f" #'lsp-ui-doc-focus-frame
      "u" #'lsp-ui-doc-unfocus-frame
      "d" #'lsp-ui-peek-find-definitions
@@ -1708,13 +1709,15 @@ Dap-mode works with lsp-mode, so mothing to that instead
     :config
     (dap-ui-mode 1)
     (general-define-key
-     :keymaps 'meow-normal-state-keymap
-     :prefix "%"
-     "d" #'dap-hydra)
-    (general-define-key
      :keymaps 'lsp-mode-map
      :prefix lsp-keymap-prefix
      "d" '(dap-hydra t :wk "debugger")))
+  
+  (with-eval-after-load 'dap-mode
+    (general-define-key
+     :keymaps 'meow-normal-state-keymap
+     :prefix "%"
+     "d" #'dap-hydra))
 #+end_src
 
 
