@@ -1060,9 +1060,7 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
   (use-package doom-themes
     :straight t)
   (use-package ef-themes
-    :straight t
-    :config
-    (load-theme 'ef-summer))
+    :straight t)
   (use-package standard-themes
     :straight t)
   (use-package kaolin-themes
@@ -1076,7 +1074,9 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
   (use-package stimmung-themes
     :straight (stimmung-themes :type git :host github :repo "motform/stimmung-themes" :files ("*.el")))
   (use-package rebecca-theme
-    :straight t)
+    :straight t
+    :config
+    (load-theme 'rebecca))
   (use-package pink-bliss-uwu-theme
     :straight (pink-bliss-uwu-theme :type git :host github :repo "themkat/pink-bliss-uwu" :files ("*.el")))
 #+end_src

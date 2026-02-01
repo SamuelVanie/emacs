@@ -840,9 +840,7 @@ Returns (BEG . END) cons cell or nil if not found."
 (use-package doom-themes
   :straight t)
 (use-package ef-themes
-  :straight t
-  :config
-  (load-theme 'ef-summer))
+  :straight t)
 (use-package standard-themes
   :straight t)
 (use-package kaolin-themes
@@ -856,7 +854,9 @@ Returns (BEG . END) cons cell or nil if not found."
 (use-package stimmung-themes
   :straight (stimmung-themes :type git :host github :repo "motform/stimmung-themes" :files ("*.el")))
 (use-package rebecca-theme
-  :straight t)
+  :straight t
+  :config
+  (load-theme 'rebecca))
 (use-package pink-bliss-uwu-theme
   :straight (pink-bliss-uwu-theme :type git :host github :repo "themkat/pink-bliss-uwu" :files ("*.el")))
 
