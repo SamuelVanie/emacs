@@ -1332,13 +1332,13 @@ This section contains the basic configuration for org-mode plus the configuratio
 #+begin_src emacs-lisp
   ;; A directory under the notes folder representing each of my project
   (setq smv/project-note-roots (let ((projects-dir (expand-file-name "~/projects"))
-    				   (silo-root (expand-file-name "~/.org/notes")))
-    			       (mapcar (lambda (subdir)
-    					 (file-name-concat silo-root subdir))
-    				       (seq-filter (lambda (f)
-    						     (and (not (member f '("." "..")))
-    							  (file-directory-p (expand-file-name f projects-dir))))
-    						   (directory-files projects-dir)))))
+      				   (silo-root (expand-file-name "~/.org/notes")))
+      			       (mapcar (lambda (subdir)
+      					 (file-name-concat silo-root subdir))
+      				       (seq-filter (lambda (f)
+      						     (and (not (member f '("." "..")))
+      							  (file-directory-p (expand-file-name f projects-dir))))
+      						   (directory-files projects-dir)))))
 
 
   (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
@@ -1347,12 +1347,16 @@ This section contains the basic configuration for org-mode plus the configuratio
     (setq org-agenda-skip-unavailable-files t)
     
     (setq org-todo-keywords
-        '((sequence "TODO(t!)" "NEXT(n!)" "|" "DONE(d!)")
-          (sequence "BACKLOG(b!)" "REVIEW(v!)" "WAIT(w@/!)" "|" "COMPLETED(c)" "CANC(k@)")))
+          '((sequence "TODO(t!)" "NEXT(n!)" "|" "DONE(d!)")
+            (sequence "BACKLOG(b!)" "REVIEW(v!)" "WAIT(w@/!)" "|" "COMPLETED(c)" "CANC(k@)")))
     
     (setq org-agenda-files
-    	(append '("~/.org/todo.org")
-    		smv/project-note-roots))
+      	(append '("~/.org/todo.org")
+      		smv/project-note-roots))
+    
+    (setq org-agenda-files
+      	(append '("~/.org/notes")
+      		smv/project-note-roots))
 
     (defun smv/denote-silo-category ()
       "Set org category to the denote silo directory name."
