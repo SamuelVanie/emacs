@@ -853,20 +853,24 @@ Calling my edge browser directly from emacs, to save up time
   (if (eq system-type 'android)
       (progn
         (defun smv/termux-copy-url-to-clipboard (url &optional _new-window)
-  	 "Copy URL to Android clipboard via termux-clipboard-set."
-  	 (interactive "sURL: ")
-  	 (let ((process-connection-type nil)) ; Use pipes instead of pty
-  	   (with-temp-buffer
-  	     (insert url)
-  	     (call-process-region (point-min) (point-max)
-  				  "termux-clipboard-set"
-  				  nil 0 nil)))
-  	 (message "URL copied to clipboard: %s" url))
+    	"Copy URL to Android clipboard via termux-clipboard-set."
+    	(interactive "sURL: ")
+    	(let ((process-connection-type nil)) ; Use pipes instead of pty
+    	  (with-temp-buffer
+    	    (insert url)
+    	    (call-process-region (point-min) (point-max)
+    				 "termux-clipboard-set"
+    				 nil 0 nil)))
+    	(message "URL copied to clipboard: %s" url))
 
-         (setq browse-url-browser-function 'smv/termux-copy-url-to-clipboard))
+        (setq browse-url-browser-function 'smv/termux-copy-url-to-clipboard))
     (setq browse-url-generic-program "microsoft-edge-stable"))
 
-  
+  (if (eq system-type 'darwin)
+      (setq browse-url-generic-program "/usr/bin/open"
+            browse-url-generic-args '("-a" "Microsoft Edge")))
+
+
   (defun smv/browse-search ()
     "Unified search across multiple websites."
     (interactive)
