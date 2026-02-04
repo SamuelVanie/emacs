@@ -2,6 +2,18 @@
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el
 
 
+Should be installed :
+
+- coreutils
+- cmake
+- pandoc mermaid plugin
+- pandoc
+- install the different nerd fonts FantasqueSansMono, Iosevka, JetBrainsMono
+- libvterm
+- nix
+- tree
+- tinymist (for typst)
+  
 * Declare some global variables
 
 #+begin_src emacs-lisp
@@ -922,6 +934,12 @@ A tool that help moving things around in emacs. Lines, words, region...
 make emacs' dired mode better by adding some features on top of it.
 
 #+begin_src emacs-lisp
+
+  ;; Use the ls from homebrew for directory listing
+  ;; would be /opt/homebrew/bin/gls for normal homebrew installation
+  (when (eq system-type 'darwin)
+    (setq insert-directory-program "~/homebrew/bin/gls"))
+
   (use-package dired
     :config
     (setq dired-listing-switches
@@ -2252,7 +2270,9 @@ Make gptel work as an agent
     :after gptel
     :straight (:host github :repo "karthink/gptel-agent" :files ("*"))
     :config
-    (add-to-list 'gptel-agent-dirs (expand-file-name "agents/" user-emacs-directory))
+    (let ((dir (expand-file-name "agents/" user-emacs-directory)))
+      (if (file-directory-p dir)
+        (add-to-list 'gptel-agent-dirs dir)))
     (gptel-agent-update))
 #+end_src
 
