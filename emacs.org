@@ -13,6 +13,7 @@ Should be installed :
 - nix
 - tree
 - tinymist (for typst)
+- [[https://github.com/eki3z/mise.el][mise]]
   
 * Declare some global variables
 
@@ -1758,6 +1759,16 @@ Nix is a package manager and a language that I use to setup devshell or to build
     :mode "\\.nix\\'")
 #+end_src
 
+
+** Mise
+
+A tool that manages multiple versions of the same package.
+
+#+begin_src emacs-lisp
+  (use-package mise
+    :straight (:type git :host github :repo "eki3z/mise.el" :files ("*.el"))
+    :demand t)
+#+end_src
 
 ** Languages
 
