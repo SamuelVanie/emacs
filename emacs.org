@@ -891,7 +891,9 @@ Calling my edge browser directly from emacs, to save up time
            (url (cdr (assoc site sites))))
       (browse-url-generic (concat url (url-hexify-string query)))))
 
-  (global-set-key (kbd "C-c b") 'smv/browse-search)
+  (global-set-key (kbd "C-c b b") 'smv/browse-search)
+  (global-set-key (kbd "C-c b e") 'browse-url)
+  
 #+end_src
 
 
