@@ -809,6 +809,46 @@ Quickly switch between windows
     (winum-mode))
 #+end_src
 
+** avy
+
+Quickly move to matches in visible area of the window
+
+#+begin_src emacs-lisp
+  (use-package avy
+    :straight t
+    :after (general meow)
+    :config
+    (general-define-key
+     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+     :prefix "@"
+     "@"  #'avy-goto-char-in-line
+     "#"  #'avy-goto-char
+     "l d"  #'avy-kill-whole-line
+     "l l"  #'avy-goto-end-of-line
+     "u"  #'avy-goto-line-above
+     "e"  #'avy-goto-line-below
+     "l y"  #'avy-copy-line
+     "r d"  #'avy-kill-region
+     "r y"  #'avy-copy-region
+     "r t"  #'avy-transpose-lines-in-region
+     "r r"  #'avy-resume
+     "r m"  #'avy-move-region)
+    (general-define-key
+     :prefix "C-c z"
+     "@"  #'avy-goto-char-in-line
+     "#"  #'avy-goto-char
+     "l d"  #'avy-kill-whole-line
+     "l l"  #'avy-goto-end-of-line
+     "u"  #'avy-goto-line-above
+     "e"  #'avy-goto-line-below
+     "l y"  #'avy-copy-line
+     "r d"  #'avy-kill-region
+     "r y"  #'avy-copy-region
+     "r t"  #'avy-transpose-lines-in-region
+     "r r"  #'avy-resume
+     "r m"  #'avy-move-region))
+#+end_src
+
 ** vterm
 
 Vterm is a better terminal emulator that will permit good rendering of all terminal commands
@@ -1824,7 +1864,7 @@ Useful snippets for quick programming
     (yas-global-mode)
     (general-define-key
      :prefix "C-c s"
-     "s" #'yas-insert-snippet
+     "i" #'yas-insert-snippet
      "r" #'yas-reload-all))
 
   (use-package yasnippet-snippets
