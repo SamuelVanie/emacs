@@ -1573,7 +1573,6 @@ Typst is a markup language better than latex and org in my point of view due to 
 #+begin_src emacs-lisp
   (use-package ox-typst
     :straight t
-    :defer t
     :after org)
 #+end_src
 
@@ -1591,12 +1590,28 @@ The official repository is : [[https://github.com/emacsorphanage/ox-pandoc][ox-p
 #+begin_src emacs-lisp
   (use-package ox-pandoc
     :straight t
-    :defer t
     :after org)
 #+end_src
 
 
 * Development
+
+** Project management
+
+I remove the functions from project-vc as it causes error I don't understand
+
+#+begin_src emacs-lisp
+  (setq project-find-functions 
+        (remq 'project-try-vc project-find-functions))
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package projectile
+    :bind ("C-c p" . projectile-command-map)
+    :ensure t
+    :config
+    (projectile-mode))
+#+end_src
 
 ** Compilation
 
