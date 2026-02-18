@@ -2342,6 +2342,8 @@ Make gptel work as an agent
     :after gptel
     :straight (:host github :repo "karthink/gptel-agent" :files ("*"))
     :config
+    (add-to-list 'gptel-agent-skill-dirs ".github/skills")
+    (add-to-list 'gptel-agent-skill-dirs "~/.copilot/skills")
     (let ((dir (expand-file-name "agents/" user-emacs-directory)))
       (if (file-directory-p dir)
         (add-to-list 'gptel-agent-dirs dir)))
