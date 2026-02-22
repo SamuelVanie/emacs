@@ -1823,8 +1823,7 @@ A tool that manages multiple versions of the same package.
 
 #+begin_src emacs-lisp
   (use-package gmise
-    :straight (:type git :host github :repo "SamuelVanie/gmise" :files ("*.el"))
-    :demand t)
+    :straight (:type git :host github :repo "SamuelVanie/gmise" :files ("*.el")))
 #+end_src
 
 ** Languages
