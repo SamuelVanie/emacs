@@ -1822,8 +1822,8 @@ Nix is a package manager and a language that I use to setup devshell or to build
 A tool that manages multiple versions of the same package.
 
 #+begin_src emacs-lisp
-  (use-package mise
-    :straight (:type git :host github :repo "eki3z/mise.el" :files ("*.el"))
+  (use-package gmise
+    :straight (:type git :host github :repo "SamuelVanie/gmise" :files ("*.el"))
     :demand t)
 #+end_src
 
@@ -2179,6 +2179,8 @@ Uncomment the commented parts only when you will finish installing copilot.
   (use-package copilot
     :straight (:type git :host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
     :demand t
+    :config
+    (copilot-nes-mode 1)
     :bind
     (:map copilot-completion-map
           ("C-M-x" . copilot-accept-completion)
