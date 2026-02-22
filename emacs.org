@@ -2179,8 +2179,8 @@ Uncomment the commented parts only when you will finish installing copilot.
   (use-package copilot
     :straight (:type git :host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
     :demand t
-    :config
-    (copilot-nes-mode 1)
+    ;; :config
+    ;; (copilot-nes-mode 1)
     :bind
     (:map copilot-completion-map
           ("C-M-x" . copilot-accept-completion)
