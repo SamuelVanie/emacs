@@ -1608,7 +1608,7 @@ I remove the functions from project-vc as it causes error I don't understand
 #+begin_src emacs-lisp
   (use-package projectile
     :bind ("C-c p" . projectile-command-map)
-    :ensure t
+    :straight t
     :config
     (projectile-mode))
 #+end_src
