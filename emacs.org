@@ -859,6 +859,9 @@ Vterm is a better terminal emulator that will permit good rendering of all termi
     :config
     (setq vterm-kill-buffer-on-exit t)
     (setq vterm-copy-exclude-prompt t))
+  
+  (with-eval-after-load 'vterm
+    (define-key vterm-mode-map (kbd "C-q") #'vterm-send-next-key))
 #+end_src
 
 
@@ -2073,6 +2076,7 @@ A tool that permits to extend the capabilities of completion at point
   (use-package cape
     :straight t
     ;; Bind prefix keymap providing all Cape commands under a mnemonic key.
+    :demand t
     ;; Press C-c p ? to for help.
     :bind ("M-p" . cape-prefix-map) ;; Alternative key: M-<tab>, M-p, M-+
     :init
