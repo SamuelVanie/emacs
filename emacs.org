@@ -1128,7 +1128,8 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
   (use-package doom-themes
     :straight t)
   (use-package ef-themes
-    :straight t)
+    :straight t
+    (load-theme 'ef-trio-light))
   (use-package standard-themes
     :straight t)
   (use-package kaolin-themes
@@ -1142,12 +1143,10 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
   (use-package stimmung-themes
     :straight (stimmung-themes :type git :host github :repo "motform/stimmung-themes" :files ("*.el")))
   (use-package rebecca-theme
-    :straight t
-    :config
-    (load-theme 'rebecca))
+    :straight t)
   (use-package pink-bliss-uwu-theme
     :straight (pink-bliss-uwu-theme :type git :host github :repo "themkat/pink-bliss-uwu" :files ("*.el")))
-#+end_src
+  #+end_src
 
 ** Adding icons to emacs
 
@@ -1337,7 +1336,7 @@ Reach more easily some information directly in your completion system.
     ;; Optionally make narrowing help available in the minibuffer.
     ;; You may want to use `embark-prefix-help-command' or which-key instead.
     (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
-  )
+    )
 #+end_src
 
 
@@ -1349,7 +1348,22 @@ For vertical completion in the minibuffer
   (use-package vertico
     :straight t
     :init
-    (vertico-mode))
+    (vertico-mode)
+    :config
+    (setq read-file-name-completion-ignore-case t
+          read-buffer-completion-ignore-case t
+          completion-ignore-case t))
+
+  (use-package vertico-directory
+    :after vertico
+    :ensure nil
+    ;; More convenient directory navigation commands
+    :bind (:map vertico-map
+                ("RET" . vertico-directory-enter)
+                ("DEL" . vertico-directory-delete-char)
+                ("M-DEL" . vertico-directory-delete-word))
+    ;; Tidy shadowed file names
+    :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
 #+end_src
 
 
