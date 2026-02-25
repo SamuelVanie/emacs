@@ -1129,6 +1129,7 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
     :straight t)
   (use-package ef-themes
     :straight t
+    :config
     (load-theme 'ef-trio-light))
   (use-package standard-themes
     :straight t)
