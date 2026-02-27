@@ -13,6 +13,7 @@ Should be installed :
 - nix
 - tree
 - tinymist (for typst)
+- screen
 - [[https://github.com/eki3z/mise.el][mise]]
   
 * Declare some global variables
@@ -852,6 +853,13 @@ Quickly move to matches in visible area of the window
 ** vterm
 
 Vterm is a better terminal emulator that will permit good rendering of all terminal commands
+
+paste that into your .screenrc
+
+#+begin_example
+startup_message off
+termcapinfo xterm* ti@:te@
+#+end_example
 
 #+begin_src emacs-lisp
   (use-package vterm
