@@ -68,22 +68,5 @@
 
 ;; loads presets
 (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "command_line" ".el"))
-(load-file (format "%s%s/%s%s" user-emacs-directory "presets" "summarizer" ".el"))
 
-(general-define-key
- :prefix "&"
- :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
- "l" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "lite_mayuri" ".el")))
- "m" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "mayuri" ".el")))
- "f" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "mayuri_front" ".el")))
- "b" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "mayuri_back" ".el")))
- "r" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "mayuri_reverse_archi" ".el")))
- "d" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "mayuri_designer" ".el")))
- "a" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "architect" ".el")))
- "t" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "tasker" ".el")))
- "k" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "task" ".el")))
- "p" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "partner" ".el")))
- "g" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "summarizer_google" ".el")))
- "y" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "yt_script_writter" ".el")))
- "w" (lambda () (interactive) (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "writter" ".el"))))
 

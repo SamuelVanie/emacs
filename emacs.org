@@ -876,6 +876,20 @@ termcapinfo xterm* ti@:te@
     (define-key vterm-mode-map (kbd "C-q") #'vterm-send-next-key))
 #+end_src
 
+#+begin_src emacs-lisp
+  (use-package multi-vterm
+    :straight t
+    :config
+    (setq multi-vterm-dedicated-window-height-percent 30)
+    (general-define-key
+     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+     :prefix "_"
+     "_" #'multi-vterm-project
+     "e" #'multi-vterm
+     "i" #'multi-vterm-next
+     "n" #'multi-vterm-prev)
+    )
+#+end_src
 
 ** EAT
 
