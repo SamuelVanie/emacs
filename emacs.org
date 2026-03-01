@@ -366,7 +366,7 @@ I use DaddyTimeMono Nerd Font as my main font for both fixed and variable fonts.
       (progn
         (set-frame-font "VictorMono Nerd Font-19" nil t)
         (set-face-attribute 'fixed-pitch nil :family "FantasqueSansM Nerd Font Mono"))
-    (add-to-list 'default-frame-alist '(font . "VictorMono Nerd Font-15"))
+    (add-to-list 'default-frame-alist '(font . "VictorMono Nerd Font-14"))
     (set-face-attribute 'fixed-pitch nil :family "FantasqueSansM Nerd Font"))
 
   (set-face-attribute 'variable-pitch nil :family "Iosevka Nerd Font")
@@ -1305,7 +1305,7 @@ Reach more easily some information directly in your completion system.
            ("M-g i" . consult-imenu)
            ("M-g I" . consult-imenu-multi)
            ;; M-s bindings in `search-map'
-           ("M-s d" . consult-find)                  ;; Alternative: consult-fd
+           ("M-s d" . consult-fd)
            ("M-s c" . consult-locate)
            ("M-s g" . consult-grep)
            ("M-s G" . consult-git-grep)
@@ -1360,8 +1360,7 @@ Reach more easily some information directly in your completion system.
 
     ;; Optionally make narrowing help available in the minibuffer.
     ;; You may want to use `embark-prefix-help-command' or which-key instead.
-    (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
-    )
+    (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help))
 #+end_src
 
 
@@ -1773,79 +1772,22 @@ A package that install lsp servers for you. This rocks.
 #+end_src
 
 
-
-** lsp-mode
-
-Best lsp client in emacs.
-To register a new one over tcp :
-
-#+begin_example
-(lsp-register-client
-(make-lsp-client
- :new-connection
- (lsp-tcp-connection
-  (lambda (port)
-    `("cobol-language-support" "--port" ,(number-to-string port))))
- :priority 5
- :activation-fn (lsp-activate-on "cobol")
- :server-id 'cobol-lsp))
-#+end_example
-
-over stdio is simpler, just use (lsp-stdio-connection "name_of_server") or (lsp-stdio-connection '("name_of_server" "args1" ...))
-
-#+begin_src emacs-lisp
-  (use-package lsp-mode
-    :straight t
-    :commands (lsp lsp-deferred)
-    :config
-    (lsp-enable-which-key-integration t)
-    (setq lsp-ui-doc-show-with-mouse nil)
-    (setq lsp-headerline-breadcrumb-enable nil)
-    (setq lsp-enable-suggest-server-download nil)
-    (general-define-key
-     :keymaps 'meow-normal-state-keymap
-     :prefix "h"
-     "h" #'lsp-ui-doc-toggle
-     "q" #'lsp-ui-doc-hide
-     "a" #'lsp-execute-code-action
-     "f" #'lsp-ui-doc-focus-frame
-     "u" #'lsp-ui-doc-unfocus-frame
-     "d" #'lsp-ui-peek-find-definitions
-     "e" #'lsp-ui-flycheck-list
-     "r" #'lsp-ui-peek-find-references
-     "i" #'lsp-ui-peek-find-implementations))
-
-  (use-package lsp-ui
-    :straight t
-    :after lsp
-    :commands lsp-ui-mode
-    :hook (lsp-mode . lsp-ui-mode))
-#+end_src
-
 ** Debugger configuration
 
-Dap-mode works with lsp-mode, so mothing to that instead
+Dape mode, work better with eglot
 
 #+begin_src emacs-lisp
-  (use-package dap-mode
+  (use-package dape
     :straight t
-    :after (lsp general)
     :custom
-    (lsp-enable-dap-auto-configure nil)
+    (dape-cwd-function #'projectile-project-root)
     :config
-    (dap-ui-mode 1)
-    (general-define-key
-     :keymaps 'lsp-mode-map
-     :prefix lsp-keymap-prefix
-     "d" '(dap-hydra t :wk "debugger")))
-  
-  (with-eval-after-load 'dap-mode
-    (general-define-key
-     :keymaps 'meow-normal-state-keymap
-     :prefix "%"
-     "d" #'dap-hydra))
+    (add-hook 'dape-display-source-hook #'pulse-momentary-highlight-one-line)
+    ;; Save buffers on startup, useful for interpreted languages
+    (add-hook 'dape-start-hook (lambda () (save-some-buffers t t)))
+    ;; Kill compile buffer on build success
+    (add-hook 'dape-compile-hook #'kill-buffer))
 #+end_src
-
 
 ** Nix
 
