@@ -14,6 +14,7 @@ Should be installed :
 - tree
 - tinymist (for typst)
 - screen
+- rassumfrassum
 - [[https://github.com/eki3z/mise.el][mise]]
   
 * Declare some global variables
@@ -1771,6 +1772,17 @@ A package that install lsp servers for you. This rocks.
     (mason-setup))
 #+end_src
 
+
+** eglot multi preset
+
+Use multiple lsp servers in eglot using rassumfrassum
+
+#+begin_src emacs-lisp
+  (use-package eglot-multi-preset
+    :straight (:type git :host github :repo "kn66/eglot-multi-preset" :files ("*.el"))
+    :config
+    (eglot-multi-preset-mode 1))
+#+end_src
 
 ** Debugger configuration
 
