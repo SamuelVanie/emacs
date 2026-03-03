@@ -970,24 +970,13 @@ Calling my edge browser directly from emacs, to save up time
 Permit to expand region quickly, making it less painful to mark some region.
 
 #+begin_src emacs-lisp
-  (use-package expand-region
+  (use-package expreg
     :straight t
     :config
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-     "*" #'er/expand-region)
-    (general-define-key
-     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-     :prefix "'"
-     "o" #'er/mark-outside-pairs
-     "i" #'er/mark-inside-pairs
-     "u" #'er/mark-url
-     "n" #'er/mark-ts-node
-     "d" #'er/mark-method-call
-     "p" #'er/mark-paragraph
-     "'" #'er/mark-inside-quotes
-     "\"" #'er/mark-outside-quotes
-     "m" #'er/mark-email))
+     "*" #'expreg-expand
+     "^" #'expreg-contract))
 #+end_src
 
 
@@ -1064,7 +1053,6 @@ make emacs' dired mode better by adding some features on top of it.
      ("y"   . dirvish-yank-menu)
      ("N"   . dirvish-narrow)
      ("q"   . dirvish-quit)
-     ("^"   . dirvish-history-last)
      ("TAB" . dirvish-subtree-toggle)
      ("M-f" . dirvish-history-go-forward)
      ("M-b" . dirvish-history-go-backward)
