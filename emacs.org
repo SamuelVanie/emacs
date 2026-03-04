@@ -223,6 +223,7 @@ This is a package that will permit to have the same exec-path as my $PATH shell 
   (if (eq system-type 'darwin)
       (use-package exec-path-from-shell
         :straight t
+        :demand t
         :init
         (exec-path-from-shell-initialize)))
 #+end_src
@@ -2069,7 +2070,6 @@ A tool that permits to extend the capabilities of completion at point
     (add-hook 'completion-at-point-functions #'cape-elisp-block)
     (add-hook 'completion-at-point-functions #'cape-keyword)
     (add-hook 'completion-at-point-functions #'cape-history)
-    (add-hook 'completion-at-point-functions #'cape-file)
     (add-hook 'completion-at-point-functions #'cape-elisp-symbol)
     )
 #+end_src
@@ -2220,12 +2220,12 @@ There are some packages that I don't want to add to my emacs configuration, beca
 #+end_src
 
 
-** ECA
+** Agent shell
 
-ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for Emacs. Inspired by lsp-mode’s JSONRPC handling, it connects to an external eca server process to provide interactive chat, code suggestions, context management and more. It's everything automatic and smooth as UX and re-usability across editors is the main goal of ECA.
+Integrate acp agents in emacs
 
 #+begin_src emacs-lisp
-  (use-package eca
+  (use-package agent-shell
     :straight t)
 #+end_src
 
