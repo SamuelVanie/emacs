@@ -408,10 +408,16 @@ Rainbow permits to match pairs delimiters with the same color.
 ** Better the modeline
 
 #+begin_src emacs-lisp
-  (use-package bpsline
-    :straight (bpsline :type git :host codeberg :repo "Sshigeru/bpsline" :branch "main")
+  (use-package doom-modeline
+    :straight t
+    :init
+    (doom-modeline-mode 1)
     :config
-    (bpsline-mode))
+    (setq doom-modeline-height 45
+    	doom-modeline-hud nil
+    	doom-modeline-major-mode-icon nil
+    	doom-modeline-buffer-state-icon nil)
+    (setq inhibit-compacting-font-caches t))
 #+end_src
 
 * Keybindings Configuration
