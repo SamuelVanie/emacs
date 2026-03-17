@@ -2184,7 +2184,6 @@ A simple package that permits to get fast completion in emacs.
     ;; Optional customizations
     :custom
     (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-    (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
     (corfu-preview-current nil)    ;; Disable current candidate preview
     (corfu-preselect 'prompt)      ;; Preselect the prompt
     (corfu-on-exact-match 'quit)     ;; Configure handling of exact matches
@@ -2200,7 +2199,8 @@ A simple package that permits to get fast completion in emacs.
           ("TAB" . corfu-next)
           ([tab] . corfu-next)
           ("S-TAB" . corfu-previous)
-          ([backtab] . corfu-previous))
+          ([backtab] . corfu-previous)
+          ("M-SPC" . corfu-insert-separator))
     
     :init
 
@@ -2212,8 +2212,14 @@ A simple package that permits to get fast completion in emacs.
     ;; Enable optional extension modes:
     (corfu-history-mode)
     (corfu-popupinfo-mode)
-    )
 
+    :config
+    ;; Enable auto completion, configure delay, trigger and quitting
+    (setq corfu-auto t
+          corfu-auto-delay 0.2
+          corfu-auto-trigger "."
+          corfu-quit-no-match 'separator)
+    )
 #+end_src
 
 
