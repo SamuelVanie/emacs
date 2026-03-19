@@ -1993,6 +1993,9 @@ Emmet mode allors you to easily expand html and css abbreviations for instance i
 #+begin_src emacs-lisp
   (use-package emmet-mode
     :straight t
+    :hook
+    (js-jsx-mode . emmet-mode)
+    (tsx-ts-mode . emmet-mode)
     :defer t)
 #+end_src
 
@@ -2246,8 +2249,8 @@ Uncomment the commented parts only when you will finish installing copilot.
   (use-package copilot
     :straight (:type git :host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
     :demand t
-    ;; :config
-    ;; (copilot-nes-mode 1)
+    :config
+    (setq copilot-nes-idle-delay 0.7)
     :bind
     (:map copilot-completion-map
           ("C-M-x" . copilot-accept-completion)
