@@ -13,7 +13,6 @@ Should be installed :
 - nix
 - tree
 - tinymist (for typst)
-- screen
 - rassumfrassum
 - [[https://github.com/eki3z/mise.el][mise]]
   
@@ -871,7 +870,6 @@ termcapinfo xterm* ti@:te@
     :config
     (setq vterm-kill-buffer-on-exit t)
     (setq vterm-min-window-width 30)
-    (setq vterm-shell "screen")
     (setq vterm-copy-exclude-prompt t))
 
   (with-eval-after-load 'vterm
@@ -999,19 +997,16 @@ A tool that help moving things around in emacs. Lines, words, region...
 make emacs' dired mode better by adding some features on top of it.
 
 #+begin_src emacs-lisp
-
-  ;; Use the ls from homebrew for directory listing
-  ;; would be /opt/homebrew/bin/gls for normal homebrew installation
-  (when (eq system-type 'darwin)
-    (setq insert-directory-program "~/homebrew/bin/gls"))
-
   (use-package dired
+    :ensure nil
+    :commands (dired dired-jump)
     :config
-    (setq dired-listing-switches
-          "-l --almost-all --human-readable --group-directories-first --no-group")
-    ;; this command is useful when you want to close the window of `dirvish-side'
-    ;; automatically when opening a file
-    (put 'dired-find-alternate-file 'disabled nil))
+    (when (string= system-type "darwin")
+      (let ((gls (executable-find "gls")))
+        (when gls
+          (setq dired-use-ls-dired t
+                insert-directory-program gls
+                dired-listing-switches "-aBhl --group-directories-first")))))
 
   (use-package dirvish
     :straight t
@@ -1762,19 +1757,6 @@ A package that install lsp servers for you. This rocks.
 #+end_src
 
 
-
-
-** eglot multi preset
-
-Use multiple lsp servers in eglot using rassumfrassum
-
-#+begin_src emacs-lisp
-  (use-package eglot-multi-preset
-    :straight (:type git :host github :repo "kn66/eglot-multi-preset" :files ("*.el"))
-    :config
-    (eglot-multi-preset-mode 1))
-#+end_src
-
 ** lsp-mode
 
 Best lsp client in emacs.
@@ -2306,12 +2288,12 @@ There are some packages that I don't want to add to my emacs configuration, beca
 #+end_src
 
 
-** Agent shell
+** ECA
 
-Integrate acp agents in emacs
+Use eca as the ai interaction tool
 
 #+begin_src emacs-lisp
-  (use-package agent-shell
+  (use-package eca
     :straight t)
 #+end_src
 
