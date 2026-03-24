@@ -1135,11 +1135,11 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
 
 #+begin_src emacs-lisp
   (use-package doom-themes
+    :straight t)
+  (use-package ef-themes
     :straight t
     :config
-    (load-theme 'doom-acario-dark))
-  (use-package ef-themes
-    :straight t)
+    (load-theme 'ef-day))
   (use-package standard-themes
     :straight t)
   (use-package kaolin-themes
@@ -1885,6 +1885,7 @@ This is a better flymake, it has many features. That permits to better see the e
   (use-package flycheck
     :straight t
     :config
+    (setq flycheck-display-errors-function #'flycheck-display-error-messages)
     (setq flycheck-error-list-minimum-level 'error)
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
