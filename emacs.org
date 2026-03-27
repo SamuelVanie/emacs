@@ -323,7 +323,6 @@ A package that permits to transform some buffers into popups. Quite useful to qu
   		  "^\\*shell.*\\*$"  shell-mode  ;shell as a popup
   		  "^\\*term.*\\*$"   term-mode   ;term as a popup
   		  "^\\*vterm.*\\*$"  vterm-mode  ;vterm as a popup
-                    "^\\*eat.*\\*$"    eat-mode    ;eat as a popup
                     )))
 
     (popper-mode +1)
@@ -891,25 +890,6 @@ termcapinfo xterm* ti@:te@
     )
 #+end_src
 
-** EAT
-
-Another terminal emulator
-
-#+begin_src emacs-lisp
-  (use-package eat
-    :demand t
-    :straight (eat :type git
-  		 :host codeberg
-                   :repo "akib/emacs-eat"
-                   :files ("*.el" ("term" "term/*.el") "*.texi"
-                           "*.ti" ("terminfo/e" "terminfo/e/*")
-                           ("terminfo/65" "terminfo/65/*")
-                           ("integration" "integration/*")
-                           (:exclude ".dir-locals.el" "*-tests.el")))
-    :config
-    ;; Better scrollback management
-    (setq eat-kill-buffer-on-exit t))
-#+end_src
 
 ** Browsing
 
@@ -1837,11 +1817,12 @@ Dap-mode, work better with lsp-mode
     (lsp-enable-dap-auto-configure nil)
     :config
     (dap-ui-mode 1)
+    (require 'dap-tasks)
     (general-define-key
      :keymaps 'lsp-mode-map
      :prefix lsp-keymap-prefix
      "d" '(dap-hydra t :wk "debugger")))
-  
+
   (with-eval-after-load 'dap-mode
     (general-define-key
      :keymaps 'meow-normal-state-keymap
@@ -2369,13 +2350,6 @@ Mode to interact with different llms in emacs.
         (load-file fname)
         (gptel-make-anthropic-oauth "Claude-OAuth" :stream t)))
 
-    (let (
-      	(fname (expand-file-name "partner_prompt.el" (concat user-emacs-directory "presets/")))
-      	)
-      (when (file-exists-p fname)
-        (load-file fname)
-        (setf (alist-get 'partner gptel-directives) #'smv/pair_partner)))
-
     :bind
     ("C-c RET" . gptel-send)
     ("C-c g g" . gptel)
@@ -2411,102 +2385,9 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
 
 #+begin_src emacs-lisp
   ;; load tools
-  ;; (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "fetch_url" ".el"))
-
-  (defun smv-tool/list_projects ()
-    "Return a list of full paths to directories in ~/projects/."
-    (let ((projects-dir (expand-file-name "~/projects/")))
-      (when (file-directory-p projects-dir)
-        (seq-filter
-         (lambda (path)
-           (and (file-directory-p path)
-                (not (string-match-p "/\\.\\.?$" path))))
-         (directory-files projects-dir t "^[^.]")))))
-
-  (defun smv-tool/run_command (command)
-    (with-temp-buffer
-      (let* ((cd-match (string-match "^cd \\([^ ;&|]+\\) *&& *\\(.+\\)$" command))
-             (actual-command (if cd-match (match-string 2 command) command))
-             (working-dir (if cd-match
-                              (expand-file-name (match-string 1 command))
-                            default-directory))
-             (exit-code (call-process "bash" nil (current-buffer) nil
-                                      "-c"
-                                      (format "cd %s && source ~/.bashrc && %s"
-                                              (shell-quote-argument working-dir)
-                                              actual-command)))
-             (output (buffer-string)))
-        (if (zerop exit-code)
-            output
-  	(format "Command failed with exit code %d:\nSTDOUT+STDERR:\n%s"
-  		exit-code output)))))
-
-  (defun smv-tool/ask_partner (question &optional directory)
-    "Call gemini given the prompt"
-    (let* ((partner-prompt-content
-            (with-temp-buffer
-              (insert-file-contents (format "%s%s" user-emacs-directory "presets/partner_prompt.el"))
-              (string-trim (buffer-string))))
-      	 (full-gemini-argument
-            (concat partner-prompt-content
-                    "\n\nHere is your task:\n\n"
-                    question))
-      	 (quoted-gemini-argument
-            (shell-quote-argument full-gemini-argument))
-      	 (command
-            (concat "gemini " quoted-gemini-argument " --yolo 2> /dev/null"))
-      	 (default-directory (or directory default-directory)))
-      (shell-command-to-string (format "%s" command))))
-
-  (defun smv-tool/fetch_url_content (url)
-    (smv/fetch-content url))
-
   (with-eval-after-load 'gptel
     ;; shell command execution tool
-    (gptel-make-tool
-     :name "run_command"                    ; javascript-style  snake_case name
-     :function #'smv-tool/run_command
-     :description "Execute a shell command on the system and get the corresponding output. IMPORTANT: ***MAKE SURE TO ALWAYS USE FULL PATHS IF YOUR COMMAND CONTAINS SOME***"
-     :confirm t
-     :include t
-     :args (list '(:name "command"             ; a list of argument specifications
-                         :type string
-                         :description "The shell command to execute. For probably long output commands please use bash utilities like grep, tail, head... to retrieve only important parts."))
-     :category "system")
-
-    (gptel-make-tool
-     :name "list_projects"
-     :function #'smv-tool/list_projects
-     :description "List the paths of the projects that are available on the system"
-     :category "project-info")
-
-    
-    (gptel-make-tool
-     :name "ask_partner"
-     :function #'smv-tool/ask_partner
-     :description "Get any information from the internet or explore the current project. Give full summary information asked. You should be as precise as possible about what you need"
-     :args (list '(:name "question"
-                         :type string
-                         :description "Your request. e.g What is the most up to date way of writing slidemasters using pptxgenjs library?")
-                 '(:name "directory"
-                         :type string
-                         :optional t
-                         :description "Directory path to search in for project exploration tasks. Omit for online research."))
-     :category "info-gathering")
-
-    (gptel-make-tool
-     :name "fetch_url_content"                    ; javascript-style  snake_case name
-     :function #'smv-tool/fetch_url_content
-     :description "Fetch the content of a web page in text format"
-     :confirm t
-     :args (list '(:name "url"             ; a list of argument specifications
-                         :type string
-                         :description "The url of the webpage to fetch. e.g: https://google.com"))
-     :category "browsing")
-
-    
-    (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "filesystem/filesystem" ".el"))
-    (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "ask" ".el"))
+    (load-file (format "%s%s/%s%s" user-emacs-directory "tools" "insert_at_point" ".el"))
     )
 #+end_src
 
