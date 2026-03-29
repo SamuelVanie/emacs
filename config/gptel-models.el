@@ -39,8 +39,7 @@
       		  (google/gemini-3.1-flash-lite-preview :input-cost 0.25 :output-cost 1.5)
       		  (google/gemini-3.1-pro-preview :input-cost 2 :output-cost 12)
                   
-      		  (minimax/minimax-m2.1 :input-cost 0.3 :output-cost 1.2)
-      		  (minimax/minimax-m2.5:free :input-cost 0.0 :output-cost 0.0)
+      		  (minimax/minimax-m2.7 :input-cost 0.3 :output-cost 1.2)
                   
       		  (moonshotai/kimi-k2.5 :input-cost 0.42 :output-cost 2.2)
                   
