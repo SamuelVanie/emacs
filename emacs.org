@@ -1416,7 +1416,8 @@ This section contains the basic configuration for org-mode plus the configuratio
     :straight t
     :config
     (setq org-agenda-skip-unavailable-files t)
-    
+    (setq org-yank-image-save-method "/tmp")
+
     (setq org-todo-keywords
           '((sequence "TODO(t!)" "NEXT(n!)" "|" "DONE(d!)")
             (sequence "BACKLOG(b!)" "REVIEW(v!)" "WAIT(w@/!)" "|" "COMPLETED(c)" "CANC(k@)")))
@@ -2294,10 +2295,9 @@ Mode to interact with different llms in emacs.
     (setq gptel-default-mode 'org-mode)
     (setq gptel-use-context 'user)
     ;; (setq gptel-confirm-tool-calls t)
-    (setq gptel-include-tool-results t)
+    ;; (setq gptel-include-tool-results t)
     (setq gptel-include-reasoning nil)
     (setq gptel-track-media t)
-    (setq org-yank-image-save-method "/tmp")
     (setf (alist-get 'org-mode gptel-prompt-prefix-alist) "@user\n")
     (setf (alist-get 'org-mode gptel-response-prefix-alist) "@assistant\n")
     
