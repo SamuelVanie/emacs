@@ -1794,6 +1794,33 @@ over stdio is simpler, just use (lsp-stdio-connection "name_of_server") or (lsp-
 
 Dape mode, work better with eglot
 
+example :
+
+#+begin_example
+(setq dape-configs 
+      `((jest
+         modes
+         (js-mode js-ts-mode typescript-mode)
+         ensure dape-jest/ensure
+         command "node"
+         command-cwd ,(file-name-concat dape-adapter-dir
+                                        "js-debug")
+         command-args (,(file-name-concat "src" "dapDebugServer.js")
+                       :autoport)
+         port :autoport
+         fn dape-config-autoport
+         :type "pwa-node"
+         :cwd dape-cwd-fn
+         :program "node_modules/.bin/jest"
+         :args dape-jest/find-file-buffer-default
+         :outputCapture "console"
+         :sourceMapRenames t
+         :pauseForSourceMap nil
+         :autoAttachChildProcesses t
+         :console "internalConsole"
+         :killBehavior "forceful")))
+#+end_example
+
 #+begin_src emacs-lisp
   (use-package dape
     :straight t
@@ -1817,7 +1844,6 @@ Dap-mode, work better with lsp-mode
     :custom
     (lsp-enable-dap-auto-configure nil)
     :config
-    (dap-ui-mode 1)
     (require 'dap-tasks)
     (general-define-key
      :keymaps 'lsp-mode-map
