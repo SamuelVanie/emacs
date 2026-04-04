@@ -959,19 +959,6 @@ Permit to expand region quickly, making it less painful to mark some region.
 #+end_src
 
 
-** Drag stuff
-
-A tool that help moving things around in emacs. Lines, words, region...
-
-#+begin_src emacs-lisp
-  (use-package drag-stuff
-    :straight t
-    :config
-    (drag-stuff-global-mode 1)
-    (drag-stuff-define-keys))
-#+end_src
-
-
 ** Dirvish
 
 make emacs' dired mode better by adding some features on top of it.
