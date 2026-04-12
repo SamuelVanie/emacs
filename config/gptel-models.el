@@ -50,6 +50,7 @@
       		  (qwen/qwen3.5-35b-a3b :input-cost 0.1625 :output-cost 1.3)
       		  (qwen/qwen3-coder-flash :input-cost 0.3 :output-cost 1.50)
       		  (qwen/qwen3-coder-plus :input-cost 1 :output-cost 5)
+      		  (qwen/qwen3.6-plus:free :input-cost 0 :output-cost 0)
                   
       		  (switchpoint/router :input-cost 0.85 :output-cost 3.40)
       		  (x-ai/grok-code-fast-1 :input-cost 0.2 :output-cost 1.5)

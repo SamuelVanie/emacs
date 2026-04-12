@@ -13,6 +13,7 @@ Should be installed :
 - nix
 - tree
 - tinymist (for typst)
+- fonts-noto-color-emoji and fonts-emojione on ubuntu / noto-fonts-emoji and ttf-joypixels on archlinux
 - rassumfrassum
 - [[https://github.com/eki3z/mise.el][mise]]
   
@@ -1106,7 +1107,7 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
   (use-package ef-themes
     :straight t
     :config
-    (load-theme 'ef-day))
+    (load-theme 'ef-trio-light))
   (use-package standard-themes
     :straight t)
   (use-package kaolin-themes
@@ -1477,6 +1478,37 @@ Permits to scroll horizontally, this helps in the rendering of tables in org mod
     :commands (org-phscroll-mode)
     :config
     (setq org-startup-truncated nil))
+#+end_src
+
+** Org modern
+
+#+begin_src emacs-lisp
+  (use-package org-modern
+    :straight t
+    :config
+    (modify-all-frames-parameters
+     '((right-divider-width . 25)
+       (internal-border-width . 25)))
+    (dolist (face '(window-divider
+                    window-divider-first-pixel
+                    window-divider-last-pixel))
+      (face-spec-reset-face face)
+      (set-face-foreground face (face-attribute 'default :background)))
+    (set-face-background 'fringe (face-attribute 'default :background))
+    (setq
+     ;; Edit settings
+     org-auto-align-tags nil
+     org-tags-column 0
+     org-catch-invisible-edits 'show-and-error
+     org-special-ctrl-a/e t
+     org-insert-heading-respect-content t
+
+     ;; Org styling, hide markup etc.
+     org-hide-emphasis-markers t
+     org-agenda-tags-column 0
+     org-pretty-entities t
+     org-ellipsis "…")
+    (global-org-modern-mode))
 #+end_src
 
 ** Denote
@@ -2231,11 +2263,14 @@ Uncomment the commented parts only when you will finish installing copilot.
     (setq copilot-nes-idle-delay 0.7)
     :bind
     (:map copilot-completion-map
-          ("C-M-x" . copilot-accept-completion)
-          ("C-M-<down>" . copilot-accept-completion-by-word)
-          ("C-M-<right>" . copilot-next-completion)
-          ("C-M-<left>" . copilot-previous-completion)
-          ))
+          ("<right>" . copilot-accept-completion)
+          ("C-f" . copilot-accept-completion)
+          ("M-<right>" . copilot-accept-completion-by-word)
+          ("M-f" . copilot-accept-completion-by-word)
+          ("C-e" . copilot-accept-completion-by-line)
+          ("<end>" . copilot-accept-completion-by-line)
+          ("M-n" . copilot-next-completion)
+          ("M-p" . copilot-previous-completion)))
 #+end_src
 
 
