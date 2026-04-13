@@ -16,6 +16,7 @@
 (gptel-make-openai "zai"
   :host "api.z.ai"
   :endpoint "/api/coding/paas/v4/chat/completions"
+  :stream t
   :protocol "https"
   :key (with-temp-buffer (insert-file-contents "~/.org/.zai_key") (string-trim (buffer-string)))
   :models '("glm-5.1" "glm-4.7" "glm-4-32b-0414-128k" "glm-4.5-air"))

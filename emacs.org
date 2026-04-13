@@ -23,7 +23,6 @@ Should be installed :
   (setq gc-cons-threshold (* 90 1000 1000))
   (global-unset-key (kbd "C-z"))
   (global-unset-key (kbd "C-x C-z"))
-  (setq delete-selection-temporary-region t)
 
   (setq-default indent-tabs-mode nil)
 
@@ -1480,8 +1479,9 @@ Permits to scroll horizontally, this helps in the rendering of tables in org mod
     (setq org-startup-truncated nil))
 #+end_src
 
-** Org modern
+** REVIEW Org modern
 
+- State "REVIEW"     from              [2026-04-13 Mon 10:06]
 #+begin_src emacs-lisp
   (use-package org-modern
     :straight t
@@ -1495,6 +1495,8 @@ Permits to scroll horizontally, this helps in the rendering of tables in org mod
       (face-spec-reset-face face)
       (set-face-foreground face (face-attribute 'default :background)))
     (set-face-background 'fringe (face-attribute 'default :background))
+    (setq org-modern-fold-stars '(("▶" . "▼") ("▷" . "▽") ("‣" . "▾") ("▹" . "▿") ("▸" . "▾")))
+    (setq org-pretty-entities-include-sub-superscripts nil)
     (setq
      ;; Edit settings
      org-auto-align-tags nil
