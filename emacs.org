@@ -739,6 +739,7 @@ Some commands for completing meow, adding the ones I'm used to.
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
      :prefix "~ s"
      "n" #'smerge-vc-next-conflict
+     "p" #'smerge-prev
      "u" #'smerge-keep-upper
      "l" #'smerge-keep-lower
      "b" #'smerge-keep-all
@@ -2411,6 +2412,8 @@ Mode to interact with different llms in emacs.
     :after (magit gptel)
     :hook (magit-mode . gptel-magit-install)
     :config
+    (setq gptel-agent-preset
+      '(:backend "Copilot" :model gpt-4.1))
     (load-file (format "%s%s/%s%s" user-emacs-directory "config" "gptel-magit-message" ".el")))
 #+end_src
 
