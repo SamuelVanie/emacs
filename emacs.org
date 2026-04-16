@@ -590,7 +590,7 @@ Trying the modal editor meow
      '("v" . meow-search)
      '("V" . meow-unpop-to-mark)
      '("w" . meow-next-word)
-     '("W" . meow-next-symbol)
+     '("W" . forward-whitespace)
      '("x" . meow-delete)
      '("X" . meow-backward-delete)
      '("y" . meow-save)
