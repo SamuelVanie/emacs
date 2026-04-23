@@ -714,12 +714,12 @@ Some commands for completing meow, adding the ones I'm used to.
      "+"		#'increment-register
      "M"		#'bookmark-set-no-overwrite
      "N"		#'rectangle-number-lines
+     "a"		#'prepend-to-register
      "b"		#'bookmark-jump
      "c"		#'clear-rectangle
      "d"		#'delete-rectangle
      "f"		#'frameset-to-register
      "g"		#'insert-register
-     "i"		#'insert-register
      "j"		#'jump-to-register
      "k"		#'kill-rectangle
      "l"		#'bookmark-bmenu-list
@@ -730,8 +730,8 @@ Some commands for completing meow, adding the ones I'm used to.
      "s"		#'copy-to-register
      "t"		#'string-rectangle
      "w"		#'window-configuration-to-register
-     "x"		#'copy-to-register
      "y"		#'yank-rectangle
+     "z"		#'append-to-register
      "M-w"	#'copy-rectangle-as-kill
      )
 
@@ -1480,16 +1480,15 @@ Permits to scroll horizontally, this helps in the rendering of tables in org mod
     (setq org-startup-truncated nil))
 #+end_src
 
-** REVIEW Org modern
+** Org modern
 
-- State "REVIEW"     from              [2026-04-13 Mon 10:06]
 #+begin_src emacs-lisp
   (use-package org-modern
     :straight t
     :config
     (modify-all-frames-parameters
-     '((right-divider-width . 25)
-       (internal-border-width . 25)))
+     '((right-divider-width . 32)
+       (internal-border-width . 32)))
     (dolist (face '(window-divider
                     window-divider-first-pixel
                     window-divider-last-pixel))
@@ -2032,6 +2031,8 @@ The useful web mode for programming.
     :defer t
     :mode (("\\.html?\\'" . web-mode)
            ("\\.css?\\'" . web-mode)
+           ("\\.tsx?\\'" . web-mode)
+           ("\\.jsx?\\'" . web-mode)
            )
     :hook
     (web-mode . smv/web-mode-hook)
@@ -2389,6 +2390,7 @@ Mode to interact with different llms in emacs.
      ")" #'gptel-add
      "!" #'gptel-send
      "r" #'gptel-rewrite
+     "i" #'smv/gptel-intercept-next-tool
      "(" #'gptel)
 
     (let ((fname (expand-file-name "gptel-gemini-oauth-cloudpa.el" "~/.org/auth/")))
@@ -2419,7 +2421,7 @@ Make gptel work as an agent
 #+begin_src emacs-lisp
   (use-package gptel-agent
     :after gptel
-    :straight (:host github :repo "karthink/gptel-agent" :files ("*"))
+    :straight (:host github :repo "SamuelVanie/gptel-agent" :branch "agents_prompts" :files ("*"))
     :config
     (let ((dir (expand-file-name "agents/" user-emacs-directory)))
       (if (file-directory-p dir)

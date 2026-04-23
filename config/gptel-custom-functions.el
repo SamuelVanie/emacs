@@ -1,4 +1,4 @@
-(defun gptel--hide-tool-results-in-region (beg end)
+(defun smv/gptel--hide-tool-results-in-region (beg end)
   "Helper: Hide tool results in range by backing up their property and setting to ignore."
   (let ((prop))
     (save-excursion
@@ -16,7 +16,7 @@
           ;; 2. Set the main property to 'ignore so gptel skips it
           (put-text-property start finish 'gptel 'ignore))))))
 
-(defun gptel--restore-tool-results-in-region (beg end)
+(defun smv/gptel--restore-tool-results-in-region (beg end)
   "Helper: Restore tool results in range from the backup property."
   (let ((prop))
     (save-excursion
@@ -35,11 +35,11 @@
             ;; 2. Remove the backup property to clean up
             (remove-text-properties start finish '(gptel-tool-backup nil))))))))
 
-(defun gptel-auto-hide-tool-results (beg end)
+(defun smv/gptel-auto-hide-tool-results (beg end)
   "Hook function: automatically hide tool results in new responses."
-  (gptel--hide-tool-results-in-region beg end))
+  (smv/gptel--hide-tool-results-in-region beg end))
 
-(define-minor-mode gptel-no-tool-history-mode
+(define-minor-mode smv/gptel-no-tool-history-mode
   "Toggle excluding tool results from the conversation history context.
 
     When ENABLED:
@@ -51,20 +51,42 @@
     2. All ignored tool results are restored to their original state."
   :global nil
   :lighter " NoTool"
-  (if gptel-no-tool-history-mode
+  (if smv/gptel-no-tool-history-mode
       (progn
         ;; 1. Add hook locally for future responses
-        (add-hook 'gptel-post-response-functions #'gptel-auto-hide-tool-results 0 t)
+        (add-hook 'gptel-post-response-functions #'smv/gptel-auto-hide-tool-results 0 t)
         ;; 2. Process the whole buffer immediately to hide existing ones
-        (gptel--hide-tool-results-in-region (point-min) (point-max)))
+        (smv/gptel--hide-tool-results-in-region (point-min) (point-max)))
     
     ;; ELSE (Turning off)
     (progn
       ;; 1. Remove the hook locally
-      (remove-hook 'gptel-post-response-functions #'gptel-auto-hide-tool-results t)
+      (remove-hook 'gptel-post-response-functions #'smv/gptel-auto-hide-tool-results t)
       ;; 2. Restore all hidden items in the buffer
-      (gptel--restore-tool-results-in-region (point-min) (point-max)))))
+      (smv/gptel--restore-tool-results-in-region (point-min) (point-max)))))
 
+(defvar smv/gptel-intercept-next-tool nil
+  "When non-nil, intercept the next tool call, prompt for a reason, then disable.")
+
+(defun smv/gptel-intercept-tool-call (plist)
+  (when smv/gptel-intercept-next-tool
+    (setq smv/gptel-intercept-next-tool nil)
+    (let* ((name (plist-get plist :name))
+           (args (plist-get plist :args))
+           (reason (read-string
+                    (format "Block tool '%s' %S — reason: " name args))))
+      (list :block (if (string-empty-p reason)
+                       (format "Tool '%s' was blocked by the user." name)
+                     (format "THE USER HAS CANCELLED THE TOOL CALL WITH THE FOLLOWING REASON.\nAJUST ACCORDINGLY.\nREASON:\n%s" reason))))))
+
+(add-hook 'gptel-post-tool-call-functions #'smv/gptel-intercept-tool-call)
+
+(defun smv/gptel-intercept-next-tool ()
+  (interactive)
+  (setq smv/gptel-intercept-next-tool t)
+  (message "gptel: next tool call will be intercepted."))
+
+(keymap-global-set "C-c g i" #'smv/gptel-intercept-next-tool)
 
 ;; loads presets
 (load-file (format "%s%s/%s%s" user-emacs-directory "presets" "command_line" ".el"))
