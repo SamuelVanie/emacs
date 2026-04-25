@@ -50,14 +50,18 @@ Returns nil if OLD-STR isn't found, or PATH is missing/a directory."
               (plist-get args :line_number)
               (or (plist-get args :new_str) "")))))
     ("Edit"
-     ;; Skip diff-mode edits and directory targets — fall back to normal confirm.
-     (let ((path (plist-get args :path))
-           (diff (plist-get args :diff)))
-       (unless (or diff (and path (file-directory-p path)))
+     (let* ((path    (plist-get args :path))
+            (diffp   (plist-get args :diff))
+            (old-str (plist-get args :old_str))
+            (new-str (plist-get args :new_str))
+            (text-mode-p (or (eq diffp :json-false) old-str)))
+       (when (and text-mode-p
+                  path
+                  (not (file-directory-p path)))
          (when-let ((content (smv/gptel-ediff--proposed-edit
                               path
-                              (or (plist-get args :old_str) "")
-                              (or (plist-get args :new_str) ""))))
+                              (or old-str "")
+                              (or new-str ""))))
            (cons path content)))))
     ("Write"
      (let* ((dir (or (plist-get args :path) "."))
