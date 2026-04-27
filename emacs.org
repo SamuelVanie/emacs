@@ -241,13 +241,14 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
   (with-eval-after-load 'eshell
     (if (eq system-type 'android)
         (defalias 'eshell/manjaro-exec
-  	(lambda (&rest args)
-  	  (eshell-command-result
-  	   (format "proot-distro login manjaro --bind %s:/root --bind /sdcard:/sdcard --isolated -- sh -c 'cd %s && %s'"
-  		   (getenv "HOME")
-  		   (string-replace (getenv "HOME") "/root" (eshell/pwd))
-  		   (string-join args " ")))))))
-
+    	(lambda (&rest args)
+    	  (eshell-command-result
+    	   (format "proot-distro login manjaro --bind %s:/root --bind /sdcard:/sdcard --isolated -- sh -c 'cd %s && %s'"
+    		   (getenv "HOME")
+    		   (string-replace (getenv "HOME") "/root" (eshell/pwd))
+    		   (string-join args " ")))))))
+  
+  (add-hook 'eshell-mode-hook 'compilation-shell-minor-mode)
   (setq eshell-aliases-file (format "%s%s" user-emacs-directory "aliases"))
   (global-set-key (kbd "C-c e") 'eshell)
 #+end_src
