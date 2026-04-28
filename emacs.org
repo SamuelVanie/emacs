@@ -1106,7 +1106,7 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
   (use-package doom-themes
     :straight t
     :config
-    (load-theme 'doom-xcode))
+    (load-theme 'doom-solarized-light))
   (use-package ef-themes
     :straight t)
   (use-package standard-themes
@@ -1392,13 +1392,13 @@ This section contains the basic configuration for org-mode plus the configuratio
 #+begin_src emacs-lisp
   ;; A directory under the notes folder representing each of my project
   (setq smv/project-note-roots (let ((projects-dir (expand-file-name "~/projects"))
-       				   (silo-root (expand-file-name "~/.org/notes")))
-       			       (mapcar (lambda (subdir)
-       					 (file-name-concat silo-root subdir))
-       				       (seq-filter (lambda (f)
-       						     (and (not (member f '("." "..")))
-       							  (file-directory-p (expand-file-name f projects-dir))))
-       						   (directory-files projects-dir)))))
+           			   (silo-root (expand-file-name "~/.org/notes")))
+           		       (mapcar (lambda (subdir)
+           				 (file-name-concat silo-root subdir))
+           			       (seq-filter (lambda (f)
+           					     (and (not (member f '("." "..")))
+           						  (file-directory-p (expand-file-name f projects-dir))))
+           					   (directory-files projects-dir)))))
 
 
   (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
@@ -1433,25 +1433,34 @@ This section contains the basic configuration for org-mode plus the configuratio
 
     (setq org-agenda-custom-commands
           '(("p" "Projects Overview"
-             ((tags-todo "TODO=\"TODO\""
-                         ((org-agenda-overriding-header "All Project TODOs")
-                          (org-agenda-sorting-strategy '(category-up priority-down))))))
-            
-            ("P" "Select Project"
-             ((tags-todo "TODO=\"TODO\""
-                         ((org-agenda-overriding-header "Project TODOs")
-                          (org-agenda-files 
-                           (list (completing-read "Select project: " 
-                                                  smv/project-note-roots)))))))
-            
-            ("d" "Upcoming Deadlines (7 days)"
-             ((agenda ""
-                      ((org-agenda-span 'day)
-                       (org-deadline-warning-days 7)
-                       (org-agenda-entry-types '(:deadline))
-                       (org-agenda-overriding-header "Upcoming Deadlines by Project")
-                       (org-agenda-sorting-strategy '(category-up deadline-up))))))))
+             ((org-ql-block '(todo "TODO")
+                            ((org-ql-block-header "All Project TODOs")
+                             (org-agenda-sorting-strategy '(category-up priority-down))))))
 
+            ("P" "Select Project"
+             ((org-ql-block '(todo "TODO")
+                            ((org-ql-block-header "Project TODOs")
+                             (org-agenda-files
+                              (list (completing-read "Select project: "
+                                                     org-agenda-files)))))))
+
+            ("d" "Upcoming Deadlines (7 days)"
+             ((org-ql-block '(deadline :to +7)
+                            ((org-ql-block-header "Upcoming Deadlines by Project")
+                             (org-agenda-sorting-strategy '(category-up deadline-up))))))))
+
+    ;; Don't run org startup sequences when visiting agenda files
+    (setq org-agenda-inhibit-startup t)
+
+    ;; Don't dim blocked tasks (requires walking the whole tree)
+    (setq org-agenda-dim-blocked-tasks nil)
+
+    ;; Skip property inheritance
+    (setq org-agenda-ignore-properties '(effort appt stats category))
+
+    ;; If you use deadlines, this avoids pre-computing them for all files
+    (setq org-agenda-skip-deadline-prewarning-if-scheduled t)
+    
     ;; easily move task to another header
     (setq org-refile-targets
           '(("archive.org" :maxlevel . 1)
@@ -1465,6 +1474,18 @@ This section contains the basic configuration for org-mode plus the configuratio
     (global-set-key (kbd "C-c a") 'org-agenda)
     (global-set-key (kbd "M-i") 'org-insert-item))
 
+#+end_src
+
+
+
+** Org-ql
+
+Permits to quickly query your agenda files
+
+#+begin_src emacs-lisp
+  (use-package org-ql
+    :straight t
+    :after org)
 #+end_src
 
 
