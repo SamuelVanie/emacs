@@ -128,7 +128,6 @@ giving the rejection reason."
 (defun smv/gptel-ediff-tool-call (plist)
   "Pre-tool-call hook: preview Edit/Write/Insert in ediff before running."
   (let ((name (plist-get plist :name)))
-    (message "INSIDE GPTEL EDIFF %s" name)
     (when (member name smv/gptel-ediff-tool-names)
       (when-let* ((args     (plist-get plist :args))
                   (proposed (smv/gptel-ediff--proposed name args))
