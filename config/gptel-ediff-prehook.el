@@ -1,4 +1,4 @@
-(defvar smv/gptel-ediff-tool-names '("Edit" "Write" "Insert")
+(defvar smv/gptel-ediff-tool-names '("Edit" "ReplaceIn" "Write" "Insert")
   "Tool names whose calls should be previewed via ediff.")
 
 (defvar smv/gptel-ediff-reject-key "R"

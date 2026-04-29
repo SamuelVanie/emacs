@@ -268,7 +268,8 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
   (defun my-both-modes-active-p (buffer-name action)
     "Return non-nil if buffer is org-mode with gptel active."
     (with-current-buffer buffer-name
-      (and (derived-mode-p 'org-mode)
+      (and (or (derived-mode-p 'org-mode)
+               (derived-mode-p 'markdown-mode))
            (bound-and-true-p gptel-mode))))
 
   (add-to-list 'display-buffer-alist
@@ -1104,11 +1105,11 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
 
 #+begin_src emacs-lisp
   (use-package doom-themes
+    :straight t)
+  (use-package ef-themes
     :straight t
     :config
-    (load-theme 'doom-solarized-light))
-  (use-package ef-themes
-    :straight t)
+    (load-theme 'ef-summer))
   (use-package standard-themes
     :straight t)
   (use-package kaolin-themes

@@ -12,7 +12,7 @@
                        (format "Tool '%s' was blocked by the user." name)
                      (format "THE USER HAS CANCELLED THE TOOL CALL WITH THE FOLLOWING REASON.\nAJUST ACCORDINGLY.\nREASON:\n%s" reason))))))
 
-(add-hook 'gptel-pre-tool-call-functions #'smv/gptel-intercept-tool-call)
+(add-hook 'gptel-post-tool-call-functions #'smv/gptel-intercept-tool-call)
 
 (defun smv/gptel-intercept-next-tool ()
   (interactive)
