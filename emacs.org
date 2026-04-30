@@ -291,7 +291,7 @@ I'm writing this function to kill all the buffers because it is really boring to
     (dolist (buffer (buffer-list))
       (kill-buffer buffer)))
 
-  (global-set-key (kbd "C-c k a") 'kill-all-buffers)
+  (global-set-key (kbd "C-c z k") 'kill-all-buffers)
   (global-set-key (kbd "C-k") 'kill-line)
 #+end_src
 
@@ -1107,22 +1107,30 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
   (use-package doom-themes
     :straight t)
   (use-package ef-themes
-    :straight t
-    :config
-    (load-theme 'ef-summer))
+    :straight t)
   (use-package standard-themes
     :straight t)
   (use-package kaolin-themes
     :straight t
     :config
     (kaolin-treemacs-theme))
-  (use-package catppuccin-theme
-    :straight t)
-  (use-package solo-jazz-theme
-    :straight t)
   (use-package stimmung-themes
     :straight (stimmung-themes :type git :host github :repo "motform/stimmung-themes" :files ("*.el")))
   (use-package rebecca-theme
+    :straight t)
+  (use-package aircon-theme
+    :straight t)
+  (use-package ayu-theme
+    :straight t)
+  (use-package color-theme-modern
+    :straight t
+    :config
+    (load-theme 'blue-sea t))
+  (use-package alect-themes
+    :straight t)
+  (use-package paper-theme
+    :straight t)
+  (use-package hyperstitional-themes
     :straight t)
   (use-package pink-bliss-uwu-theme
     :straight (pink-bliss-uwu-theme :type git :host github :repo "themkat/pink-bliss-uwu" :files ("*.el")))
