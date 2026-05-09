@@ -33,30 +33,32 @@
       		  (anthropic/claude-sonnet-4.6 :input-cost 3 :output-cost 15)
       		  (anthropic/claude-opus-4.6 :input-cost 5 :output-cost 25)
                   
-      		  (xiaomi/mimo-v2-pro :input-cost 1 :output-cost 3)
+      		  (xiaomi/mimo-v2.5-pro :input-cost 1 :output-cost 3)
                   
-      		  (deepseek/deepseek-v3.2 :input-cost 0.224 :output-cost 0.32)
+      		  (deepseek/deepseek-v4-pro :input-cost 0.435 :output-cost 0.87)
+      		  (deepseek/deepseek-v4-flash :input-cost 0.14 :output-cost 0.28)
                   
       		  (google/gemini-3.1-flash-lite-preview :input-cost 0.25 :output-cost 1.5)
       		  (google/gemini-3.1-pro-preview :input-cost 2 :output-cost 12)
                   
       		  (minimax/minimax-m2.7 :input-cost 0.3 :output-cost 1.2)
                   
-      		  (moonshotai/kimi-k2.5 :input-cost 0.42 :output-cost 2.2)
+      		  (moonshotai/kimi-k2.6 :input-cost 0.75 :output-cost 3.5)
                   
       		  (openai/gpt-4.1 :input-cost 2 :output-cost 8)
       		  (openai/gpt-5.2 :input-cost 1.75 :output-cost 14)
       		  (openai/gpt-5.1-codex :input-cost 1.25 :output-cost 10)
+      		  (openai/gpt-5.4-nano :input-cost 0.2 :output-cost 1.25)
                   
       		  (qwen/qwen3.5-35b-a3b :input-cost 0.1625 :output-cost 1.3)
       		  (qwen/qwen3-coder-flash :input-cost 0.3 :output-cost 1.50)
       		  (qwen/qwen3-coder-plus :input-cost 1 :output-cost 5)
-      		  (qwen/qwen3.6-plus:free :input-cost 0 :output-cost 0)
                   
       		  (switchpoint/router :input-cost 0.85 :output-cost 3.40)
-      		  (x-ai/grok-code-fast-1 :input-cost 0.2 :output-cost 1.5)
-      		  (x-ai/grok-4.1-fast :input-cost 0.2 :output-cost 0.5)
+      		  (x-ai/grok-4.3 :input-cost 1.25 :output-cost 2.5)
+                  
       		  (z-ai/glm-4.7 :input-cost 0.4 :output-cost 1.5)
+      		  (z-ai/glm-5.1 :input-cost 1.05 :output-cost 3.5)
       		  ))
       )
 

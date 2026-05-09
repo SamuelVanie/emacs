@@ -93,35 +93,53 @@ giving the rejection reason."
          (proposed (generate-new-buffer (format "*gptel-proposed: %s*" basename)))
          (decision (list nil nil))            ; (rejected-p reason)
          (saved-config (current-window-configuration))
-         (quit-fn (lambda () (exit-recursive-edit))))
+         (ctrl nil)                           ; Keep track of the ediff control buffer
+         ;; 1. Add &rest _ so this lambda is compatible with advice-add
+         (quit-fn (lambda (&rest _) (exit-recursive-edit))))
+    
     (with-current-buffer original
       (when (and path (file-exists-p path))
         (insert-file-contents path)))
     (smv/gptel-ediff--set-mode-for original path)
+    
     (with-current-buffer proposed
       (insert proposed-content))
     (smv/gptel-ediff--set-mode-for proposed path)
+    
     (unwind-protect
         (progn
           ;; Step out of any side / dedicated window before ediff reshuffles.
           (smv/gptel-ediff--select-main-window)
-          (add-hook 'ediff-quit-hook quit-fn)
-          (let ((ctrl (ediff-buffers original proposed)))
-            (with-current-buffer ctrl
-              (local-set-key
-               (kbd smv/gptel-ediff-reject-key)
-               (lambda ()
-                 (interactive)
-                 (let ((reason (read-string
-                                (format "Reject change to %s — reason: " basename))))
-                   (setcar decision t)
-                   (setcar (cdr decision) reason)
-                   (ediff-really-quit nil))))))
+          
+          ;; 2. Tell Emacs to exit the recursive edit ONLY AFTER ediff completes its own quit
+          (advice-add 'ediff-really-quit :after quit-fn)
+          
+          (setq ctrl (ediff-buffers original proposed))
+          (with-current-buffer ctrl
+            (local-set-key
+             (kbd smv/gptel-ediff-reject-key)
+             (lambda ()
+               (interactive)
+               (let ((reason (read-string
+                              (format "Reject change to %s — reason: " basename))))
+                 (setcar decision t)
+                 (setcar (cdr decision) reason)
+                 ;; This triggers ediff-really-quit, which native-cleans up, 
+                 ;; and then hits our :after advice to unblock Emacs!
+                 (ediff-really-quit nil)))))
           (recursive-edit))
-      (remove-hook 'ediff-quit-hook quit-fn)
+      
+      ;; 3. Cleanup after the block is lifted
+      (advice-remove 'ediff-really-quit quit-fn)
+      
+      ;; Force-kill the control panel if the user forcefully aborted via C-] (abort-recursive-edit)
+      (when (and ctrl (buffer-live-p ctrl))
+        (kill-buffer ctrl))
+        
       (when (buffer-live-p proposed) (kill-buffer proposed))
       (when (buffer-live-p original) (kill-buffer original))
       (set-window-configuration saved-config))
+    
     (when (car decision)
       (or (cadr decision) ""))))
 
