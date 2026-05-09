@@ -867,8 +867,6 @@ termcapinfo xterm* ti@:te@
 #+begin_src emacs-lisp
   (use-package vterm
     :straight t
-    :bind
-    ("<f7>" . vterm)
     :config
     (setq vterm-kill-buffer-on-exit t)
     (setq vterm-min-window-width 30)
@@ -882,17 +880,21 @@ termcapinfo xterm* ti@:te@
   (use-package multi-vterm
     :straight t
     :config
-    (setq multi-vterm-dedicated-window-height-percent 30)
-    (general-define-key
-     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-     :prefix "_"
-     "_" #'multi-vterm-project
-     "e" #'multi-vterm
-     "i" #'multi-vterm-next
-     "n" #'multi-vterm-prev)
-    )
+    (setq multi-vterm-dedicated-window-height-percent 30))
 #+end_src
 
+** Ghostel
+
+A terminal that is based on libghostty
+
+#+begin_src emacs-lisp
+  (use-package ghostel
+    :straight t
+    :bind
+    ("<f7>" . ghostel)
+    :config
+    (setq ghostel-compile-global-mode t))
+#+end_src
 
 ** Browsing
 
@@ -1107,7 +1109,9 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
   (use-package doom-themes
     :straight t)
   (use-package ef-themes
-    :straight t)
+    :straight t
+    :config
+    (load-theme 'ef-kassio t))
   (use-package standard-themes
     :straight t)
   (use-package kaolin-themes
@@ -1123,9 +1127,7 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
   (use-package ayu-theme
     :straight t)
   (use-package color-theme-modern
-    :straight t
-    :config
-    (load-theme 'blue-sea t))
+    :straight t)
   (use-package alect-themes
     :straight t)
   (use-package paper-theme
