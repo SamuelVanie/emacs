@@ -1482,7 +1482,13 @@ This section contains the basic configuration for org-mode plus the configuratio
     (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
     (global-set-key (kbd "C-c a") 'org-agenda)
-    (global-set-key (kbd "M-i") 'org-insert-item))
+    (global-set-key (kbd "M-i") 'org-insert-item)
+    (general-define-key
+     :keymaps 'meow-normal-state-keymap
+     :prefix "_"
+     "p" #'org-previous-block
+     "n" #'org-next-block)
+    )
 
 #+end_src
 
