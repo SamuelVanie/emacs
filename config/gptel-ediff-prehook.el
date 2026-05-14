@@ -1,4 +1,4 @@
-(defvar smv/gptel-ediff-tool-names '("Edit" "ReplaceIn" "Write" "Insert")
+(defvar smv/gptel-ediff-tool-names '("Edit" "Write" "Insert")
   "Tool names whose calls should be previewed via ediff.")
 
 (defvar smv/gptel-ediff-reject-key "R"
@@ -39,35 +39,118 @@ Returns nil if OLD-STR isn't found, or PATH is missing/a directory."
         (replace-match new-str t t)
         (buffer-string)))))
 
+;;;; --- Diff mode preview for the Edit tool ---------------------------------
+
+(defun smv/gptel-ediff--strip-fences ()
+  "Strip ```diff / ``` fences from current buffer, in place."
+  (goto-char (point-min))
+  (when (looking-at "^ *```\\(?:diff\\|patch\\)?\\s-*\n")
+    (delete-region (match-beginning 0) (match-end 0)))
+  (goto-char (point-max))
+  (skip-chars-backward " \t\r\n")
+  (when (looking-back "^ *```\\s-*" (line-beginning-position))
+    (delete-region (line-beginning-position) (point-max))))
+
+(defun smv/gptel-ediff--diff-paths (diff-text)
+  "Return paths-as-written-in-DIFF-TEXT from the +++ headers."
+  (let (paths)
+    (with-temp-buffer
+      (insert diff-text)
+      (smv/gptel-ediff--strip-fences)
+      (goto-char (point-min))
+      (while (re-search-forward "^\\+\\+\\+ \\([^\t\n]+\\)" nil t)
+        (let ((p (string-trim (match-string 1))))
+          (unless (string= p "/dev/null")
+            (push p paths)))))
+    (delete-dups (nreverse paths))))
+
+(defun smv/gptel-ediff--resolve (rel base-dir)
+  "Find an existing file for REL under BASE-DIR by trying strip levels.
+Handles git-style a/ b/ prefixes the same way `patch' would."
+  (let ((parts (split-string rel "/" t)) hit)
+    (while (and parts (not hit))
+      (let ((abs (expand-file-name (string-join parts "/") base-dir)))
+        (if (file-exists-p abs) (setq hit abs)
+          (setq parts (cdr parts)))))
+    hit))
+
+(defun smv/gptel-ediff--proposed-diff (path diff-text)
+  "Apply DIFF-TEXT against copies of the affected files and return
+a list of (ABSOLUTE-ORIGINAL-PATH . PROPOSED-CONTENT)."
+  (let* ((base-dir (if (file-directory-p path)
+                       (file-name-as-directory (expand-file-name path))
+                     (file-name-directory (expand-file-name path))))
+         (diff-paths (smv/gptel-ediff--diff-paths diff-text))
+         (tmp-dir    (file-name-as-directory
+                      (make-temp-file "gptel-ediff-" t)))
+         path-map results)
+    (unwind-protect
+        (progn
+          ;; Mirror each affected file into tmp-dir at the path the diff names,
+          ;; so `patch' with default options finds it where it expects.
+          (dolist (dp diff-paths)
+            (let* ((src  (smv/gptel-ediff--resolve dp base-dir))
+                   (dest (expand-file-name dp tmp-dir)))
+              (make-directory (file-name-directory dest) t)
+              (when src (copy-file src dest t))
+              (push (cons (or src (expand-file-name dp base-dir)) dest)
+                    path-map)))
+          ;; Run `patch' with the same options as gptel-agent--edit-files.
+          (with-temp-buffer
+            (insert diff-text)
+            (smv/gptel-ediff--strip-fences)
+            (goto-char (point-max))
+            (unless (eq (char-before) ?\n) (insert "\n"))
+            (let ((default-directory tmp-dir)
+                  (out (generate-new-buffer " *gptel-ediff-patch*")))
+              (unwind-protect
+                  (call-process-region (point-min) (point-max)
+                                       "patch" nil out nil
+                                       "--forward" "--silent")
+                (kill-buffer out))))
+          ;; Read each result back.
+          (dolist (pair path-map)
+            (let ((orig (car pair)) (tmp (cdr pair)))
+              (when (file-exists-p tmp)
+                (push (cons orig
+                            (with-temp-buffer
+                              (insert-file-contents tmp)
+                              (buffer-string)))
+                      results)))))
+      (when (file-directory-p tmp-dir)
+        (delete-directory tmp-dir t)))
+    (nreverse results)))
+
+
 (defun smv/gptel-ediff--proposed (name args)
-  "Return (PATH . CONTENT) preview for tool NAME with ARGS, or nil."
+  "Return a list of (PATH . CONTENT) previews for tool NAME with ARGS, or nil."
   (pcase name
     ("Insert"
      (let ((path (plist-get args :path)))
-       (cons path
-             (smv/gptel-ediff--proposed-insert
-              path
-              (plist-get args :line_number)
-              (or (plist-get args :new_str) "")))))
+       (list (cons path
+                   (smv/gptel-ediff--proposed-insert
+                    path
+                    (plist-get args :line_number)
+                    (or (plist-get args :new_str) ""))))))
     ("Edit"
      (let* ((path    (plist-get args :path))
             (diffp   (plist-get args :diff))
             (old-str (plist-get args :old_str))
             (new-str (plist-get args :new_str))
+            (diff-mode-p (and diffp (not (eq diffp :json-false)) new-str))
             (text-mode-p (or (eq diffp :json-false) old-str)))
-       (when (and text-mode-p
-                  path
-                  (not (file-directory-p path)))
+       (cond
+        (diff-mode-p
+         (smv/gptel-ediff--proposed-diff path new-str))
+        ((and text-mode-p path (not (file-directory-p path)))
          (when-let ((content (smv/gptel-ediff--proposed-edit
-                              path
-                              (or old-str "")
-                              (or new-str ""))))
-           (cons path content)))))
+                              path (or old-str "") (or new-str ""))))
+           (list (cons path content)))))))
     ("Write"
      (let* ((dir (or (plist-get args :path) "."))
             (filename (plist-get args :filename))
             (path (and filename (expand-file-name filename dir))))
-       (cons path (or (plist-get args :content) ""))))
+       (list (cons path (or (plist-get args :content) "")))))
     (_ nil)))
 
 (defun smv/gptel-ediff--select-main-window ()
@@ -144,23 +227,30 @@ giving the rejection reason."
       (or (cadr decision) ""))))
 
 (defun smv/gptel-ediff-tool-call (plist)
-  "Pre-tool-call hook: preview Edit/Write/Insert in ediff before running."
+  "Pre-tool-call hook: preview Edit/Write/Insert via ediff before running."
   (let ((name (plist-get plist :name)))
     (when (member name smv/gptel-ediff-tool-names)
-      (when-let* ((args     (plist-get plist :args))
-                  (proposed (smv/gptel-ediff--proposed name args))
-                  (path     (car proposed))
-                  (content  (cdr proposed)))
-        (let ((reason (smv/gptel-ediff--review path content)))
-          (cond
-           ((null reason)
-            ;; Accepted via ediff — skip gptel's normal y-or-n confirmation.
-            (list :confirm nil))
-           (t
-            (list :block
-                  (if (string-empty-p reason)
-                      (format "Tool '%s' was rejected by the user during ediff review." name)
-                    (format "THE USER HAS REJECTED THE TOOL CALL DURING EDIFF REVIEW.\nADJUST ACCORDINGLY.\nREASON:\n%s"
-                            reason))))))))))
+      (when-let* ((args      (plist-get plist :args))
+                  (proposals (smv/gptel-ediff--proposed name args))
+                  ;; Drop entries we couldn't compute content for.
+                  (proposals (seq-filter (lambda (p) (and (car p) (cdr p)))
+                                         proposals))
+                  ((consp proposals)))
+        (let (rejection)
+          (catch 'reject
+            (dolist (pair proposals)
+              (when-let ((reason (smv/gptel-ediff--review
+                                  (car pair) (cdr pair))))
+                (setq rejection (cons (car pair) reason))
+                (throw 'reject nil))))
+          (if rejection
+              (list :block
+                    (let ((r (cdr rejection)))
+                      (if (string-empty-p r)
+                          (format "Tool '%s' was rejected during ediff review of %s."
+                                  name (file-name-nondirectory (car rejection)))
+                        (format "THE USER HAS REJECTED THE TOOL CALL DURING EDIFF REVIEW OF %s.\nADJUST ACCORDINGLY.\nREASON:\n%s"
+                                (file-name-nondirectory (car rejection)) r))))
+            (list :confirm nil)))))))
 
 (add-hook 'gptel-pre-tool-call-functions #'smv/gptel-ediff-tool-call)
