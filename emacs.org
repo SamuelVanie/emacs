@@ -1111,9 +1111,7 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
   (use-package ef-themes
     :straight t)
   (use-package standard-themes
-    :straight t
-    :config
-    (load-theme 'standard-wombat t))
+    :straight t)
   (use-package kaolin-themes
     :straight t
     :config
@@ -1126,14 +1124,17 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
     :straight t)
   (use-package ayu-theme
     :straight t)
-  (use-package color-theme-modern
-    :straight t)
   (use-package alect-themes
     :straight t)
   (use-package paper-theme
     :straight t)
   (use-package hyperstitional-themes
     :straight t)
+  (use-package solarized-theme
+    :straight t
+    :config
+    (setq solarized-use-more-italic t)
+    (load-theme 'solarized-wombat-dark t))
   (use-package pink-bliss-uwu-theme
     :straight (pink-bliss-uwu-theme :type git :host github :repo "themkat/pink-bliss-uwu" :files ("*.el")))
   #+end_src
@@ -2443,7 +2444,7 @@ Make gptel work as an agent
 #+begin_src emacs-lisp
   (use-package gptel-agent
     :after gptel
-    :straight (:host github :repo "SamuelVanie/gptel-agent" :branch "agents_prompts" :files ("*"))
+    :straight (:host github :repo "SamuelVanie/gptel-agent" :branch "newdirection" :files ("*"))
     :config
     (let ((dir (expand-file-name "agents/" user-emacs-directory)))
       (if (file-directory-p dir)
