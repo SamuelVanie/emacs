@@ -2448,9 +2448,14 @@ Make gptel work as an agent
     :config
     (let ((dir (expand-file-name "agents/" user-emacs-directory)))
       (if (file-directory-p dir)
-        (add-to-list 'gptel-agent-dirs dir)))
+          (add-to-list 'gptel-agent-dirs dir)))
     (setq gptel-agent-preset
-          '(:backend "OpenRouter" :model deepseek/deepseek-v4-flash))
+          '(:backend "Copilot" :model gpt-5.4-mini))
+    (general-define-key
+     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+     :prefix "!"
+     "s" #'gptel-agent-toggle-skill
+     "a" #'gptel-agent-toggle-agent)
     (gptel-agent-update))
 #+end_src
 
