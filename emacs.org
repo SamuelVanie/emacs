@@ -1126,8 +1126,6 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
     :straight t)
   (use-package alect-themes
     :straight t)
-  (use-package paper-theme
-    :straight t)
   (use-package hyperstitional-themes
     :straight t)
   (use-package solarized-theme
@@ -2343,6 +2341,7 @@ There are some packages that I don't want to add to my emacs configuration, beca
   (setenv "DEEPSEEK_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.deep_key") (string-trim (buffer-string))))
   (setenv "OPENROUTER_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.openr_key") (string-trim (buffer-string))))
   (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string))))
+  (setenv "EXA_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.exa_key") (string-trim (buffer-string))))
 #+end_src
 
 
