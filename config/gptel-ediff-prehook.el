@@ -228,29 +228,29 @@ giving the rejection reason."
 
 (defun smv/gptel-ediff-tool-call (plist)
   "Pre-tool-call hook: preview Edit/Write/Insert via ediff before running."
-  (let ((name (plist-get plist :name)))
-    (when (member name smv/gptel-ediff-tool-names)
-      (when-let* ((args      (plist-get plist :args))
-                  (proposals (smv/gptel-ediff--proposed name args))
-                  ;; Drop entries we couldn't compute content for.
-                  (proposals (seq-filter (lambda (p) (and (car p) (cdr p)))
-                                         proposals))
-                  ((consp proposals)))
-        (let (rejection)
-          (catch 'reject
-            (dolist (pair proposals)
-              (when-let ((reason (smv/gptel-ediff--review
-                                  (car pair) (cdr pair))))
-                (setq rejection (cons (car pair) reason))
-                (throw 'reject nil))))
-          (if rejection
-              (list :block
-                    (let ((r (cdr rejection)))
-                      (if (string-empty-p r)
-                          (format "Tool '%s' was rejected during ediff review of %s."
-                                  name (file-name-nondirectory (car rejection)))
-                        (format "THE USER HAS REJECTED THE TOOL CALL DURING EDIFF REVIEW OF %s.\nADJUST ACCORDINGLY.\nREASON:\n%s"
-                                (file-name-nondirectory (car rejection)) r))))
-            (list :confirm nil)))))))
+  (when gptel-confirm-tool-calls
+    (let ((name (plist-get plist :name)))
+      (when (member name smv/gptel-ediff-tool-names)
+        (when-let* ((args      (plist-get plist :args))
+                    (proposals (smv/gptel-ediff--proposed name args))
+                    (proposals (seq-filter (lambda (p) (and (car p) (cdr p)))
+                                           proposals))
+                    ((consp proposals)))
+          (let (rejection)
+            (catch 'reject
+              (dolist (pair proposals)
+                (when-let ((reason (smv/gptel-ediff--review
+                                    (car pair) (cdr pair))))
+                  (setq rejection (cons (car pair) reason))
+                  (throw 'reject nil))))
+            (if rejection
+                (list :block
+                      (let ((r (cdr rejection)))
+                        (if (string-empty-p r)
+                            (format "Tool '%s' was rejected during ediff review of %s."
+                                    name (file-name-nondirectory (car rejection)))
+                          (format "THE USER HAS REJECTED THE TOOL CALL DURING EDIFF REVIEW OF %s.\nADJUST ACCORDINGLY.\nREASON:\n%s"
+                                  (file-name-nondirectory (car rejection)) r))))
+              (list :confirm nil))))))))
 
 (add-hook 'gptel-pre-tool-call-functions #'smv/gptel-ediff-tool-call)
