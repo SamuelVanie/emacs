@@ -40,6 +40,7 @@
                   
       		  (google/gemini-3.1-flash-lite-preview :input-cost 0.25 :output-cost 1.5)
       		  (google/gemini-3.1-pro-preview :input-cost 2 :output-cost 12)
+      		  (google/gemini-3.5-flash :input-cost 1.5 :output-cost 9)
                   
       		  (minimax/minimax-m2.7 :input-cost 0.3 :output-cost 1.2)
                   
@@ -53,6 +54,7 @@
       		  (qwen/qwen3.5-35b-a3b :input-cost 0.1625 :output-cost 1.3)
       		  (qwen/qwen3-coder-flash :input-cost 0.3 :output-cost 1.50)
       		  (qwen/qwen3-coder-plus :input-cost 1 :output-cost 5)
+      		  (qwen/qwen3.7-max :input-cost 2.5 :output-cost 7.5)
                   
       		  (switchpoint/router :input-cost 0.85 :output-cost 3.40)
       		  (x-ai/grok-4.3 :input-cost 1.25 :output-cost 2.5)

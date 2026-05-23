@@ -2256,7 +2256,7 @@ A simple package that permits to get fast completion in emacs.
     (setq corfu-auto t
           corfu-auto-delay 0.2
           corfu-auto-trigger "."
-          corfu-quit-no-match 'separator)
+          corfu-quit-no-match t)
     )
 #+end_src
 
@@ -2478,12 +2478,11 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
     :after gptel
     :custom (mcp-hub-servers
              `(
+               ("exa" . (:url "https://mcp.exa.ai/mcp?tools=web_search_exa,web_fetch_exa"))
                ))
     :config
     (require 'mcp-hub)
-    ;; (add-hook 'after-init-hook
-    ;;       (lambda ()
-    ;;         (mcp-hub-start-all-server nil '("sequential-thinking"))))
+    (gptel-mcp-connect '("exa"))
     )
 #+end_src
 
