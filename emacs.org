@@ -1906,6 +1906,29 @@ example :
     (add-hook 'dape-compile-hook #'kill-buffer))
 #+end_src
 
+Dap-mode, work better with lsp-mode
+
+#+begin_src emacs-lisp
+  (use-package dap-mode
+    :straight t
+    :after (lsp general)
+    :custom
+    (lsp-enable-dap-auto-configure nil)
+    :config
+    (require 'dap-tasks)
+    (general-define-key
+     :keymaps 'lsp-mode-map
+     :prefix lsp-keymap-prefix
+     "d" '(dap-hydra t :wk "debugger")))
+
+  (with-eval-after-load 'dap-mode
+    (general-define-key
+     :keymaps 'meow-normal-state-keymap
+     :prefix "%"
+     "d" #'dap-hydra))
+#+end_src
+
+
 ** Nix
 
 Nix is a package manager and a language that I use to setup devshell or to build my packages in a predictable way.
