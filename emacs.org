@@ -2412,14 +2412,14 @@ Mode to interact with different llms in emacs.
     (add-hook 'gptel-mode-hook
               (lambda ()
                 (if gptel-mode
-        		  (font-lock-add-keywords nil
-        					  '(("^@user\\b" 0 '(face nil display "👤 User: "))
-        					    ("^@assistant\\b" 0 '(face nil display "🤖 Assistant: "))))
+         		  (font-lock-add-keywords nil
+         					  '(("^@user\\b" 0 '(face nil display "👤 User: "))
+         					    ("^@assistant\\b" 0 '(face nil display "🤖 Assistant: "))))
 
-        		
-        		(font-lock-remove-keywords 'org-mode
-        					   '(("^@user\\b" 0 '(face nil display "👤 User: "))
-        					     ("^@assistant\\b" 0 '(face nil display "🤖 Assistant: ")))))
+         		
+         		(font-lock-remove-keywords 'org-mode
+         					   '(("^@user\\b" 0 '(face nil display "👤 User: "))
+         					     ("^@assistant\\b" 0 '(face nil display "🤖 Assistant: ")))))
                 (font-lock-flush)))
     
 
@@ -2433,12 +2433,14 @@ Mode to interact with different llms in emacs.
     
     
     ;; configuring the window size
-    (add-to-list 'display-buffer-alist
-                 `(my-both-modes-active-p
-                   (display-buffer-in-side-window)
-                   (side . right)
-                   (window-width . 0.37)
-                   (window-parameters . ((no-other-window . t)))))
+    (add-to-list
+     'display-buffer-alist
+     `(my-both-modes-active-p
+       (display-buffer-in-side-window)
+       (side . ,(if (> (window-total-width) 120) 'right 'bottom))
+       (window-width . 0.37)
+       (window-height . 0.3)
+       (window-parameters . ((no-other-window . t)))))
     
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
