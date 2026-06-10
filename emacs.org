@@ -65,6 +65,13 @@ Should be installed :
 #+end_src
 
 
+* Configure gnutls
+
+#+begin_src emacs-lisp
+  (require 'gnutls)
+  (add-to-list 'gnutls-trustfiles "/Users/s.vanie/nix-certs.pem")
+#+end_src
+
 * Scrolling
 
 ** Scrolling inside pop-up view
@@ -1824,6 +1831,7 @@ To register a new one over tcp :
     `("cobol-language-support" "--port" ,(number-to-string port))))
  :priority 5
  :activation-fn (lsp-activate-on "cobol")
+ :major-modes '(cobol-ts-mode cobol-mode)
  :server-id 'cobol-lsp))
 #+end_example
 
