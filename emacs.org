@@ -462,11 +462,24 @@ Trying the modal editor meow
     (remove-overlays))
 
   (defun smv/surround-with-pair (open close)
-    "Surround the active region or insert pair at point using insert-pair.
-          OPEN is the opening character, CLOSE is the closing character."
+    "Surround the active region or insert pair at point using `insert-pair'.
+  OPEN is the opening string, CLOSE is the closing string."
     (if (use-region-p)
         (insert-pair 1 open close)
       (insert-pair nil open close)))
+
+  (defun smv/delete-surrounding-elements ()
+    "Delete the first and last characters of the active region."
+    (interactive)
+    (when (use-region-p)
+      (let ((beg (region-beginning))
+            (end (region-end)))
+        (when (> (- end beg) 1)
+          (save-excursion
+            (goto-char end)
+            (delete-char -1)
+            (goto-char beg)
+            (delete-char 1))))))
 
   (with-eval-after-load 'hydra
     (defhydra hydra-surround (:color blue :hint nil)
@@ -477,7 +490,7 @@ Trying the modal editor meow
       _\"_: double       _(_: parentheses  _<_: angles       _c_: custom pair
       _'_: single        _[_: square       _`_: backticks    _=_: equals
       _~_: tilde         _{_: curly        _*_: asterisks    _s_: custom strings
-                                           _+_: plus	     
+                                           _+_: plus         _d_: delete surround
       "
       ("\"" (smv/surround-with-pair "\"" "\""))
       ("'" (smv/surround-with-pair "'" "'"))
@@ -493,8 +506,8 @@ Trying the modal editor meow
       ("s" (let ((open (read-string "Opening string: "))
                  (close (read-string "Closing string: ")))
              (smv/surround-with-pair open close)))
-      ("q" nil "quit"))
-    )
+      ("d" (smv/delete-surrounding-elements))
+      ("q" nil "quit")))
 
 
   (defun meow-setup ()
@@ -611,7 +624,7 @@ Trying the modal editor meow
 
   (defun meow--tag-find-bounds ()
     "Find bounds of the current HTML/XML tag.
-  Returns (BEG . END) cons cell or nil if not found."
+    Returns (BEG . END) cons cell or nil if not found."
     (save-excursion
       (let ((start-pos (point))
             opening-tag-start
@@ -651,7 +664,7 @@ Trying the modal editor meow
 
   (defun meow--tag-find-inner ()
     "Find inner bounds of the current HTML/XML tag (content only).
-  Returns (BEG . END) cons cell or nil if not found."
+    Returns (BEG . END) cons cell or nil if not found."
     (save-excursion
       (let ((start-pos (point))
             opening-tag-start
@@ -1127,21 +1140,11 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
     :straight (stimmung-themes :type git :host github :repo "motform/stimmung-themes" :files ("*.el")))
   (use-package rebecca-theme
     :straight t)
-  (use-package aircon-theme
-    :straight t)
-  (use-package ayu-theme
-    :straight t)
-  (use-package alect-themes
-    :straight t)
-  (use-package hyperstitional-themes
-    :straight t)
   (use-package solarized-theme
     :straight t
     :config
     (setq solarized-use-more-italic t)
     (load-theme 'solarized-wombat-dark t))
-  (use-package pink-bliss-uwu-theme
-    :straight (pink-bliss-uwu-theme :type git :host github :repo "themkat/pink-bliss-uwu" :files ("*.el")))
   #+end_src
 
 ** Adding icons to emacs
