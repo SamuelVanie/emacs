@@ -896,12 +896,6 @@ termcapinfo xterm* ti@:te@
     (define-key vterm-mode-map (kbd "C-q") #'vterm-send-next-key))
 #+end_src
 
-#+begin_src emacs-lisp
-  (use-package multi-vterm
-    :straight t
-    :config
-    (setq multi-vterm-dedicated-window-height-percent 30))
-#+end_src
 
 ** Ghostel
 
@@ -1144,7 +1138,7 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
     :straight t
     :config
     (setq solarized-use-more-italic t)
-    (load-theme 'solarized-wombat-dark t))
+    (load-theme 'solarized-selenized-black t))
   #+end_src
 
 ** Adding icons to emacs
@@ -1666,23 +1660,6 @@ Typst is a markup language better than latex and org in my point of view due to 
 #+end_src
 
 
-
-
-** Convert files using pandoc
-
-Pandoc permits to convert to a variety of documents, so really interesting.
-Consult this page for customization : [[https://arnesonium.com/2022/10/org-mode-to-docx-pipeline][Org mode document to different types of files]]
-
-The official repository is : [[https://github.com/emacsorphanage/ox-pandoc][ox-pandoc]]
-
-
-#+begin_src emacs-lisp
-  (use-package ox-pandoc
-    :straight t
-    :after org)
-#+end_src
-
-
 * Development
 
 ** Project management
@@ -1994,12 +1971,15 @@ For pandoc live conversion to work, you need to install pandoc and the mermaid-f
 #+begin_src emacs-lisp
   (use-package markdown-mode
     :straight t
-    :mode ("README\\.md\\'" . gfm-mode)
-    :init
-    (setq markdown-command "pandoc -s --filter mermaid-filter -f markdown -t html")
-    (setenv "MERMAID_FILTER_WIDTH" "1600")
-    :bind (:map markdown-mode-map
-  	      ("C-c C-e" . markdown-do)))
+    :mode ("README\\.md\\'" . gfm-mode))
+
+  (use-package markdown-xwidget
+    :after markdown-mode
+    :straight (markdown-xwidget
+               :type git
+               :host github
+               :repo "cfclrk/markdown-xwidget"
+               :files (:defaults "resources")))
 #+end_src
 
 **** yasnippet
