@@ -4,6 +4,12 @@
 (defvar smv/gptel-ediff-reject-key "R"
   "Key bound in the ediff control buffer to reject the proposed change.")
 
+(defvar smv/gptel-ediff-comment-key "H"
+  "Key bound in ediff review buffers to add a region-specific rejection comment.")
+
+(defvar smv/gptel-ediff-review-mode nil
+  "Buffer-local flag enabling temporary gptel ediff review bindings.")
+
 (defun smv/gptel-ediff--set-mode-for (buffer path)
   "Try to set BUFFER's major mode based on PATH (cosmetic, for highlighting)."
   (when (and buffer path (buffer-live-p buffer))
@@ -167,6 +173,44 @@ If none exists, split one off the frame root."
             (select-window target)
           (select-window (split-window (frame-root-window) nil 'below)))))))
 
+(defun smv/gptel-ediff--line-range (beg end)
+  "Return a human-readable line or line range for BEG and END in current buffer."
+  (let ((start (line-number-at-pos beg t))
+        (finish (line-number-at-pos end t)))
+    (if (= start finish)
+        (format "line %d" start)
+      (format "lines %d-%d" start finish))))
+
+(defun smv/gptel-ediff--format-region-comments (comments)
+  "Format region-specific rejection COMMENTS for the final refusal message."
+  (concat
+   "Region-specific rejection comments:\n\n"
+   (mapconcat
+    (lambda (entry)
+      (let ((index (plist-get entry :index))
+            (source (plist-get entry :source))
+            (range (plist-get entry :range))
+            (text (plist-get entry :text))
+            (comment (plist-get entry :comment)))
+        (format "%d. from %s, %s:\n%s\n\nComment:\n%s"
+                index source range text comment)))
+    comments
+    "\n\n")))
+
+(defun smv/gptel-ediff--buffer-local-set-key (key command)
+  "Bind KEY to COMMAND in the current buffer without changing shared mode maps."
+  (setq-local smv/gptel-ediff-review-mode t)
+  (unless (local-variable-p 'minor-mode-overriding-map-alist)
+    (setq-local minor-mode-overriding-map-alist
+                (copy-tree minor-mode-overriding-map-alist)))
+  (let ((map (or (cdr (assq 'smv/gptel-ediff-review-mode
+                            minor-mode-overriding-map-alist))
+                 (let ((new-map (make-sparse-keymap)))
+                   (push (cons 'smv/gptel-ediff-review-mode new-map)
+                         minor-mode-overriding-map-alist)
+                   new-map))))
+    (define-key map (kbd key) command)))
+
 (defun smv/gptel-ediff--review (path proposed-content)
   "Open ediff comparing on-disk PATH against PROPOSED-CONTENT and block.
 Return nil if the user accepted (plain `q'), or a string (possibly empty)
@@ -175,10 +219,40 @@ giving the rejection reason."
          (original (generate-new-buffer (format "*gptel-original: %s*" basename)))
          (proposed (generate-new-buffer (format "*gptel-proposed: %s*" basename)))
          (decision (list nil nil))            ; (rejected-p reason)
+         (region-comments nil)
          (saved-config (current-window-configuration))
          (ctrl nil)                           ; Keep track of the ediff control buffer
          ;; 1. Add &rest _ so this lambda is compatible with advice-add
-         (quit-fn (lambda (&rest _) (exit-recursive-edit))))
+         (quit-fn (lambda (&rest _) (exit-recursive-edit)))
+         (comment-fn
+          (lambda ()
+            (interactive)
+            (let* ((source (cond
+                            ((eq (current-buffer) original) "original file")
+                            ((eq (current-buffer) proposed) "proposed changes")
+                            (t nil))))
+              (if (not source)
+                  (message "Use %s from the original or proposed buffer."
+                           smv/gptel-ediff-comment-key)
+                (let* ((has-region (use-region-p))
+                       (beg (if has-region (region-beginning) (line-beginning-position)))
+                       (end (if has-region (region-end) (line-end-position)))
+                       (range-end (if has-region (max beg (1- end)) end))
+                       (range (smv/gptel-ediff--line-range beg range-end))
+                       (text (string-trim
+                              (buffer-substring-no-properties beg end)))
+                       (comment (read-string
+                                 (format "Comment for %s %s: " source range))))
+                  (if (string-empty-p comment)
+                      (message "Empty region comment ignored.")
+                    (push (list :index (1+ (length region-comments))
+                                :source source
+                                :range range
+                                :text text
+                                :comment comment)
+                          region-comments)
+                    (message "Added rejection comment %d."
+                             (length region-comments)))))))))
     
     (with-current-buffer original
       (when (and path (file-exists-p path))
@@ -198,13 +272,22 @@ giving the rejection reason."
           (advice-add 'ediff-really-quit :after quit-fn)
           
           (setq ctrl (ediff-buffers original proposed))
+          (dolist (buffer (list original proposed))
+            (with-current-buffer buffer
+              (smv/gptel-ediff--buffer-local-set-key
+               smv/gptel-ediff-comment-key comment-fn)))
           (with-current-buffer ctrl
-            (local-set-key
-             (kbd smv/gptel-ediff-reject-key)
+            (smv/gptel-ediff--buffer-local-set-key
+             smv/gptel-ediff-comment-key comment-fn)
+            (smv/gptel-ediff--buffer-local-set-key
+             smv/gptel-ediff-reject-key
              (lambda ()
                (interactive)
-               (let ((reason (read-string
-                              (format "Reject change to %s — reason: " basename))))
+               (let ((reason (if region-comments
+                                 (smv/gptel-ediff--format-region-comments
+                                  (nreverse region-comments))
+                               (read-string
+                                (format "Reject change to %s — reason: " basename)))))
                  (setcar decision t)
                  (setcar (cdr decision) reason)
                  ;; This triggers ediff-really-quit, which native-cleans up, 
