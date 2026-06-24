@@ -64,14 +64,6 @@ Should be installed :
   (put 'dired-find-alternate-file 'disabled nil)
 #+end_src
 
-
-* Configure gnutls
-
-#+begin_src emacs-lisp
-  (require 'gnutls)
-  (add-to-list 'gnutls-trustfiles "/Users/s.vanie/nix-certs.pem")
-#+end_src
-
 * Scrolling
 
 ** Scrolling inside pop-up view
@@ -2500,7 +2492,7 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
                ))
     :config
     (require 'mcp-hub)
-    (gptel-mcp-connect '("exa"))
+    ;; (gptel-mcp-connect '("exa"))
     )
 #+end_src
 
@@ -2535,5 +2527,14 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
 
   ;; Split windows horizontally for side-by-side comparison
   (setq ediff-split-window-function 'split-window-horizontally)
+#+end_src
+
+
+* Computer specific configuration
+
+#+begin_src emacs-lisp
+  (let ((fname (format "%s%s/%s%s" user-emacs-directory "config" "custom" ".el")))
+    (when (file-exists-p fname)
+      (load-file fname)))
 #+end_src
 
