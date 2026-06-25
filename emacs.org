@@ -1973,7 +1973,8 @@ For pandoc live conversion to work, you need to install pandoc and the mermaid-f
                :repo "cfclrk/markdown-xwidget"
                :files (:defaults "resources"))
     :config
-    (setq markdown-xwidget-command "multimarkdown"))
+    (setq markdown-xwidget-command "multimarkdown")
+    (setq markdown-xwidget-github-theme "light-high-contrast"))
 #+end_src
 
 **** yasnippet

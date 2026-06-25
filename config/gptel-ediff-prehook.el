@@ -184,7 +184,7 @@ If none exists, split one off the frame root."
 (defun smv/gptel-ediff--format-region-comments (comments)
   "Format region-specific rejection COMMENTS for the final refusal message."
   (concat
-   "Region-specific rejection comments:\n\n"
+   "The user added comments to the proposed changes, should be taken into account before proceeding:\n\n"
    (mapconcat
     (lambda (entry)
       (let ((index (plist-get entry :index))
