@@ -6,7 +6,7 @@ Should be installed :
 
 - coreutils
 - cmake
-- pandoc mermaid plugin
+- multimarkdown
 - pandoc
 - install the different nerd fonts FantasqueSansMono, Iosevka, JetBrainsMono
 - libvterm
@@ -1971,7 +1971,9 @@ For pandoc live conversion to work, you need to install pandoc and the mermaid-f
                :type git
                :host github
                :repo "cfclrk/markdown-xwidget"
-               :files (:defaults "resources")))
+               :files (:defaults "resources"))
+    :config
+    (setq markdown-xwidget-command "multimarkdown"))
 #+end_src
 
 **** yasnippet
