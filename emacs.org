@@ -897,9 +897,13 @@ A terminal that is based on libghostty
   (use-package ghostel
     :straight t
     :bind
-    ("<f7>" . ghostel)
-    :config
-    (setq ghostel-compile-global-mode t))
+    ("<f7>" . ghostel))
+
+  (use-package ghostel-compile
+    :hook (after-init . ghostel-compile-global-mode))
+
+  (use-package ghostel-comint
+    :hook (after-init . ghostel-comint-global-mode))
 #+end_src
 
 ** Browsing
