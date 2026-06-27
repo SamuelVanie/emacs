@@ -1128,13 +1128,16 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
     (kaolin-treemacs-theme))
   (use-package stimmung-themes
     :straight (stimmung-themes :type git :host github :repo "motform/stimmung-themes" :files ("*.el")))
+  (use-package kusanagi-theme
+    :straight (stimmung-themes :type git :host github :repo "LionyxML/kusanagi-theme")
+    :config
+    (load-theme 'kusanagi t))
   (use-package rebecca-theme
     :straight t)
   (use-package solarized-theme
     :straight t
     :config
-    (setq solarized-use-more-italic t)
-    (load-theme 'solarized-selenized-black t))
+    (setq solarized-use-more-italic t))
   #+end_src
 
 ** Adding icons to emacs
