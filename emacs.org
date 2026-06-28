@@ -865,29 +865,6 @@ Quickly move to matches in visible area of the window
      "r m"  #'avy-move-region))
 #+end_src
 
-** vterm
-
-Vterm is a better terminal emulator that will permit good rendering of all terminal commands
-
-paste that into your .screenrc
-
-#+begin_example
-startup_message off
-termcapinfo xterm* ti@:te@
-#+end_example
-
-#+begin_src emacs-lisp
-  (use-package vterm
-    :straight t
-    :config
-    (setq vterm-kill-buffer-on-exit t)
-    (setq vterm-min-window-width 30)
-    (setq vterm-copy-exclude-prompt t))
-
-  (with-eval-after-load 'vterm
-    (define-key vterm-mode-map (kbd "C-q") #'vterm-send-next-key))
-#+end_src
-
 
 ** Ghostel
 
@@ -1126,8 +1103,6 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
     :straight t
     :config
     (kaolin-treemacs-theme))
-  (use-package stimmung-themes
-    :straight (stimmung-themes :type git :host github :repo "motform/stimmung-themes" :files ("*.el")))
   (use-package kusanagi-theme
     :straight (stimmung-themes :type git :host github :repo "LionyxML/kusanagi-theme")
     :config
@@ -2477,6 +2452,7 @@ Make gptel work as an agent
      "a" #'gptel-agent-toggle-agent)
     (gptel-agent-update))
 #+end_src
+
 
 ** MCP integration
 
