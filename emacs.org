@@ -2054,8 +2054,8 @@ The useful web mode for programming.
     :defer t
     :mode (("\\.html?\\'" . web-mode)
            ("\\.css?\\'" . web-mode)
-           ("\\.tsx?\\'" . web-mode)
-           ("\\.jsx?\\'" . web-mode)
+           ("\\.tsx\\'" . web-mode)
+           ("\\.jsx\\'" . web-mode)
            )
     :hook
     (web-mode . smv/web-mode-hook)
