@@ -2170,7 +2170,7 @@ A tool that permits to extend the capabilities of completion at point
     ;; Bind prefix keymap providing all Cape commands under a mnemonic key.
     :demand t
     ;; Press C-c p ? to for help.
-    :bind ("M-p" . cape-prefix-map) ;; Alternative key: M-<tab>, M-p, M-+
+    :bind ("M-+" . cape-prefix-map) ;; Alternative key: M-<tab>, M-p, M-+
     :init
     ;; Add to the global default value of `completion-at-point-functions' which is
     ;; used by `completion-at-point'.  The order of the functions matters, the
