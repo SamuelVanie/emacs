@@ -2335,16 +2335,6 @@ There are some packages that I don't want to add to my emacs configuration, beca
   (setenv "EXA_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.exa_key") (string-trim (buffer-string))))
 #+end_src
 
-
-** ECA
-
-Use eca as the ai interaction tool
-
-#+begin_src emacs-lisp
-  (use-package eca
-    :straight t)
-#+end_src
-
 ** Gptel
 
 Mode to interact with different llms in emacs.
