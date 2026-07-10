@@ -312,6 +312,7 @@ A package that permits to transform some buffers into popups. Quite useful to qu
             "\\*Async Shell Command\\*"
             help-mode
             compilation-mode
+            ghostel-compilation-mode
             (lambda (buf) (with-current-buffer buf
                             (bound-and-true-p gptel-mode)))))
     (setq popper-window-height "40")
@@ -324,6 +325,7 @@ A package that permits to transform some buffers into popups. Quite useful to qu
   		  "^\\*shell.*\\*$"  shell-mode  ;shell as a popup
   		  "^\\*term.*\\*$"   term-mode   ;term as a popup
   		  "^\\*vterm.*\\*$"  vterm-mode  ;vterm as a popup
+  		  "^\\*\*compilation:.*\\*$"  compilation-mode  ;vterm as a popup
                     )))
 
     (popper-mode +1)
