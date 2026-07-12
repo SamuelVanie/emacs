@@ -1807,6 +1807,7 @@ over stdio is simpler, just use (lsp-stdio-connection "name_of_server") or (lsp-
     (setq lsp-ui-doc-show-with-mouse nil)
     (setq lsp-headerline-breadcrumb-enable nil)
     (setq lsp-enable-suggest-server-download nil)
+    (setq lsp-enable-dap-auto-configure nil)
     (general-define-key
      :keymaps 'meow-normal-state-keymap
      :prefix "`"
@@ -1887,15 +1888,13 @@ Dap-mode, work better with lsp-mode
 #+begin_src emacs-lisp
   (use-package dap-mode
     :straight t
-    :after (lsp general)
+    :after general
     :custom
-    (lsp-enable-dap-auto-configure nil)
+    (dap-auto-configure-features '(sessions locals tooltip))
     :config
-    (require 'dap-tasks)
-    (general-define-key
-     :keymaps 'lsp-mode-map
-     :prefix lsp-keymap-prefix
-     "d" '(dap-hydra t :wk "debugger")))
+    (dap-mode 1)
+    (dap-ui-mode 1)
+    (require 'dap-tasks))
 
   (with-eval-after-load 'dap-mode
     (general-define-key
