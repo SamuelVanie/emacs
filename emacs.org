@@ -876,6 +876,7 @@ A terminal that is based on libghostty
   (use-package ghostel
     :straight t
     :bind
+    ("<f8>" . ghostel-project)
     ("<f7>" . ghostel))
 
   (use-package ghostel-compile
