@@ -1808,6 +1808,12 @@ over stdio is simpler, just use (lsp-stdio-connection "name_of_server") or (lsp-
     (setq lsp-enable-suggest-server-download nil)
     (general-define-key
      :keymaps 'meow-normal-state-keymap
+     :prefix "`"
+     "r" #'xref-find-references-and-replace
+     "e" #'display-local-help
+     "o" #'xref-find-definitions-other-window)
+    (general-define-key
+     :keymaps 'meow-normal-state-keymap
      :prefix "h"
      "h" #'lsp-ui-doc-toggle
      "q" #'lsp-ui-doc-hide
@@ -1815,6 +1821,7 @@ over stdio is simpler, just use (lsp-stdio-connection "name_of_server") or (lsp-
      "f" #'lsp-ui-doc-focus-frame
      "u" #'lsp-ui-doc-unfocus-frame
      "d" #'lsp-ui-peek-find-definitions
+     "s" #'lsp-ui-peek-find-workspace-symbol
      "e" #'lsp-ui-flycheck-list
      "r" #'lsp-ui-peek-find-references
      "i" #'lsp-ui-peek-find-implementations))
@@ -1934,14 +1941,7 @@ This is a better flymake, it has many features. That permits to better see the e
     :straight t
     :config
     (setq flycheck-display-errors-function #'flycheck-display-error-messages)
-    (setq flycheck-error-list-minimum-level 'error)
-    (general-define-key
-     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
-     :prefix "`"
-     "(" #'flycheck-buffer
-     "d" #'flycheck-disable-checker
-     ")" #'flycheck-list-errors)
-    )
+    (setq flycheck-error-list-minimum-level 'error))
 #+end_src
 
 **** markdown-mode
