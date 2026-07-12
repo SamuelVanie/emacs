@@ -2208,56 +2208,32 @@ For sorting completion candidates
 #+end_src
 
 
-** Corfu
+** Company
 
-Corfu provides a nicer in-buffer completion interface than completion-at-point which is more reminiscent of what you would expect from an IDE.
+Company provides a nicer in-buffer completion interface than completion-at-point which is more reminiscent of what you would expect from an IDE.
 A simple package that permits to get fast completion in emacs.
 
 #+begin_src emacs-lisp
-
-  (use-package corfu
+  (use-package company
     :straight t
-    ;; Optional customizations
-    :custom
-    (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-    (corfu-preview-current nil)    ;; Disable current candidate preview
-    (corfu-preselect 'prompt)      ;; Preselect the prompt
-    (corfu-on-exact-match 'quit)     ;; Configure handling of exact matches
-    (corfu-quit-no-match t) ;; quit when there's no match
-
-    ;; Enable Corfu only for certain modes. See also `global-corfu-modes'.
-    :hook ((prog-mode . corfu-mode)
-           (shell-mode . corfu-mode)
-           (eshell-mode . corfu-mode))
-
     :bind
-    (:map corfu-map
-          ("TAB" . corfu-next)
-          ([tab] . corfu-next)
-          ("S-TAB" . corfu-previous)
-          ([backtab] . corfu-previous)
-          ("M-SPC" . corfu-insert-separator))
-    
-    :init
-
-    ;; Recommended: Enable Corfu globally.  Recommended since many modes provide
-    ;; Capfs and Dabbrev can be used globally (M-/).  See also the customization
-    ;; variable `global-corfu-modes' to exclude certain modes.
-    (global-corfu-mode)
-
-    ;; Enable optional extension modes:
-    (corfu-history-mode)
-    (corfu-popupinfo-mode)
-
+    ("C-z C-z" . company-mode)
+    ("C-z C-c" . company-complete)
+    ("C-M-i" . completion-at-point)
+    :custom
+    (company-minimum-prefix-length 1)
+    (company-idle-delay 0.0)
+    (company-tooltip-flip-when-above t)
+    :hook
+    (after-init . global-company-mode)
     :config
-    ;; Enable auto completion, configure delay, trigger and quitting
-    (setq corfu-auto t
-          corfu-auto-delay 0.2
-          corfu-auto-trigger "."
-          corfu-quit-no-match t)
-    )
-#+end_src
+    (add-to-list 'company-backends #'company-yasnippet t))
 
+  (use-package company-box
+    :straight t
+    :hook
+    (company-mode . company-box-mode))
+#+end_src
 
 
 ** Docker Mode
