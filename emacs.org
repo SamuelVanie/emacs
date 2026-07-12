@@ -1382,13 +1382,13 @@ This section contains the basic configuration for org-mode plus the configuratio
 #+begin_src emacs-lisp
   ;; A directory under the notes folder representing each of my project
   (setq smv/project-note-roots (let ((projects-dir (expand-file-name "~/projects"))
-           			   (silo-root (expand-file-name "~/.org/notes")))
-           		       (mapcar (lambda (subdir)
-           				 (file-name-concat silo-root subdir))
-           			       (seq-filter (lambda (f)
-           					     (and (not (member f '("." "..")))
-           						  (file-directory-p (expand-file-name f projects-dir))))
-           					   (directory-files projects-dir)))))
+             			   (silo-root (expand-file-name "~/.org/notes")))
+             		       (mapcar (lambda (subdir)
+             				 (file-name-concat silo-root subdir))
+             			       (seq-filter (lambda (f)
+             					     (and (not (member f '("." "..")))
+             						  (file-directory-p (expand-file-name f projects-dir))))
+             					   (directory-files projects-dir)))))
 
 
   (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
@@ -1401,13 +1401,16 @@ This section contains the basic configuration for org-mode plus the configuratio
           '((sequence "TODO(t!)" "NEXT(n!)" "|" "DONE(d!)")
             (sequence "BACKLOG(b!)" "REVIEW(v!)" "WAIT(w@/!)" "|" "COMPLETED(c)" "CANC(k@)")))
 
+    (setq org-agenda-file-regexp "\\`[^.].*task.*\\.org\\(\\.gpg\\)?\\'")
     (setq org-agenda-files
           (let ((notes-dir (expand-file-name "~/.org/notes")))
-            (append 
-             '("~/.org/todo.org" "~/.org/notes")
+            (append
+             '("~/.org/todo.org")
              (when (file-directory-p notes-dir)
-               (seq-filter #'file-directory-p
-                           (directory-files notes-dir t "^[^.]"))))))
+               (cons notes-dir
+                     (seq-filter
+                      #'file-directory-p
+                      (directory-files notes-dir t "^[^.]")))))))
 
     (defun smv/denote-silo-category ()
       "Set org category to the denote silo directory name."
@@ -1442,11 +1445,8 @@ This section contains the basic configuration for org-mode plus the configuratio
     ;; Don't run org startup sequences when visiting agenda files
     (setq org-agenda-inhibit-startup t)
 
-    ;; Don't dim blocked tasks (requires walking the whole tree)
-    (setq org-agenda-dim-blocked-tasks nil)
-
     ;; Skip property inheritance
-    (setq org-agenda-ignore-properties '(effort appt stats category))
+    (setq org-agenda-ignore-properties '(effort appt stats))
 
     ;; If you use deadlines, this avoids pre-computing them for all files
     (setq org-agenda-skip-deadline-prewarning-if-scheduled t)
