@@ -1838,52 +1838,39 @@ over stdio is simpler, just use (lsp-stdio-connection "name_of_server") or (lsp-
 #+end_src
 
 
+Dap-mode, work better with lsp-mode.
 
-** Debugger configuration
-
-Dape mode, work better with eglot
-
-example :
+Example of configuration
 
 #+begin_example
-(setq dape-configs 
-      `((jest
-         modes
-         (js-mode js-ts-mode typescript-mode)
-         ensure dape-jest/ensure
-         command "node"
-         command-cwd ,(file-name-concat dape-adapter-dir
-                                        "js-debug")
-         command-args (,(file-name-concat "src" "dapDebugServer.js")
-                       :autoport)
-         port :autoport
-         fn dape-config-autoport
-         :type "pwa-node"
-         :cwd dape-cwd-fn
-         :program "node_modules/.bin/jest"
-         :args dape-jest/find-file-buffer-default
-         :outputCapture "console"
-         :sourceMapRenames t
-         :pauseForSourceMap nil
-         :autoAttachChildProcesses t
-         :console "internalConsole"
-         :killBehavior "forceful")))
+(with-eval-after-load 'dap-mode
+                     (dap-register-debug-provider
+                      "pwa-node"
+                      (lambda (conf)
+                        (let ((port (dap--find-available-port)))
+                          (append conf
+                                  (list :host "127.0.0.1"
+                                        :debugServer port
+                                        :program-to-start
+                                        (format "%s %d 127.0.0.1"
+                                                (shell-quote-argument "js-debug")
+                                                port))))))
+                     
+                     (dap-register-debug-template
+                      "Debug presori-backend"
+                      (list :type "pwa-node"
+                            :request "launch"
+                            :name "Debug presori-backend"
+                            :runtimeExecutable "node"
+                            :runtimeArgs ["--import" "tsx"]
+                            :program "backend/src/index.ts"
+                            :cwd "/Users/s.vanie/projects/presori/"
+                            :sourceMaps t
+                            :autoAttachChildProcesses t
+                            :resolveSourceMapLocations ["**" "!**/node_modules/**"]))
+                     
+                     )
 #+end_example
-
-#+begin_src emacs-lisp
-  (use-package dape
-    :straight t
-    :custom
-    (dape-cwd-function #'projectile-project-root)
-    :config
-    (add-hook 'dape-display-source-hook #'pulse-momentary-highlight-one-line)
-    ;; Save buffers on startup, useful for interpreted languages
-    (add-hook 'dape-start-hook (lambda () (save-some-buffers t t)))
-    ;; Kill compile buffer on build success
-    (add-hook 'dape-compile-hook #'kill-buffer))
-#+end_src
-
-Dap-mode, work better with lsp-mode
 
 #+begin_src emacs-lisp
   (use-package dap-mode
