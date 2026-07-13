@@ -2438,12 +2438,10 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
   (use-package mcp
     :straight (mcp :type git :host github :repo "lizqwerscott/mcp.el" :files ("*.el"))
     :after gptel
-    :custom (mcp-hub-servers
-             `(
-               ("exa" . (:url "https://mcp.exa.ai/mcp?tools=web_search_exa,web_fetch_exa"))
-               ))
     :config
     (require 'mcp-hub)
+    (add-to-list 'mcp-hub-servers
+        '("exa" . (:url "https://mcp.exa.ai/mcp?tools=web_search_exa,web_fetch_exa")))
     ;; (gptel-mcp-connect '("exa"))
     )
 #+end_src
