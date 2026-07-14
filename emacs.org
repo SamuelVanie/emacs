@@ -1576,6 +1576,12 @@ A package that helps in note taking easily
                       (buffer-file-name) 
                       (line-number-at-pos)))
           "")))
+
+    (defun smv/denote-org-capture-target ()
+      "Prompt for an existing Denote Org file to use as a capture target."
+      (denote-file-prompt
+       "\\.org\\(?:\\.gpg\\)?\\'"
+       "Capture into Denote note"))
     
     (add-to-list 'org-capture-templates
                  '("c" "Coding Todo (Project)" plain
@@ -1588,6 +1594,22 @@ A package that helps in note taking easily
                    :immediate-finish nil
                    :kill-buffer t
                    :jump-to-captured t))
+
+    (add-to-list
+     'org-capture-templates
+     '("T" "Coding Todo (Existing Denote Note)" entry
+       (file smv/denote-org-capture-target)
+       "* TODO %^{TODO|Fix That}
+       Ref: %(smv/capture-file-location-link)
+
+       ,#+BEGIN_QUOTE
+       %i
+       ,#+END_QUOTE
+
+       %?"
+       :empty-lines 1
+       :immediate-finish nil
+       :jump-to-captured t))
     )
 #+end_src
 
