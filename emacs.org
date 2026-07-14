@@ -1879,6 +1879,14 @@ Example of configuration
     :custom
     (dap-auto-configure-features '(sessions locals tooltip))
     :config
+    (defun my-dap-focus-stopped-session (session)
+      "Make SESSION current when it stops."
+      (unless (eq session (dap--cur-session))
+        (dap--switch-to-session session)))
+
+    (with-eval-after-load 'dap-mode
+      (add-hook 'dap-stopped-hook
+                #'my-dap-focus-stopped-session))
     (dap-mode 1)
     (dap-ui-mode 1)
     (require 'dap-tasks))
