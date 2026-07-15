@@ -564,7 +564,6 @@ Trying the modal editor meow
      '(")" . forward-sexp)
      '("{" . backward-paragraph)
      '("(" . backward-sexp)
-     '("/" . meow-visit)
      '("a" . meow-append)
      '("A" . meow-open-below)
      '("b" . meow-back-word)
@@ -2435,6 +2434,20 @@ Make gptel work as an agent
      "a" #'gptel-agent-toggle-agent)
     (gptel-agent-update))
 #+end_src
+
+
+My orchestration package that permits to create full agents pipeline
+
+#+begin_quote
+  (use-package gptel-runner
+    :after gptel
+    :straight (:host github :repo "SamuelVanie/gptel-runner" :files ("*"))
+    :config
+    (general-define-key
+     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+     :prefix "/"
+     "~/~" #'gptel-runner-show-dashboard))
+#+end_quote
 
 
 ** MCP integration
