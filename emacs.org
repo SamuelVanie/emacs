@@ -2438,7 +2438,7 @@ Make gptel work as an agent
 
 My orchestration package that permits to create full agents pipeline
 
-#+begin_quote
+#+begin_src emacs-lisp
   (use-package gptel-runner
     :after gptel
     :straight (:host github :repo "SamuelVanie/gptel-runner" :files ("*"))
@@ -2446,9 +2446,8 @@ My orchestration package that permits to create full agents pipeline
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
      :prefix "/"
-     "~/~" #'gptel-runner-show-dashboard))
-#+end_quote
-
+     "/" #'gptel-runner-show-dashboard))
+#+end_src
 
 ** MCP integration
 
