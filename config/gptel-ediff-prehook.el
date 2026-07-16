@@ -10,14 +10,35 @@
 (defvar smv/gptel-ediff-review-mode nil
   "Buffer-local flag enabling temporary gptel ediff review bindings.")
 
+
+(defvar smv/gptel-ediff-inhibit-lsp nil
+  "Non-nil while configuring temporary gptel Ediff preview buffers.")
+
+(defun smv/gptel-ediff--inhibit-lsp-advice (original &rest args)
+  "Skip ORIGINAL LSP startup while creating gptel preview buffers."
+  (unless smv/gptel-ediff-inhibit-lsp
+    (apply original args)))
+
+(with-eval-after-load 'lsp-mode
+  (advice-add 'lsp
+              :around #'smv/gptel-ediff--inhibit-lsp-advice)
+  (advice-add 'lsp-deferred
+              :around #'smv/gptel-ediff--inhibit-lsp-advice))
+
+
 (defun smv/gptel-ediff--set-mode-for (buffer path)
-  "Try to set BUFFER's major mode based on PATH (cosmetic, for highlighting)."
+  "Set BUFFER's major mode based on PATH without retaining an LSP workspace."
   (when (and buffer path (buffer-live-p buffer))
     (with-current-buffer buffer
-      (let ((bfn buffer-file-name))
+      (let ((bfn buffer-file-name)
+            (smv/gptel-ediff-inhibit-lsp t))
         (setq buffer-file-name path)
         (unwind-protect
-            (ignore-errors (set-auto-mode t))
+            (progn
+              (ignore-errors
+                (set-auto-mode t))
+              (when (bound-and-true-p lsp-mode)
+                (lsp-mode -1)))
           (setq buffer-file-name bfn))))))
 
 (defun smv/gptel-ediff--proposed-insert (path line-number new-str)
