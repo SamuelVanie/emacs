@@ -31,3 +31,6 @@
     (set-window-scroll-bars (minibuffer-window frame) nil nil nil nil :persistent)))
 
 (add-hook 'after-make-frame-functions #'prot-emacs-no-minibuffer-scroll-bar)
+
+;; lsp configuration
+(setenv "LSP_USE_PLISTS" "true")

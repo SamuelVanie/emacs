@@ -2265,6 +2265,14 @@ Quickly manages [[https://github.com/Silex/docker.el][docker]] container directl
 Using github copilot has my pair programming assistant to finish my tasks more quickly.
 Uncomment the commented parts only when you will finish installing copilot.
 
+If you've ever got behind a proxy for accessing copilot :
+
+#+begin_quote
+(setq copilot-network-proxy '(:host "10.XXX.XX.XX" :port 8080))
+(setq copilot-lsp-settings '(:http (:proxy "http://10.XXX.XX.XXX:8080" :proxyStrictSSL t)))
+(setq gptel-proxy "http://10.XXX.XX.XXX:8080")
+#+end_quote
+
 #+begin_src emacs-lisp
   (use-package copilot
     :straight (:type git :host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
