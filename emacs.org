@@ -2517,6 +2517,18 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
 #+end_src
 
 
+** Code Review in emacs
+
+pr-review, A tool that permits to review MR directly from emacs, combining it with forge I have the full experience
+
+#+begin_src emacs-lisp
+  (use-package pr-review
+    :straight t)
+
+  (use-package forge
+    :straight t)
+#+end_src
+
 * Computer specific configuration
 
 #+begin_src emacs-lisp
