@@ -1106,7 +1106,9 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
     :config
     (kaolin-treemacs-theme))
   (use-package kusanagi-theme
-    :straight (stimmung-themes :type git :host github :repo "LionyxML/kusanagi-theme"))
+    :straight (kusanagi-themes :type git :host github :repo "LionyxML/kusanagi-theme")
+    :config
+    (load-theme 'kusanagi t))
   (use-package rebecca-theme
     :straight t)
   (use-package solarized-theme
@@ -1114,9 +1116,7 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
     :config
     (setq solarized-use-more-italic t))
   (use-package pierre-themes
-    :straight (:host github :repo "shaneikennedy/pierre-themes.el" :files ("*.el"))
-    :config
-    (load-theme 'pierre-dark t))
+    :straight (:host github :repo "shaneikennedy/pierre-themes.el" :files ("*.el")))
   #+end_src
 
 ** Adding icons to emacs
@@ -2456,7 +2456,9 @@ My orchestration package that permits to create full agents pipeline
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
      :prefix "/"
-     "/" #'gptel-runner-show-dashboard))
+     "/" #'gptel-runner-show-dashboard
+     "p" #'gptel-runner-pause-call
+     "r" #'gptel-runner-complete-call-from-buffer))
 #+end_src
 
 ** MCP integration
