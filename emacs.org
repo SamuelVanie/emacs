@@ -2345,7 +2345,7 @@ Mode to interact with different llms in emacs.
 
 #+BEGIN_src emacs-lisp
   (use-package gptel
-    :straight t
+    :straight (:host github :repo "SamuelVanie/gptel" :branch "tools-fails-after-some-time" :files ("*"))
     :after general
     :config
     ;; something that makes it more convenient to add mcp tools in gptel
