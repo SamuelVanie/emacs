@@ -196,8 +196,7 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
     :custom
     (treesit-auto-install 'prompt)
     :config
-    (treesit-auto-add-to-auto-mode-alist 'all)
-    (global-treesit-auto-mode))
+    (treesit-auto-add-to-auto-mode-alist 'all))
 #+end_src
 
 
@@ -1902,14 +1901,24 @@ Example of configuration
     :custom
     (dap-auto-configure-features '(sessions locals tooltip))
     :config
-    (defun my-dap-focus-stopped-session (session)
+    (defun smv/dap-focus-stopped-session (session)
       "Make SESSION current when it stops."
       (unless (eq session (dap--cur-session))
         (dap--switch-to-session session)))
 
     (with-eval-after-load 'dap-mode
       (add-hook 'dap-stopped-hook
-                #'my-dap-focus-stopped-session))
+                #'smv/dap-focus-stopped-session))
+
+    (advice-add 'dap--initialize-message
+                :filter-return
+                (lambda (message)
+                  (plist-put
+                   message
+                   :arguments
+                   (plist-put (plist-get message :arguments)
+                              :supportsStartDebuggingRequest t))))
+    
     (dap-mode 1)
     (dap-ui-mode 1)
     (require 'dap-tasks))
