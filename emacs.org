@@ -2168,6 +2168,18 @@ Prettier automatically formats the code for you. I hate when it's in other modes
     :mode "\\.dart\\'")
 #+end_src
 
+*** java mode
+
+#+begin_src emacs-lisp
+  (use-package lsp-java
+    :straight t
+    :after lsp-mode
+    :init
+    (setq lsp-java-format-enabled t)
+    (setq lsp-java-format-comments-enabled t))
+#+end_src
+
+
 *** Dabbrev
 
 Permits buffer completion
@@ -2519,7 +2531,7 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
 #+end_src
 
 
-** Configuration for ediff
+* Configuration for ediff
 
 #+begin_src emacs-lisp
   ;; Split windows horizontally for side-by-side comparison
@@ -2530,7 +2542,7 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
 #+end_src
 
 
-** Code Review in emacs
+* Code Review in emacs
 
 pr-review, A tool that permits to review MR directly from emacs, combining it with forge I have the full experience
 
