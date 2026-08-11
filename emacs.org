@@ -2177,6 +2177,9 @@ Prettier automatically formats the code for you. I hate when it's in other modes
     :init
     (setq lsp-java-format-enabled t)
     (setq lsp-java-format-comments-enabled t))
+
+  ;; activate editorconfig handling in emacs
+  (editorconfig-mode 1)
 #+end_src
 
 
@@ -2409,7 +2412,7 @@ Mode to interact with different llms in emacs.
      'display-buffer-alist
      `(my-both-modes-active-p
        (display-buffer-in-side-window)
-       (side . ,(if (> (window-total-width) 85) 'right 'bottom))
+       (side . right)
        (window-width . 0.37)
        (window-height . 0.3)
        (window-parameters . ((no-other-window . t)))))
