@@ -1321,7 +1321,10 @@ For vertical completion in the minibuffer
     :config
     (setq read-file-name-completion-ignore-case t
           read-buffer-completion-ignore-case t
-          completion-ignore-case t))
+          completion-ignore-case t)
+    
+    (keymap-set vertico-map "M-}" #'vertico-quick-insert)
+    )
 
   (use-package vertico-directory
     :after vertico
@@ -2226,26 +2229,6 @@ A tool that permits to extend the capabilities of completion at point
     (add-hook 'completion-at-point-functions #'cape-history)
     (add-hook 'completion-at-point-functions #'cape-elisp-symbol)
     )
-#+end_src
-
-
-
-
-
-** Orderless
-
-For sorting completion candidates
-
-#+begin_src emacs-lisp
-  (use-package orderless
-    :straight t
-    :custom
-    (orderless-style-dispatchers '(orderless-affix-dispatch))
-    (orderless-component-separator #'orderless-escapable-split-on-space)
-    (completion-styles '(orderless basic))
-    (completion-category-defaults nil)
-    (completion-category-overrides '((file (styles partial-completion)))))
-
 #+end_src
 
 
