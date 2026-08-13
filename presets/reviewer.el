@@ -1,4 +1,4 @@
-(gptel-make-preset 'reviewer
+(gptel-make-preset 'mayuri-reviewer
   :description
   "Read-only reviewer agent for work completed by another agent"
   :system
