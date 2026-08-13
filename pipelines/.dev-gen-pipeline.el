@@ -57,7 +57,7 @@
   (format
    (concat "Here is the full list of the work done by the Techlead, the developer and the reviewer in the current project's workspace for this goal:\n%s\n\nWorkspace: %s\n\n"
            "Summary: %S\n\n"
-           "Return the summary document please")
+           "Write the summary document in the ~/.org/notes/ folder to the proper directory please when appropriate (is the workspace folder name exists there as a subdirectory?). Make sure to follow the rules for filename there (denote package convention)")
    (gptel-runner-run-goal run) (gptel-runner-run-workspace run)
    (gptel-runner-get run 'history)))
 
