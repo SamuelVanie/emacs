@@ -96,3 +96,9 @@
 
 ;; (gptel-runner-start 'plan-implement-review :goal (read-string "What's the goal: ") :workspace "~/projects/dailybanking-mobile-bff/"
 ;;                     :allow-writes t :allow-unconfirmed-tools t)
+
+
+;; An example of step prompt to perform before launching a pipeline
+;; Do not write any plan for now we have to make the request statement as clear as possible to begin with. What we want to achieve is to delete the file from the untrusted bucket when the scan finishes wether or not it was declared clean or infected. If any part of that is not properly stated or there're missing information that couldn't be gathered from the codebase, ask me. We will make the task as clear as possible before planning it
+
+;; adding an AGENTS.md and telling at the end of the goal "follow the AGENTS.md" could be interesting

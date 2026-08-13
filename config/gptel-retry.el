@@ -34,7 +34,7 @@ the same time."
   :type 'number)
 
 (defcustom smv/gptel-retry-statuses
-  '(408 425 429 500 502 503 504 529)
+  '(401 408 425 429 500 502 503 504 529)
   "HTTP statuses that are normally safe to retry.
 
 529 is used by Anthropic for overloaded API responses.  Status 409 is omitted
