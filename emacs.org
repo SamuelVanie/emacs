@@ -2388,8 +2388,7 @@ Mode to interact with different llms in emacs.
     (let ((fname (expand-file-name "gptel-models.el" "~/.emacs.d/config/")))
       (when (file-exists-p fname)
         (load-file fname)))
-    
-    
+
     ;; configuring the window size
     (add-to-list
      'display-buffer-alist
@@ -2465,7 +2464,12 @@ My orchestration package that permits to create full agents pipeline
      :prefix "/"
      "/" #'gptel-runner-show-dashboard
      "p" #'gptel-runner-pause-call
-     "r" #'gptel-runner-complete-call-from-buffer))
+     "r" #'gptel-runner-complete-call-from-buffer)
+    
+    (let ((fname (expand-file-name "pipeline.el" "~/.emacs.d/pipelines/")))
+      (when (file-exists-p fname)
+        (load-file fname)))
+    )
 #+end_src
 
 ** MCP integration
