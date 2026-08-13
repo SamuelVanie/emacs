@@ -63,33 +63,35 @@
 
 (gptel-runner-defworkflow plan-implement-review
     (:max-requests 30 :max-calls 16 :max-concurrency 2 :max-duration 3600)
-  (gptel-runner-repeat-until
-   :id 'review-cycle :max 5
-   :until (lambda (run)
-            (eq (plist-get (gptel-runner-get run 'review) :verdict) 'pass))
-   :stop-when (lambda (run)
-                (eq (plist-get (gptel-runner-get run 'review) :verdict)
-                    'blocked))
-   :progress-key #'gptel-runner-review-progress-key
-   :collect-keys '(plan implementation review)
-   :save-history-as 'history
-   :body
-   (gptel-runner-sequence
-    (gptel-runner-agent-step
-     :id 'plan :agent 'plan
-     :prompt #'myproject/plan-prompt :save-as 'plan)
-    (gptel-runner-agent-step
-     :id 'implement :agent 'dev
-     :prompt #'myproject/implementation-prompt :save-as 'implementation)
-    (gptel-runner-agent-step
-     :id 'review :agent 'review
-     :prompt #'myproject/review-prompt
-     :save-as 'review :repair-invalid t)))
-  (gptel-runner-agent-step
-   :id 'summarize
-   :agent 'summarizer
-   :prompt #'myproject/summarizer-prompt
-   :save-as 'final-report))
+  (gptel-runner-sequence
+   (gptel-runner-repeat-until
+    :id 'review-cycle :max 5
+    :until (lambda (run)
+             (eq (plist-get (gptel-runner-get run 'review) :verdict) 'pass))
+    :stop-when (lambda (run)
+                 (eq (plist-get (gptel-runner-get run 'review) :verdict)
+                     'blocked))
+    :progress-key #'gptel-runner-review-progress-key
+    :collect-keys '(plan implementation review)
+    :save-history-as 'history
+    :body
+    (gptel-runner-sequence
+     (gptel-runner-agent-step
+      :id 'plan :agent 'plan
+      :prompt #'myproject/plan-prompt :save-as 'plan)
+     (gptel-runner-agent-step
+      :id 'implement :agent 'dev
+      :prompt #'myproject/implementation-prompt :save-as 'implementation)
+     (gptel-runner-agent-step
+      :id 'review :agent 'review
+      :prompt #'myproject/review-prompt
+      :save-as 'review :repair-invalid t)))
+   (gptel-runner-agent-step
+    :id 'summarize
+    :agent 'summarizer
+    :prompt #'myproject/summarizer-prompt
+    :save-as 'final-report))
+  )
 
 
 ;; (gptel-runner-start 'plan-implement-review :goal (read-string "What's the goal: ") :workspace "~/projects/dailybanking-mobile-bff/"
