@@ -66,20 +66,16 @@ Should be installed :
 
 * Scrolling
 
-** Scrolling inside pop-up view
+** Scrolling other window
+
+some code snippet that permits to set the other window to scroll to the mru one
 
 #+begin_src emacs-lisp
-  (defun set-other-window-scroll-buffer ()
-    "Set the variable `other-window-scroll-buffer' dynamically using completion.
-    If nothing is selected, the value is set to nil."
-    (interactive)
-    (let* ((buffers (mapcar #'buffer-name (buffer-list)))
-           (selected (completing-read "Select buffer (or leave empty for nil): " buffers nil nil "")))
-      (if (string-empty-p selected)
-          (setq other-window-scroll-buffer nil)
-        (setq other-window-scroll-buffer (get-buffer selected)))))
-
-  (global-set-key (kbd "C-M-'") #'set-other-window-scroll-buffer)
+  (setq other-window-scroll-default
+      (lambda ()
+        (or (get-mru-window nil nil 'not-this-one-dummy)
+            (next-window)               ;fall back to next window
+            (next-window nil nil 'visible))))
 #+end_src
 
 
@@ -806,23 +802,15 @@ There's no unified bindings that permits to manage windows, so here's mine
 
 #+end_src
 
-*** winum mode
+*** ace mode
 
 Quickly switch between windows
 
 #+begin_src emacs-lisp
-  (use-package winum
-    :straight t
-    :bind (("M-1" . winum-select-window-1)
-           ("M-2" . winum-select-window-2)
-           ("M-3" . winum-select-window-3)
-           ("M-4" . winum-select-window-4)
-           ("M-5" . winum-select-window-5)
-           ("M-6" . winum-select-window-6)
-           ("M-7" . winum-select-window-7)
-           ("M-8" . winum-select-window-8))
-    :config
-    (winum-mode))
+  (use-package ace
+    :straight nil
+    :bind
+    ("C-M-'" . ace-window))
 #+end_src
 
 ** avy
