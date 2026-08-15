@@ -2464,6 +2464,21 @@ My orchestration package that permits to create full agents pipeline
     )
 #+end_src
 
+Another gptel plugin
+That one is gptel-inline, which permits to interact with gptel as its name says it, it's really great.
+
+#+begin_src emacs-lisp
+  (use-package gptel-inline
+    :after gptel
+    :straight (:host github :repo "karthink/gptel-inline" :files ("*"))
+    :config
+    (general-define-key
+     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+     :prefix "!"
+     "@" #'gptel-inline))
+#+end_src
+
+
 ** MCP integration
 
 This permits to add interaction capabilities to my llm. LLMs will be able to use some tools to get more context if needed.
