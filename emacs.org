@@ -2331,7 +2331,6 @@ There are some packages that I don't want to add to my emacs configuration, beca
   (setenv "DEEPSEEK_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.deep_key") (string-trim (buffer-string))))
   (setenv "OPENROUTER_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.openr_key") (string-trim (buffer-string))))
   (setenv "GEMINI_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.gem_key") (string-trim (buffer-string))))
-  (setenv "EXA_API_KEY" (with-temp-buffer (insert-file-contents "~/.org/.exa_key") (string-trim (buffer-string))))
 #+end_src
 
 ** Gptel
@@ -2482,8 +2481,6 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
     :after gptel
     :config
     (require 'mcp-hub)
-    (add-to-list 'mcp-hub-servers
-        '("exa" . (:url "https://mcp.exa.ai/mcp?tools=web_search_exa,web_fetch_exa")))
     ;; (gptel-mcp-connect '("exa"))
     )
 #+end_src
