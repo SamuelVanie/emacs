@@ -260,11 +260,14 @@ User friendly tool that uses Plan9 style interface to show command outputs. Thes
   (setq ibuffer-use-other-window t)
 
   (defun my-both-modes-active-p (buffer-name action)
-    "Return non-nil if buffer is org-mode with gptel active."
+    "Return non-nil for ordinary Org or Markdown gptel buffers.
+  Exclude prompt buffers created by `gptel-inline' so that its explicit
+  `gptel-inline-buffer-display-action' remains in control."
     (with-current-buffer buffer-name
       (and (or (derived-mode-p 'org-mode)
                (derived-mode-p 'markdown-mode))
-           (bound-and-true-p gptel-mode))))
+           (bound-and-true-p gptel-mode)
+           (not (bound-and-true-p gptel-inline--context)))))
 
   (add-to-list 'display-buffer-alist
                '("\\*Ibuffer\\*"
