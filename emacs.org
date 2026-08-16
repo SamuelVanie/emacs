@@ -2475,7 +2475,7 @@ That one is gptel-inline, which permits to interact with gptel as its name says 
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
      :prefix "!"
-     "@" #'gptel-inline))
+     "<f3>" #'gptel-inline))
 #+end_src
 
 
