@@ -2383,11 +2383,9 @@ Mode to interact with different llms in emacs.
     (add-to-list
      'display-buffer-alist
      `(my-both-modes-active-p
-       (display-buffer-in-side-window)
-       (side . right)
-       (window-width . 0.37)
-       (window-height . 0.3)
-       (window-parameters . ((no-other-window . t)))))
+       (display-buffer-in-direction)
+       (direction . rightmost)
+       (window-width . 0.37)))
     
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
@@ -2556,4 +2554,3 @@ pr-review, A tool that permits to review MR directly from emacs, combining it wi
     (when (file-exists-p fname)
       (load-file fname)))
 #+end_src
-
