@@ -2238,7 +2238,6 @@ A simple package that permits to get fast completion in emacs.
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0)
-    (company-tooltip-flip-when-above t)
     :hook
     (after-init . global-company-mode)
     :config
