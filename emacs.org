@@ -2407,8 +2407,6 @@ Mode to interact with different llms in emacs.
         (gptel-make-anthropic-oauth "Claude-OAuth" :stream t)))
 
     (gptel-make-openai-oauth "OpenAI-OAuth" :stream t)
-
-    (setq gptel-tool-call-timeout 240)
     :bind
     ("C-c RET" . gptel-send)
     ("C-c g g" . gptel)
