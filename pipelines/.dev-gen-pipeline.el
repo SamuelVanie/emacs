@@ -57,13 +57,14 @@
   (format
    (concat "Here is the full list of the work done by the Techlead, the developer and the reviewer in the current project's workspace for this goal:\n%s\n\nWorkspace: %s\n\n"
            "Summary: %S\n\n"
-           "Write the summary document in the ~/.org/notes/ folder to the proper directory please when appropriate (is the workspace folder name exists there as a subdirectory?). Make sure to follow the rules for filename there (denote package convention)")
+           "Write the summary document telling us what was done with the full details of the decisions and why there were made")
    (gptel-runner-run-goal run) (gptel-runner-run-workspace run)
    (gptel-runner-get run 'history)))
 
 (gptel-runner-defworkflow plan-implement-review
     (:max-requests 30 :max-calls 16 :max-concurrency 2 :max-duration 3600)
   (gptel-runner-sequence
+   :id 'plan-implement-review-save-seq
    (gptel-runner-repeat-until
     :id 'review-cycle :max 5
     :until (lambda (run)
@@ -76,6 +77,7 @@
     :save-history-as 'history
     :body
     (gptel-runner-sequence
+     :id 'review-cycle-inner-seq
      (gptel-runner-agent-step
       :id 'plan :agent 'plan
       :prompt #'myproject/plan-prompt :save-as 'plan)
