@@ -2343,6 +2343,9 @@ Mode to interact with different llms in emacs.
   (use-package gptel
     :straight (:host github :repo "SamuelVanie/gptel" :branch "tools-fails-after-some-time" :files ("*"))
     :after general
+    :hook
+    (gptel-mode . (lambda ()
+                  (gptel-highlight-mode 1)))
     :config
     ;; something that makes it more convenient to add mcp tools in gptel
     (require 'gptel-integrations)
@@ -2353,20 +2356,21 @@ Mode to interact with different llms in emacs.
     ;; (setq gptel-include-tool-results t)
     (setq gptel-include-reasoning nil)
     (setq gptel-track-media t)
+    (setq gptel-org-convert-response nil)
     (setf (alist-get 'org-mode gptel-prompt-prefix-alist) "@user\n")
-    (setf (alist-get 'org-mode gptel-response-prefix-alist) "@assistant\n")
+    (setf (alist-get 'org-mode gptel-response-prefix-alist) "@mayuri\n")
     
     (add-hook 'gptel-mode-hook
               (lambda ()
                 (if gptel-mode
          		  (font-lock-add-keywords nil
          					  '(("^@user\\b" 0 '(face nil display "👤 User: "))
-         					    ("^@assistant\\b" 0 '(face nil display "🤖 Assistant: "))))
+         					    ("^@mayuri\\b" 0 '(face nil display "🌞 Mayuri: "))))
 
          		
          		(font-lock-remove-keywords 'org-mode
          					   '(("^@user\\b" 0 '(face nil display "👤 User: "))
-         					     ("^@assistant\\b" 0 '(face nil display "🤖 Assistant: ")))))
+         					     ("^@mayuri\\b" 0 '(face nil display "🌞 Mayuri: ")))))
                 (font-lock-flush)))
     
 
