@@ -2434,6 +2434,9 @@ Make gptel work as an agent
     (let ((dir (expand-file-name "agents/" user-emacs-directory)))
       (if (file-directory-p dir)
           (add-to-list 'gptel-agent-dirs dir)))
+    (let ((dir (expand-file-name "skills/" user-emacs-directory)))
+      (if (file-directory-p dir)
+          (add-to-list 'gptel-agent-skill-dirs dir)))
     (general-define-key
      :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
      :prefix "!"
