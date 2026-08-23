@@ -7,6 +7,7 @@ Should be installed :
 - coreutils
 - cmake
 - multimarkdown
+- aspell
 - pandoc
 - install the different nerd fonts FantasqueSansMono, Iosevka, JetBrainsMono
 - libvterm
@@ -2557,4 +2558,59 @@ pr-review, A tool that permits to review MR directly from emacs, combining it wi
   (let ((fname (format "%s%s/%s%s" user-emacs-directory "config" "custom" ".el")))
     (when (file-exists-p fname)
       (load-file fname)))
+#+end_src
+
+
+* Spell checker in emacs
+
+#+begin_src emacs-lisp
+
+  ;; Set the ispell program name to aspell
+  ;; (switching to aspell will generally offer better performance than ispell.)
+  (setq ispell-program-name "aspell")
+
+  ;; Set the global default dictionary for the Ispell process.
+  (setq ispell-dictionary "en_US")
+
+  ;; Reduce unnecessary messages when checking individual words.
+  (setq ispell-quietly t)
+
+  ;; Configure Aspell's suggestion mode to "ultra", which favors very close
+  ;; spelling and phonetic matches when generating suggestions.
+  (setq ispell-extra-args '("--sug-mode=ultra"))
+
+  (defun my-flyspell-prog-mode (&rest _args)
+    "Enable `flyspell-prog-mode' with buffer-local Aspell arguments."
+    ;; The --run-together flag instructs Aspell to accept words formed by
+    ;; combining two or more valid dictionary words without spaces, treating the
+    ;; resulting string as valid.
+    ;;
+    ;; This is excellent for source code. Code is heavily populated with
+    ;; compound variable names and technical terms (e.g., filepath, buffername,
+    ;; checkbox).
+    ;; URL: https://www.jamescherti.com/emacs-spell-checker-flyspell-ispell-aspell/
+    (make-local-variable 'ispell-extra-args)
+    (dolist (item '("--run-together"
+                    "--ignore=2"
+                    "--run-together-min=3"
+                    ;; "--run-together-limit=4"
+                    "--camel-case"
+                    ))
+      (add-to-list 'ispell-extra-args item))
+    (flyspell-prog-mode))
+
+  (defun my-flyspell-enable-appropriate-mode ()
+    "Enable the appropriate Flyspell mode based on the current major mode."
+    (if (or (derived-mode-p 'conf-mode)
+            (derived-mode-p 'yaml-mode)
+            (derived-mode-p 'yaml-ts-mode)
+            (derived-mode-p 'ansible-mode)
+            (derived-mode-p 'nxml-mode)
+            (derived-mode-p 'sgml-mode))
+        (my-flyspell-prog-mode)
+      (flyspell-mode 1)))
+
+  (add-hook 'prog-mode-hook #'my-flyspell-prog-mode)
+  (add-hook 'conf-mode-hook #'my-flyspell-enable-appropriate-mode)
+  (add-hook 'text-mode-hook #'my-flyspell-enable-appropriate-mode)
 #+end_src
