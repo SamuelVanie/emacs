@@ -2571,6 +2571,7 @@ pr-review, A tool that permits to review MR directly from emacs, combining it wi
 
   ;; Set the global default dictionary for the Ispell process.
   (setq ispell-dictionary "en_US")
+  (setq ispell-local-dictionary "en_US")
 
   ;; Reduce unnecessary messages when checking individual words.
   (setq ispell-quietly t)
