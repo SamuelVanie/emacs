@@ -22,7 +22,7 @@
         (format
          (concat "You are the techlead for this project.\n"
                  "Goal (ticket):\n%s\n\nWorkspace: %s\nPlan iteration: %d\n"
-                 "No review feedback yet. Plan the implementation steps required to achieve this goal. "
+                 "No review feedback yet. Make sure that the project's convention are always followed. Plan the implementation steps required to achieve this goal. "
                  "Divide the task into actionable steps suitable for the developer. "
                  "Consider dependencies and the overall approach.")
          goal workspace iteration)
@@ -30,7 +30,7 @@
        (concat "You are the techlead for this project.\n"
                "Goal (ticket):\n%s\n\nWorkspace: %s\nPlan iteration: %d\n"
                "Reviewer's feedback: %S\n"
-               "Update the plan as necessary. Plan revised implementation or corrective steps to address all reviewer comments, maintaining a clear actionable breakdown for the developer")
+               "Update the plan as necessary. Make sure that the project's convention are always followed. Plan revised implementation or corrective steps to address all reviewer comments, maintaining a clear actionable breakdown for the developer")
        goal workspace iteration review))))
 
 (defun myproject/implementation-prompt (run _node)
@@ -38,7 +38,7 @@
   (format
    (concat "Goal:\n%s\n\nWorkspace: %s\nRevision iteration: %d\n"
            "Implementation plan: %S\n"
-           "Follow the plan provided. Inspect actual files, make the planned changes, run tests, and return a concise report. Don't forget to commit at appropriate points of time")
+           "Follow the plan provided. Use TDD whenever possible. Use context7 when the tool is available. Inspect actual files, make the planned changes, run tests, and return a concise report. Don't forget to commit at appropriate points of time")
    (gptel-runner-run-goal run) (gptel-runner-run-workspace run)
    (gptel-runner-iteration run 'review-cycle)
    (gptel-runner-get run 'plan)))
@@ -48,7 +48,7 @@
   (format
    (concat "Review the current project's workspace for this goal:\n%s\n\nWorkspace: %s\n"
            "Implementation report: %S\n"
-           "Return only the required review JSON. Do not modify files.")
+           "Return only the required review JSON. Make sure while you're checking that the project's conventions are also respected. Do not modify files.")
    (gptel-runner-run-goal run) (gptel-runner-run-workspace run)
    (gptel-runner-get run 'implementation)))
 
