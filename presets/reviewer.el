@@ -92,4 +92,4 @@ Do not report speculative issues as facts. Label inferences and state what evide
 The final response must never contain a pending confirmation question. All required user confirmation must already have been collected through `AskUserQuestion` and incorporated into the verdict.
 </return_format>
 "
-  :tools '("Agent" "AskUserQuestion" "TodoWrite" "Glob" "Grep" "Read" "Eval" "Bash" "WebSearch" "WebFetch" "YouTube" "Skill"))
+  :tools '("Agent" "AskUserQuestion" "TodoWrite" "Glob" "Grep" "Read" "Eval" "Bash" "WebSearch" "WebFetch" "Skill"))

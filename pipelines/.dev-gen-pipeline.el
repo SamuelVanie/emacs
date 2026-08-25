@@ -48,7 +48,7 @@
   (format
    (concat "Review the current project's workspace for this goal:\n%s\n\nWorkspace: %s\n"
            "Implementation report: %S\n"
-           "Return only the required review JSON. Make sure while you're checking that the project's conventions are also respected. Do not modify files.")
+           "Return only the required review JSON. Make sure while you're checking, also, that the project's conventions are also respected. Do not modify files.")
    (gptel-runner-run-goal run) (gptel-runner-run-workspace run)
    (gptel-runner-get run 'implementation)))
 
