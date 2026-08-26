@@ -38,7 +38,7 @@
   (format
    (concat "Goal:\n%s\n\nWorkspace: %s\nRevision iteration: %d\n"
            "Implementation plan: %S\n"
-           "Follow the plan provided. Use TDD whenever possible. Use context7 when the tool is available. Inspect actual files, make the planned changes, run tests, and return a concise report. Don't forget to commit at appropriate points of time")
+           "Follow the plan provided. Use TDD whenever possible. Use context7 when the tool is available (flowable, nestjs, java packages, etc). Inspect actual files, make the planned changes, run tests, and return a concise report. Don't forget to commit at appropriate points of time")
    (gptel-runner-run-goal run) (gptel-runner-run-workspace run)
    (gptel-runner-iteration run 'review-cycle)
    (gptel-runner-get run 'plan)))
@@ -62,11 +62,11 @@
    (gptel-runner-get run 'history)))
 
 (gptel-runner-defworkflow plan-implement-review
-    (:max-requests 30 :max-calls 16 :max-concurrency 2 :max-duration 3600)
+    (:max-requests 40 :max-calls 26 :max-concurrency 2 :max-duration 5400)
   (gptel-runner-sequence
    :id 'plan-implement-review-save-seq
    (gptel-runner-repeat-until
-    :id 'review-cycle :max 5
+    :id 'review-cycle :max 8
     :until (lambda (run)
              (eq (plist-get (gptel-runner-get run 'review) :verdict) 'pass))
     :stop-when (lambda (run)
