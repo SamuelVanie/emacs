@@ -2171,7 +2171,9 @@ Prettier automatically formats the code for you. I hate when it's in other modes
     :after lsp-mode
     :init
     (setq lsp-java-format-enabled t)
-    (setq lsp-java-format-comments-enabled t))
+    (setq lsp-java-format-comments-enabled t)
+    :config
+    (require 'dap-java))
 
   ;; activate editorconfig handling in emacs
   (editorconfig-mode 1)

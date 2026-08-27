@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: grill-me
-# key: grill-me
+# key: /grill-me
 # --
 Interview the user relentlessly until you reach a shared understanding. Map this as a **design tree**: every decision branches into the decisions that hang off it.
 
