@@ -2560,6 +2560,10 @@ pr-review, A tool that permits to review MR directly from emacs, combining it wi
   (let ((fname (format "%s%s/%s%s" user-emacs-directory "config" "custom" ".el")))
     (when (file-exists-p fname)
       (load-file fname)))
+
+  (let ((fname (format "%s%s/%s%s" user-emacs-directory "config" "custom-functions" ".el")))
+    (when (file-exists-p fname)
+      (load-file fname)))
 #+end_src
 
 

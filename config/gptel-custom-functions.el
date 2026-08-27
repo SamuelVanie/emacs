@@ -9,6 +9,3 @@
 (load-file (format "%s%s/%s%s" user-emacs-directory "config" "gptel-notool-minor-mode" ".el"))
 (load-file (format "%s%s/%s%s" user-emacs-directory "config" "gptel-ediff-prehook" ".el"))
 (load-file (format "%s%s/%s%s" user-emacs-directory "config" "gptel-retry" ".el"))
-
-;; load utils
-(load-file (format "%s%s/%s%s" user-emacs-directory "config" "sl4j-format" ".el"))
