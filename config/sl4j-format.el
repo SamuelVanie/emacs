@@ -1,722 +1,392 @@
-;;; structured-slf4j-log-mode.el --- Pretty structured SLF4J logs -*- lexical-binding: t; -*-
+;;; sl4j-format.el --- Color structured SLF4J logs in Ghostel -*- lexical-binding: t; -*-
+
+;; This file intentionally does not rewrite log records.  It inserts ANSI SGR
+;; sequences into the byte stream immediately before Ghostel's VT parser sees
+;; it.  Ghostel consumes those sequences as faces, so the rendered buffer keeps
+;; the original JSON text and field order.
 
 (require 'compile)
 (require 'json)
-(require 'seq)
 (require 'subr-x)
 
+(defvar sl4j-ghostel-color-mode)
+(defvar ghostel-compile--command)
 
-;;;; Faces
+(declare-function ghostel--filter "ghostel" (process output))
 
-(defface smv/slf4j-error-face
-  '((t :inherit error :weight bold))
-  "Face for ERROR/FATAL log levels.")
+(defgroup sl4j-format nil
+  "Live syntax coloring for structured SLF4J output."
+  :group 'tools)
 
-(defface smv/slf4j-warning-face
-  '((t :inherit warning :weight bold))
-  "Face for WARN log levels.")
+(defconst sl4j--missing (make-symbol "sl4j--missing"))
 
-(defface smv/slf4j-info-face
-  '((t :inherit success :weight bold))
-  "Face for INFO log levels.")
+(defconst sl4j--process-filter-property 'sl4j--original-process-filter)
+(defconst sl4j--process-sentinel-property 'sl4j--original-process-sentinel)
+(defconst sl4j--process-pending-property 'sl4j--pending-output)
+(defconst sl4j--process-line-start-property 'sl4j--at-line-start)
 
-(defface smv/slf4j-debug-face
-  '((t :inherit font-lock-comment-face :weight bold))
-  "Face for DEBUG log levels.")
+(defun sl4j--sgr (parameters)
+  "Return a unibyte ANSI SGR sequence using PARAMETERS."
+  (encode-coding-string (concat "\e[" parameters "m") 'us-ascii t))
 
-(defface smv/slf4j-trace-face
-  '((t :inherit shadow))
-  "Face for TRACE log levels.")
+(defun sl4j--paint (text start finish)
+  "Surround unibyte TEXT with ANSI SGR START and FINISH sequences."
+  (concat (sl4j--sgr start) text (sl4j--sgr finish)))
 
-(defface smv/slf4j-time-face
-  '((t :inherit shadow))
-  "Face for timestamps.")
+(defun sl4j--dim (text)
+  "Return TEXT with reduced intensity."
+  (sl4j--paint text "2" "22"))
 
-(defface smv/slf4j-logger-face
-  '((t :inherit font-lock-type-face))
-  "Face for logger names.")
-
-(defface smv/slf4j-thread-face
-  '((t :inherit font-lock-variable-name-face))
-  "Face for thread names.")
-
-(defface smv/slf4j-key-face
-  '((t :inherit font-lock-keyword-face))
-  "Face for structured log keys.")
-
-(defface smv/slf4j-string-face
-  '((t :inherit font-lock-string-face))
-  "Face for string values.")
-
-(defface smv/slf4j-constant-face
-  '((t :inherit font-lock-constant-face))
-  "Face for numeric, boolean and null values.")
-
-
-;;;; Face helpers
-
-(defun smv/slf4j-log--propertize (string face)
-  "Return STRING displayed with FACE.
-
-Both `face' and `font-lock-face' are supplied deliberately.
-`font-lock-face' survives Compilation mode fontification, while
-`face' also works in buffers where Font Lock is not active."
-  (propertize
-   string
-   'face face
-   'font-lock-face face))
-
-
-(defun smv/slf4j-log--add-face (string beg end face)
-  "Apply FACE to BEG..END in STRING."
-  (add-text-properties
-   beg end
-   (list
-    'face face
-    'font-lock-face face)
-   string))
-
-
-;;;; Basic helpers
-
-(defun smv/slf4j-log--severity-face (severity)
-  "Return face appropriate for SEVERITY."
+(defun sl4j--severity-style (severity)
+  "Return the ANSI start sequence parameters for SEVERITY."
   (pcase (upcase (format "%s" severity))
-    ((or "FATAL" "ERROR")
-     'smv/slf4j-error-face)
+    ((or "FATAL" "ERROR") "1;31")
+    ((or "WARN" "WARNING") "1;33")
+    ("INFO" "1;32")
+    ("DEBUG" "36")
+    ("TRACE" "2")
+    (_ "1;36")))
 
-    ((or "WARN" "WARNING")
-     'smv/slf4j-warning-face)
+(defun sl4j--structured-log-object (line)
+  "Parse unibyte LINE when it resembles a structured SLF4J log.
 
-    ("INFO"
-     'smv/slf4j-info-face)
+Return its JSON object, or nil for ordinary output and unrelated JSON."
+  (condition-case nil
+      (let* ((text (string-trim
+                    (decode-coding-string line 'utf-8-unix t)))
+             (object (and (string-prefix-p "{" text)
+                          (json-parse-string text)))
+             (severity (and (hash-table-p object)
+                            (or (gethash "severity" object)
+                                (gethash "level" object))))
+             (time (and (hash-table-p object)
+                        (or (gethash "time" object)
+                            (gethash "timestamp" object))))
+             (message (and (hash-table-p object)
+                           (gethash "message" object sl4j--missing)))
+             (logger (and (hash-table-p object)
+                          (gethash "logger" object sl4j--missing))))
+        ;; Requiring these identifying fields avoids coloring arbitrary JSON
+        ;; printed by the application or its build tooling.
+        (when (and (hash-table-p object)
+                   (stringp severity)
+                   (stringp time)
+                   (or (not (eq message sl4j--missing))
+                       (not (eq logger sl4j--missing))))
+          object))
+    (error nil)))
 
-    ("DEBUG"
-     'smv/slf4j-debug-face)
+(defun sl4j--json-string-end (text start)
+  "Return the position after the JSON string in TEXT at START.
 
-    ("TRACE"
-     'smv/slf4j-trace-face)
+Return nil for an unterminated string.  TEXT is deliberately scanned as bytes
+so adding color never decodes and re-encodes the original process output."
+  (let ((position (1+ start))
+        (length (length text))
+        done)
+    (while (and (< position length) (not done))
+      (pcase (aref text position)
+        (?\\
+         ;; Skip the escaped byte.  For a \uXXXX escape the four hex digits
+         ;; contain no quote and can safely be scanned normally afterwards.
+         (setq position (+ position 2)))
+        (?\"
+         (setq position (1+ position)
+               done t))
+        (_
+         (setq position (1+ position)))))
+    (and done position)))
 
+(defun sl4j--json-whitespace-p (character)
+  "Return non-nil when CHARACTER is JSON whitespace."
+  (memq character '(?\s ?\t ?\n ?\r)))
+
+(defun sl4j--json-delimiter-p (character)
+  "Return non-nil when CHARACTER terminates an unquoted JSON value."
+  (or (sl4j--json-whitespace-p character)
+      (memq character '(?, ?: ?\{ ?\} ?\[ ?\]))))
+
+(defun sl4j--style-message-content (content)
+  "Color key=value fragments in raw JSON string CONTENT."
+  (let ((position 0)
+        pieces)
+    (while (string-match
+            "\\([[:alnum:]_.-]+\\)=\\([^ ,\t]*\\)"
+            content position)
+      (push (substring content position (match-beginning 0)) pieces)
+      (push (sl4j--paint (match-string 1 content) "1;36" "22;39")
+            pieces)
+      (push (sl4j--dim "=") pieces)
+      (when (< (match-beginning 2) (match-end 2))
+        (push (sl4j--paint (match-string 2 content) "32" "39") pieces))
+      (setq position (match-end 0)))
+    (push (substring content position) pieces)
+    (apply #'concat (nreverse pieces))))
+
+(defun sl4j--style-quoted-string (token style &optional content-function)
+  "Color quoted JSON string TOKEN.
+
+STYLE is the SGR start sequence for its content.  When CONTENT-FUNCTION is
+non-nil, call it to produce the styled content instead."
+  (let* ((content (substring token 1 -1))
+         (styled-content
+          (cond
+           (content-function (funcall content-function content))
+           (style (sl4j--paint content style
+                               (if (string-match-p "\\`[12];" style)
+                                   "22;39"
+                                 (if (string= style "2") "22" "39"))))
+           (t content))))
+    (concat (sl4j--dim "\"") styled-content (sl4j--dim "\""))))
+
+(defun sl4j--style-string-value (token key severity)
+  "Color JSON string TOKEN according to KEY and SEVERITY."
+  (pcase key
+    ((or "severity" "level")
+     (sl4j--style-quoted-string token (sl4j--severity-style severity)))
+    ((or "time" "timestamp")
+     (sl4j--style-quoted-string token "2"))
+    ("logger"
+     (sl4j--style-quoted-string token "35"))
+    ("thread"
+     (sl4j--style-quoted-string token "34"))
+    ("message"
+     (sl4j--style-quoted-string token nil #'sl4j--style-message-content))
     (_
-     'font-lock-keyword-face)))
-
-
-(defun smv/slf4j-log--key-name (key)
-  "Convert JSON object KEY to a string."
-  (cond
-   ((symbolp key)
-    (symbol-name key))
-
-   ((stringp key)
-    key)
-
-   (t
-    (format "%s" key))))
-
-
-(defun smv/slf4j-log--reserved-key-p (key)
-  "Return non-nil when KEY is formatted specially."
-  (member
-   (smv/slf4j-log--key-name key)
-   '("time"
-     "timestamp"
-     "severity"
-     "level"
-     "logger"
-     "thread"
-     "message")))
-
-
-;;;; JSON values
-
-(defun smv/slf4j-log--json-value (value)
-  "Convert parsed JSON VALUE to compact readable JSON."
-  (cond
-   ((stringp value)
-    (prin1-to-string value))
-
-   ((numberp value)
-    (number-to-string value))
-
-   ((eq value t)
-    "true")
-
-   ((eq value :false)
-    "false")
-
-   ((eq value :null)
-    "null")
-
-   ;; json-parse-string :array-type 'array produces vectors.
-   ((vectorp value)
-    (concat
-     "["
-     (mapconcat
-      #'smv/slf4j-log--json-value
-      (append value nil)
-      ", ")
-     "]"))
-
-   ;; Nested JSON objects.
-   ((listp value)
-    (concat
-     "{"
-     (mapconcat
-      (lambda (entry)
-        (format
-         "\"%s\": %s"
-         (smv/slf4j-log--key-name (car entry))
-         (smv/slf4j-log--json-value (cdr entry))))
-      value
-      ", ")
-     "}"))
-
-   (t
-    (format "%s" value))))
-
-
-(defun smv/slf4j-log--field-value (value)
-  "Convert VALUE to a compact key=value representation."
-  (cond
-   ((stringp value)
-    ;; Quote strings containing whitespace.
-    (if (string-match-p "[[:space:]]" value)
-        (prin1-to-string value)
-      value))
-
-   ((or (vectorp value)
-        (listp value))
-    (smv/slf4j-log--json-value value))
-
-   (t
-    (smv/slf4j-log--json-value value))))
-
-
-(defun smv/slf4j-log--value-face (value)
-  "Return appropriate face for VALUE."
-  (cond
-   ((or (numberp value)
-        (eq value t)
-        (eq value :false)
-        (eq value :null))
-    'smv/slf4j-constant-face)
-
-   (t
-    'smv/slf4j-string-face)))
-
-
-;;;; Individual structured fields
-
-(defun smv/slf4j-log--format-field (key value)
-  "Return colored KEY=VALUE."
-  (concat
-   (smv/slf4j-log--propertize
-    (concat (smv/slf4j-log--key-name key) "=")
-    'smv/slf4j-key-face)
-
-   (smv/slf4j-log--propertize
-    (smv/slf4j-log--field-value value)
-    (smv/slf4j-log--value-face value))))
-
-
-;;;; Message formatting
-
-(defun smv/slf4j-log--format-message (message)
-  "Format MESSAGE and highlight embedded key=value expressions."
-  (let ((text
-         (copy-sequence
-          (if (stringp message)
-              message
-            (smv/slf4j-log--field-value message))))
-        (pos 0))
-
-    ;; Examples:
-    ;;
-    ;; route=/orders
-    ;; method=POST
-    ;; status=201
-    ;; requestId=abc123
-    ;;
-    (while
-        (string-match
-         "\\_<\\([[:alnum:]_.-]+\\)=\\([^ ,\t\n]*\\)"
-         text
-         pos)
-
-      ;; key
-      (smv/slf4j-log--add-face
-       text
-       (match-beginning 1)
-       (match-end 1)
-       'smv/slf4j-key-face)
-
-      ;; value
-      (when (< (match-beginning 2)
-               (match-end 2))
-        (smv/slf4j-log--add-face
-         text
-         (match-beginning 2)
-         (match-end 2)
-         'smv/slf4j-string-face))
-
-      (setq pos (match-end 0)))
-
-    text))
-
-
-;;;; Complete log record
-
-(defun smv/slf4j-log--format-object (object)
-  "Turn structured SLF4J OBJECT into a readable colored log line."
-  (let* ((severity
-          (or (alist-get 'severity object)
-              (alist-get 'level object)))
-
-         (time
-          (or (alist-get 'time object)
-              (alist-get 'timestamp object)))
-
-         (logger
-          (alist-get 'logger object))
-
-         (thread
-          (alist-get 'thread object))
-
-         (message
-          (alist-get 'message object))
-
-         ;; Everything else is preserved in original JSON order.
-         (extra-fields
-          (seq-remove
-           (lambda (entry)
-             (smv/slf4j-log--reserved-key-p
-              (car entry)))
-           object))
-
-         parts)
-
-    ;; [INFO]
-    (when severity
-      (push
-       (smv/slf4j-log--propertize
-        (format
-         "[%s]"
-         (upcase (format "%s" severity)))
-        (smv/slf4j-log--severity-face severity))
-       parts))
-
-    ;; timestamp
-    (when time
-      (push
-       (smv/slf4j-log--propertize
-        (smv/slf4j-log--field-value time)
-        'smv/slf4j-time-face)
-       parts))
-
-    ;; logger=...
-    (when logger
-      (push
-       (concat
-        (smv/slf4j-log--propertize
-         "logger="
-         'smv/slf4j-key-face)
-
-        (smv/slf4j-log--propertize
-         (smv/slf4j-log--field-value logger)
-         'smv/slf4j-logger-face))
-       parts))
-
-    ;; thread=...
-    (when thread
-      (push
-       (concat
-        (smv/slf4j-log--propertize
-         "thread="
-         'smv/slf4j-key-face)
-
-        (smv/slf4j-log--propertize
-         (smv/slf4j-log--field-value thread)
-         'smv/slf4j-thread-face))
-       parts))
-
-    ;; message itself
-    (when message
-      (let ((text
-             (if (stringp message)
-                 message
-               (smv/slf4j-log--field-value message))))
-
-        (unless (string-empty-p text)
-          (push
-           (smv/slf4j-log--format-message message)
-           parts))))
-
-    ;; ALL remaining top-level JSON fields.
-    (dolist (entry extra-fields)
-      (push
-       (smv/slf4j-log--format-field
-        (car entry)
-        (cdr entry))
-       parts))
-
-    (string-join
-     (nreverse parts)
-     " ")))
-
-
-;;;; Parsing
-
-(defun smv/slf4j-log--structured-log-p (object)
-  "Return non-nil when OBJECT resembles our SLF4J JSON record."
-  (and
-   (listp object)
-
-   (or (alist-get 'severity object)
-       (alist-get 'level object))
-
-   (or (alist-get 'time object)
-       (alist-get 'timestamp object))
-
-   (alist-get 'logger object)))
-
-
-(defun smv/slf4j-log--parse-line (raw)
-  "Parse RAW as a structured SLF4J record.
-
-Return the parsed alist or nil."
-  (let ((text (string-trim raw)))
-
-    (when
-        (and
-         (not (string-empty-p text))
-         (eq (aref text 0) ?{))
-
-      (condition-case nil
-          (let ((object
-                 (json-parse-string
-                  text
-                  :object-type 'alist
-                  :array-type 'array
-                  :null-object :null
-                  :false-object :false)))
-
-            (when
-                (smv/slf4j-log--structured-log-p object)
-              object))
-
-        (json-parse-error nil)))))
-
-
-;;;; Rewriting
-
-(defun smv/slf4j-log--replace-line (beg end)
-  "Replace structured JSON between BEG and END with formatted text."
-  (when (< beg end)
-
-    ;; Don't process lines we have already converted.
-    (unless
-        (get-text-property
-         beg
-         'smv/slf4j-log-original)
-
-      (let* ((raw
-              (buffer-substring-no-properties
-               beg end))
-
-             (object
-              (smv/slf4j-log--parse-line raw)))
-
-        (when object
-
-          (let ((rendered
-                 (smv/slf4j-log--format-object object))
-
-                (inhibit-read-only t))
-
-            ;; Remember the exact original JSON so disabling the
-            ;; minor mode can restore it.
-            (when (> (length rendered) 0)
-              (put-text-property
-               0 1
-               'smv/slf4j-log-original
-               raw
-               rendered))
-
-            (save-excursion
-              (goto-char beg)
-
-              (with-silent-modifications
-                (delete-region beg end)
-                (insert rendered)))
-
-            t))))))
-
-
-(defun smv/slf4j-log--format-buffer ()
-  "Format all structured log lines currently in this buffer."
-  (save-restriction
-    (widen)
-
-    (save-excursion
-      (goto-char (point-min))
-
-      (while (< (point) (point-max))
-
-        (smv/slf4j-log--replace-line
-         (line-beginning-position)
-         (line-end-position))
-
-        (forward-line 1)))))
-
-
-;;;; Normal compilation-mode: live streaming
-
-(defun smv/slf4j-log--compilation-filter ()
-  "Format newly inserted Compilation mode output."
-  (when smv/structured-slf4j-log-mode
-
-    (let ((limit
-           (copy-marker (point) t)))
-
-      (unwind-protect
-          (save-excursion
-
-            ;; Process output can arrive halfway through a JSON line.
-            (goto-char compilation-filter-start)
-            (beginning-of-line)
-
-            (let ((line-beg (point)))
-
-              ;; Only process lines terminated by newline.
-              (while
-                  (search-forward "\n" limit t)
-
-                (smv/slf4j-log--replace-line
-                 line-beg
-                 (1- (point)))
-
-                (setq line-beg
-                      (point)))))
-
-        (set-marker limit nil)))))
-
-
-;;;; Ghostel support
-
-(defun smv/slf4j-log--running-ghostel-compile-p ()
-  "Return non-nil for a live `ghostel-compile' buffer."
-  (and
-   (eq major-mode 'ghostel-mode)
-
-   (boundp 'ghostel-compile--command)
-
-   (local-variable-p
-    'ghostel-compile--command)
-
-   ghostel-compile--command
-
-   (not
-    (and
-     (boundp 'ghostel-compile--finalized)
-     ghostel-compile--finalized))))
-
-
-(defun smv/slf4j-log--ghostel-finished (buffer _status)
-  "Format Ghostel compilation BUFFER after terminal rendering stops."
-  (when (buffer-live-p buffer)
-    (with-current-buffer buffer
-
-      (when smv/structured-slf4j-log-mode
-        (smv/slf4j-log--format-buffer)))))
-
-
-;;;; Restoring JSON
-
-(defun smv/slf4j-log--restore-buffer ()
-  "Restore the original JSON records in the current buffer."
-  (let ((inhibit-read-only t))
-
-    (save-restriction
-      (widen)
-
-      (save-excursion
-        (goto-char (point-min))
-
-        (while (< (point) (point-max))
-
-          (let* ((beg
-                  (line-beginning-position))
-
-                 (end
-                  (line-end-position))
-
-                 (original
-                  (get-text-property
-                   beg
-                   'smv/slf4j-log-original)))
-
-            (if original
-
+     (sl4j--style-quoted-string token "32"))))
+
+(defun sl4j--color-json (line severity)
+  "Add ANSI syntax coloring to JSON bytes in LINE.
+
+SEVERITY controls the color of a severity or level value.  Removing the ANSI
+sequences from the result always recovers LINE byte-for-byte."
+  (let ((position 0)
+        (length (length line))
+        current-key
+        pieces)
+    (while (< position length)
+      (let ((character (aref line position)))
+        (cond
+         ((eq character ?\")
+          (let ((end (sl4j--json-string-end line position)))
+            (if (not end)
                 (progn
-                  (goto-char beg)
+                  (push (substring line position) pieces)
+                  (setq position length))
+              (let ((after end))
+                (while (and (< after length)
+                            (sl4j--json-whitespace-p (aref line after)))
+                  (setq after (1+ after)))
+                (let* ((token (substring line position end))
+                       (key-p (and (< after length)
+                                   (eq (aref line after) ?:))))
+                  (if key-p
+                      (progn
+                        ;; SLF4J's standard keys are ASCII.  Keep escaped or
+                        ;; nonstandard keys readable as generic JSON keys.
+                        (setq current-key (substring token 1 -1))
+                        (push (sl4j--style-quoted-string token "1;36") pieces))
+                    (push (sl4j--style-string-value
+                           token current-key severity)
+                          pieces)
+                    (setq current-key nil)))
+                (setq position end)))))
 
-                  (with-silent-modifications
-                    (delete-region beg end)
-                    (insert original))
+         ((memq character '(?\{ ?\} ?\[ ?\] ?, ?:))
+          (push (sl4j--dim (substring line position (1+ position))) pieces)
+          (when (memq character '(?\{ ?\[ ?, ?\} ?\]))
+            (setq current-key nil))
+          (setq position (1+ position)))
 
-                  (forward-line 1))
+         ((sl4j--json-whitespace-p character)
+          (let ((end (1+ position)))
+            (while (and (< end length)
+                        (sl4j--json-whitespace-p (aref line end)))
+              (setq end (1+ end)))
+            (push (substring line position end) pieces)
+            (setq position end)))
 
-              (forward-line 1))))))))
+         (t
+          (let ((end (1+ position)))
+            (while (and (< end length)
+                        (not (sl4j--json-delimiter-p (aref line end))))
+              (setq end (1+ end)))
+            (push (sl4j--paint (substring line position end) "33" "39")
+                  pieces)
+            (setq current-key nil
+                  position end))))))
+    (apply #'concat (nreverse pieces))))
 
+(defun sl4j--color-record (line)
+  "Return LINE with ANSI syntax coloring when it is an SLF4J JSON record."
+  (let ((object (sl4j--structured-log-object line)))
+    (if object
+        (sl4j--color-json
+         line
+         (or (gethash "severity" object)
+             (gethash "level" object)))
+      line)))
 
-;;;; Backend setup
+(defun sl4j--possible-json-prefix-p (text)
+  "Return non-nil when unterminated TEXT may begin a JSON record."
+  (let ((trimmed (string-trim-left text)))
+    (or (string-empty-p trimmed)
+        (eq (aref trimmed 0) ?\{))))
 
-(defun smv/slf4j-log--remove-backends ()
-  "Remove buffer-local hooks installed by this minor mode."
-  (remove-hook
-   'compilation-filter-hook
-   #'smv/slf4j-log--compilation-filter
-   t)
+(defun sl4j--transform-process-output (process output)
+  "Color complete log lines in PROCESS OUTPUT.
 
-  (remove-hook
-   'compilation-finish-functions
-   #'smv/slf4j-log--ghostel-finished
-   t))
+Process output can split a JSON record at any byte.  A possible record is held
+until LF, CRLF, or CR arrives; ordinary partial output is forwarded without
+waiting for a newline."
+  (let* ((pending (or (process-get process sl4j--process-pending-property) ""))
+         (at-line-start
+          (if (string-empty-p pending)
+              (process-get process sl4j--process-line-start-property)
+            t))
+         (data (concat pending output))
+         (position 0)
+         pieces)
+    (process-put process sl4j--process-pending-property "")
+    (while (string-match "\r\n\\|\n\\|\r" data position)
+      ;; Save both bounds before coloring the line: the JSON and message
+      ;; scanners legitimately replace the global regexp match data.
+      (let* ((separator-start (match-beginning 0))
+             (separator-end (match-end 0))
+             (line (substring data position separator-start))
+             (separator (substring data separator-start separator-end)))
+        (push (if at-line-start (sl4j--color-record line) line) pieces)
+        (push separator pieces)
+        (setq at-line-start t
+              position separator-end)))
+    (let ((tail (substring data position)))
+      (cond
+       ((string-empty-p tail))
+       ((and at-line-start (sl4j--possible-json-prefix-p tail))
+        (process-put process sl4j--process-pending-property tail))
+       (t
+        (push tail pieces)
+        (setq at-line-start nil))))
+    (process-put process sl4j--process-line-start-property at-line-start)
+    (apply #'concat (nreverse pieces))))
 
+(defun sl4j--ghostel-process-filter (process output)
+  "Color structured logs from PROCESS, then delegate OUTPUT to Ghostel."
+  (let* ((original (process-get process sl4j--process-filter-property))
+         (pending (or (process-get process sl4j--process-pending-property) ""))
+         (transformed
+          (condition-case error-data
+              (sl4j--transform-process-output process output)
+            (error
+             ;; A colorizer failure must never swallow or duplicate build
+             ;; output.  The pending bytes have not yet reached Ghostel.
+             (process-put process sl4j--process-pending-property "")
+             (process-put process sl4j--process-line-start-property nil)
+             (message "SLF4J colorizer skipped malformed output: %s"
+                      (error-message-string error-data))
+             (concat pending output)))))
+    (when (and original (not (string-empty-p transformed)))
+      (funcall original process transformed))))
 
-(defun smv/slf4j-log--setup-backend (&optional quiet)
-  "Set up the correct backend for the current major mode.
+(defun sl4j--flush-pending (process &optional color)
+  "Send PROCESS's pending bytes to its original filter.
 
-When QUIET is non-nil, don't signal an error for unsupported modes."
-  (smv/slf4j-log--remove-backends)
+When COLOR is non-nil, color a final log record that had no line terminator."
+  (let ((pending (or (process-get process sl4j--process-pending-property) ""))
+        (original (process-get process sl4j--process-filter-property)))
+    (process-put process sl4j--process-pending-property "")
+    (when (and original (not (string-empty-p pending)))
+      (funcall original process (if color (sl4j--color-record pending) pending)))))
 
-  (cond
+(defun sl4j--restore-process-handlers (process &optional flush)
+  "Restore Ghostel handlers previously wrapped on PROCESS.
 
-   ;; Normal compilation-mode, including a finished
-   ;; ghostel-compile-view-mode.
-   ((derived-mode-p 'compilation-mode)
+If FLUSH is non-nil, forward pending output without adding colors first."
+  (let ((original-filter
+         (process-get process sl4j--process-filter-property))
+        (original-sentinel
+         (process-get process sl4j--process-sentinel-property)))
+    (when flush
+      (condition-case nil
+          (sl4j--flush-pending process)
+        (error nil)))
+    (when (and original-filter
+               (eq (process-filter process) #'sl4j--ghostel-process-filter))
+      (set-process-filter process original-filter))
+    (when (and original-sentinel
+               (eq (process-sentinel process) #'sl4j--ghostel-process-sentinel))
+      (set-process-sentinel process original-sentinel))
+    (process-put process sl4j--process-filter-property nil)
+    (process-put process sl4j--process-sentinel-property nil)
+    (process-put process sl4j--process-pending-property nil)
+    (process-put process sl4j--process-line-start-property nil)))
 
-    ;; Format anything that is already there.
-    (smv/slf4j-log--format-buffer)
+(defun sl4j--ghostel-process-sentinel (process event)
+  "Flush PROCESS and delegate EVENT to Ghostel's original sentinel."
+  (let ((original (process-get process sl4j--process-sentinel-property)))
+    (if (not (memq (process-status process) '(exit signal)))
+        (when original (funcall original process event))
+      (unwind-protect
+          (condition-case nil
+              (sl4j--flush-pending process t)
+            (error nil))
+        (sl4j--restore-process-handlers process)
+        (when original
+          (funcall original process event))))))
 
-    ;; Standard compilation buffers can be transformed live.
-    (add-hook
-     'compilation-filter-hook
-     #'smv/slf4j-log--compilation-filter
-     90
-     t))
+(defun sl4j--ghostel-compilation-process-p (process)
+  "Return non-nil when PROCESS belongs to a live Ghostel compilation."
+  (let ((buffer (and (processp process) (process-buffer process))))
+    (and (buffer-live-p buffer)
+         (with-current-buffer buffer
+           (and (derived-mode-p 'ghostel-mode)
+                (local-variable-p 'ghostel-compile--command)
+                ghostel-compile--command)))))
 
+(defun sl4j--maybe-wrap-ghostel-process (process)
+  "Install live SLF4J coloring on a Ghostel compilation PROCESS."
+  (when (and sl4j-ghostel-color-mode
+             (sl4j--ghostel-compilation-process-p process)
+             (eq (process-filter process) #'ghostel--filter))
+    (process-put process sl4j--process-filter-property
+                 (process-filter process))
+    (process-put process sl4j--process-sentinel-property
+                 (process-sentinel process))
+    (process-put process sl4j--process-pending-property "")
+    (process-put process sl4j--process-line-start-property t)
+    (set-process-filter process #'sl4j--ghostel-process-filter)
+    (set-process-sentinel process #'sl4j--ghostel-process-sentinel)))
 
-   ;; Live ghostel compilation.
-   ;;
-   ;; Do NOT edit this buffer while Ghostel's VT renderer owns it.
-   ;; Ghostel explicitly treats its live buffer as renderer-owned.
-   ;;
-   ;; Instead install a finish callback.  Ghostel invokes local
-   ;; compilation-finish-functions after tearing down the renderer.
-   ((smv/slf4j-log--running-ghostel-compile-p)
+(defun sl4j--wrap-running-ghostel-processes ()
+  "Install coloring on Ghostel compilations that are already running."
+  (dolist (process (process-list))
+    (when (process-live-p process)
+      (sl4j--maybe-wrap-ghostel-process process))))
 
-    (add-hook
-     'compilation-finish-functions
-     #'smv/slf4j-log--ghostel-finished
-     90
-     t)
+;;;###autoload
+(define-minor-mode sl4j-ghostel-color-mode
+  "Color structured SLF4J JSON records in live Ghostel compilations.
 
-    (unless quiet
-      (message
-       "SLF4J formatting enabled; Ghostel output will be formatted when this run finishes")))
-
-
-   (quiet
-    nil)
-
-
-   (t
-    (user-error
-     "Not a compilation-mode or live ghostel-compile buffer"))))
-
-
-;;;; Survive Ghostel's mode switch
-
-(defun smv/slf4j-log--after-major-mode-change ()
-  "Reconfigure backend after the current buffer changes major mode."
-  (when smv/structured-slf4j-log-mode
-    (smv/slf4j-log--setup-backend t)))
-
-
-;; Preserve this hook when Ghostel switches from ghostel-mode to
-;; ghostel-compile-view-mode.
-(put
- 'smv/slf4j-log--after-major-mode-change
- 'permanent-local-hook
- t)
-
-
-;;;; Commands
-
-(defun smv/structured-slf4j-log-refresh ()
-  "Reformat structured logs in the current buffer."
-  (interactive)
-
-  (unless smv/structured-slf4j-log-mode
-    (user-error
-     "`smv/structured-slf4j-log-mode' is not enabled"))
-
-  (unless (smv/slf4j-log--running-ghostel-compile-p)
-    (smv/slf4j-log--format-buffer)))
-
-
-(define-minor-mode smv/structured-slf4j-log-mode
-  "Pretty structured SLF4J JSON logs.
-
-Enable manually with:
-
-    M-x smv/structured-slf4j-log-mode
-
-In ordinary `compilation-mode', output is transformed live.
-
-In a live `ghostel-compile' buffer, the Ghostel renderer owns the
-buffer while the command runs, so transformation happens
-automatically when the command finishes.
-
-The mode never enables itself globally."
-  :init-value nil
-  :lighter " JLog"
-
-  (if smv/structured-slf4j-log-mode
-
+The mode never reformats JSON.  It adds terminal color control sequences to
+the process stream, which Ghostel consumes before displaying the otherwise
+unchanged text.  Non-log output passes through verbatim."
+  :global t
+  :group 'sl4j-format
+  (if sl4j-ghostel-color-mode
       (progn
-        ;; Keep our backend across Ghostel's major-mode transition.
-        (add-hook
-         'after-change-major-mode-hook
-         #'smv/slf4j-log--after-major-mode-change
-         nil
-         t)
+        (add-hook 'compilation-start-hook #'sl4j--maybe-wrap-ghostel-process)
+        (sl4j--wrap-running-ghostel-processes))
+    (remove-hook 'compilation-start-hook #'sl4j--maybe-wrap-ghostel-process)
+    (dolist (process (process-list))
+      (when (or (eq (process-filter process) #'sl4j--ghostel-process-filter)
+                (eq (process-sentinel process) #'sl4j--ghostel-process-sentinel))
+        (sl4j--restore-process-handlers process t)))))
 
-        (smv/slf4j-log--setup-backend))
+;; `custom-functions.el' loads this file for its side effect.  Enable the
+;; narrowly-scoped integration by default; users can toggle it with M-x
+;; `sl4j-ghostel-color-mode'.
+(sl4j-ghostel-color-mode 1)
 
-    ;; Disable.
-    (smv/slf4j-log--remove-backends)
+(provide 'sl4j-format)
 
-    (remove-hook
-     'after-change-major-mode-hook
-     #'smv/slf4j-log--after-major-mode-change
-     t)
-
-    (smv/slf4j-log--restore-buffer)
-
-    (message
-     "Structured SLF4J formatting disabled")))
-
-
-;; `ghostel-compile' switches major mode when it finishes.  Keep the
-;; minor-mode state across that switch.
-(put
- 'smv/structured-slf4j-log-mode
- 'permanent-local
- t)
-
-
-(provide 'structured-slf4j-log-mode)
-
-;;; structured-slf4j-log-mode.el ends here
+;;; sl4j-format.el ends here
