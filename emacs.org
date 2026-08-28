@@ -1685,7 +1685,9 @@ I remove the functions from project-vc as it causes error I don't understand
 
   (setq compilation-buffer-name-function
       (lambda (_mode)
-        (format "*compilation: %s*" compile-command)))
+        (let ((dir (abbreviate-file-name (directory-file-name default-directory)))
+              (cmd (truncate-string-to-width compile-command 40 nil nil t)))
+          (format "*compilation [%s]: %s*" dir cmd))))
 #+end_src
 
 ** Undo tree
