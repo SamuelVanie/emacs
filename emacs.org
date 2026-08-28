@@ -59,8 +59,6 @@ Should be installed :
   ;; prevent emacs from hanging on when long lines are present in the current file
   (global-so-long-mode t)
 
-  (global-visual-line-mode t)
-
   ;; Prevent dired-find-alternative warning message
   (put 'dired-find-alternate-file 'disabled nil)
 #+end_src
