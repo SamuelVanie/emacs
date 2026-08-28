@@ -66,7 +66,8 @@ must return styled text."
                :prefix-style key :style logger)
               (:field thread :prefix " thread="
                :prefix-style key :style thread)
-              (:field message :prefix " " :style message :omit-empty t))
+              (:field message :prefix " message="
+               :prefix-style key :style message :omit-empty t))
      :append-extra-fields t
      :renderer smv/ghostel-output-format--slf4j-renderer))
   "Ordered rules for transforming complete compilation output lines.
