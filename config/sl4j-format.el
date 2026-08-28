@@ -1,9 +1,9 @@
-;;; sl4j-format.el --- Color structured SLF4J logs in Ghostel -*- lexical-binding: t; -*-
+;;; sl4j-format.el --- Format structured SLF4J logs in Ghostel -*- lexical-binding: t; -*-
 
-;; This file intentionally does not rewrite log records.  It inserts ANSI SGR
-;; sequences into the byte stream immediately before Ghostel's VT parser sees
-;; it.  Ghostel consumes those sequences as faces, so the rendered buffer keeps
-;; the original JSON text and field order.
+;; This file transforms matching records immediately before Ghostel's VT parser
+;; sees them.  Pretty mode renders a compact log line; JSON mode keeps the
+;; original text.  Both styles inject ANSI SGR sequences that Ghostel consumes
+;; as faces rather than displaying as text.
 
 (require 'compile)
 (require 'json)
@@ -18,6 +18,15 @@
   "Live syntax coloring for structured SLF4J output."
   :group 'tools)
 
+(defcustom sl4j-ghostel-display-style 'pretty
+  "How live structured logs are rendered in Ghostel compilations.
+
+`pretty' renders a compact line beginning with severity and timestamp.
+`json' preserves the original JSON text and only adds syntax coloring."
+  :type '(choice (const :tag "Compact pretty output" pretty)
+                 (const :tag "Original colored JSON" json))
+  :group 'sl4j-format)
+
 (defconst sl4j--missing (make-symbol "sl4j--missing"))
 
 (defconst sl4j--process-filter-property 'sl4j--original-process-filter)
@@ -30,7 +39,7 @@
   (encode-coding-string (concat "\e[" parameters "m") 'us-ascii t))
 
 (defun sl4j--paint (text start finish)
-  "Surround unibyte TEXT with ANSI SGR START and FINISH sequences."
+  "Surround TEXT with ANSI SGR START and FINISH sequences."
   (concat (sl4j--sgr start) text (sl4j--sgr finish)))
 
 (defun sl4j--dim (text)
@@ -46,6 +55,13 @@
     ("DEBUG" "36")
     ("TRACE" "2")
     (_ "1;36")))
+
+(defun sl4j--style-finish (style)
+  "Return the selective ANSI reset sequence parameters for STYLE."
+  (cond
+   ((string-match-p "\\`[12];" style) "22;39")
+   ((string= style "2") "22")
+   (t "39")))
 
 (defun sl4j--structured-log-object (line)
   "Parse unibyte LINE when it resembles a structured SLF4J log.
@@ -132,10 +148,7 @@ non-nil, call it to produce the styled content instead."
          (styled-content
           (cond
            (content-function (funcall content-function content))
-           (style (sl4j--paint content style
-                               (if (string-match-p "\\`[12];" style)
-                                   "22;39"
-                                 (if (string= style "2") "22" "39"))))
+           (style (sl4j--paint content style (sl4j--style-finish style)))
            (t content))))
     (concat (sl4j--dim "\"") styled-content (sl4j--dim "\""))))
 
@@ -217,15 +230,104 @@ sequences from the result always recovers LINE byte-for-byte."
                   position end))))))
     (apply #'concat (nreverse pieces))))
 
-(defun sl4j--color-record (line)
-  "Return LINE with ANSI syntax coloring when it is an SLF4J JSON record."
+(defun sl4j--json-value (value)
+  "Serialize parsed JSON VALUE compactly."
+  (condition-case nil
+      (json-serialize value :null-object :null :false-object :false)
+    (error (format "%s" value))))
+
+(defun sl4j--single-line-string (value)
+  "Return string VALUE with JSON control characters escaped, without quotes."
+  (let ((serialized (sl4j--json-value value)))
+    (if (and (>= (length serialized) 2)
+             (eq (aref serialized 0) ?\")
+             (eq (aref serialized (1- (length serialized))) ?\"))
+        (substring serialized 1 -1)
+      serialized)))
+
+(defun sl4j--pretty-value (value)
+  "Return parsed JSON VALUE in a compact, unambiguous field representation."
+  (if (stringp value)
+      (let ((escaped (sl4j--single-line-string value)))
+        (if (or (string-empty-p value)
+                (string-match-p "[[:space:]]" value))
+            (concat "\"" escaped "\"")
+          escaped))
+    (sl4j--json-value value)))
+
+(defun sl4j--constant-value-p (value)
+  "Return non-nil when VALUE is a JSON number, boolean, or null."
+  (or (numberp value)
+      (eq value t)
+      (eq value :false)
+      (eq value :null)))
+
+(defun sl4j--pretty-field (key value &optional value-style)
+  "Return a colored KEY=VALUE field.
+
+VALUE-STYLE, when non-nil, overrides the inferred ANSI color."
+  (concat
+   (sl4j--paint (concat key "=") "1;36" "22;39")
+   (let ((style (or value-style
+                    (if (sl4j--constant-value-p value) "33" "32"))))
+     (sl4j--paint (sl4j--pretty-value value)
+                  style (sl4j--style-finish style)))))
+
+(defun sl4j--reserved-field-p (key)
+  "Return non-nil when JSON object KEY has a fixed position in pretty output."
+  (member key '("severity" "level" "time" "timestamp"
+                "logger" "thread" "message")))
+
+(defun sl4j--pretty-record (object)
+  "Render parsed SLF4J JSON OBJECT as one colored compact terminal line."
+  (let* ((severity (or (gethash "severity" object)
+                       (gethash "level" object)))
+         (time (or (gethash "time" object)
+                   (gethash "timestamp" object)))
+         (logger (gethash "logger" object sl4j--missing))
+         (thread (gethash "thread" object sl4j--missing))
+         (message (gethash "message" object sl4j--missing))
+         parts
+         extras)
+    (let ((style (sl4j--severity-style severity)))
+      (push (sl4j--paint (format "[%s]" (upcase severity))
+                         style (sl4j--style-finish style))
+            parts))
+    (push (sl4j--paint (sl4j--pretty-value time) "2" "22") parts)
+    (unless (eq logger sl4j--missing)
+      (push (sl4j--pretty-field "logger" logger "35") parts))
+    (unless (eq thread sl4j--missing)
+      (push (sl4j--pretty-field "thread" thread "34") parts))
+    (unless (eq message sl4j--missing)
+      (let ((text (if (stringp message)
+                      (sl4j--single-line-string message)
+                    (sl4j--pretty-value message))))
+        (unless (string-empty-p text)
+          (push (if (stringp message)
+                    (sl4j--style-message-content text)
+                  text)
+                parts))))
+    ;; Preserve additional structured fields after the standard log content.
+    (maphash (lambda (key value)
+               (unless (sl4j--reserved-field-p key)
+                 (push (sl4j--pretty-field key value) extras)))
+             object)
+    (setq parts (nconc (nreverse parts) (nreverse extras)))
+    ;; Parsed JSON strings are multibyte Emacs strings.  Ghostel's process
+    ;; filter receives binary data, so encode the generated line explicitly.
+    (encode-coding-string (string-join parts " ") 'utf-8-unix t)))
+
+(defun sl4j--render-record (line)
+  "Render structured log LINE according to `sl4j-ghostel-display-style'."
   (let ((object (sl4j--structured-log-object line)))
-    (if object
-        (sl4j--color-json
-         line
-         (or (gethash "severity" object)
-             (gethash "level" object)))
-      line)))
+    (if (not object)
+        line
+      (pcase sl4j-ghostel-display-style
+        ('pretty (sl4j--pretty-record object))
+        (_ (sl4j--color-json
+            line
+            (or (gethash "severity" object)
+                (gethash "level" object))))))))
 
 (defun sl4j--possible-json-prefix-p (text)
   "Return non-nil when unterminated TEXT may begin a JSON record."
@@ -255,7 +357,7 @@ waiting for a newline."
              (separator-end (match-end 0))
              (line (substring data position separator-start))
              (separator (substring data separator-start separator-end)))
-        (push (if at-line-start (sl4j--color-record line) line) pieces)
+        (push (if at-line-start (sl4j--render-record line) line) pieces)
         (push separator pieces)
         (setq at-line-start t
               position separator-end)))
@@ -296,7 +398,7 @@ When COLOR is non-nil, color a final log record that had no line terminator."
         (original (process-get process sl4j--process-filter-property)))
     (process-put process sl4j--process-pending-property "")
     (when (and original (not (string-empty-p pending)))
-      (funcall original process (if color (sl4j--color-record pending) pending)))))
+      (funcall original process (if color (sl4j--render-record pending) pending)))))
 
 (defun sl4j--restore-process-handlers (process &optional flush)
   "Restore Ghostel handlers previously wrapped on PROCESS.
@@ -364,12 +466,21 @@ If FLUSH is non-nil, forward pending output without adding colors first."
       (sl4j--maybe-wrap-ghostel-process process))))
 
 ;;;###autoload
-(define-minor-mode sl4j-ghostel-color-mode
-  "Color structured SLF4J JSON records in live Ghostel compilations.
+(defun sl4j-ghostel-toggle-display-style ()
+  "Toggle future log records between compact and colored-JSON display."
+  (interactive)
+  (setq sl4j-ghostel-display-style
+        (if (eq sl4j-ghostel-display-style 'pretty) 'json 'pretty))
+  (message "SLF4J Ghostel display style: %s (applies to new output)"
+           sl4j-ghostel-display-style))
 
-The mode never reformats JSON.  It adds terminal color control sequences to
-the process stream, which Ghostel consumes before displaying the otherwise
-unchanged text.  Non-log output passes through verbatim."
+;;;###autoload
+(define-minor-mode sl4j-ghostel-color-mode
+  "Render structured SLF4J JSON records in live Ghostel compilations.
+
+The rendering is controlled by `sl4j-ghostel-display-style'.  Terminal color
+control sequences are consumed by Ghostel rather than displayed.  Non-log
+output passes through verbatim."
   :global t
   :group 'sl4j-format
   (if sl4j-ghostel-color-mode
