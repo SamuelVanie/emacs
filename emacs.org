@@ -186,24 +186,12 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
 * Tree-sitter
 
 #+begin_src emacs-lisp
-  (use-package treesit-auto
-    :straight t
-    :custom
-    (treesit-auto-install 'prompt)
-    :config
-    (treesit-auto-add-to-auto-mode-alist 'all))
+  (setq treesit-enabled-modes t)
+
+  ;; folding in emacs
+  (add-hook 'prog-mode-hook #'hs-minor-mode)
+  (setq hs-display-lines-hidden t)
 #+end_src
-
-
-fold text using treesitter syntax tree
-
-#+begin_src emacs-lisp
-  (use-package treesit-fold
-    :straight (treesit-fold :type git :host github :repo "emacs-tree-sitter/treesit-fold")
-    :config
-    (global-treesit-fold-mode))
-#+end_src
-
 
 * Shell
 
@@ -337,6 +325,9 @@ This section configures basic UI settings that remove unneeded elements to make 
   (column-number-mode)
   (global-display-line-numbers-mode t) ;; print line numbers for files
   (toggle-frame-maximized)
+
+  (setq mode-line-collapse-minor-modes t)
+  (add-to-list 'electric-indent-actions 'yank)
 
   ;; some modes doesn't have to start with lines enable
   (dolist (mode '(
@@ -610,6 +601,8 @@ Trying the modal editor meow
      '("z" . meow-pop-selection)
      '("<" . previous-buffer)
      '(">" . next-buffer)
+     '("\\" . superword-mode)
+     '("|" . subword-mode)
      '("<escape>" . ignore)))
 
   (defun meow--tag-find-bounds ()
@@ -792,6 +785,11 @@ There's no unified bindings that permits to manage windows, so here's mine
      "$" #'delete-window
      "+"  #'balance-windows
      "m"  #'maximize-window
+     "r <right>" #'window-layout-rotate-clockwise
+     "r <left>" #'window-layout-rotate-anticlockwise
+     "t" #'window-layout-transpose
+     "o <right>" #'rotate-windows
+     "o <left>" #'rotate-windows-back
      "s n"  #'windmove-swap-states-left
      "s i"  #'windmove-swap-states-right
      "s e"  #'windmove-swap-states-down
@@ -2528,6 +2526,9 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
     (remove-hook 'server-switch-hook 'magit-commit-diff)
     :custom
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
+  ;; some configuration for the built-in git client
+  (setq vc-async-checkin t)
 #+end_src
 
 
