@@ -192,6 +192,13 @@ I don't know why but quelpa doesn't get install automatically (maybe a problem o
 * Tree-sitter
 
 #+begin_src emacs-lisp
+  (use-package treesit-auto
+    :straight t
+    :custom
+    (treesit-auto-install 'prompt)
+    :config
+    (treesit-auto-add-to-auto-mode-alist 'all))
+  
   (setq treesit-enabled-modes t)
 
   ;; folding in emacs
