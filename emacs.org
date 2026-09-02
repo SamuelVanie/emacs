@@ -60,7 +60,11 @@ Should be installed :
   (global-so-long-mode t)
 
   (global-visual-line-mode t)
-  
+
+  ;; set dashes as part of the symbol
+  (add-hook 'text-mode-hook (lambda () (modify-syntax-entry ?- "w")))
+  (add-hook 'prog-mode-hook (lambda () (modify-syntax-entry ?- "w")))
+
   ;; Prevent dired-find-alternative warning message
   (put 'dired-find-alternate-file 'disabled nil)
 #+end_src
