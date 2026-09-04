@@ -61,9 +61,23 @@ Should be installed :
 
   (global-visual-line-mode t)
 
+  (defvar-local smv/superword--saved-syntax-table nil)
+
+  (defun smv/superword-dash ()
+    "treat `-' as a word character when `superword-mode' is active"
+    (if superword-mode
+        (unless smv/superword--saved-syntax-table
+          (setq smv/superword--saved-syntax-table (syntax-table))
+          (let ((table (copy-syntax-table (syntax-table))))
+            (modify-syntax-entry ?- "w" table)
+            (set-syntax-table table)))
+      (when smv/superword--saved-syntax-table
+        (set-syntax-table smv/superword--saved-syntax-table)
+        (setq smv/superword--saved-syntax-table nil))))
+
   ;; set dashes as part of the symbol
-  (add-hook 'text-mode-hook (lambda () (modify-syntax-entry ?- "w")))
-  (add-hook 'prog-mode-hook (lambda () (modify-syntax-entry ?- "w")))
+  (add-hook 'text-mode-hook #'smv/superword-dash)
+  (add-hook 'prog-mode-hook #'smv/superword-dash)
 
   ;; Prevent dired-find-alternative warning message
   (put 'dired-find-alternate-file 'disabled nil)
@@ -1855,7 +1869,7 @@ over stdio is simpler, just use (lsp-stdio-connection "name_of_server") or (lsp-
      "s" #'lsp-ui-peek-find-workspace-symbol
      "e" #'lsp-ui-flycheck-list
      "r" #'lsp-ui-peek-find-references
-     "i" #'lsp-ui-peek-find-implementations))
+     "i" #'lsp-ui-peek-find-implementation))
 
   (use-package lsp-ui
     :straight t
