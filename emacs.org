@@ -2192,6 +2192,27 @@ Prettier automatically formats the code for you. I hate when it's in other modes
     (setq lsp-java-format-enabled t)
     (setq lsp-java-format-comments-enabled t)
     :config
+    (defun smv/lsp-java-workspace-dir ()
+      (let* ((project (project-current))
+             (root (if project
+                       (project-root project)
+                     default-directory))
+             (name (file-name-nondirectory
+                    (directory-file-name root)))
+             (hash (substring (secure-hash 'sha1
+                                           (expand-file-name root))
+                              0 8)))
+        (expand-file-name
+         (format "%s-%s" name hash)
+         "~/.emacs.d/workspace/")))
+
+    (defun smv/java-lsp-setup ()
+      (setq-local lsp-java-workspace-dir
+                  (smv/lsp-java-workspace-dir))
+      (lsp-deferred))
+
+    (add-hook 'java-mode-hook #'smv/java-lsp-setup)
+    
     (require 'dap-java))
 
   ;; activate editorconfig handling in emacs
