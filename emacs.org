@@ -59,7 +59,23 @@ Should be installed :
   ;; prevent emacs from hanging on when long lines are present in the current file
   (global-so-long-mode t)
 
-  (global-visual-line-mode t)
+  ;; do not forcibly shows the current line by wrapping to the next
+  ;; just truncate it, hide it 
+  (setq-default truncate-lines t)
+
+  ;; move only by one when scrolling horizontally, prevent emacs from jumping
+  ;; further horizontally obliging you to look for the cursor
+  (setq hscroll-margin 2
+        hscroll-step 1)
+
+  ;; prioritize input to fontification
+  ;; meaning the text that you're typing will get showned then fontification could happen
+  ;; later
+  (setq redisplay-skip-fontification-on-input t)
+
+  ;; don't try to fontify the text while scrolling, could just scroll
+  ;; then when the user is at the location then fontify
+  (setq fast-but-imprecise-scrolling t)
 
   (with-eval-after-load 'superword-mode
     (defvar-local smv/superword--saved-syntax-table nil)
@@ -1304,7 +1320,10 @@ Reach more easily some information directly in your completion system.
     ;; Configure other variables and modes in the :config section,
     ;; after lazily loading the package.
     :config
-
+    ;; permits to scroll through the windows while searching
+    ;; normally it would cancel the search
+    (setq isearch-allow-scroll 'unlimited)
+    
     ;; For some commands and buffer sources it is useful to configure the
     ;; :preview-key on a per-command basis using the `consult-customize' macro.
     (consult-customize
