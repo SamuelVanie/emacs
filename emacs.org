@@ -1695,6 +1695,8 @@ I remove the functions from project-vc as it causes error I don't understand
     :bind ("C-c p" . projectile-command-map)
     :straight t
     :config
+    ;; permit to have compile buffer with which I can interact
+    (setq projectile-compile-use-comint-mode t)
     (projectile-mode))
 #+end_src
 
