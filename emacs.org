@@ -59,15 +59,6 @@ Should be installed :
   ;; prevent emacs from hanging on when long lines are present in the current file
   (global-so-long-mode t)
 
-  ;; do not forcibly shows the current line by wrapping to the next
-  ;; just truncate it, hide it 
-  (setq-default truncate-lines t)
-
-  ;; move only by one when scrolling horizontally, prevent emacs from jumping
-  ;; further horizontally obliging you to look for the cursor
-  (setq hscroll-margin 2
-        hscroll-step 1)
-
   ;; prioritize input to fontification
   ;; meaning the text that you're typing will get showned then fontification could happen
   ;; later
@@ -1434,6 +1425,7 @@ This section contains the basic configuration for org-mode plus the configuratio
   (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
     :straight t
     :config
+    (setq org-startup-truncated nil)
     (setq org-agenda-skip-unavailable-files t)
     (setq org-yank-image-save-method "/tmp")
 
@@ -1533,9 +1525,7 @@ Permits to scroll horizontally, this helps in the rendering of tables in org mod
   (use-package phscroll
     :straight (phscroll :type git :host github :repo "misohena/phscroll" :files ("*.el"))
     :after org
-    :commands (org-phscroll-mode)
-    :config
-    (setq org-startup-truncated nil))
+    :commands (org-phscroll-mode))
 #+end_src
 
 ** Org modern
