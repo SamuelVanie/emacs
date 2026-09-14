@@ -68,6 +68,12 @@ Should be installed :
   ;; then when the user is at the location then fontify
   (setq fast-but-imprecise-scrolling t)
 
+  ;; remove the symbols that shows line wrapping even if global-visual-line-mode
+  ;; is not activated
+  (setf (alist-get 'continuation
+                   (default-value 'fringe-indicator-alist))
+        '(nil nil))
+
   (with-eval-after-load 'superword-mode
     (defvar-local smv/superword--saved-syntax-table nil)
 
@@ -1425,7 +1431,7 @@ This section contains the basic configuration for org-mode plus the configuratio
   (use-package org ;; org-mode, permit to take notes and other interesting stuff with a specific file extension
     :straight t
     :config
-    (setq org-startup-truncated nil)
+    (setq-default org-startup-truncated nil)
     (setq org-agenda-skip-unavailable-files t)
     (setq org-yank-image-save-method "/tmp")
 
