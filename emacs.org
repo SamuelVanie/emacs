@@ -584,7 +584,7 @@ Trying the modal editor meow
      '("7" . meow-expand-7)
      '("8" . meow-expand-8)
      '("9" . meow-expand-9)
-     '("-" . negative-argument)
+     '("-" . universal-argument)
      '(";" . meow-reverse)
      '("," . meow-inner-of-thing)
      '("." . meow-bounds-of-thing)
