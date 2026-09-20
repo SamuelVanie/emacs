@@ -18,7 +18,7 @@
       in
         {
           devShell = pkgs.mkShell {
-            buildInputs = with pkgs; [ python314 git python314Packages.python-lsp-server python314Packages.debugpy python314Packages.uv ];
+            buildInputs = with pkgs; [ python314 git basedpyright python314Packages.ruff python314Packages.debugpy python314Packages.uv neo4j ];
 
             shellHook = ''
               if [ ! -d ".venv/" ]; then

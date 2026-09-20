@@ -2676,3 +2676,13 @@ This permits to add interaction capabilities to my llm. LLMs will be able to use
   (add-hook 'conf-mode-hook #'my-flyspell-enable-appropriate-mode)
   (add-hook 'text-mode-hook #'my-flyspell-enable-appropriate-mode)
 #+end_src
+
+
+* Drawing in emacs
+
+#+begin_src emacs-lisp
+  (use-package uniline
+    :straight t
+    :config
+    (setq uniline-key-insert '("<f13>")))
+#+end_src
