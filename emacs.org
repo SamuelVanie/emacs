@@ -97,6 +97,18 @@ Should be installed :
   (put 'dired-find-alternate-file 'disabled nil)
 #+end_src
 
+
+* Server
+
+Starts the emacs server so that other programs could open files directly into emacs
+
+#+begin_src emacs-lisp
+  (require 'server)
+
+  (unless (server-running-p)
+    (server-start))
+#+end_src
+
 * Scrolling
 
 ** Scrolling other window
