@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: /confirm-understanding
+# key: /confirm-understanding
+# --
+Yes I confirm the shared understanding. I want you to write some a summary for this with the details about each parts of our discussion so that someone else would not ask the same questions and not implement something we didn't planned. All the details of the shared understanding the rationale should be in there

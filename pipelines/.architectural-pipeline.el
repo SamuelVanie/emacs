@@ -1,65 +1,33 @@
 (gptel-runner-register-agent
  'plan :preset 'gptel-plan :workspace-mode 'read)
 
-(gptel-runner-register-agent
- 'dev :preset 'gptel-agent :workspace-mode 'write)
-
-(gptel-runner-register-agent
- 'review :preset 'mayuri-reviewer :workspace-mode 'read
- :schema gptel-runner-review-schema :parser #'gptel-runner-parse-review
- :validator #'gptel-runner-valid-review-p)
-
-(gptel-runner-register-agent
- 'summarizer :preset 'mayuri-task-summarizer :workspace-mode 'read)
-
 (defun myproject/plan-prompt (run _node)
   "Build a planning prompt for RUN."
   (let ((goal (gptel-runner-run-goal run))
         (workspace (gptel-runner-run-workspace run))
-        (iteration (gptel-runner-iteration run 'review-cycle))
-        (review (gptel-runner-get run 'review)))
+        (history (gptel-runner-get run 'history))
+        )
     (if (null review)
         (format
-         (concat "You are the techlead for this project.\n"
-                 "Goal (ticket):\n%s\n\nWorkspace: %s\nPlan iteration: %d\n"
-                 "No review feedback yet. Make sure that the project's convention are always followed. Plan the implementation steps required to achieve this goal. "
-                 "Divide the task into actionable steps suitable for the developer. "
-                 "Consider dependencies and the overall approach.")
-         goal workspace iteration)
+         (concat "You are an architect, you have to find the most suitable solution to implement the feature. You should not repeat any solution that already exists"
+                 "Goal (ticket):\n%s\n\nWorkspace: %s\nPropositions list: %d\n"
+                 "No proposition yet. Make sure that the project's convention are always followed. Propose a clear solution permitting to achieve this goal. ")
+         goal workspace history)
       (format
-       (concat "You are the techlead for this project.\n"
-               "Goal (ticket):\n%s\n\nWorkspace: %s\nPlan iteration: %d\n"
-               "Reviewer's feedback: %S\n"
-               "Update the plan as necessary. Make sure that the project's convention are always followed. Plan revised implementation or corrective steps to address all reviewer comments, maintaining a clear actionable breakdown for the developer")
-       goal workspace iteration review))))
+       (concat "You are an architect, you have to find the most suitable solution to implement the feature. You should not repeat any solution that already exists\n"
+               "Goal (ticket):\n%s\n\nWorkspace: %s\nPropositions list: %d\n"
+               "Add your solution to proposition list but don't copy the ones that already exists. You should ask to yourself, is there something better than those propositions ? If there something that could be done better in this ? Make sure that the project's convention are always followed.")
+       goal workspace history))))
 
 (defun myproject/implementation-prompt (run _node)
   "Build an implementation prompt for RUN."
   (format
-   (concat "Goal:\n%s\n\nWorkspace: %s\nRevision iteration: %d\n"
+   (concat "Goal:\n%s\n\nWorkspace: %s\n"
            "Implementation plan: %S\n"
            "Follow the plan provided. Use TDD whenever possible. Use context7 when the tool is available (flowable, nestjs, java packages, etc). Inspect actual files, make the planned changes, run tests, and return a concise report. Don't forget to commit at appropriate points of time")
    (gptel-runner-run-goal run) (gptel-runner-run-workspace run)
    (gptel-runner-iteration run 'review-cycle)
    (gptel-runner-get run 'plan)))
-
-(defun myproject/review-prompt (run _node)
-  "Build an independent review prompt for RUN."
-  (format
-   (concat "Review the current project's workspace for this goal:\n%s\n\nWorkspace: %s\n"
-           "Implementation report: %S\n"
-           "Return only the required review JSON. Make sure while you're checking, also, that the project's conventions are also respected. Do not modify files.")
-   (gptel-runner-run-goal run) (gptel-runner-run-workspace run)
-   (gptel-runner-get run 'implementation)))
-
-(defun myproject/summarizer-prompt (run _node)
-  "Build an independent review prompt for RUN."
-  (format
-   (concat "Here is the full list of the work done by the Techlead, the developer and the reviewer in the current project's workspace for this goal:\n%s\n\nWorkspace: %s\n\n"
-           "History of what was done: %S\n\n"
-           "Write the summary document telling us what was done with the full details of the decisions and why there were made")
-   (gptel-runner-run-goal run) (gptel-runner-run-workspace run)
-   (gptel-runner-get run 'history)))
 
 (gptel-runner-defworkflow plan-implement-review
     (:max-requests 40 :max-calls 26 :max-concurrency 2 :max-duration 5400)
