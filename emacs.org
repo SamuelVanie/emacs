@@ -2352,6 +2352,10 @@ If you've ever got behind a proxy for accessing copilot :
     :demand t
     :config
     (setq copilot-nes-idle-delay 0.7)
+    (general-define-key
+     :keymaps '(meow-normal-state-keymap meow-motion-state-keymap)
+     :prefix "!"
+     "-" #'copilot-mode)
     :bind
     (:map copilot-completion-map
           ("<right>" . copilot-accept-completion)
