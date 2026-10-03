@@ -2153,21 +2153,7 @@ The useful web mode for programming.
 
 #+end_src
 
-**** JSX support
-
-#+begin_src emacs-lisp
-  (use-package rjsx-mode
-    :straight t
-    :defer t
-    :after prettier
-    :mode (("\\.js\\'" . rjsx-mode)
-           ("\\.ts\\'" . rjsx-mode))
-    :hook
-    (rjsx-mode . emmet-mode)
-    (rjsx-mode . prettier-mode))
-#+end_src
-
-**** prettier
+*** prettier
 
 Prettier automatically formats the code for you. I hate when it's in other modes but in web mode it's quite useful.
 
