@@ -1330,6 +1330,10 @@ Reach more easily some information directly in your completion system.
 
     ;; Configure other variables and modes in the :config section,
     ;; after lazily loading the package.
+
+    :custom
+    (completion-in-region-function #'consult-completion-in-region)
+    
     :config
     ;; permits to scroll through the windows while searching
     ;; normally it would cancel the search
