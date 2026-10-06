@@ -95,6 +95,9 @@ Should be installed :
 
   ;; Prevent dired-find-alternative warning message
   (put 'dired-find-alternate-file 'disabled nil)
+
+  ;; don't save the bookmarks automatically
+  (setq bookmark-save-flag nil)
 #+end_src
 
 
