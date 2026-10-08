@@ -74,6 +74,8 @@ Should be installed :
                    (default-value 'fringe-indicator-alist))
         '(nil nil))
 
+  (modify-syntax-entry ?= "." (standard-syntax-table))
+
   (with-eval-after-load 'superword-mode
     (defvar-local smv/superword--saved-syntax-table nil)
 
