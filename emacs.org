@@ -6,7 +6,6 @@ Should be installed :
 
 - coreutils
 - cmake
-- multimarkdown
 - aspell
 - pandoc
 - install the different nerd fonts FantasqueSansMono, Iosevka, JetBrainsMono
@@ -2027,23 +2026,14 @@ This is a better flymake, it has many features. That permits to better see the e
 
 **** markdown-mode
 
-For pandoc live conversion to work, you need to install pandoc and the mermaid-filter plugin for pandoc, which will convert the mermaid documents from the file.
-
 #+begin_src emacs-lisp
-  (use-package markdown-mode
-    :straight t
-    :mode ("README\\.md\\'" . gfm-mode))
-
-  (use-package markdown-xwidget
-    :after markdown-mode
-    :straight (markdown-xwidget
+  (use-package markdown-modern
+    :straight (markdown-modern
                :type git
                :host github
-               :repo "cfclrk/markdown-xwidget"
-               :files (:defaults "resources"))
-    :config
-    (setq markdown-xwidget-command "multimarkdown")
-    (setq markdown-xwidget-github-theme "light-high-contrast"))
+               :repo "rjprins/markdown-modern"
+               :files ("lisp/*"))
+    :mode ("\\.md\\'" . markdown-modern-mode))
 #+end_src
 
 **** yasnippet
