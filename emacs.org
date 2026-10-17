@@ -1164,6 +1164,9 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
     (setq solarized-use-more-italic t))
   (use-package pierre-themes
     :straight (:host github :repo "shaneikennedy/pierre-themes.el" :files ("*.el")))
+  (use-package foxglove-themes
+    :straight (:host gitlab :repo "vegasharmon/foxglove-themes" :files ("*.el")))
+
   #+end_src
 
 ** Adding icons to emacs
