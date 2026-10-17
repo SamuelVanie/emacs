@@ -1153,9 +1153,7 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
     :config
     (kaolin-treemacs-theme))
   (use-package kusanagi-theme
-    :straight (kusanagi-themes :type git :host github :repo "LionyxML/kusanagi-theme")
-    :config
-    (load-theme 'kusanagi t))
+    :straight (kusanagi-themes :type git :host github :repo "LionyxML/kusanagi-theme"))
   (use-package rebecca-theme
     :straight t)
   (use-package solarized-theme
@@ -1165,7 +1163,9 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
   (use-package pierre-themes
     :straight (:host github :repo "shaneikennedy/pierre-themes.el" :files ("*.el")))
   (use-package foxglove-themes
-    :straight (:host gitlab :repo "vegasharmon/foxglove-themes" :files ("*.el")))
+    :straight (:host gitlab :repo "vegasharmon/foxglove-themes" :files ("*.el"))
+    :config
+    (load-theme 'foxglove t))
 
   #+end_src
 
