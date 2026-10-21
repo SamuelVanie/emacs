@@ -1105,7 +1105,8 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
    ^^^^^^^^-------------------------------------------------------------------------------------------
    _>_: next like this        _i_: skto next		 _+_: edit lines	   _u_: unmark previous
    _<_: prev like this        _n_: skto prev	         _=_: mark all		   _e_: unmark next
-   _g_: mark regexp in region _q_: quit		  
+   _g_: mark regexp in region _q_: quit	  
+   _)_: pop mark
    "
       ("+" mc/edit-lines)
       (">" mc/mark-next-like-this)
@@ -1116,6 +1117,7 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
       ("u" mc/unmark-previous-like-this)
       ("e" mc/unmark-next-like-this)
       ("g" mc/mark-all-in-region-regexp)
+      (")" #'mc/pop-mark)
       ("q" nil))
     (define-key mc/keymap (kbd "<return>") nil)
     (general-define-key
@@ -1130,6 +1132,7 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
                     hydra-multiple-cursors/mc/mark-previous-like-this
                     hydra-multiple-cursors/mc/unmark-previous-like-this
                     hydra-multiple-cursors/mc/mark-all-like-this
+                    hydra-multiple-cursors/mc/pop-mark
                     hydra-multiple-cursors/mc/skip-to-next-like-this
                     hydra-multiple-cursors/mc/skip-to-previous-like-this))))
 #+end_src
