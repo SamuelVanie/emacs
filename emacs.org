@@ -1168,7 +1168,7 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
   (use-package foxglove-themes
     :straight (:host gitlab :repo "vegasharmon/foxglove-themes" :files ("*.el"))
     :config
-    (load-theme 'foxglove t))
+    (load-theme 'foxglove-dark t))
 
   #+end_src
 
