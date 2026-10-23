@@ -5,7 +5,7 @@
 
 (gptel-runner-register-agent
  'decision-report
- :preset 'gptel-plan
+ :preset 'gptel-agent
  :workspace-mode 'write)
 
 (defun myproject/decision-proposals (run)
