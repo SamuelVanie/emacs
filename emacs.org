@@ -2037,7 +2037,8 @@ This is a better flymake, it has many features. That permits to better see the e
     :straight (markdown-modern
                :type git
                :host github
-               :repo "rjprins/markdown-modern"
+               :repo "SamuelVanie/markdown-modern"
+               :branch "mermaid-rendering"
                :files ("lisp/*"))
     :mode ("\\.md\\'" . markdown-modern-mode))
 #+end_src
