@@ -2038,7 +2038,6 @@ This is a better flymake, it has many features. That permits to better see the e
                :type git
                :host github
                :repo "SamuelVanie/markdown-modern"
-               :branch "mermaid-rendering"
                :files ("lisp/*"))
     :mode ("\\.md\\'" . markdown-modern-mode))
 #+end_src

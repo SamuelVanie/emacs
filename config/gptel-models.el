@@ -68,7 +68,53 @@
   :key (with-temp-buffer (insert-file-contents "~/.org/.ant_key") (string-trim (buffer-string)))
   :stream t)
 
-(gptel-make-gh-copilot "Copilot")
+(defvar my/gptel-copilot-model-ids
+  '(claude-sonnet-5
+    gpt-6.1-terra
+    claude-haiku-5.5
+    claude-sonnet-5.5
+    gemini-3.8-flash
+    gpt-5.3-codex
+    gpt-6-luna
+    gpt-6-sol
+    kimi-k3
+    mai-code-1.1-flash)
+  "Copilot model ids to expose in gptel.")
+
+(defvar my/gptel-copilot-reasoning-levels
+  '("low" "medium" "high" "xhigh" "max")
+  "Valid Copilot `reasoning_effort' values.")
+
+(defun my/gptel-copilot-models ()
+  "Return the model specs for the Copilot backend."
+  (mapcar (lambda (id)
+            (list id
+                  :description (format "Copilot model %s" id)
+                  :capabilities '(media tool-use json url responses-api)
+                  :mime-types '("image/jpeg" "image/png" "image/gif" "image/webp")))
+          my/gptel-copilot-model-ids))
+
+;; Single backend; model ids are sent unmodified.
+(defvar my/gptel-copilot-backend
+  (gptel-make-gh-copilot "Copilot"
+    :models (my/gptel-copilot-models))
+  "The Copilot gptel backend.")
+
+(defun my/gptel-copilot-set-reasoning (level)
+  "Set `reasoning_effort' LEVEL in the Copilot backend's request params.
+With an empty LEVEL, remove the parameter.  The model name is never
+changed; the level is only sent via `request-params'."
+  (interactive
+   (list (completing-read "Reasoning effort (empty for default): "
+                          my/gptel-copilot-reasoning-levels nil nil)))
+  (when (and (not (string-empty-p level))
+             (not (member level my/gptel-copilot-reasoning-levels)))
+    (user-error "Invalid reasoning level: %s" level))
+  (setf (gptel-backend-request-params my/gptel-copilot-backend)
+        (unless (string-empty-p level)
+          (list :reasoning_effort level)))
+  (message "Copilot reasoning effort: %s"
+           (if (string-empty-p level) "default" level)))
 
 ;; ;; local models
 (gptel-make-openai "lmstudio"
