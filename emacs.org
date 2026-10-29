@@ -26,6 +26,9 @@ Should be installed :
 
   (setq-default indent-tabs-mode nil)
 
+  ;; even on small windows the text should be wrapping
+  (setq truncate-partial-width-windows nil)
+
   (setq warning-minimum-level :error)
   (global-hl-line-mode 1)
 
@@ -1164,11 +1167,11 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
     :config
     (setq solarized-use-more-italic t))
   (use-package pierre-themes
-    :straight (:host github :repo "shaneikennedy/pierre-themes.el" :files ("*.el")))
-  (use-package foxglove-themes
-    :straight (:host gitlab :repo "vegasharmon/foxglove-themes" :files ("*.el"))
+    :straight (:host github :repo "shaneikennedy/pierre-themes.el" :files ("*.el"))
     :config
-    (load-theme 'foxglove-dark t))
+    (load-theme 'pierre-dark t))
+  (use-package foxglove-themes
+    :straight (:host gitlab :repo "vegasharmon/foxglove-themes" :files ("*.el")))
 
   #+end_src
 
