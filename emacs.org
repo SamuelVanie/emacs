@@ -1087,6 +1087,7 @@ style the tab bar as in vim
      "l" #'tab-bar-new-tab
      "n" #'tab-bar-switch-to-prev-tab
      "i" #'tab-bar-switch-to-next-tab
+     "r" #'tab-bar-rename-tab
      "u" #'tab-bar-close-tab))
 #+end_src
 
