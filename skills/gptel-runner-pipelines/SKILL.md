@@ -24,6 +24,30 @@ such as `overall_description_must_read.md` describe intent, including features
 that may not exist. Do not invent gate, transform, dialogue, dependency, or merge
 nodes. Use public runner APIs, keeping private gptel calls out of workflows.
 
+## Discover presets before assigning agents
+
+Read [preset discovery and selection](references/presets.md) before choosing
+presets. Query the user's running Emacs through an available Lisp evaluation tool
+or `emacsclient`: enumerate loaded preset names/descriptions, then inspect only
+the candidates relevant to the workflow. Do not infer availability from names in
+the starter or from files on disk. An `emacs -Q` process does not contain the
+user's configured preset registry.
+
+Inspect each candidate's system instructions, inherited settings, tools,
+model/backend, and output contract. Follow `:parents`; omitted fields may inherit
+defaults, and dynamic settings need inspection before they can be treated as
+resolved. Prefer existing suitable presets. Distinguish runner agent names,
+gptel preset symbols, and gptel-agent file/subagent names; they are not one registry.
+The reference covers loading missing definitions and registering a chosen preset.
+
+Record a small node → runner agent → preset mapping with role, capabilities,
+required dependencies, and availability (loaded, defined but unloaded, or missing).
+Resolve role/output conflicts before wiring the pipeline: a preset demanding
+prose cannot reliably serve a node requiring strict JSON just because its name
+contains "reviewer". Adapt the parser or define a compatible workflow-specific
+preset within scope, preserving the user's existing preset. If required capability
+is still missing, explain the specific gap rather than inventing a preset name.
+
 ## Establish a shared brief
 
 Extract these from the user's request and existing project decisions. Ask only
@@ -161,8 +185,9 @@ and artifact verification.
 
 For a plan → implement/review loop, adapt
 [the executable starter](assets/intent-preserving-pipeline.el). It defines a
-workflow without launching live agents. Replace its preset names with configured
-ones, tailor the shared brief and output contracts, and remove unnecessary stages.
+workflow without launching live agents. Replace its placeholder preset values
+with discovered compatible presets (the runner agent names can stay unchanged),
+tailor the shared brief and output contracts, and remove unnecessary stages.
 The starter delegates bounded planning choices; add a plan gate if approval is
 part of the requested workflow. It does not register new tools or configure models.
 
@@ -176,6 +201,9 @@ versus shared context, and concurrent/serialized writers as appropriate. Use the
 starter's
 [smoke checks](scripts/smoke-test.el) as a concrete network-free example; adapt
 assertions to the generated workflow rather than only checking its syntax.
+Fake-driver success does not prove preset/tool/model availability. Verify the
+selected presets and dependencies separately in the target Emacs session before
+a live run; do not send model requests just to enumerate presets.
 
 Deliver the workflow file, preset/tool prerequisites, a start form with appropriate
 budgets, a short explanation of context routes and decision ownership, and what was

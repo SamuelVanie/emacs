@@ -41,7 +41,9 @@ human gate is an agent step with `:pause-after t`.
 
 Agent registration also supports `:context`, `:parser`, `:validator`, `:schema`,
 `:retry-policy`, and `:metadata`. Schema is registered on the agent; do not assume
-an unrecognized step keyword takes effect. Presets and tools must actually exist.
+an unrecognized step keyword takes effect. Presets and tools must actually exist;
+use [preset discovery](presets.md) before selecting them. Registration stores the
+preset reference but does not prove it exists or that its dependencies resolve.
 
 ## Function signatures
 

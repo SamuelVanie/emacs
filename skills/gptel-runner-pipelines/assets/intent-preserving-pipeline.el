@@ -2,7 +2,12 @@
 
 ;;; Commentary:
 ;; Adapt this starter; loading it registers definitions but runs no agents.
-;; Configure the presets grp-planner, grp-implementer, and grp-reviewer first.
+;; Discover loaded presets first (see ../references/presets.md). The :preset
+;; values grp-planner, grp-implementer, and grp-reviewer below are placeholders:
+;; replace them with compatible loaded presets, or define suitable presets.
+;; Runner agent names can remain grp-*; they need not match the preset names.
+;; Check output contracts: the review node expects JSON, so a preset requiring
+;; a conflicting prose format must be adapted or paired with a different parser.
 ;; Planner/reviewer need inspection tools; implementer needs the intended write
 ;; and verification tools.  Workspace modes are not tool security boundaries.
 ;;
