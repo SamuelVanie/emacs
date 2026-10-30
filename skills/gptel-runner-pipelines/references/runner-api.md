@@ -211,29 +211,10 @@ unfinished gated node.
 
 ## Run control and durable context
 
-`gptel-runner-start` accepts goal, workspace, driver, budgets, `:context`,
-`:persist`, callback, `:decision-memory`, `:allow-writes`, and
-`:allow-unconfirmed-tools`. It starts immediately; do not seed first-call context
-by calling `gptel-runner-put` after start. Supply that context at start instead.
-
-`gptel-runner-retry` preserves the goal and completed prerequisites; `:from-node`
-reruns that node and downstream dependent work. Retry feedback is consumed by the
-selected/next call. `gptel-runner-resume-run` also delivers feedback only to the
-first unfinished prompt. Record enduring corrections before using these APIs.
-
-`gptel-runner-continue` uses a human observation as the new goal. After success,
-it archives/clears workflow-owned results and runs the whole workflow again.
-After failure it resumes at a checkpoint, retaining completed predecessors:
-if the changed goal invalidates an earlier plan, prefer a new run with the
-corrected brief, or arrange an explicit replan before releasing dependent work.
-Do not call continue expecting it to redo already completed planning automatically.
-`gptel-runner-extend` adds run budget; `gptel-runner-extend-repeat` adds loop
-iterations. Do not silently call them to evade a configured limit.
-
-Persistence saves goal, workspace, blackboard, node/loop states, and budgets;
-it does not restore historical transcripts or events. Use readable Lisp data and
-named context functions, not buffers, processes, or captured live objects. Re-read
-artifact files after restoring: snapshots do not freeze external workspace content.
-Reload the same workspace overrides with the workflow definition; restore validates
-their directories and inherited context files again. A snapshot does not create
-or copy the referenced repositories/worktrees.
+Use [running and managing pipelines](operations.md) for exact lifecycle signatures,
+interactive commands, operation selection, examples, and snapshot limitations.
+Supply first-call context to `gptel-runner-start`; it dispatches immediately, so
+seeding the blackboard afterward is too late. Preserve downstream inputs through
+`:save-as` or durable artifacts, and use readable Lisp values/named context
+functions for persistence. Recovery does not freeze files, copy repositories, or
+automatically refresh a completed plan after the goal changes.

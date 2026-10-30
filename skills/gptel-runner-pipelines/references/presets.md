@@ -155,3 +155,7 @@ presets, register runner agents, then define/start the workflow. Durable resume
 needs those definitions again in the new Emacs session. Fake-driver tests validate
 routing and prompts; they do not prove preset existence, tool resolution, backend
 credentials, or provider availability. Do not use paid live requests for discovery.
+
+Continue with [operational preflight and start](operations.md#load-and-preflight)
+once the mappings are verified. Loading definitions and starting provider work
+are separate actions; inspect a definition file for top-level start forms first.

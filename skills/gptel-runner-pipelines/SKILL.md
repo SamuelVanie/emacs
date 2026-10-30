@@ -1,6 +1,6 @@
 ---
 name: gptel-runner-pipelines
-description: Create, revise, and debug gptel-runner pipelines in Emacs Lisp, including sequences, parallel branches, per-node workspaces, bounded review loops, context routing, and decision memory. Use when designing workflows of gptel agents or improving handoffs so every node preserves the user's goal, intent, constraints, and accepted decisions without excessive context.
+description: Create, run, monitor, recover, and manage gptel-runner pipelines in Emacs Lisp. Use for workflows of gptel agents, explicit context and decision handoffs, bounded review loops, human gates, budgets, and durable resume while preserving the user's goal, constraints, and accepted decisions.
 ---
 
 # gptel-runner pipelines
@@ -10,13 +10,19 @@ contexts. Every agent should understand **what success means, why it matters,
 what has already been decided, and what its own contribution must accomplish**.
 Preserve intent explicitly; do not rely on the agents remembering a conversation.
 
+For an existing pipeline, go to [running and managing pipelines](references/operations.md).
+It covers preflight/start, inspection, an operation-selection table, human feedback,
+recovery, budgets, snapshots, and cleanup. Keep creation and operation in this
+skill; read the design sections below when definitions or handoffs need changes.
+
 ## Ground the implementation
 
 Locate the installed gptel-runner source, its README, and relevant examples.
 On this machine the development checkout is normally
 `~/projects/gptel-runner`; in Emacs, `(locate-library "gptel-runner")` identifies
-the loaded installation. Check for a different loaded version before relying on
-checkout-only features. Follow applicable project instructions.
+the discoverable library, while `(symbol-file 'gptel-runner-start 'defun)` locates
+the loaded start definition. Check for a different loaded version before relying
+on checkout-only features. Follow applicable project instructions.
 
 Read [the API reference](references/runner-api.md) when writing the Lisp. Verify
 the constructors/options you use against the local source. Architecture proposals
@@ -210,3 +216,20 @@ budgets, a short explanation of context routes and decision ownership, and what 
 actually verified. Keep live execution separate from loading definitions. Enable
 `:allow-writes t` for intended writers; do not disable tool confirmation unless the
 user requested it. Workspace modes alone do not restrict tool capabilities.
+
+## Operate without losing intent
+
+Use [the operations reference](references/operations.md) before starting or changing
+a run. Retain the run object/ID; inspect its state, failure reason, current results,
+and artifact evidence before choosing recovery. Start, resume, retry, continue,
+and exhausted-budget extension can dispatch work immediately. Respect the existing
+execution authority and budget; approval for definitions alone is not a live-run request.
+
+Prefer the narrow operation that preserves still-valid work. Promote lasting
+corrections into decisions/shared context before releasing dependent calls. A changed
+goal can invalidate completed planning even when the runner preserves it. Record
+authorized supersession and refresh affected evidence instead of silently reusing it.
+Use callbacks or bounded status checks; a successful call, stopped stream, or queued
+snapshot does not establish pipeline success or durable storage. The reference's
+[network-free lifecycle checks](scripts/operations-smoke-test.el) exercise these
+operational boundaries without invoking providers.
