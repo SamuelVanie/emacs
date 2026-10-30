@@ -24,6 +24,10 @@
 ;;        :allow-writes t))
 ;; Replace the example brief with task-specific content before a live run.
 ;; For durable runs add :persist t and reload these definitions before restore.
+;; To target a different repository, add :workspace "existing-relative-dir"
+;; (or an absolute path) to each affected agent step, including its reviewer.
+;; The shared context below reports the effective directory. Relative context
+;; files also use that directory; share one brief by inline text or absolute path.
 
 ;;; Code:
 
@@ -52,9 +56,10 @@
            "Distinguish facts, assumptions, proposals, and accepted choices. "
            "If evidence conflicts with a decision, identify the conflict and "
            "needed resolution; do not silently replace that decision. "
-           "Return a non-empty final report after any tool use.")
+           "Qualify artifact paths by their source workspace when handing work "
+           "to another repository. Return a non-empty final report after tool use.")
    (gptel-runner-run-goal run)
-   (gptel-runner-run-workspace run)
+   (gptel-runner-node-workspace run node)
    (gptel-runner-node-id node)))
 
 (defun grp/required-result (run key)
@@ -141,8 +146,10 @@
 (defun grp/progress-key (run)
   "Compare normalized findings and available workspace diff for RUN."
   ;; The bundled diff helper covers unstaged tracked changes in .git directories.
-  ;; For other artifact types, staged/untracked files, or worktrees, replace it
-  ;; with a relevant content/test-state digest. Never use round number as progress.
+  ;; It still reads the RUN workspace, not agent-step workspace overrides.
+  ;; For overrides, other artifact types, staged/untracked files, or worktrees,
+  ;; replace it with relevant content/test-state digests for the actual targets.
+  ;; Never use round number as progress.
   (gptel-runner-review-diff-progress-key run 'grp-review))
 
 (gptel-runner-defworkflow grp-intent-preserving

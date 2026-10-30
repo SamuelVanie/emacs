@@ -4,7 +4,7 @@
 ;; Run in a fresh Emacs (no presets, API credentials, or live calls needed):
 ;; emacs -Q --batch -L /path/to/gptel-runner -l /path/to/skill/scripts/smoke-test.el \
 ;;   -f ert-run-tests-batch-and-exit
-;; The temporary workspace is empty and removed after each test.
+;; Temporary workspaces and local context fixtures are removed after each test.
 
 ;;; Code:
 
@@ -145,5 +145,113 @@
             :driver driver :allow-writes t)))
       (should (eq (gptel-runner-run-state run) 'failed))
       (should-not (gptel-runner-fake-driver-starts driver)))))
+
+(ert-deftest grp-smoke-workspaces-preserve-intent-and-select-local-evidence ()
+  (grp-test/with-run
+    (let* ((directory (file-name-as-directory (file-truename workspace)))
+           (shared-brief (expand-file-name "brief.md" directory))
+           (repo-a (expand-file-name "a/" directory))
+           (repo-b (expand-file-name "b/" directory)))
+      (with-temp-file shared-brief (insert grp-test/brief))
+      (dolist (repo (list repo-a repo-b))
+        (make-directory repo)
+        (with-temp-file (expand-file-name "local-notes.md" repo)
+          (insert (if (equal repo repo-a) "Evidence for repo A" "Evidence for repo B"))))
+      (gptel-runner-fake-queue driver 'grp-planner
+                               (list :value grp-test/plan :manual t))
+      (gptel-runner-fake-queue driver 'grp-implementer
+                               '(:value "A report" :manual t)
+                               '(:value "B report" :manual t))
+      (let* ((run
+              (gptel-runner-start
+               (gptel-runner-sequence
+                :id 'multi-root :context #'grp/shared-context
+                (gptel-runner-agent-step
+                 :id 'plan :agent 'grp-planner
+                 :prompt #'grp/plan-prompt :save-as 'grp-plan)
+                (gptel-runner-parallel
+                 :id 'repositories
+                 :context (list #'grp/plan-context
+                                (gptel-runner-context-file "local-notes.md"))
+                 (gptel-runner-agent-step
+                  :id 'a :agent 'grp-implementer :workspace "a"
+                  :prompt "Implement A's contribution" :save-as 'a-report)
+                 (gptel-runner-agent-step
+                  :id 'b :agent 'grp-implementer :workspace repo-b
+                  :prompt "Implement B's contribution" :save-as 'b-report)))
+               :workspace workspace :goal "Add resumable import"
+               :context (gptel-runner-context-file shared-brief)
+               :driver driver :allow-writes t :max-concurrency 2))
+             (planner (car (gptel-runner-fake-driver-starts driver))))
+        (should (equal (gptel-runner-call-workspace planner) directory))
+        (gptel-runner-record-decision
+         run "D1: retain the common import contract" "Keep both repositories compatible")
+        (gptel-runner-fake-release driver planner)
+        (should (= 2 (gptel-runner-fake-driver-active driver)))
+        (cl-mapc
+         (lambda (call repo local-evidence other-evidence)
+           (let ((prompt (gptel-runner-call-prompt call)))
+             (should (equal (gptel-runner-call-workspace call) repo))
+             (dolist (expected (list (concat "Workspace: " repo)
+                                    "Add resumable import" grp-test/brief grp-test/plan
+                                    "D1: retain the common import contract"
+                                    "Keep both repositories compatible" local-evidence))
+               (should (string-match-p (regexp-quote expected) prompt)))
+             (should-not (string-match-p (regexp-quote other-evidence) prompt)))
+           (gptel-runner-fake-release driver call))
+         (cdr (gptel-runner-fake-driver-starts driver))
+         (list repo-a repo-b)
+         '("Evidence for repo A" "Evidence for repo B")
+         '("Evidence for repo B" "Evidence for repo A"))
+        (should (eq (gptel-runner-run-state run) 'succeeded))
+        (should (equal (gptel-runner-run-workspace run) directory))
+        (should (equal (gptel-runner-get run 'a-report) "A report"))
+        (should (equal (gptel-runner-get run 'b-report) "B report"))))))
+
+(ert-deftest grp-smoke-writer-aliases-serialize-while-other-repos-run ()
+  (grp-test/with-run
+    (make-directory (expand-file-name "a" workspace))
+    (make-directory (expand-file-name "b" workspace))
+    (make-symbolic-link (expand-file-name "a" workspace)
+                        (expand-file-name "alias" workspace))
+    (dotimes (_ 3)
+      (gptel-runner-fake-queue driver 'grp-implementer '(:value "Done" :manual t)))
+    (let* ((run
+            (gptel-runner-start
+             (gptel-runner-parallel
+              :id 'writers :context #'grp/shared-context
+              (gptel-runner-agent-step
+               :id 'a :agent 'grp-implementer :workspace "a" :prompt "Work on A")
+              (gptel-runner-agent-step
+               :id 'alias :agent 'grp-implementer :workspace "alias" :prompt "Revisit A")
+              (gptel-runner-agent-step
+               :id 'b :agent 'grp-implementer :workspace "b" :prompt "Work on B"))
+             :workspace workspace :goal "Implement independent changes"
+             :driver driver :allow-writes t :max-concurrency 2))
+           (calls (gptel-runner-run-calls run)))
+      (should (equal (gptel-runner-fake-driver-starts driver)
+                     (list (nth 0 calls) (nth 2 calls))))
+      (should (equal (gptel-runner-call-workspace (nth 0 calls))
+                     (gptel-runner-call-workspace (nth 1 calls))))
+      (gptel-runner-fake-release driver (nth 0 calls))
+      (should (equal (gptel-runner-fake-driver-starts driver)
+                     (list (nth 0 calls) (nth 2 calls) (nth 1 calls))))
+      (gptel-runner-fake-release driver (nth 1 calls))
+      (gptel-runner-fake-release driver (nth 2 calls))
+      (should (eq (gptel-runner-run-state run) 'succeeded)))))
+
+(ert-deftest grp-smoke-missing-workspace-prevents-all-dispatch ()
+  (grp-test/with-run
+    (should-error
+     (gptel-runner-start
+      (gptel-runner-sequence
+       :id 'preflight :context #'grp/shared-context
+       (gptel-runner-agent-step
+        :id 'first :agent 'grp-planner :prompt "Plan")
+       (gptel-runner-agent-step
+        :id 'missing :agent 'grp-planner :workspace "not-created" :prompt "Research"))
+      :workspace workspace :driver driver :goal "Inspect repositories")
+     :type 'user-error)
+    (should-not (gptel-runner-fake-driver-starts driver))))
 
 ;;; smoke-test.el ends here

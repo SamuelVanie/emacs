@@ -1,6 +1,7 @@
 # API details that affect pipeline correctness
 
-Grounded in the local gptel-runner implementation inspected on 2026-10-28.
+Grounded in gptel-runner commit `51570dc` inspected on 2026-10-30, including
+per-agent workspace overrides and directory-aware writer serialization.
 Recheck the installed source when an option differs. The engine requires Emacs
 29.1+; live requests additionally need the installed compatible gptel and presets.
 
@@ -27,7 +28,7 @@ registration, and start arguments are ordinary evaluated Lisp.
 
 | Constructor | Relevant properties and behavior |
 | --- | --- |
-| `gptel-runner-agent-step` | `:id`, `:agent`, `:prompt`, `:save-as`, `:context`; optional `:parser`, `:validator`, `:repair-invalid`, `:retries`, `:pause-after` |
+| `gptel-runner-agent-step` | `:id`, `:agent`, `:prompt`, `:save-as`, `:context`; optional `:workspace`, `:parser`, `:validator`, `:repair-invalid`, `:retries`, `:pause-after` |
 | `gptel-runner-sequence` | Leading keyword/value properties, then child nodes; fail-fast; inherited `:context` |
 | `gptel-runner-parallel` | Leading properties, then children; `:policy 'fail-fast`, `'collect`, or `'minimum-successes`; latter needs `:minimum-successes N`; optional aggregate `:save-as` |
 | `gptel-runner-branch` | `:predicate` (alias `:if`) function of run, `:then` node, optional `:else` node, inherited `:context` |
@@ -55,11 +56,75 @@ an unrecognized step keyword takes effect. Presets and tools must actually exist
 | `gptel-runner-put` | `(run key value)` |
 | `gptel-runner-iteration` | `(run repeat-node-id)`; **completed** iteration count |
 | `gptel-runner-record-decision` | `(run text &optional rationale call)`; run object or displayed run ID |
+| `gptel-runner-node-workspace` | `(run node)`; effective canonical directory for the target agent step |
 
 During a loop body, display `(1+ (gptel-runner-iteration run 'cycle))`.
 After that body completes, the count is incremented before the stop/until
 predicates run. Avoid comparing a body-stamped round to `1+` in an after-body
 predicate. Initial `:until` is also checked before the first body execution.
+
+## Per-node workspaces and concurrent writers
+
+Agent-step `:workspace` accepts a non-empty directory-name string. Omitted or nil
+inherits the run workspace; relative paths resolve from the run workspace and
+absolute paths are used directly. Paths are canonicalized, including symlinks,
+with a trailing separator. All overrides must name existing directories and are
+validated before any calls start. Functions and nonexistent future directories
+are not supported workspace overrides. Provision directories before starting.
+
+The override belongs to the **step**, not the registered agent or a sequence,
+parallel, branch, or repeat container. Set it on each relevant leaf, including
+the reviewer that must inspect a writer's files. Worker-buffer `default-directory`,
+call workspace, retries, and repair prompts use that effective directory. Prompt
+and context functions should call `gptel-runner-node-workspace`; do not assume a
+helper's ambient `default-directory` has already been changed. The run accessor
+still returns the default directory, useful for explicitly shared artifacts.
+
+For example, after configuring the preset `repo-writer` and creating `api/` and
+`web/` beneath the chosen run directory:
+
+```elisp
+(gptel-runner-register-agent
+ 'repo-writer :preset 'repo-writer :workspace-mode 'write)
+
+(defun example/repo-task (run node)
+  (format
+   (concat "Shared goal: %s\nYour workspace: %s\n"
+           "Implement this repository's part of the agreed plan. Preserve "
+           "shared decisions. Return evidence, checks, and artifact paths "
+           "qualified by repository; identify unresolved integration needs.")
+   (gptel-runner-run-goal run) (gptel-runner-node-workspace run node)))
+
+(gptel-runner-defworkflow multi-repo-work
+    (:max-concurrency 2 :max-calls 6 :max-requests 30 :max-duration 1800)
+  (gptel-runner-parallel
+   :id 'repos :policy 'fail-fast
+   (gptel-runner-agent-step
+    :id 'api :agent 'repo-writer :workspace "api"
+    :prompt #'example/repo-task :save-as 'api-report)
+   (gptel-runner-agent-step
+    :id 'web :agent 'repo-writer :workspace "web"
+    :prompt #'example/repo-task :save-as 'web-report)))
+```
+
+Supply the shared brief/plan using `gptel-runner-start :context` (inline text or
+an absolute file descriptor) and the common goal, run workspace, and
+`:allow-writes t`. This example assumes independent work against an already agreed
+interface. Add a joined review/integration stage when completion requires combined
+verification; parallel completion alone does not prove compatibility.
+
+Within one run, agents registered with `:workspace-mode 'write` serialize only
+when their effective canonical directories are equal. Symlink aliases share that
+lock; different directories can run concurrently within the global concurrency
+limit. This is not a lock across separate runs, a reader/writer lock, or a check
+for overlapping parent/child trees, shared Git state, or external resources.
+Order conflicting work explicitly. `isolated` creates no isolation and does not
+count as a writer for this lock; use `write` with separately provisioned worktrees.
+
+The bundled `gptel-runner-workspace-diff-key` still reads the **run** workspace.
+For progress across overridden workspaces, compute a stable digest of relevant
+artifacts/tests from each directory; do not mistake an unchanged default-root diff
+for stalled work elsewhere.
 
 ## Context and decision propagation
 
@@ -68,9 +133,18 @@ or in a list. Order is workflow → start/run → registered agent → nodes fro
 root to leaf → ordinary task prompt. Recorded decisions are appended afterward
 when decision memory is enabled, as it is by default.
 
-Files are workspace-relative unless absolute. File contents and functions are
-resolved anew when a call is prepared. **All declared file descriptors must be
-readable at workflow start**, including those on later nodes. For an artifact
+At every scope, relative file descriptors resolve from the **receiving agent's
+effective workspace**, including workflow, run, and ancestor-node context.
+Absolute paths are used directly. Thus a workflow-level `(:file "AGENTS.md")`
+loads each receiving repository's own file. Use an absolute descriptor for one
+shared brief; in evaluated code, for example,
+`(gptel-runner-context-file (expand-file-name "brief.md" shared-root))`.
+Workflow options are quoted, so use literal absolute descriptors there or a
+named context function that explicitly resolves from the intended shared root.
+
+File contents and functions are resolved anew when a call is prepared. **All
+declared file descriptors must be readable at workflow start in each receiving
+workspace**, including those on later/unselected nodes. For an artifact
 created by an earlier step, use its blackboard result or a context function that
 reads it when required; do not declare a nonexistent future file descriptor.
 Required missing input should signal an error rather than produce an empty prompt.
@@ -121,8 +195,8 @@ plist with symbolic `:verdict` (`pass`, `revise`, `blocked`), `:summary`, and
 the generic validator alone does not enforce that relationship.
 
 `:repair-invalid t` or a registered schema allows one automatic format repair.
-It is a fresh call. Its prompt contains goal, workspace, invalid output, and
-validation error, **not the complete inherited context or decision log** in this
+It is a fresh call. Its prompt contains goal, effective node workspace, invalid
+output, and validation error, **not the complete inherited context or decision log** in this
 version. Keep it a format-only operation. Make parser errors explain the required
 shape; do not let repair revise substantive choices. Where a repair needs task
 judgment or full context, build an explicit contextual repair stage instead.
@@ -158,3 +232,6 @@ Persistence saves goal, workspace, blackboard, node/loop states, and budgets;
 it does not restore historical transcripts or events. Use readable Lisp data and
 named context functions, not buffers, processes, or captured live objects. Re-read
 artifact files after restoring: snapshots do not freeze external workspace content.
+Reload the same workspace overrides with the workflow definition; restore validates
+their directories and inherited context files again. A snapshot does not create
+or copy the referenced repositories/worktrees.

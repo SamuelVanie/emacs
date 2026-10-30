@@ -43,7 +43,7 @@ Adapt this envelope to the workflow; these are **application-defined fields**,
 not built-in runner keys:
 
 ```text
-Producer / round / brief version:
+Producer / workspace or repository / round / brief version:
 Status: completed | needs-revision | blocked
 Result: concise useful outcome
 Decision compliance: IDs followed; conflicts or proposed changes, if any
@@ -56,6 +56,15 @@ Set provenance (node, iteration, input version/digest) deterministically where
 possible instead of trusting a model's claimed identity. A parser receives only
 its value, not the run; perform run-aware comparisons in predicates or consumer
 helpers. Adding custom keys to a node does not make the runner enforce them.
+
+When nodes use different workspaces, qualify artifact paths by their source
+repository/root and revision, or use absolute paths when accessible. A bare
+`src/importer.el` can name different files for different agents. The blackboard
+and decision log remain shared within the run; workspace overrides do not copy
+files, merge changes, or grant tools access to another repository. Keep global
+goals/decisions in shared context and repository-specific evidence local. Send
+reviewers to the actual writer workspace or explicitly identify all directories
+they must inspect.
 
 Keep stable IDs on unresolved issues so later agents can distinguish fixed,
 deferred, and newly found problems. Carry critical uncertainty and dissent forward;

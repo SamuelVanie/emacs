@@ -1,6 +1,6 @@
 ---
 name: gptel-runner-pipelines
-description: Create, revise, and debug gptel-runner pipelines in Emacs Lisp, including sequences, parallel branches, bounded review loops, context routing, and decision memory. Use when designing workflows of gptel agents or improving handoffs so every node preserves the user's goal, intent, constraints, and accepted decisions without excessive context.
+description: Create, revise, and debug gptel-runner pipelines in Emacs Lisp, including sequences, parallel branches, per-node workspaces, bounded review loops, context routing, and decision memory. Use when designing workflows of gptel agents or improving handoffs so every node preserves the user's goal, intent, constraints, and accepted decisions without excessive context.
 ---
 
 # gptel-runner pipelines
@@ -43,9 +43,9 @@ to explicit later user corrections.
 
 ## Design information flow before writing nodes
 
-For each agent step identify its responsibility, required inputs, optional
-feedback, output destination, and success/failure condition. A small table is
-usually sufficient:
+For each agent step identify its responsibility, workspace, required inputs,
+optional feedback, output destination, and success/failure condition. A small
+table is usually sufficient:
 
 | Node | Receives | Produces | Decision authority |
 | --- | --- | --- | --- |
@@ -61,15 +61,22 @@ Choose sequence for dependencies; parallel for independent investigations or
 reviews; branch for a validated choice; bounded repeat for actual revision.
 Put a synthesis/decision owner after parallel proposals when their conclusions
 must become one plan. Parallel branches cannot depend on each other's unfinished
-outputs. Shared-workspace writers are serialized by the runner; `isolated` is
-metadata, not automatic worktree creation.
+outputs. Within one run, writers in the same canonical directory are serialized;
+writers in different directories can run concurrently up to `:max-concurrency`.
+Set `:workspace` on each affected agent step to an existing directory; a relative
+override resolves from the run's default workspace. Container nodes cannot set a
+subtree workspace. Use `:workspace-mode 'write` for writers; `isolated` does not
+create a worktree or participate in the writer lock. Provision worktrees separately
+when needed, and sequence work whose files or external resources overlap.
 
 ## Build three layers of context
 
 1. **Shared intent:** use workflow/run/root `:context` for goal, purpose,
    acceptance, scope, and enduring constraints. Include
-   `(gptel-runner-run-goal run)` and `(gptel-runner-run-workspace run)` explicitly
+   `(gptel-runner-run-goal run)` and `(gptel-runner-node-workspace run node)` explicitly
    through a shared context function; the initial goal is not injected for you.
+   `gptel-runner-run-workspace` is only the run's default, not an overridden node's
+   working directory.
 2. **Accepted choices:** leave decision memory enabled. Recorded decisions and
    their rationales reach later calls automatically. A plan saved with `:save-as`
    still needs a context/prompt function that reads it with `gptel-runner-get`.
@@ -80,6 +87,13 @@ Use subtree context for a plan shared by only its implementers/reviewers. Use
 node context for specialized evidence. Context layers are additive, so narrower
 text does not remove contradictory broader text or deduplicate it automatically.
 
+Relative context files at **every scope** resolve from the receiving agent's
+effective workspace. For one shared brief across repositories, use inline text,
+an absolute file descriptor, or a function explicitly rooted at the run workspace.
+Use relative descriptors for intentionally local evidence. Declared files must
+exist in each affected workspace before dispatch; details and an example are in
+[the API reference](references/runner-api.md).
+
 For each handoff, pass the concise conclusion **and the reason, constraints,
 evidence references, and unresolved work needed to act on it**. Consult
 [handoff contracts](references/handoffs.md) for a compact report format, freshness
@@ -88,8 +102,8 @@ rules, conflict handling, and fan-out/fan-in patterns.
 Do not pass entire conversations, whole blackboards, all source files, or every
 iteration to every node. Preserve mandatory decisions and acceptance checks;
 trim irrelevant evidence before trimming intent. Link large artifacts with exact
-workspace-relative paths and relevant sections/revisions, but include critical
-facts inline and verify the receiving agent has tools to read the rest. Prefer
+paths qualified by repository/workspace and relevant sections/revisions, but
+include critical facts inline and verify the receiving agent can read the rest. Prefer
 structured selection to an extra LLM summarization step.
 
 ## Keep decisions authoritative across handoffs
@@ -157,7 +171,9 @@ Load the generated Lisp in batch Emacs and exercise consequential paths with
 goal, purpose, acceptance, decisions/rationale, required inputs, and current
 feedback must survive relevant handoffs and revisions. Exercise malformed verdicts,
 blocked/stalled exits, missing dependencies, and stale branch outputs when those
-paths exist. Use the starter's
+paths exist. For workspace overrides, verify effective prompt directories, local
+versus shared context, and concurrent/serialized writers as appropriate. Use the
+starter's
 [smoke checks](scripts/smoke-test.el) as a concrete network-free example; adapt
 assertions to the generated workflow rather than only checking its syntax.
 
