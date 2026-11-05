@@ -2421,7 +2421,7 @@ Mode to interact with different llms in emacs.
     :after general
     :hook
     (gptel-mode . (lambda ()
-                  (gptel-highlight-mode 1)))
+                    (gptel-highlight-mode 1)))
     :config
     ;; something that makes it more convenient to add mcp tools in gptel
     (require 'gptel-integrations)
@@ -2488,6 +2488,22 @@ Mode to interact with different llms in emacs.
     :hook (magit-mode . gptel-magit-install)
     :config
     (setq gptel-magit-commit-prompt gptel-magit-prompt-zed))
+    (load-file (format "%s%s/%s%s" user-emacs-directory "config" "gptel-magit-message" ".el"))
+    (defun gptel-magit--generate (callback)
+      "Generate a commit message with error handling."
+      (let ((diff (magit-git-output "diff" "--cached")))
+        (gptel-magit--request diff
+                              :system gptel-magit-commit-prompt
+                              :context nil
+                              :callback
+                              (lambda (response info)
+                                (if (stringp response)
+                                    (funcall callback
+                                             (gptel-magit--format-commit-message
+                                              response))
+                                  (message
+                                   "gptel-magit: Request failed: %S"
+                                   info)))))))
 #+end_src
 
 Make gptel work as an agent
