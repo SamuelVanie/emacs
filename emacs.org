@@ -2487,23 +2487,55 @@ Mode to interact with different llms in emacs.
     :after (magit gptel)
     :hook (magit-mode . gptel-magit-install)
     :config
-    (setq gptel-magit-commit-prompt gptel-magit-prompt-zed))
-    (load-file (format "%s%s/%s%s" user-emacs-directory "config" "gptel-magit-message" ".el"))
-    (defun gptel-magit--generate (callback)
-      "Generate a commit message with error handling."
-      (let ((diff (magit-git-output "diff" "--cached")))
-        (gptel-magit--request diff
-                              :system gptel-magit-commit-prompt
-                              :context nil
-                              :callback
-                              (lambda (response info)
-                                (if (stringp response)
-                                    (funcall callback
-                                             (gptel-magit--format-commit-message
-                                              response))
-                                  (message
-                                   "gptel-magit: Request failed: %S"
-                                   info)))))))
+    (setq gptel-magit-commit-prompt gptel-magit-prompt-conventional-commits)
+
+    (defun smv/gptel-magit--response (callback state response info)
+      "Collect text in STATE and call CALLBACK once with the complete response.
+  Ignore reasoning events and report request failures from INFO."
+      (unless (plist-get state :done)
+        (cond
+         ((stringp response)
+          (if (plist-get info :stream)
+              (push response (plist-get state :chunks))
+            ;; Backends without streaming support return a complete string.
+            (setf (plist-get state :done) t)
+            (funcall callback response info)))
+         ((eq response t)
+          (setf (plist-get state :done) t)
+          (let ((text (apply #'concat (nreverse (plist-get state :chunks)))))
+            (setf (plist-get state :chunks) nil)
+            (if (string-empty-p text)
+                (message "gptel-magit: Request failed: No response")
+              (funcall callback text info))))
+         ((null response)
+          (setf (plist-get state :done) t
+                (plist-get state :chunks) nil)
+          (message "gptel-magit: Request failed: %s"
+                   (or (plist-get info :error)
+                       (plist-get info :status)
+                       "No response")))
+         ((eq response 'abort)
+          (setf (plist-get state :done) t
+                (plist-get state :chunks) nil)
+          (message "gptel-magit: Request aborted")))))
+
+    (defun smv/gptel-magit--request (request prompt &rest args)
+      "Collect streaming responses from gptel-magit REQUEST for PROMPT and ARGS."
+      (let ((callback (plist-get args :callback))
+            (gptel-stream t)
+            ;; Commit messages and diff explanations only need text.
+            (gptel-use-tools nil))
+        ;; Backend :stream enables support; the request must also opt in.
+        (setq args (plist-put args :stream t))
+        (when callback
+          ;; Keep separate state per request, even in a dynamic-binding init.el.
+          (setq args
+                (plist-put args :callback
+                           (apply-partially #'smv/gptel-magit--response
+                                            callback (list :chunks nil :done nil)))))
+        (apply request prompt args)))
+
+    (advice-add 'gptel-magit--request :around #'smv/gptel-magit--request))
 #+end_src
 
 Make gptel work as an agent
