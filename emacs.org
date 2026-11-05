@@ -2487,7 +2487,7 @@ Mode to interact with different llms in emacs.
     :after (magit gptel)
     :hook (magit-mode . gptel-magit-install)
     :config
-    (load-file (format "%s%s/%s%s" user-emacs-directory "config" "gptel-magit-message" ".el")))
+    (setq gptel-magit-commit-prompt gptel-magit-prompt-zed))
 #+end_src
 
 Make gptel work as an agent
