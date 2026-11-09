@@ -1864,137 +1864,46 @@ A package that install lsp servers for you. This rocks.
     (mason-setup))
 #+end_src
 
-
-** lsp-mode
-
-Best lsp client in emacs.
-To register a new one over tcp :
+dape-mode, could be better than dap-mode, if so will definetely remove dap-mode
 
 #+begin_example
-(lsp-register-client
-(make-lsp-client
- :new-connection
- (lsp-tcp-connection
-  (lambda (port)
-    `("cobol-language-support" "--port" ,(number-to-string port))))
- :priority 5
- :activation-fn (lsp-activate-on "cobol")
- :major-modes '(cobol-ts-mode cobol-mode)
- :server-id 'cobol-lsp))
+(setq dape-configs 
+      `((jest
+         modes
+         (js-mode js-ts-mode typescript-mode)
+         ensure dape-jest/ensure
+         command "node"
+         command-cwd ,(file-name-concat dape-adapter-dir
+                                        "js-debug")
+         command-args (,(file-name-concat "src" "dapDebugServer.js")
+                       :autoport)
+         port :autoport
+         fn dape-config-autoport
+         :type "pwa-node"
+         :cwd dape-cwd-fn
+         :program "node_modules/.bin/jest"
+         :args dape-jest/find-file-buffer-default
+         :outputCapture "console"
+         :sourceMapRenames t
+         :pauseForSourceMap nil
+         :autoAttachChildProcesses t
+         :console "internalConsole"
+         :killBehavior "forceful")))
 #+end_example
 
-over stdio is simpler, just use (lsp-stdio-connection "name_of_server") or (lsp-stdio-connection '("name_of_server" "args1" ...))
 
 #+begin_src emacs-lisp
-  (use-package lsp-mode
+  (use-package dape
     :straight t
-    :commands (lsp lsp-deferred)
-    :config
-    (lsp-enable-which-key-integration t)
-    (setq lsp-ui-doc-show-with-mouse nil)
-    (setq lsp-headerline-breadcrumb-enable nil)
-    (setq lsp-enable-suggest-server-download nil)
-    (setq lsp-enable-dap-auto-configure nil)
-    (general-define-key
-     :keymaps 'meow-normal-state-keymap
-     :prefix "`"
-     "r" #'xref-find-references-and-replace
-     "e" #'display-local-help
-     "o" #'xref-find-definitions-other-window)
-    (general-define-key
-     :keymaps 'meow-normal-state-keymap
-     :prefix "h"
-     "h" #'lsp-ui-doc-toggle
-     "q" #'lsp-ui-doc-hide
-     "a" #'lsp-execute-code-action
-     "f" #'lsp-ui-doc-focus-frame
-     "u" #'lsp-ui-doc-unfocus-frame
-     "d" #'lsp-ui-peek-find-definitions
-     "s" #'lsp-ui-peek-find-workspace-symbol
-     "e" #'lsp-ui-flycheck-list
-     "r" #'lsp-ui-peek-find-references
-     "i" #'lsp-ui-peek-find-implementation))
-
-  (use-package lsp-ui
-    :straight t
-    :after lsp
-    :commands lsp-ui-mode
-    :hook (lsp-mode . lsp-ui-mode))
-
-  (setq treesit-font-lock-level 4)
-#+end_src
-
-
-Dap-mode, work better with lsp-mode.
-
-Example of configuration
-
-#+begin_example
-(with-eval-after-load 'dap-mode
-                     (dap-register-debug-provider
-                      "pwa-node"
-                      (lambda (conf)
-                        (let ((port (dap--find-available-port)))
-                          (append conf
-                                  (list :host "127.0.0.1"
-                                        :debugServer port
-                                        :program-to-start
-                                        (format "%s %d 127.0.0.1"
-                                                (shell-quote-argument "js-debug")
-                                                port))))))
-                     
-                     (dap-register-debug-template
-                      "Debug presori-backend"
-                      (list :type "pwa-node"
-                            :request "launch"
-                            :name "Debug presori-backend"
-                            :runtimeExecutable "node"
-                            :runtimeArgs ["--import" "tsx"]
-                            :program "backend/src/index.ts"
-                            :cwd "/Users/s.vanie/projects/presori/"
-                            :sourceMaps t
-                            :autoAttachChildProcesses t
-                            :resolveSourceMapLocations ["**" "!**/node_modules/**"]))
-                     
-                     )
-#+end_example
-
-#+begin_src emacs-lisp
-  (use-package dap-mode
-    :straight t
-    :after general
     :custom
-    (dap-auto-configure-features '(sessions locals tooltip))
+    (dape-cwd-function #'projectile-project-root)
     :config
-    (defun smv/dap-focus-stopped-session (session)
-      "Make SESSION current when it stops."
-      (unless (eq session (dap--cur-session))
-        (dap--switch-to-session session)))
-
-    (with-eval-after-load 'dap-mode
-      (add-hook 'dap-stopped-hook
-                #'smv/dap-focus-stopped-session))
-
-    (advice-add 'dap--initialize-message
-                :filter-return
-                (lambda (message)
-                  (plist-put
-                   message
-                   :arguments
-                   (plist-put (plist-get message :arguments)
-                              :supportsStartDebuggingRequest t))))
-    
-    (dap-mode 1)
-    (dap-ui-mode 1)
-    (require 'dap-tasks))
-
-  (with-eval-after-load 'dap-mode
-    (general-define-key
-     :keymaps 'meow-normal-state-keymap
-     :prefix "%"
-     "d" #'dap-hydra))
+    (add-hook 'dape-display-source-hook #'pulse-momentary-highlight-one-line)
+    ;; Save buffers on startup, useful for interpreted languages
+    (add-hook 'dape-start-hook (lambda () (save-some-buffers t t)))
+    ;; Kill compile buffer on build success
+    (add-hook 'dape-compile-hook #'kill-buffer))
 #+end_src
-
 
 ** Nix
 

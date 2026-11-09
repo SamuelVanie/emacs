@@ -69,14 +69,14 @@
   :stream t)
 
 (defvar my/gptel-copilot-model-ids
-  '(claude-sonnet-5
+  '(
     gpt-6.1-terra
     claude-haiku-5.5
     claude-sonnet-5.5
     gemini-3.8-flash
     gpt-5.3-codex
     gpt-6-luna
-    gpt-6-sol
+    gpt-6.1-sol
     kimi-k3
     mai-code-1.1-flash)
   "Copilot model ids to expose in gptel.")
