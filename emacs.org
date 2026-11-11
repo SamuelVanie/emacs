@@ -378,6 +378,33 @@ A package that permits to transform some buffers into popups. Quite useful to qu
     (popper-echo-mode +1))
 #+end_src
 
+
+
+** Perspective
+
+Permits to isolate my buffers depending on my work
+
+#+begin_src emacs-lisp
+  (use-package perspective
+    :straight t
+    :after (general meow)
+    :bind (("C-x b" . persp-switch-to-buffer*)
+           ("C-x k" . persp-kill-buffer*))
+    :custom
+    (persp-mode-prefix-key (kbd "C-c M-p"))  ; pick your own prefix key here
+    :config
+    (setq switch-to-prev-buffer-skip
+          (lambda (win buff bury-or-kill)
+            (not (persp-is-current-buffer buff))))
+    (general-define-key
+     :keymaps 'meow-normal-state-keymap
+     :prefix "%"
+     "%" perspective-map)
+    :init
+    (persp-mode))
+#+end_src
+
+
 * Basic UI Configuration
 
 This section configures basic UI settings that remove unneeded elements to make Emacs look a lot more minimal and modern.
@@ -1372,7 +1399,13 @@ Reach more easily some information directly in your completion system.
 
     ;; Optionally make narrowing help available in the minibuffer.
     ;; You may want to use `embark-prefix-help-command' or which-key instead.
-    (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help))
+    (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
+
+    ;; add some configuration related to the perspective package
+    ;; permits to separate the different buffers and other elements related to my projects
+    (consult-customize consult-source-buffer :hidden t :default nil)
+    (add-to-list 'consult-buffer-sources persp-consult-source)
+    )
 #+end_src
 
 
