@@ -1195,11 +1195,10 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
   (use-package solarized-theme
     :straight t
     :config
-    (setq solarized-use-more-italic t))
+    (setq solarized-use-more-italic t)
+    (load-theme 'solarized-dark-high-contrast t))
   (use-package pierre-themes
-    :straight (:host github :repo "shaneikennedy/pierre-themes.el" :files ("*.el"))
-    :config
-    (load-theme 'pierre-dark t))
+    :straight (:host github :repo "shaneikennedy/pierre-themes.el" :files ("*.el")))
   (use-package foxglove-themes
     :straight (:host gitlab :repo "vegasharmon/foxglove-themes" :files ("*.el")))
 
