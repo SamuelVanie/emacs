@@ -2457,7 +2457,6 @@ Make gptel work as an agent
     :straight (:host github :repo "SamuelVanie/gptel-agent" :branch "newdirection" :files ("*"))
     :config
     (gptel-agent-session-mode 1)
-    (setq-default gptel-agent-use-project-instructions nil)
     (let ((dir (expand-file-name "agents/" user-emacs-directory)))
       (if (file-directory-p dir)
           (add-to-list 'gptel-agent-dirs dir)))
