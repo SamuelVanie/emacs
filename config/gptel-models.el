@@ -85,13 +85,25 @@
   '("low" "medium" "high" "xhigh" "max")
   "Valid Copilot `reasoning_effort' values.")
 
+(require 'gptel-gh)
+
+(defvar my/gptel-copilot-responses-model-ids
+  '(gpt-6.1-terra gpt-6-luna gpt-6.1-sol)
+  "Additional Responses API models not yet in gptel's Copilot catalog.
+Keep explicit entries here for newer models; other unknown models use
+Chat Completions.  Known models use gptel's per-model capabilities.")
+
 (defun my/gptel-copilot-models ()
-  "Return the model specs for the Copilot backend."
+  "Return Copilot specs with each model's supported API capabilities."
   (mapcar (lambda (id)
-            (list id
-                  :description (format "Copilot model %s" id)
-                  :capabilities '(media tool-use json url responses-api)
-                  :mime-types '("image/jpeg" "image/png" "image/gif" "image/webp")))
+            (or (copy-tree (assq id gptel--gh-models))
+                (list id
+                      :description (format "Copilot model %s" id)
+                      :capabilities
+                      (append '(media tool-use)
+                              (when (memq id my/gptel-copilot-responses-model-ids)
+                                '(responses-api)))
+                      :mime-types '("image/jpeg" "image/png" "image/gif" "image/webp"))))
           my/gptel-copilot-model-ids))
 
 ;; Single backend; model ids are sent unmodified.
@@ -99,6 +111,10 @@
   (gptel-make-gh-copilot "Copilot"
     :models (my/gptel-copilot-models))
   "The Copilot gptel backend.")
+
+;; Refresh capabilities on reload even when the defvar backend already exists.
+(setf (gptel-backend-models my/gptel-copilot-backend)
+      (gptel--process-models (my/gptel-copilot-models)))
 
 (defun my/gptel-copilot-set-reasoning (level)
   "Set `reasoning_effort' LEVEL in the Copilot backend's request params.
