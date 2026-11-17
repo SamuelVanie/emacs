@@ -23,6 +23,23 @@ Avoid loading the entire interactive `init.el`: it may install packages, change
 UI state, prompt, or launch unrelated work. Check reused files for such effects.
 Initialization runs again for recovery, so it must be repeatable.
 
+A real worker init normally has this shape, using actual existing setup files:
+
+```elisp
+(require 'gptel-runner)
+;; Preloaded packages are already present; configure their worker settings here.
+(load "/absolute/path/to/backend-and-tool-setup.el" nil t)
+;; If setting custom agent/skill directories, refresh discovery here, before
+;; loading preset overrides and runner-agent/workflow registrations.
+(load "/absolute/path/to/preset-overrides.el" nil t)
+(load "/absolute/path/to/existing-pipeline.el" nil t)
+(setq gptel-runner-default-driver (gptel-runner-gptel-driver-create))
+```
+
+This is an ordering example, not a requirement to split the user's configuration
+into these filenames. Do not assume tools, backends, or presets exist merely
+because their defining package was preloaded.
+
 Keep credentials in the user's existing credential mechanism. Configure their
 lookup in the worker without printing secrets or copying them into job records.
 Encrypted stores or tools requiring a minibuffer may need a different supported

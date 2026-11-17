@@ -1,9 +1,9 @@
 ---
 name: gptel-runner-jobs
-description: Create reusable gptel-runner background jobs from existing named pipelines in Emacs. Discover available workflows, prepare worker initialization, save task inputs and budgets, and optionally run or schedule the job when requested. Use for turning a task into a job for an available pipeline; pipeline design belongs to gptel-runner-pipelines.
+description: Define, edit, launch, schedule, inspect, and control durable gptel-runner background jobs in Emacs. Use for job records and APIs, worker initialization, invocation history and outputs, command receipts, or background recovery. Pipeline construction and in-process run management belong to gptel-runner-pipelines.
 ---
 
-# Jobs from existing pipelines
+# gptel-runner background jobs
 
 Turn the user's task into a durable launch configuration for an existing named
 workflow. A **job** is the reusable configuration; an **invocation** is one
@@ -13,6 +13,20 @@ the worker's session-local run ID.
 Reuse pipeline definitions. If a suitable pipeline is missing or needs changes,
 use the companion [gptel-runner-pipelines](../gptel-runner-pipelines/SKILL.md)
 skill for that work. This skill does not teach pipeline construction.
+
+Use the relevant reference for the task:
+
+- [Job definitions and APIs](references/job-api.md): saved fields, defaults,
+  inputs, workspaces, updates, deletion, and the job data editor.
+- [Worker initialization](references/worker-bootstrap.md): packages, presets,
+  backends, environment, and validation in a fresh Emacs.
+- [Launch and scheduling](references/launch-and-verify.md): manual runs, the
+  batch CLI, launchd schedules, diagnostics, and completion checks.
+- [Invocation history and commands](references/invocations-and-commands.md):
+  outputs, artifacts, all remote command arguments, receipts, and recovery.
+
+For an existing job or invocation, go directly to its relevant API; creating
+another job is not necessary to inspect or control it.
 
 ## Discover what can run
 
@@ -122,8 +136,9 @@ Do not put `:driver`, `:callback`, or `:persist` there. Select the driver in the
 init file; the job worker enables persistence. Use serializable values and named
 functions defined by the init file, not closures capturing editor state.
 
-Omit `:arguments :workspace` to use the pipeline's default. Explicit nil is an
-override, not omission. `:base-directory` anchors relative workflow defaults;
+Omit `:arguments :workspace` to use the pipeline's default. Explicit nil is
+normalized to the job's base directory and overrides the pipeline default.
+`:base-directory` anchors relative workflow defaults;
 explicit job workspace paths are normalized when saved. Per-node overrides
 still apply. Jobs do not create worktrees or isolated copies of files.
 
@@ -137,6 +152,9 @@ For an update, copy `gptel-runner-job-get`'s record, change the intended fields,
 and save it with the same ID. Save is not a general partial-patch API. Re-read
 the saved record and check its revision and relevant fields. A job update affects
 future invocations; existing invocations retain their embedded job configuration.
+Pass a freshly read job record or its ID when launching; passing an older record
+uses that record's configuration. The embedded configuration preserves values
+and paths, not copies of the init file, pipeline source, packages, or credentials.
 
 ## Verify and finish the requested action
 
@@ -145,7 +163,7 @@ without starting the real workflow; the bootstrap reference explains the checks.
 `job-save` validates the record but does not prove that its workflow or presets
 will load, its inputs meet the task contract, or its provider will work.
 
-For an end-to-end check of job plumbing, use the checkout's
+When an end-to-end check of job plumbing is needed, use the checkout's
 `examples/background-jobs.el`, workflow `background-example`, and
 `:preload-features nil` in a temporary job store/workspace. Run it with the generic
 batch entry point in the [launch reference](references/launch-and-verify.md).
