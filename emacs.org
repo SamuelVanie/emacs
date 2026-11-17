@@ -2046,6 +2046,17 @@ Mode for yaml configuration files editing.
 #+end_src
 
 
+*** Java
+
+Installing this permits to automatically detects and load packages from the maven file
+
+#+begin_src emacs-lisp
+  (use-package jal
+    :straight t
+    :config
+    (jal-eglot-java-mode 1))
+#+end_src
+
 *** Web Programming
 
 **** Emmet-mode
