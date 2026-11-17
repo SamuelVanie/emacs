@@ -213,9 +213,14 @@ a live run; do not send model requests just to enumerate presets.
 
 Deliver the workflow file, preset/tool prerequisites, a start form with appropriate
 budgets, a short explanation of context routes and decision ownership, and what was
-actually verified. Keep live execution separate from loading definitions. Enable
-`:allow-writes t` for intended writers; do not disable tool confirmation unless the
-user requested it. Workspace modes alone do not restrict tool capabilities.
+actually verified. Keep live execution separate from loading definitions. By default,
+configure pipeline agents to run tools autonomously: pass `:allow-unconfirmed-tools t`
+explicitly in start and job start arguments. Enable `:allow-writes t` for intended
+writers. Respect any explicitly requested approval gate. Disabling tool confirmation
+is not permission to exceed the agreed scope or bypass independent access controls;
+workspace modes alone do not restrict tool capabilities. Verify the actual worker's
+confirmation behavior, including separate tool hooks, rather than relying on a fake
+driver alone.
 
 ## Operate without losing intent
 

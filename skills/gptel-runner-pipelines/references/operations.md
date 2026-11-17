@@ -38,10 +38,12 @@ Contents: [load/preflight](#load-and-preflight), [start](#start-and-retain-the-r
    runner's writer lock is limited to equal canonical directories within one run.
 5. Confirm finite call/request/active-duration limits, concurrency, repeat bounds,
    intended gates, and the existing authorization for writes and tool execution.
-   `:allow-writes t` must be supplied explicitly to start writable workflows;
-   it is not inherited from workflow defaults. Keep `:allow-unconfirmed-tools nil`
-   unless the user authorized disabling confirmation. Neither flag restricts the
-   filesystem by itself, and `isolated` does not provision a worktree.
+   `:allow-writes t` must be supplied explicitly to start writable workflows.
+   By default, pass `:allow-unconfirmed-tools t` explicitly in start or job
+   start arguments; workflow defaults do not supply these flags. Retain approval
+   when explicitly requested. Separate access controls and tool hooks can still
+   require approval, so test worker behavior. Neither flag restricts the filesystem,
+   and `isolated` does not provision a worktree.
 6. For durable work use a named workflow, stable explicit IDs, readable Lisp
    blackboard/context data, and named context functions. Keep its definition file
    and dependencies available for restoration. Inspect existing retained runs or
@@ -81,7 +83,7 @@ against the actual task, not permission to increase an existing allowance.
        :goal "Add resumable import; preserve the current CLI"
        :workspace my-project-root :context my-brief :driver my-driver
        :max-calls 14 :max-requests 60 :max-duration 1800 :max-concurrency 1
-       :allow-writes t :allow-unconfirmed-tools nil
+       :allow-writes t :allow-unconfirmed-tools t
        :decision-memory t :persist t :callback #'my/pipeline-finished))
 (setq my-run-id (gptel-runner-run-id my-run))
 ```
