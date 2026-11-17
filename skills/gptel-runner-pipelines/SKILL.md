@@ -1,6 +1,6 @@
 ---
 name: gptel-runner-pipelines
-description: Create, run, monitor, recover, and manage gptel-runner pipelines in Emacs Lisp. Use for workflows of gptel agents, explicit context and decision handoffs, bounded review loops, human gates, budgets, and durable resume while preserving the user's goal, constraints, and accepted decisions.
+description: Create, run, monitor, recover, and manage gptel-runner pipelines and their Emacs Lisp APIs. Use for workflows of gptel agents, input/context and decision handoffs, bounded review loops, human gates, budgets, and durable resume. Background job definitions, worker setup, and scheduling belong to gptel-runner-jobs.
 ---
 
 # gptel-runner pipelines
@@ -14,6 +14,10 @@ For an existing pipeline, go to [running and managing pipelines](references/oper
 It covers preflight/start, inspection, an operation-selection table, human feedback,
 recovery, budgets, snapshots, and cleanup. Keep creation and operation in this
 skill; read the design sections below when definitions or handoffs need changes.
+
+For background job creation, worker bootstrap, scheduling, and remote invocation
+control, use the companion [jobs skill](../gptel-runner-jobs/SKILL.md). Keep the
+pipeline definition, its inputs/outputs, and its runtime API contracts here.
 
 ## Ground the implementation
 
@@ -29,6 +33,12 @@ the constructors/options you use against the local source. Architecture proposal
 such as `overall_description_must_read.md` describe intent, including features
 that may not exist. Do not invent gate, transform, dialogue, dependency, or merge
 nodes. Use public runner APIs, keeping private gptel calls out of workflows.
+
+The references were checked against `8cdc6ed` on 2026-11-17. In particular,
+`:inputs`, workflow-default workspaces, and programmatic call feedback require
+this newer source. Package version `0.1.0` alone does not identify the feature set.
+For custom drivers, admission hooks, headless interactions, or published pipeline
+outputs, read [runtime integrations](references/runtime-integrations.md).
 
 ## Discover presets before assigning agents
 
@@ -100,6 +110,13 @@ create a worktree or participate in the writer lock. Provision worktrees separat
 when needed, and sequence work whose files or external resources overlap.
 
 ## Build three layers of context
+
+Supply structured starting values with `gptel-runner-start :inputs` (an alist or
+hash table). They are available before the first prompt/context function runs;
+read them with `gptel-runner-get`. Input values are not injected into prompts
+automatically. Use distinct keys for starting inputs and produced outputs so a
+continuation can retain the former while clearing the latter. See the
+[input contract](references/runner-api.md#starting-inputs-and-workspace-defaults).
 
 1. **Shared intent:** use workflow/run/root `:context` for goal, purpose,
    acceptance, scope, and enduring constraints. Include
@@ -215,7 +232,7 @@ Deliver the workflow file, preset/tool prerequisites, a start form with appropri
 budgets, a short explanation of context routes and decision ownership, and what was
 actually verified. Keep live execution separate from loading definitions. By default,
 configure pipeline agents to run tools autonomously: pass `:allow-unconfirmed-tools t`
-explicitly in start and job start arguments. Enable `:allow-writes t` for intended
+explicitly in start arguments. Enable `:allow-writes t` for intended
 writers. Respect any explicitly requested approval gate. Disabling tool confirmation
 is not permission to exceed the agreed scope or bypass independent access controls;
 workspace modes alone do not restrict tool capabilities. Verify the actual worker's

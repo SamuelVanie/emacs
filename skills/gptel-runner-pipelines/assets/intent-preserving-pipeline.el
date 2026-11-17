@@ -26,7 +26,7 @@
 ;;                         "Acceptance: list observable success checks.\n"
 ;;                         "Constraints and non-goals: state the agreed scope.\n"
 ;;                         "Accepted choices: include choices and reasons.")
-;;        :allow-writes t))
+;;        :allow-writes t :allow-unconfirmed-tools t))
 ;; Replace the example brief with task-specific content before a live run.
 ;; For durable runs add :persist t and reload these definitions before restore.
 ;; To target a different repository, add :workspace "existing-relative-dir"

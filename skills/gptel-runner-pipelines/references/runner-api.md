@@ -1,9 +1,11 @@
 # API details that affect pipeline correctness
 
-Grounded in gptel-runner commit `51570dc` inspected on 2026-10-30, including
-per-agent workspace overrides and directory-aware writer serialization.
+Grounded in gptel-runner commit `8cdc6ed` inspected on 2026-11-17, including
+start-time inputs, workflow-default workspaces, and the runtime integration APIs.
 Recheck the installed source when an option differs. The engine requires Emacs
-29.1+; live requests additionally need the installed compatible gptel and presets.
+29.1+; live requests additionally need compatible gptel (declared minimum
+0.9.9.4) and configured presets. An unchanged package version is not proof that
+the loaded compiled functions include this commit's features.
 
 ## Definitions and constructors
 
@@ -26,13 +28,24 @@ Recheck the installed source when an option differs. The engine requires Emacs
 execute `(list ...)` or `(gptel-runner-context-file ...)`. Node constructors,
 registration, and start arguments are ordinary evaluated Lisp.
 
+There is no public workflow/agent enumeration API. For discovery only, guard
+reads of `gptel-runner--workflows` / `gptel-runner--agents` with `boundp`; inspect
+objects through `gptel-runner-workflow-root`, `-options`, `gptel-runner-node-kind`,
+`-properties`, `-children`, and `gptel-runner-agent-*` accessors. Do not mutate the
+registries. Registering an existing name replaces its definition, so use scoped
+names and inspect before replacement. `gptel-runner-unregister-agent` and
+`gptel-runner-unregister-workflow` remove registrations; they are not run cleanup.
+Personal definition files normally live in `~/.emacs.d/pipelines/`, loaded by
+`pipeline.el`; include hidden `.el` files when searching and inspect top-level
+forms before loading.
+
 | Constructor | Relevant properties and behavior |
 | --- | --- |
 | `gptel-runner-agent-step` | `:id`, `:agent`, `:prompt`, `:save-as`, `:context`; optional `:workspace`, `:parser`, `:validator`, `:repair-invalid`, `:retries`, `:pause-after` |
 | `gptel-runner-sequence` | Leading keyword/value properties, then child nodes; fail-fast; inherited `:context` |
 | `gptel-runner-parallel` | Leading properties, then children; `:policy 'fail-fast`, `'collect`, or `'minimum-successes`; latter needs `:minimum-successes N`; optional aggregate `:save-as` |
 | `gptel-runner-branch` | `:predicate` (alias `:if`) function of run, `:then` node, optional `:else` node, inherited `:context` |
-| `gptel-runner-repeat-until` | Positive `:max`, `:body` node, optional `:until`, `:stop-when`, `:progress-key` functions of run; inherited `:context` |
+| `gptel-runner-repeat-until` | Positive `:max`, `:body` node, optional `:until`, `:stop-when`, `:progress-key` functions of run; inherited `:context`; paired `:collect-keys` and `:save-history-as` |
 
 There is no public generic transform node or standalone gate node in this
 version. Put deterministic projection in prompt/context helpers or predicates,
@@ -44,6 +57,70 @@ Agent registration also supports `:context`, `:parser`, `:validator`, `:schema`,
 an unrecognized step keyword takes effect. Presets and tools must actually exist;
 use [preset discovery](presets.md) before selecting them. Registration stores the
 preset reference but does not prove it exists or that its dependencies resolve.
+The gptel adapter accepts a preset symbol or an inline preset plist. A non-nil
+step parser/validator overrides the registered one; nil falls back to it, rather
+than disabling it. `:workspace-mode` defaults to `read`; its supported values
+are `read`, `write`, and `isolated`. Metadata is application data, not behavior.
+
+## Starting inputs and workspace defaults
+
+`gptel-runner-start :inputs` accepts a proper alist or hash table, not a plist.
+It creates a fresh `equal` blackboard before any node, context function, or prompt
+executes. Keys and values are copied with `copy-tree` (including vectors), not a
+general deep clone of arbitrary objects. Keep values as readable Lisp data for
+snapshots; do not rely on runtime objects or mutable nested hash tables being copied.
+Symbol, keyword, and string keys are different: match the pipeline's actual keys.
+The symbol keys `gptel-runner-decisions` and `gptel-runner-continuations` are
+reserved and rejected. Avoid other runner-internal keys as application inputs.
+
+For example, after registering `my-worker` with a compatible preset:
+
+```elisp
+(defun example/input-prompt (run node)
+  (let ((subject (gptel-runner-get run 'subject)))
+    (unless (and (stringp subject) (not (string-blank-p subject)))
+      (error "Pipeline requires a non-empty subject input"))
+    (format "Goal: %s\nWorkspace: %s\nInspect: %s"
+            (gptel-runner-run-goal run)
+            (gptel-runner-node-workspace run node) subject)))
+
+(gptel-runner-defworkflow input-example
+    (:max-calls 3 :max-requests 6 :max-duration 300)
+  (gptel-runner-agent-step
+   :id 'inspect :agent 'my-worker :prompt #'example/input-prompt
+   :save-as 'report))
+
+;; Dispatches immediately: choose the driver and existing directory beforehand.
+(gptel-runner-start 'input-example
+ :goal "Explain the cancellation path" :workspace my-project-root
+ :inputs '((subject . "src/importer.el")) :driver my-driver
+ :allow-unconfirmed-tools t)
+```
+
+`:inputs` is a start argument, not an inherited workflow option. It makes data
+available through `gptel-runner-get`; it does not stringify it into every prompt.
+Use `:context` or a prompt helper to select what the receiving agent needs.
+Inputs persist as blackboard entries. Retry/resume/continue have no replacement
+`:inputs` argument; deliberately update application keys with `gptel-runner-put`
+before restarting dependent work, or start a new run when the definition/plan
+must change. A workflow-owned `:save-as` key can overwrite an input and is cleared
+on a successful-run continuation; keep input and output keys separate.
+
+Run workspace precedence is explicit start `:workspace` → workflow option
+`:workspace` → calling buffer's `default-directory`. Explicit nil at start
+bypasses the workflow default and uses `default-directory`. Relative run defaults
+resolve from the calling buffer directory; prefer absolute paths for predictable
+direct starts. The selected directory must exist and is canonicalized. Workflow
+options are quoted: use a literal string, not `(expand-file-name ...)`, for a
+default `:workspace`; pass computed directories at start instead.
+
+Budgets, concurrency, `:persist`, and `:decision-memory` also allow explicit start
+overrides of workflow defaults. Package fallbacks are unlimited calls/requests/
+duration, concurrency 1, decision memory t, and persistence nil. Workflow and run
+`:context` are additive. Goal, inputs, driver, callback, and the two permission
+flags are supplied at start; putting them in workflow options does not supply
+their start arguments. Select a driver explicitly or configure
+`gptel-runner-default-driver`.
 
 ## Function signatures
 
@@ -124,9 +201,12 @@ Order conflicting work explicitly. `isolated` creates no isolation and does not
 count as a writer for this lock; use `write` with separately provisioned worktrees.
 
 The bundled `gptel-runner-workspace-diff-key` still reads the **run** workspace.
+It hashes `git diff --no-ext-diff` only when `.git` is a directory: staged-only
+changes, untracked files, and Git worktrees with a `.git` file are not covered.
 For progress across overridden workspaces, compute a stable digest of relevant
 artifacts/tests from each directory; do not mistake an unchanged default-root diff
-for stalled work elsewhere.
+for stalled work elsewhere. For external admission hooks, see
+[runtime integrations](runtime-integrations.md#call-admission-and-release).
 
 ## Context and decision propagation
 
@@ -190,11 +270,44 @@ Use independent per-child keys for required inputs.
 
 ## Validation, repairs, and gates
 
+Request retry policy and agent-step retry are separate:
+
+```elisp
+(gptel-runner-register-agent
+ 'my-worker :preset 'configured-preset :workspace-mode 'read
+ :retry-policy (gptel-runner-retry-policy-create
+                :max-retries 2 :base-delay 1.0 :max-delay 30.0 :jitter 0.2))
+```
+
+These are the policy defaults. Retryable HTTP statuses default to
+408/425/429/500/502/503/504/529; transient failures with no HTTP status or driver
+metadata `:retryable t` can also retry, unless `:permanent` is non-nil.
+Retries use capped exponential delay / retry-after with jitter, reuse the logical
+call, and consume another request attempt. Step `:retries N` defaults to zero and
+starts fresh calls after execution failures; it does not turn a parsed `revise`
+into an iteration or keep retrying an invalid parsed result. Use a repeat for
+revision and the format repair path for invalid output. Retries can repeat tool
+side effects, so recheck artifacts and make consequential operations idempotent.
+
+`:max-requests` counts runner driver dispatch attempts in this implementation;
+gptel's internal tool-loop HTTP requests and manual/programmatic feedback do not
+each increment it. It is not a complete provider-request or spending cap.
+`:max-calls` counts logical calls, including fresh step retries and output repairs.
+Duration measures active run time, including call gates but excluding whole-run
+pauses. Keep provider/tool limits separate when an actual spend cap is required.
+
 The optional review helpers provide `gptel-runner-parse-review`,
 `gptel-runner-valid-review-p`, and `gptel-runner-review-schema`. A review is a
 plist with symbolic `:verdict` (`pass`, `revise`, `blocked`), `:summary`, and
 `:issues`. Add a semantic validator if pass must imply no unresolved issues;
 the generic validator alone does not enforce that relationship.
+Issue fields are required string `:severity` / `:message`, optional `:file`,
+positive integer or nil `:line`, and `:suggested_fix`. Treat the schema as a
+provider hint; parser and validator enforce the actual contract.
+`gptel-runner-normalize-review (review)` normalizes verdict/issues;
+`gptel-runner-review-progress-key (run &optional review-key)` hashes that material,
+and `gptel-runner-review-diff-progress-key` combines it with the run workspace
+diff. Both default to the key `review`; pass your actual review key.
 
 `:repair-invalid t` or a registered schema allows one automatic format repair.
 It is a fresh call. Its prompt contains goal, effective node workspace, invalid
@@ -203,6 +316,11 @@ version. Keep it a format-only operation. Make parser errors explain the require
 shape; do not let repair revise substantive choices. Where a repair needs task
 judgment or full context, build an explicit contextual repair stage instead.
 An empty final answer also gets one repair, carrying the original resolved prompt.
+The empty-answer and invalid-format paths share one repair allowance per node
+execution. Streaming follows gptel/preset settings; intermediate commentary and
+tool activity remain in the transcript/events, while only the final model answer
+is parsed/saved. A tool stop without its required tool payload is retried as a
+transient protocol failure, not accepted as a finished answer.
 
 `:pause-after t` holds the response before parsing, saving, and advancing. Accept
 or replace it with `gptel-runner-complete-call-from-buffer`; parser/validator still
@@ -218,3 +336,21 @@ seeding the blackboard afterward is too late. Preserve downstream inputs through
 `:save-as` or durable artifacts, and use readable Lisp values/named context
 functions for persistence. Recovery does not freeze files, copy repositories, or
 automatically refresh a completed plan after the goal changes.
+
+## Source map for future updates
+
+Compare this verified commit with the intended checkout and inspect dirty changes
+too. Use implementation and tests to resolve differences with README examples or
+architecture proposals; a newer jobs commit can also change shared pipeline APIs.
+
+| Concern | Source / network-free coverage in the runner checkout |
+| --- | --- |
+| Constructors, context, inputs, workspace defaults, lifecycle | `gptel-runner-flow.el`; `test/gptel-runner-test.el`, `test/gptel-runner-background-core-test.el` |
+| Scheduling, budgets, events, admission | `gptel-runner-core.el`; the same core tests |
+| Presets, streaming, feedback, tool interactions | `gptel-runner-gptel.el`; mocked transport in `test/gptel-runner-gptel-test.el` |
+| Review contract and progress | `gptel-runner-review.el`; `examples/dual-review-loop.el`, `examples/implement-review.el` |
+| Snapshots and dashboard | `gptel-runner-store.el`, `gptel-runner-ui.el`; `test/gptel-runner-test.el` |
+| Pipeline artifact publication | `gptel-runner-publish-artifact` in `gptel-runner-jobs.el`; `examples/background-jobs.el` (publishing requires a worker) |
+
+Use the skill's [lifecycle smoke checks](../scripts/operations-smoke-test.el) to
+exercise the starter and its handoffs against a new checkout without providers.

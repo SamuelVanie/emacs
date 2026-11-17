@@ -1,6 +1,6 @@
 # Running and managing pipelines
 
-Verified against gptel-runner `51570dc` on 2026-10-30. Recheck the loaded source
+Verified against gptel-runner `8cdc6ed` on 2026-11-17. Recheck the loaded source
 when versions differ. This reference operates the definitions described in
 [runner-api.md](runner-api.md); it does not grant extra execution authority.
 
@@ -16,7 +16,11 @@ Contents: [load/preflight](#load-and-preflight), [start](#start-and-retain-the-r
    the discoverable file; `(symbol-file 'gptel-runner-start 'defun)` reports the
    loaded definition. A changed `load-path` does not replace already loaded Lisp.
    Inspect the local README and implementation rather than hot-reloading a live
-   scheduler merely to match a checkout.
+   scheduler merely to match a checkout. Inspect the loaded function's docstring
+   and `(fboundp 'gptel-runner-gptel-feedback)` when newer APIs are needed; a
+   compiled function's argument list can be uninformative. An unknown start
+   keyword can be silently ignored because start accepts other keys: successful
+   evaluation alone does not prove that an older runner supports `:inputs`.
 2. Inspect the pipeline file before loading it: registration-only definitions are
    safe to load within setup scope, but top-level start forms launch work. Load
    gptel and needed tool packages, selected preset definitions, then the runner,
@@ -39,8 +43,8 @@ Contents: [load/preflight](#load-and-preflight), [start](#start-and-retain-the-r
 5. Confirm finite call/request/active-duration limits, concurrency, repeat bounds,
    intended gates, and the existing authorization for writes and tool execution.
    `:allow-writes t` must be supplied explicitly to start writable workflows.
-   By default, pass `:allow-unconfirmed-tools t` explicitly in start or job
-   start arguments; workflow defaults do not supply these flags. Retain approval
+   By default, pass `:allow-unconfirmed-tools t` explicitly in start
+   arguments; workflow defaults do not supply these flags. Retain approval
    when explicitly requested. Separate access controls and tool hooks can still
    require approval, so test worker behavior. Neither flag restricts the filesystem,
    and `isolated` does not provision a worktree.
@@ -57,12 +61,15 @@ does not validate actual presets, credentials, tool capabilities, or artifacts.
 ## Start and retain the run
 
 `gptel-runner-start` takes a workflow symbol, workflow object, or anonymous root
-node plus keywords `:goal`, `:workspace`, `:driver`, `:max-calls`, `:max-requests`,
+node plus keywords `:goal`, `:workspace`, `:inputs`, `:driver`, `:max-calls`, `:max-requests`,
 `:max-duration` (seconds), `:max-concurrency`, `:context`, `:decision-memory`,
 `:persist`, `:allow-writes`, `:allow-unconfirmed-tools`, and `:callback`.
 Anonymous roots cannot be durably paused or saved. Omitted budget limits inherit
-workflow defaults; otherwise nil means unlimited. Omitted workspace uses the
-calling buffer's `default-directory`, so supply the intended directory explicitly.
+workflow defaults; otherwise nil means unlimited. Omitted workspace inherits the
+workflow's `:workspace` default, then the calling buffer's `default-directory`.
+Explicit nil uses `default-directory`. Check the selected directory exists.
+`:inputs` initializes blackboard values before dispatch; see the
+[input/default precedence contract](runner-api.md#starting-inputs-and-workspace-defaults).
 
 For an adapted [starter](../assets/intent-preserving-pipeline.el), first set
 `my-project-root` to the existing project directory and `my-brief` to the agreed
@@ -90,8 +97,9 @@ against the actual task, not permission to increase an existing allowance.
 
 Evaluate Lisp with the available Emacs evaluation tool, `M-:`, or a deliberately
 invoked start file. `gptel-runner-start` is not an `M-x` command. Do not append a
-live start to a file meant only to register definitions. Supply all initial context
-at start: putting it on the blackboard afterward can miss the first dispatched call.
+live start to a file meant only to register definitions. Supply initial narrative
+context with `:context` and structured values with `:inputs` at start: putting
+them on the blackboard afterward can miss the first dispatched call.
 Ordinary prompts still need to include the initial goal explicitly; the starter's
 shared context does this.
 
@@ -118,6 +126,11 @@ inapplicable actions. The default refresh interval is two seconds; it is not a
 reason for an agent to repeatedly fetch complete transcripts. Choose a run/call
 row, then `? e` for events or `? v` for its worker buffer. Equivalent commands are
 `gptel-runner-dashboard-inspect-events` and `gptel-runner-dashboard-visit-worker`.
+The dashboard now also includes job and agent columns and external invocation
+rows. The lifecycle APIs below control local run/call objects in their owning
+Emacs. Inspecting an external row does not load or transfer its run; route remote
+commands through the [jobs skill](../../gptel-runner-jobs/SKILL.md). Session-local
+run IDs alone do not identify an external invocation.
 
 For a compact status read (the `grp-*` keys/ID belong to the starter):
 
@@ -180,6 +193,7 @@ recording decisions, interactive wrappers use the selected dashboard row.
 | --- | --- | --- |
 | Planned acceptance before advancing | Step `:pause-after t` | Response enters `waiting-feedback`; no parsed/saved result yet |
 | Correct one unfinished call now | `(gptel-runner-pause-call call &optional reason)` | `p`, `gptel-runner-dashboard-pause-call`; retain live continuation |
+| Ask a paused/gated gptel call for a revision | `(gptel-runner-gptel-feedback call text)` | Lisp API; runs asynchronously in the retained conversation, then waits for acceptance |
 | Accept human-reviewed call output | `(gptel-runner-complete-call-from-buffer &optional result call)` | `a`, `gptel-runner-dashboard-complete-call`; parser/validator still apply |
 | Stop all work for a longer wait | `(gptel-runner-pause-run run &optional reason)` | `P`, `gptel-runner-dashboard-pause-run`; named workflow, stop duration clock, queue snapshot |
 | Restart a paused run | `(gptel-runner-resume-run run &optional feedback callback)` | `r`, `gptel-runner-dashboard-resume-run`; completed nodes kept, unfinished work restarts |
@@ -219,6 +233,27 @@ provide the reviewed text and call object:
 In the dashboard `? a` uses the selected call's last response, not a region in
 another buffer. Submitted text still must pass the node's parser/validator;
 acceptance can trigger format repair or fail. Invalid output is never approval.
+
+For programmatic feedback on a gptel call with a live worker buffer:
+
+```elisp
+(gptel-runner-gptel-feedback selected-call
+                            "Check cancellation as well as successful completion.")
+;; Later, after feedback completes and the revised result has been inspected:
+(gptel-runner-complete-call-from-buffer nil selected-call)
+```
+
+Feedback requires call state `paused` or `waiting-feedback` and nonblank text.
+It acquires the workspace/concurrency admission slot or errors if busy; it does
+not silently queue itself. It returns immediately, retains the conversation, and
+does not save the node result or advance the workflow. Observe `feedback-started`
+then `feedback-completed` / `feedback-failed`; completion/failure returns to
+`waiting-feedback`. Inspect failure and the latest response before acceptance,
+since a previous answer may still be present. Acceptance while feedback is active
+is rejected. Feedback is a live provider request, not a decision-log update.
+Its requests do not increment runner call/request counters; retain a separate
+allowance. For headless tool-approval APIs, see
+[runtime integrations](runtime-integrations.md#headless-tool-interactions).
 
 A call pause or gate leaves the run running: other branches may proceed and the
 active-duration clock continues. Manually continued gptel conversations are outside
@@ -398,6 +433,9 @@ Supply a fresh callback/driver; unfinished calls restart statelessly and their
 previous usage remains charged. V1 snapshots are unsupported. Keep runtime objects
 such as buffers/processes and captured live closures out of saved values. Snapshot
 files use mode `0600`; their contents may include sensitive brief/result data.
+These are core v2 checkpoint guarantees. A background invocation has separate
+inspection history managed by the jobs layer; do not treat its transcript exports
+as additional execution state restored by `gptel-runner-load-run`.
 
 ## Cancellation and cleanup
 
