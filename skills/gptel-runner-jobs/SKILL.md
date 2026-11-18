@@ -18,6 +18,13 @@ Keep job/bootstrap code short: use the runner's launch, inspection, and command
 APIs instead of embedding process management, polling infrastructure, or storage
 helpers into the workflow.
 
+Jobs can use gptel-agent presets, nested agents, and discussions through the
+standard driver. Verify compatible packages in the initialized worker and read
+the [nested-work contract](../gptel-runner-pipelines/references/runtime-integrations.md#gptel-agent-presets-and-nested-work)
+when those features are present. Child tool approvals use the normal job command
+channel, including multiple pending requests on one node. Question forms and
+separate interactive file-review interfaces still require headless adapters.
+
 ## Shared pipeline outputs
 
 Both modes publish text with `gptel-runner-write-artifact` or copy existing files

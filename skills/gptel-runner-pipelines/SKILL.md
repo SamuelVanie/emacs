@@ -43,8 +43,9 @@ and defensive scaffolding unrelated to the actual task.
 The current source and examples are in `~/projects/gptel-runner`. If the installed
 package lacks a needed public API, identify the version gap and use one consistent
 package version; do not embed fallback implementations in each pipeline. Read
-[runtime integrations](references/runtime-integrations.md) only for custom drivers,
-admission hooks, headless interactions, or dashboard extensions.
+[runtime integrations](references/runtime-integrations.md) for gptel-agent presets
+and nested work, custom drivers, admission hooks, headless interactions, or
+dashboard extensions.
 
 ## Discover presets before assigning agents
 
@@ -61,6 +62,11 @@ defaults, and dynamic settings need inspection before they can be treated as
 resolved. Prefer existing suitable presets. Distinguish runner agent names,
 gptel preset symbols, and gptel-agent file/subagent names; they are not one registry.
 The reference covers loading missing definitions and registering a chosen preset.
+For presets using `Agent` or `Discussion`, read the
+[gptel-agent integration contract](references/runtime-integrations.md#gptel-agent-presets-and-nested-work).
+The standard driver owns supervision through public APIs; pipeline definitions
+need no private agent advice or separate completion timer. Check nested tools,
+workspaces, and limits as well as the outer node's configuration.
 
 Record a small node → runner agent → preset mapping with role, capabilities,
 required dependencies, and availability (loaded, defined but unloaded, or missing).

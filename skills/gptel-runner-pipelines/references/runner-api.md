@@ -464,7 +464,10 @@ side effects, so recheck artifacts and make consequential operations idempotent.
 
 `:max-requests` counts runner driver dispatch attempts;
 gptel's internal tool-loop HTTP requests and manual/programmatic feedback do not
-each increment it. It is not a complete provider-request or spending cap.
+each increment it. Nested gptel-agent workers/discussions are internal to the
+outer call and are not separate runner calls or concurrency slots; see the
+[nested-work contract](runtime-integrations.md#gptel-agent-presets-and-nested-work).
+These counters are not complete provider-request or spending caps.
 `:max-calls` counts logical agent calls, including fresh agent retries and output repairs.
 Duration measures active run time, including call gates but excluding whole-run
 pauses. Keep provider/tool limits separate when an actual spend cap is required.

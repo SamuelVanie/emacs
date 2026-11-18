@@ -184,7 +184,10 @@ waiting call:
 ```
 
 For a pending tool interaction selected from fresh `:interactions`, inspect its
-actual tool request before answering it:
+actual tool request before answering it. Entries include `:source-buffer` and
+`:tools`; approvals from subagents/discussions share the outer runner `:call-id`
+but have distinct interaction IDs. Several can be pending at once. Select the
+specific source/tool request, not merely the first entry for a waiting node:
 
 ```elisp
 (gptel-runner-job-command
@@ -196,9 +199,13 @@ actual tool request before answering it:
 ```
 
 Interaction ID, worker epoch, and call generation identify different things.
-A stale approval cannot authorize a subsequent tool request. `feedback` produces
-another response that still needs `accept`; `resume` restarts unfinished workflow
-work and is not acceptance of a paused call.
+A stale approval cannot authorize a subsequent tool request. An accepted child
+approval runs in that child's request context; its siblings may still await
+approval. Rejecting any pending interaction cancels the owning runner call and
+its descendants. Closed/cancelled children lose their approvals even if the
+outer call continues. Re-read `:interactions` after commands or lifecycle changes.
+`feedback` produces another response that still needs `accept`; `resume` restarts
+unfinished workflow work and is not acceptance of a paused call.
 
 ## Worker recovery
 
@@ -216,6 +223,8 @@ of the job prevents recovery. Recovery uses the configured launcher; a generic
 CLI initial run alone does not configure a portable detached recovery launcher.
 
 Live callbacks, buffers, and pending tool interactions do not survive a crash.
+This includes nested agent/discussion requests and their supervision handles;
+unfinished pipeline nodes restart rather than resuming those child requests.
 Use `resume` for interrupted work restored as paused, `retry` for a retryable
 failure, and the appropriate extension for budget exhaustion. Refresh history
 after recovery; old call addresses and approvals are invalid. A startup failure

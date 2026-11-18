@@ -59,6 +59,16 @@ over preset overrides. If init adds `gptel-agent-dirs`, refresh discovery before
 loading custom overrides. Additional agent files do not automatically create
 the runner-agent registrations referenced by pipeline steps.
 
+For presets using agent features, validate the four
+[public supervision APIs](../../gptel-runner-pipelines/references/runtime-integrations.md#gptel-agent-presets-and-nested-work)
+in the initialized worker, not just the editor. Check loaded implementation
+paths as well as API names: a saved `:load-path` may still select an older agent
+installation while the runner comes from an updated checkout. Repair the saved
+bootstrap paths with a compatible package pair and all required dependencies;
+adding a new path after an old feature was preloaded does not replace it.
+Do not install private-agent advice, add a supervisor timer, or create handles
+in init: the runner's driver manages the public integration itself.
+
 Explicit `:preload-features nil` disables this automatic preload/discovery. Use
 it for fake-driver or deliberately self-contained workers, not as a workaround
 for missing dependencies in a real job.
@@ -125,8 +135,13 @@ untrusted init code. Do not apply every preset just to inventory it: preset hook
 may have side effects. A successful load proves initialization, not live provider
 access or headless compatibility of every tool.
 
-Human gates and tool approvals remain possible in background work. Workers wait
-for the dashboard/command channel; direct synchronous minibuffer tools may fail
-with unsupported input. Do not remove confirmations merely to make a schedule
-unattended. Resolve any mismatch between the requested autonomy and the pipeline's
-actual interaction requirements before launching it.
+Human gates and gptel tool approvals remain possible in background work.
+Subagent and discussion tool approvals appear on the owning pipeline node, with
+separate interaction IDs and source-buffer labels. Workers wait for the
+dashboard/command channel; approving one child does not approve its siblings.
+`AskUserQuestion` forms, separate interactive file-review interfaces, and direct
+synchronous minibuffer tools need their own headless adapters. Package loading
+and tool-approval routing do not prove those interfaces are supported.
+Do not remove confirmations merely to make a schedule unattended. Resolve any
+mismatch between the requested autonomy and the pipeline's actual interaction
+requirements before launching it.

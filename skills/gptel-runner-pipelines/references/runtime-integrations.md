@@ -48,6 +48,71 @@ provider request or scheduler continuation. Ordinary v2 snapshot loading does
 not use it to restore historical calls. Feedback and explicit acceptance are
 documented in [operations](operations.md#human-gates-and-pausing).
 
+## gptel-agent presets and nested work
+
+Use the standard gptel driver for gptel-agent presets. Plain gptel presets remain
+usable without gptel-agent. When gptel-agent is loaded, the adapter requires these
+public functions; compatible versions must be loaded in the process doing the work:
+
+| Public gptel-agent API | Responsibility |
+| --- | --- |
+| `gptel-agent-supervise` | Create an opaque buffer-owned handle, with state and tool-approval callbacks. |
+| `gptel-agent-supervision-request-live-p` | Check that a retained request still belongs to a live supervisor. |
+| `gptel-agent-supervision-retry` | Rearm the failed root request's gate before the host resumes that FSM. |
+| `gptel-agent-supervision-stop` | Release supervision and cancel descendants; the host owns root transport cancellation. |
+
+For a loaded integration, this read-only query checks actual API availability
+and the source of the loaded implementation, without sending model requests:
+
+```elisp
+(list :agent-loaded (featurep 'gptel-agent-tools)
+      :agent-runtime (symbol-file 'gptel-agent-supervise 'defun)
+      :runner-runtime (symbol-file 'gptel-runner-gptel-driver-create 'defun)
+      :agent-api
+      (mapcar (lambda (name) (cons name (fboundp name)))
+              '(gptel-agent-supervise gptel-agent-supervision-request-live-p
+                gptel-agent-supervision-retry gptel-agent-supervision-stop)))
+```
+
+An unloaded package is not proof of an incompatible version. Load the selected
+setup normally, then check it. Resolve missing APIs or mismatched library paths;
+do not recreate the former private-agent advice or periodic supervision timer.
+A fresh process clears advice left by the old workaround; reloading new function
+definitions alone does not remove that old advice.
+
+The runner manages handles automatically for calls and feedback requests. It
+owns root scheduling and retries; gptel-agent owns descendant lifecycle and
+event-driven settlement. Ordinary workflows should not call these four APIs
+themselves. Only a custom host/driver needs their docstring-level contracts.
+
+Completion and information flow:
+
+- `Agent` workers, including `background: true` workers, finish and deliver their
+  outcomes before the owning request completes.
+- Active discussion turns, nested discussions, and queued discussion follow-ups
+  hold a runner-owned request open. Idle discussions do not. A silent completion
+  releases the held parent answer.
+- Ordinary discussion replies remain in the child. Request `DiscussionReport`
+  explicitly when the findings must reach the parent for synthesis; it resumes
+  the same request. Raw reports belong in the transcript, not the final node value.
+- Pausing/cancelling the node stops its descendant work and invalidates pending
+  approvals. Recovery restarts unfinished nodes rather than restoring live child
+  callbacks. Inspect effects already performed before restarting.
+
+Nested work is internal to a node, not additional runner nodes. Its calls and
+concurrency are not separately charged against the runner's budgets, and nested
+HTTP requests do not make `:max-requests` a provider spend cap. Use agent task
+limits where appropriate. Register the outer node as a writer when its children
+can write; runner locks cover its declared workspace, not every directory a
+child might choose. Prefer explicit pipeline nodes when separate scheduling,
+workspace locking, results, or budgets are required for each participant.
+
+The checkout's `make integration-test INTEGRATION_LOAD_PATH="..."` exercises the
+plain gptel adapter and agent delegation separately, using real state machines
+with mocked transport, including a background process. Supply load paths for
+gptel, gptel-agent and their dependencies. These checks complement fake-driver
+workflow tests; neither proves live-provider or arbitrary custom-tool behavior.
+
 ## Call admission and release
 
 `gptel-runner-call-admission-functions` is a hook of functions taking one call.
@@ -76,19 +141,31 @@ actual writers even when their worktrees are separate.
 With `gptel-runner-headless` non-nil, the gptel driver publishes pending tool
 approval through `gptel-runner-interaction-hook`, rather than local approval UI.
 Each hook function receives `(call interaction)`. The serializable interaction
-contains `:id`, `:kind` (`tool-approval`), `:call-id`, `:generation`, and `:tools`
-(name/args). Live callbacks remain private to the owning process.
+contains `:id`, `:kind` (`tool-approval`), `:call-id`, `:generation`,
+`:source-buffer`, and `:tools` (name/args). Live callbacks remain private to the
+owning process. Subagent and discussion approvals are routed to the outer call;
+several children can have different pending interaction IDs simultaneously.
+Treat `:source-buffer` as a display label, not the request identity.
 
 `gptel-runner-gptel-answer-interaction (call interaction-id approve)` answers that
 exact pending interaction once. Non-nil approve executes its tools; nil cancels
 the call with `tool-rejected`, whose effect on the run follows the parent policy.
-It checks the current generation, `waiting-confirmation` state, live buffer,
-and matching pending ID. Pausing/cancelling invalidates pending approval. Never
-reuse an ID for a later interaction or serialize live call objects for another
-process. Use the jobs layer to route answers to a background worker.
+It validates the generation, source buffer, request info identity and source
+FSM's pending tool state, plus agent-supervision liveness when applicable.
+Use `gptel-runner-gptel-interaction-pending-p (call id)` to check a selected ID;
+the outer call's state alone cannot identify which child awaits approval.
+Acceptance executes in the source request's context. Closing a child or
+pausing/cancelling the node invalidates its pending approval; rejection cancels
+the outer call and its descendants. Never reuse an ID for a later interaction or
+serialize live call objects for another process. Use the jobs layer to route
+answers to a background worker.
 
 Headless mode does not grant tool approval or change the explicit start-time
 confirmation policy. The policy also applies during programmatic feedback.
+`AskUserQuestion` forms and separate interactive file-review interfaces still
+need their own headless adapters; routing gptel tool approvals does not make
+those interfaces remotely usable. Inspect the selected preset's actual tools
+and hooks before treating it as suitable for unattended work.
 
 ## Pipeline file outputs
 

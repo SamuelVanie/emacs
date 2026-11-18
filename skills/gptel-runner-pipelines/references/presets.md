@@ -102,6 +102,24 @@ do not silently overwrite an existing user preset. Inheriting a parent with
 `:system "..."` can replace its full prompt; preserve required role instructions
 deliberately when composing a new one.
 
+### Presets using gptel-agent features
+
+With compatible gptel-agent and runner versions, normal agent nodes can use
+presets containing `Agent`, `AgentControl`, `Discussion`, and `DiscussionControl`.
+Keep their inherited prompt transforms and setup hooks: the standard driver
+passes the worker's `gptel-prompt-transform-functions` into requests and feedback.
+Registering tool names alone does not attach their request-local dispatchers.
+Do not replace required transforms with an empty list or add private localizers,
+advice, or supervision handles to each pipeline definition.
+
+Inspect the parent's allowed subagents and the actual child definitions too;
+a registered `Agent` tool does not imply every discovered worker is enabled.
+Confirm child tools, model settings, task limits, and any directory overrides
+fit the node's purpose. The outer runner's workspace mode and budgets do not
+independently constrain each nested worker. See
+[runtime integration](runtime-integrations.md#gptel-agent-presets-and-nested-work)
+for API compatibility, completion/report semantics, and headless limits.
+
 ## 3. Find definitions that are not loaded
 
 On this machine, useful starting points are `~/.emacs.d/presets/`,
