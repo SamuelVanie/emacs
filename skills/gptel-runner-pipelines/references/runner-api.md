@@ -78,6 +78,30 @@ Agent-only options (`:prompt`, `:context`, `:parser`, `:validator`,
 `:repair-invalid`, `:pause-after`) are rejected; validate inside the function.
 Saved outputs participate in checkpoints and recovery like agent outputs.
 
+## Failure recovery and cleanup
+
+```elisp
+(gptel-runner-try
+ :id 'attempt :body operation-node
+ :error-as 'failure :catch recovery-node
+ :finally cleanup-node :save-as 'result)
+```
+
+Each phase is a workflow node. Require `:body` and at least one of `:catch` or
+`:finally`. Catch handles `failed` after retries/repairs; optionally set
+`:catch-states '(failed blocked stalled)` or a subset. A successful handler
+recovers the try and lets the sequence continue.
+
+`:error-as` stores `(:node BODY-ID :state STATE :value VALUE)` before recovery
+or cleanup, or nil on success. Read it with `gptel-runner-get`; use a key distinct
+from `:save-as`, which stores the successful body/handler value, including nil.
+Cleanup runs even if the handler fails; successful cleanup preserves the outcome,
+while cleanup failure replaces it. An enclosing try can catch propagated failures.
+
+Cancellation and duration expiry stop immediately without cleanup. Other budgets
+still apply. Checkpoints resume the current phase; retry resumes the failed phase.
+Branch/repeat function errors are catchable failures with `:type 'flow-error`.
+
 ## Starting inputs and workspace defaults
 
 `gptel-runner-start :inputs` accepts a proper alist or hash table, not a plist.

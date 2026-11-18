@@ -172,6 +172,8 @@ and artifact verification.
 
 ## Make stopping and recovery concrete
 
+- Use `gptel-runner-try` for failure recovery and cleanup; see
+  [try nodes](references/runner-api.md#failure-recovery-and-cleanup).
 - Give every node a stable, unique `:id` and every output a clear owner. Use
   different `:save-as` keys for parallel siblings. Fail clearly on a missing
   required input; distinguish an optional first-iteration review from a lost plan.
