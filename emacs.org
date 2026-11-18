@@ -2376,6 +2376,8 @@ Mode to interact with different llms in emacs.
       (when (file-exists-p fname)
         (load-file fname)))
 
+    (load-file (expand-file-name "config/gptel-http-errors.el" user-emacs-directory))
+
     (let ((fname (expand-file-name "gptel-models.el" "~/.emacs.d/config/")))
       (when (file-exists-p fname)
         (load-file fname)))
