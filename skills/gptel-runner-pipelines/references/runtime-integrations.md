@@ -35,18 +35,24 @@ Only implement a custom driver when the supplied drivers do not fit:
 | `gptel-runner-driver-pause (driver call)` | Optional; defaults to driver cancellation of external work while the core keeps the call nonterminal. |
 | `gptel-runner-driver-await-feedback (driver call)` | Optional; prepare a completed provider transcript for human feedback; default is no-op. |
 
-Completion status is `success`, `cancelled`, `blocked`, or `transient`; other
-statuses fail. Transient metadata can contain `:http-status`, `:retry-after`,
+For a conversational node, return `success` with the submitted handoff string,
+`follow-up` with a question for the preceding agent, or `discussion` with
+assistant prose that leaves the call waiting for feedback. In response mode
+`success` carries the final response. The fake driver accepts these same
+statuses in its queued outcomes, so exercise the return path by queueing a
+`follow-up` for the requester, a reply for its predecessor, then a final result
+for the requester. To exercise errors use `cancelled`, `blocked`, `transient`, or
+a failure status. Transient metadata can contain `:http-status`, `:retry-after`,
 `:retryable`, and `:permanent`. Core owns budgets, state transitions, parsing,
 validation, and retry decisions. Keep private gptel API adaptation in
 `gptel-runner-gptel.el`, not in generated pipelines. Consult that adapter and its
 mocked-transport tests before integrating provider-specific behavior.
 
 `gptel-runner-gptel-restore-worker-buffer (call transcript)` reconstructs a
-human-readable buffer and applies the agent preset; it does not recreate a
-provider request or scheduler continuation. Ordinary v2 snapshot loading does
-not use it to restore historical calls. Feedback and explicit acceptance are
-documented in [operations](operations.md#human-gates-and-pausing).
+legacy plain-text transcript as a node chat. For normal workflows,
+`(gptel-runner-node-buffer run node)` opens the retained conversation,
+including one restored from a current session. See [feedback and explicit
+acceptance](operations.md#human-gates-and-pausing).
 
 ## gptel-agent presets and nested work
 
@@ -80,6 +86,13 @@ do not recreate the former private-agent advice or periodic supervision timer.
 A fresh process clears advice left by the old workaround; reloading new function
 definitions alone does not remove that old advice.
 
+Use companion versions that support externally managed sessions when
+gptel-agent session support is loaded. The runner marks the node chat with
+`gptel-agent-session-managed-externally` before gptel initializes it. Child
+discussions and delegated worker transcripts also belong to the run. Leave the
+user's global `gptel-agent-session-mode` setting intact. Use the runner save/open
+commands for pipeline work. See [save and restore](operations.md#save-and-restore).
+
 The runner manages handles automatically for calls and feedback requests. It
 owns root scheduling and retries; gptel-agent owns descendant lifecycle and
 event-driven settlement. Ordinary workflows should not call these four APIs
@@ -92,7 +105,9 @@ Completion and information flow:
 - Active discussion turns, nested discussions, and queued discussion follow-ups
   hold a runner-owned request open. Idle discussions do not. A silent completion
   releases the held parent answer.
-- Ordinary discussion replies remain in the child. Request `DiscussionReport`
+- `RunnerHandoff` and `RunnerAskPrevious` connect pipeline nodes in the
+  workflow. `Discussion` and `DiscussionReport` operate inside a node's
+  supervised request. Ordinary child discussion replies remain in the child. Request `DiscussionReport`
   explicitly when the findings must reach the parent for synthesis; it resumes
   the same request. Raw reports belong in the transcript, not the final node value.
 - Pausing/cancelling the node stops its descendant work and invalidates pending

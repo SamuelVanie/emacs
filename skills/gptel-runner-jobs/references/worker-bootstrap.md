@@ -45,6 +45,12 @@ This is an ordering example, not a requirement to split the user's configuration
 into these filenames. Do not assume tools, backends, or presets exist merely
 because their defining package was preloaded.
 
+For handoff-mode agents choose a model/backend that supports tool calls. The
+gptel driver supplies `RunnerHandoff` and, when a preceding chat is reachable,
+`RunnerAskPrevious`. Keep these out of preset tool registrations. To run an
+existing response-based workflow on a text-only model, use its `response`
+completion setting.
+
 Keep credentials in the user's existing credential mechanism. Configure their
 lookup in the worker without printing secrets or copying them into job records.
 Encrypted stores or tools requiring a minibuffer may need a different supported
@@ -68,6 +74,15 @@ bootstrap paths with a compatible package pair and all required dependencies;
 adding a new path after an old feature was preloaded does not replace it.
 Do not install private-agent advice, add a supervisor timer, or create handles
 in init: the runner's driver manages the public integration itself.
+
+Use a gptel-agent version supporting external chat ownership in both the
+worker and the editor that opens its published chats. For this integration,
+check `gptel-agent-session-managed-externally` with `default-boundp` and
+`gptel-agent-session-buffer-record` with `fboundp` after loading gptel-agent.
+The runner marks its node chats and descendants as externally managed, including
+delegated agent buffers, discussions, and review asides. Keep them in the
+invocation checkpoint. Leave the user's global `gptel-agent-session-mode`
+setting alone. Plain gptel uses its native chat format.
 
 Explicit `:preload-features nil` disables this automatic preload/discovery. Use
 it for fake-driver or deliberately self-contained workers, not as a workaround
@@ -114,14 +129,27 @@ file that reproduces these bootstrap conditions:
 - Set `default-directory` to explicit `:arguments :workspace`, otherwise the
   saved `:base-directory`. Prepend the saved `:load-path`.
 - Apply the saved environment and derive `exec-path` from its `PATH` if supplied.
-- Set `gptel-runner-headless` non-nil. Disable automatic native compilation and
-  trampoline generation as the worker does.
+- Set `gptel-runner-headless` and `load-prefer-newer` non-nil. Disable automatic
+  native compilation and trampoline generation as the worker does.
 - Require each saved preload feature, refresh gptel-agent when included, and
   load the actual init file in that order.
 - Inspect registration of the selected workflow, its referenced runner agents,
   effective workspaces/context files, and selected driver. For real jobs inspect
   the required presets, their inherited tools/settings, backend/model selection,
   and credential availability without exposing credential values.
+
+For a conversational workflow, evaluate this in the initialized worker. Repeat
+in the editor if its dashboard will control the job. Missing functions or a
+different library path can identify a stale installation before a real launch.
+
+```elisp
+(require 'gptel-runner)
+(list :runner (locate-library "gptel-runner")
+      :jobs (symbol-file 'gptel-runner-job-command 'defun)
+      :handoffs (fboundp 'gptel-runner-handoff-p)
+      :previous-agent (fboundp 'gptel-runner-previous-agent)
+      :rerun (fboundp 'gptel-runner-rerun))
+```
 
 Use the companion skill's
 [preset inspection reference](../../gptel-runner-pipelines/references/presets.md)

@@ -1,14 +1,13 @@
 ---
 name: gptel-runner-pipelines
-description: Create, run, monitor, recover, and manage gptel-runner pipelines and their Emacs Lisp APIs. Use for workflows of gptel agents and Elisp steps, input/context and decision handoffs, bounded review loops, human gates, budgets, and durable resume. Background job definitions, worker setup, and scheduling belong to gptel-runner-jobs.
+description: Create, run, monitor, recover, and manage gptel-runner pipelines and their Emacs Lisp APIs. Use for workflows of gptel agents and Elisp steps, tool-based handoffs and follow-up questions between node chats, bounded review loops, human gates, budgets, and saved runner sessions. Background job definitions, worker setup, and scheduling belong to gptel-runner-jobs.
 ---
 
 # gptel-runner pipelines
 
-Build the smallest useful workflow whose agents can act from fresh, independent
-contexts. Every agent should understand **what success means, why it matters,
-what has already been decided, and what its own contribution must accomplish**.
-Preserve intent explicitly; do not rely on the agents remembering a conversation.
+Give each agent node a persistent gptel conversation for its work. Revisions,
+repeat iterations, and questions return to that node's chat. Give each node the
+brief, decisions, and evidence it needs to act on the incoming handoff.
 
 For starting, inspecting, recovering, or managing an existing pipeline, read
 [operations](references/operations.md). Use the design sections below when
@@ -107,7 +106,15 @@ table is usually sufficient:
 
 Adapt this to the task. Do not add research, planning, synthesis, or review agents
 unless they have distinct work that earns their extra call and handoff cost.
-Use deterministic Lisp for routing, aggregation, stop conditions, and budgets.
+Let the sequence determine the next recipient. A node calls
+`RunnerHandoff(message)` with its finished answer. The next agent receives
+that message and may call `RunnerAskPrevious(question)` for clarification.
+The previous agent replies with `RunnerHandoff` in its existing chat. Plain
+assistant prose leaves the node waiting for feedback. For a text-only model or
+a preset that completes on ordinary final text, set `:completion 'response`
+on its step. Use deterministic Lisp for aggregation, control flow, stop conditions, and budgets. See the
+[routing rules and worked exchange](references/handoffs.md#messages-between-node-chats)
+before wiring agents across control-flow boundaries.
 
 For local operations with outputs, mix `gptel-runner-elisp-step` with agent
 nodes. Its `:function` receives `(run node)`; `:save-as` stores its return value.
@@ -141,8 +148,10 @@ continuation can retain the former while clearing the latter. See the
    `gptel-runner-run-workspace` is only the run's default, not an overridden node's
    working directory.
 2. **Accepted choices:** leave decision memory enabled. Recorded decisions and
-   their rationales reach later calls automatically. A plan saved with `:save-as`
-   still needs a context/prompt function that reads it with `gptel-runner-get`.
+   their rationales reach later calls automatically. The next eligible agent
+   also receives the accepted handoff text. To share a parsed plan farther
+   downstream or across a control-flow boundary,
+   save it with `:save-as` and read it with `gptel-runner-get` in context or a prompt.
 3. **Local assignment:** the node's prompt states its role, selected upstream
    inputs, current iteration where relevant, output contract, and stop conditions.
 
@@ -205,14 +214,15 @@ and artifact verification.
   [try nodes](references/runner-api.md#failure-recovery-and-cleanup).
 - To publish partial results after termination, use an explicit
   [bounded run finalizer](references/runner-api.md#bounded-run-finalization).
-- Give every node a stable, unique `:id` and every output a clear owner. Use
+- Give outputs clear owners. Use descriptive `:id` values for nodes you want
+  to address by name. Use
   different `:save-as` keys for parallel siblings. Fail clearly on a missing
   required input; distinguish an optional first-iteration review from a lost plan.
 - Parse and validate machine-routed results. For reviews, validate an exact
   verdict and its evidence; prose containing "pass" is not approval. A pass with
   unresolved blocking findings must not release delivery.
 - Set finite iteration, call, request, and duration budgets proportionate to the
-  task. Count repairs and retries in call/request headroom. A request, an agent
+  task. Allow headroom for questions, replies, repairs, and retries. A request, an agent
   call, and a workflow iteration are different units.
 - For revision loops, use `:until`, `:stop-when`, and a meaningful progress key.
   Compare normalized unresolved issues plus artifact/test state when available;
@@ -221,8 +231,11 @@ and artifact verification.
   resetting budgets or dropping requirements.
 - Preserve downstream inputs through node outcomes, blackboard values, or durable
   artifacts.
-  Use a named workflow and explicit IDs for `:persist t`; re-load the same
-  definitions to resume. Worker transcripts are not durable shared memory.
+  Persistence requires a named workflow. Reload the matching definition to
+  resume. Generated node IDs are matched by workflow layout. Explicit IDs
+  make nodes easier to identify. The runner saves node chats, child transcripts, and
+  pending questions with the workflow. Its session ownership also covers
+  delegated agents and discussions when global gptel-agent session saving is on.
 - Retry/resume feedback reaches one next/selected call. Promote enduring user
   corrections to recorded decisions or shared context before restarting dependent
   work. On a changed goal, revisit stale plans and acceptance assumptions; retrying
@@ -244,7 +257,8 @@ part of the requested workflow. It does not register new tools or configure mode
 Load the generated Lisp in batch Emacs and exercise consequential paths with
 `gptel-runner-fake-driver-create`. Inspect the **actual dispatched prompts**:
 goal, purpose, acceptance, decisions/rationale, required inputs, and current
-feedback must survive relevant handoffs and revisions. Exercise malformed verdicts,
+feedback must survive relevant handoffs and revisions. For adjacent agents,
+exercise a question, its reply, and the final handoff. Exercise malformed verdicts,
 blocked/stalled exits, missing dependencies, and stale branch outputs when those
 paths exist. For workspace overrides, verify effective prompt directories, local
 versus shared context, and concurrent/serialized writers as appropriate. Use the
@@ -270,7 +284,7 @@ driver alone.
 
 Use [the operations reference](references/operations.md) before starting or changing
 a run. Retain the run object/ID; inspect its state, failure reason, current results,
-and artifact evidence before choosing recovery. Start, resume, retry, continue,
+and artifact evidence before choosing recovery. Start, resume, retry, rerun, continue,
 and exhausted-budget extension can dispatch work immediately. Respect the existing
 execution authority and budget; approval for definitions alone is not a live-run request.
 

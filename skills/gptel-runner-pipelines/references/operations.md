@@ -20,8 +20,9 @@ Contents: [load/preflight](#load-and-preflight), [start](#start-and-retain-the-r
    `pipeline-file` to the inspected definition file. `require` does not discover
    or load personal presets. See [presets.md](presets.md) for runtime discovery.
 3. Confirm the selected workflow, node → agent → preset mapping, output parsers,
-   tool registrations, model/backend, and confirmation behavior. The dashboard
-   lists registered workflows, including those with no runs. The bundled starter's
+   tool registrations, model/backend, completion mode, and confirmation behavior.
+   Handoff nodes need a tool-capable model. The dashboard lists registered
+   workflows, including those with no runs. The bundled starter's
    `grp-*` preset values must be replaced with compatible loaded presets before
    provider execution; do not mistake successful registration for preset validation.
 4. Verify the current goal, canonical brief, acceptance checks, decision authority,
@@ -38,9 +39,10 @@ Contents: [load/preflight](#load-and-preflight), [start](#start-and-retain-the-r
    when explicitly requested. Separate access controls and tool hooks can still
    require approval, so test worker behavior. Neither flag restricts the filesystem,
    and `isolated` does not provision a worktree.
-6. For durable work use a named workflow, stable explicit IDs, readable Lisp
-   blackboard/context data, and named context functions. Keep its definition file
-   and dependencies available for restoration. Inspect existing retained runs or
+6. A durable run requires a named workflow and readable Lisp data. Generated
+   node IDs are supported when the restored workflow layout matches. Optional
+   explicit IDs help you identify nodes. Keep the definition, named context
+   functions, and dependencies available for restoration. Inspect retained runs or
    snapshots before starting another copy of work already in progress.
 
 There is no public dry-run/validate-only command. `gptel-runner-start`
@@ -53,7 +55,7 @@ does not validate actual presets, credentials, tool capabilities, or artifacts.
 `gptel-runner-start` takes a workflow symbol, workflow object, or anonymous root
 node plus keywords `:goal`, `:workspace`, `:inputs`, `:driver`, `:max-calls`, `:max-requests`,
 `:max-duration` (seconds), `:max-concurrency`, `:context`, `:decision-memory`,
-`:persist`, `:allow-writes`, `:allow-unconfirmed-tools`, and `:callback`.
+`:persist`, `:completion` (default `'handoff`), `:allow-writes`, `:allow-unconfirmed-tools`, and `:callback`.
 Unknown keywords may be silently ignored; use the supported options above.
 Anonymous roots cannot be durably paused or saved. Omitted budget limits inherit
 workflow defaults; otherwise nil means unlimited. Omitted workspace inherits the
@@ -99,29 +101,29 @@ driver or immediate failure may finish before `start` returns, so callbacks must
 use their `run` argument, not assume `my-run` has already been assigned. Keep the
 event loop responsive; a busy wait blocks callbacks/timers. The completion callback
 runs once for its terminal transition. Pause is not terminal. After a previously
-reported terminal outcome, pass a fresh `:callback` to retry/continue/extension
+reported terminal outcome, pass a fresh `:callback` to retry/rerun/continue/extension
 if another terminal notification is required; the previously invoked callback
 is not automatically invoked again. Resume takes its callback positionally.
 
 Run IDs are session-local. `(gptel-runner-find-run my-run-id)` retrieves a retained
 run, and `(gptel-runner-list-runs)` lists newest first. After restart, load its
 snapshot before relying on its ID. Prefer run objects: resume, pause, abort, save,
-and inspection accessors do not generally resolve ID strings. Retry, continue,
+and inspection accessors do not generally resolve ID strings. Retry, rerun, continue,
 both extension APIs, record-decision, and forget-run do accept object or ID.
 
 ## Inspect and determine success
 
-Open `M-x gptel-runner-show-dashboard`. Permanent keys are `RET` (call transcript
-or run journal), `?` (action menu), `g` (refresh), and `q` (quit). The menu disables
-inapplicable actions. The default refresh interval is two seconds; it is not a
-reason for an agent to repeatedly fetch complete transcripts. Choose a run/call
-row, then `? e` for events or `? v` for its worker buffer. Equivalent commands are
-`gptel-runner-dashboard-inspect-events` and `gptel-runner-dashboard-visit-worker`.
-The dashboard now also includes job and agent columns and external invocation
-rows. The lifecycle APIs below control local run/call objects in their owning
-Emacs. Inspecting an external row does not load or transfer its run; route remote
-commands through the [jobs skill](../../gptel-runner-jobs/SKILL.md). Session-local
-run IDs alone do not identify an external invocation.
+Open `M-x gptel-runner-show-dashboard`. Select an agent node and press `RET`
+to open its editable chat. On a run row `RET` opens its journal. Use `? m` for
+handoffs, questions, and replies, or `? j` for child discussions and delegated
+worker transcripts. Selecting a node filters the view to that node. Use `? e`
+for events and `? v` to visit the selected node's worker chat. Press `g` to
+refresh and `q` to quit. The action menu enables controls for the selected row.
+
+For a background invocation, `RET` opens a published local chat copy. Send
+feedback to the worker from its waiting node row with `? f`. The
+[jobs skill](../../gptel-runner-jobs/SKILL.md) covers remote controls. A local
+run ID alone does not identify a background invocation.
 
 For a compact status read (the `grp-*` keys/ID belong to the starter):
 
@@ -164,10 +166,11 @@ successful recovery. Consult the current node/run state, latest relevant call,
 round history, and input versions together. A displayed call may be `succeeded`
 while the run is `blocked` because its valid review triggered `:stop-when`.
 `waiting-confirmation` needs tool approval; `waiting-tool` means tool execution
-(possibly waiting for user input); `waiting-feedback` needs a human result handoff.
-None is a completed workflow. Transcripts contain the dispatched prompt, tool
-activity, and final answer; editing ordinary transcript text does not update the
-blackboard or decisions. Transcripts are retained by default but are not agent memory.
+(possibly waiting for user input). In `waiting-feedback`, check whether an
+agent ended its turn in prose or a proposed result is awaiting approval. The
+node chat retains the conversation for subsequent turns, including tools and
+feedback. The accepted node outcome and recorded decisions change through
+runner operations.
 
 Prefer a callback or a filtered `gptel-runner-event-hook` (each function receives
 one event) for ongoing monitoring. If polling is needed, use a bounded observation
@@ -190,14 +193,15 @@ recording decisions, interactive wrappers use the selected dashboard row.
 
 | Need / eligible state | Lisp API | Dashboard / effect |
 | --- | --- | --- |
-| Planned acceptance before advancing | Step `:pause-after t` | Response enters `waiting-feedback`; no parsed/saved result yet |
+| Planned acceptance before advancing | Step `:pause-after t` | The submitted handoff waits for human approval before parsing and saving |
 | Correct one unfinished call now | `(gptel-runner-pause-call call &optional reason)` | `p`, `gptel-runner-dashboard-pause-call`; retain live continuation |
-| Ask a paused/gated gptel call for a revision | `(gptel-runner-gptel-feedback call text)` | Lisp API; runs asynchronously in the retained conversation, then waits for acceptance |
+| Send feedback to a waiting gptel call | `(gptel-runner-gptel-feedback call text)` | `f` sends a turn. An open discussion can hand off. A human approval gate waits for acceptance. |
 | Accept human-reviewed call output | `(gptel-runner-complete-call-from-buffer &optional result call)` | `a`, `gptel-runner-dashboard-complete-call`; parser/validator still apply |
 | Stop all work for a longer wait | `(gptel-runner-pause-run run &optional reason)` | `P`, `gptel-runner-dashboard-pause-run`; named workflow, stop duration clock, queue snapshot |
 | Restart a paused run | `(gptel-runner-resume-run run &optional feedback callback)` | `r`, `gptel-runner-dashboard-resume-run`; completed nodes kept, unfinished work restarts |
 | Retry same goal after failed/blocked/stalled/cancelled outcome | `(gptel-runner-retry run &key from-node feedback callback)` | `t`, `gptel-runner-dashboard-retry-run`; safe checkpoint |
 | Rerun an executed agent node in an unsuccessful run | Same retry API with `:from-node 'node-id` | `T`, `gptel-runner-dashboard-retry-node` on a call row; invalidate node and dependent sequence work |
+| Rerun the entire finished workflow with its current goal | `(gptel-runner-rerun run &key reset-budget callback)` | `R` starts at the root, retains chats and inputs, and resets consumed budget by default |
 | New observation/goal after terminal outcome | `(gptel-runner-continue run observation &key reset-budget additional-requests additional-calls additional-duration callback)` | `c`, `gptel-runner-dashboard-continue-run`; new cycle after success, checkpoint after other outcomes |
 | Add run capacity while running/paused, or recover run-budget failure | `(gptel-runner-extend run &key additional-requests additional-calls additional-duration callback)` | `b`, `gptel-runner-dashboard-extend-run`; cumulative use retained |
 | Recover an exhausted repeat in a failed run | `(gptel-runner-extend-repeat run node-id additional-iterations &key additional-requests additional-calls additional-duration callback)` | Evaluate Lisp; no dedicated repeat-extension menu command |
@@ -211,64 +215,42 @@ use the named dashboard commands for `M-x` interaction.
 
 ## Human gates and pausing
 
-Use `:pause-after t` on the intended agent step for a predictable gate. After a
-nonempty provider response, the call waits before parsing, validation, `:save-as`,
-and downstream dispatch. Record approved enduring choices with
-`(gptel-runner-record-decision run text rationale)` or `M-x gptel-runner-add-decision`
-(`? d`), then accept the response. A printed decision or transcript correction
-does not record a decision.
+A handoff-mode agent that ends its turn with prose parks in `waiting-feedback`.
+Use ordinary gptel send in the node chat, `? f` on its dashboard row, or
+`(gptel-runner-gptel-feedback call text)` to add a turn. This open discussion
+reenters the regular dispatch queue, uses request budget, and can ask a previous
+agent or hand off. Use `? a` to accept an answer directly.
 
-For an unplanned correction, `M-x gptel-runner-pause-call` in its worker stops
-the provider and leaves a normal gptel conversation with the original continuation.
-Give feedback and use ordinary gptel commands only within existing authorization.
-Then `M-x gptel-runner-complete-call-from-buffer` submits the active region, or
-otherwise the last text marked by gptel as a response. From Lisp you can explicitly
-provide the reviewed text and call object:
-
-```elisp
-(gptel-runner-complete-call-from-buffer accepted-text selected-call)
-```
-
-In the dashboard `? a` uses the selected call's last response, not a region in
-another buffer. Submitted text still must pass the node's parser/validator;
-acceptance can trigger format repair or fail. Invalid output is never approval.
-
-For programmatic feedback on a gptel call with a live worker buffer:
+For a planned human review put `:pause-after t` on the step. Even a tool-submitted
+handoff waits before parsing, validation, saving, and downstream dispatch.
+For a correction during active work use `M-x gptel-runner-pause-call` from the
+chat or `? p` from its row. The runner stops the provider and leaves the call
+available for review. Send a revision request with `? f` or from Lisp:
 
 ```elisp
 (gptel-runner-gptel-feedback selected-call
                             "Check cancellation as well as successful completion.")
-;; Later, after feedback completes and the revised result has been inspected:
+;; After inspecting the revised answer, release the review gate.
 (gptel-runner-complete-call-from-buffer nil selected-call)
 ```
 
-Feedback requires call state `paused` or `waiting-feedback` and nonblank text.
-It acquires the workspace/concurrency admission slot or errors if busy; it does
-not silently queue itself. It returns immediately, retains the conversation, and
-does not save the node result or advance the workflow. Observe `feedback-started`
-then `feedback-completed` / `feedback-failed`; completion/failure returns to
-`waiting-feedback`. Inspect failure and the latest response before acceptance,
-since a previous answer may still be present. Acceptance while feedback is active
-is rejected. Feedback is a live provider request, not a decision-log update.
-Its requests do not increment runner call/request counters; retain a separate
-allowance. For headless tool-approval APIs, see
-[runtime integrations](runtime-integrations.md#headless-tool-interactions).
+At a human review gate, feedback requires a free workspace/concurrency slot.
+It runs asynchronously outside ordinary dispatch counters, then waits again
+for acceptance. Inspect the revised answer or any `feedback-failed` event.
+Acceptance is disabled while a feedback request is active. From the chat use
+`M-x gptel-runner-complete-call-from-buffer` to submit the active region or
+the latest response. With a proposed handoff and no newer response, acceptance
+uses the submitted handoff. From the dashboard `? a` accepts the latest answer.
+From Lisp, pass explicit text as the first argument. Parser and validator still
+apply. Use `? d` to record an approved enduring decision.
 
-A call pause or gate leaves the run running: other branches may proceed and the
-active-duration clock continues. Manually continued gptel conversations are outside
-normal runner scheduling/accounting; do not treat runner remaining budgets as a
-cap on those manual requests. Use whole-run pause for a longer wait or when all
-branches must stop. It requires a named workflow, enables persistence, stops the
-clock, and queues a snapshot. Completed results and charged usage remain.
-
-In the same session a call already waiting at a gate retains its continuation
-across whole-run pause. Completing that retained call also resumes the run; in
-parallel work this may restart other unfinished calls. Other paused calls may be
-completed from their retained buffers via reconstructed execution. An ordinary
-`resume-run` instead supersedes unfinished call records and makes fresh calls;
-it does not continue the old provider conversation. After loading a v2 snapshot
-there are no historical call objects, transcripts, or live continuations to accept:
-resume restarts the unfinished gated node statelessly.
+A call pause or review gate leaves other branches free to run and the duration
+clock ticking. Pause an entire named run with `? P` to stop its clock and queue
+a checkpoint. After opening a saved run, a waiting node can receive feedback
+or acceptance in its recovered chat. Accept saved parallel gates individually.
+Choosing `? r` on the run restarts unfinished work from its safe checkpoint in
+the existing node conversations. A prior provider request cannot be resumed.
+See [save and restore](#save-and-restore) for older snapshot formats.
 
 ## Retry and changed goals
 
@@ -310,6 +292,12 @@ new calls; putting text under an arbitrary blackboard key only helps if a contex
 or prompt function reads it. No new decision changes already prepared/running calls.
 If conflicting work is still active, stop or finish it deliberately before dispatching
 dependent work. Keep workspace/revision identity attached to all retained evidence.
+
+Use `(gptel-runner-rerun my-run)` or `? R` on any terminal run to execute
+from the first node with the same goal, inputs, recorded decisions, and chats.
+It archives named outputs and individual node outcomes in
+`(gptel-runner-continuations my-run)`. The default resets consumed budget under
+the configured limits. Pass `:reset-budget nil` to share the remaining allowance.
 
 For a terminal run, a new observation can become the goal:
 
@@ -379,7 +367,10 @@ is needed. Budget limits are not token/cost caps.
 
 ## Save and restore
 
-Use `:persist t` for ongoing checkpoints. `(gptel-runner-save-run run)` and
+Use `M-x gptel-runner-save-session` for an explicit runner session save and
+`M-x gptel-runner-open-session` to select a saved session in the dashboard
+without a provider request. Opening a file already attached to a local run
+selects that run. Use `:persist t` for ongoing checkpoints. `(gptel-runner-save-run run)` and
 whole-run pause also enable persistence on a named run. A manual save does not
 pause work. Default snapshots live under `gptel-runner-snapshot-directory`, normally
 `~/.emacs.d/gptel-runner/snapshots/`; `(gptel-runner-list-snapshots)` returns paths
@@ -417,26 +408,32 @@ external artifacts or verify that a changed definition has equivalent meaning.
 (gptel-runner-resume-run my-run "Recheck the current artifacts before continuing.")
 ```
 
-Loading never starts work. A nonterminal saved state loads as `paused`; a terminal
-state stays terminal and needs the appropriate retry/continue/extension operation.
+Loading never starts work. A nonterminal saved state loads as `paused`. A
+terminal state stays terminal. Choose rerun, retry, continue, or extension
+according to the outcome and which work should execute again.
 Loading an ID already retained in the session is rejected; use the existing run
 instead of creating a duplicate. `gptel-runner-resume-snapshot` has signature
 `(file &optional feedback callback driver)` and combines load/resume immediately;
 prefer separate calls when inspection is needed, and do not use it for terminal saves.
 
-Version 2 snapshots retain goal, default workspace, blackboard (including decisions,
-loop history, continuation archive), node states/outcomes, repeat counts/limits, budgets,
-timing/options, terminal failure, extension context, finalization phase, and the
-managed output directory/artifact registry. Artifacts remain separate retained
-files: copying the checkpoint alone does not copy their contents. They do not restore old
-calls, journals, transcripts, callbacks, provider processes, or continuations.
-Supply a fresh callback/driver; unfinished calls restart statelessly and their
-previous usage remains charged. V1 snapshots are unsupported. Keep runtime objects
-such as buffers/processes and captured live closures out of saved values. Snapshot
-files use mode `0600`; their contents may include sensitive brief/result data.
-These are core v2 checkpoint guarantees. A background invocation has separate
-inspection history managed by the jobs layer; do not treat its transcript exports
-as additional execution state restored by `gptel-runner-load-run`.
+Version 4 saves workflow checkpoints, budgets, accepted outcomes, blackboard
+data, and the managed output registry together with each node's chat and drafts,
+child discussions, delegated agent transcripts, and inter-node messages. The
+outstanding question's return path is saved so an upstream reply can reach its
+requester after recovery. Artifacts are separate files in the retained output
+directory. Supply a new callback/driver where needed. Old provider requests,
+tool approvals, timers, and live child workers end with their Emacs process.
+
+The runner exclusively owns these chats even with global
+`gptel-agent-session-mode` enabled and even before a run is saved. Use runner
+sessions for recovery. A compatible gptel-agent preserves native assistant/tool
+boundaries and chat settings through its serializer. Plain gptel uses its own
+chat format. Version 3 includes node chats, version 2 includes workflow
+checkpoints, and captured child transcripts require version 4. Older sessions
+that predate handoff completion reopen in response mode. Version 1 is unsupported.
+Keep saved outcomes and context readable as Lisp data. A mode-`0600` snapshot
+may contain prompts, tool outputs, and drafts. A background invocation's
+published inspection history is separate from its recoverable runner session.
 
 ## Cancellation and cleanup
 

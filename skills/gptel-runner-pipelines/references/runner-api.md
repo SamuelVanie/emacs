@@ -37,7 +37,7 @@ forms before loading.
 
 | Constructor | Relevant properties and behavior |
 | --- | --- |
-| `gptel-runner-agent-step` | `:id`, `:agent`, `:prompt`, `:save-as`, `:context`; optional `:workspace`, `:parser`, `:validator`, `:repair-invalid`, `:retries`, `:pause-after` |
+| `gptel-runner-agent-step` | `:id`, `:agent`, `:prompt`, `:save-as`, `:context`; optional `:completion`, `:workspace`, `:parser`, `:validator`, `:repair-invalid`, `:retries`, `:pause-after` |
 | `gptel-runner-elisp-step` | Required `:function`; optional `:id`, `:save-as`, `:workspace`, `:workspace-mode`, `:retries`, `:async`, `:timeout`; see below |
 | `gptel-runner-sequence` | Leading keyword/value properties, then child nodes; fail-fast; inherited `:context` |
 | `gptel-runner-parallel` | Leading properties, then children; `:policy 'fail-fast`, `'collect`, or `'minimum-successes`; latter needs `:minimum-successes N`; optional aggregate `:save-as` |
@@ -58,6 +58,24 @@ The gptel adapter accepts a preset symbol or an inline preset plist. A non-nil
 step parser/validator overrides the registered one; nil falls back to it, rather
 than disabling it. `:workspace-mode` defaults to `read`; its supported values
 are `read`, `write`, and `isolated`. Metadata is application data, not behavior.
+
+## Agent conversations and completion
+
+The agent step owns its gptel buffer for the lifetime of the run. Its repeats,
+semantic retries, output repairs, and follow-ups reuse that chat. Elisp and
+control-flow steps retain outcomes and perform the sequencing. The standard
+driver's default `handoff` mode exposes `RunnerHandoff(message)` and, where
+applicable, `RunnerAskPrevious(question)`. Each takes one nonblank string and
+must be the only tool call in its response. Use `(gptel-runner-handoff-p run node)`
+and `(gptel-runner-previous-agent run node)` to inspect the mode and eligible
+completed predecessor. See [routing and a worked exchange](handoffs.md#messages-between-node-chats).
+
+A step can set `:completion 'response` for a preset that returns ordinary final
+text, or `:completion 'handoff` to override a response-mode run. Run defaults
+come from `gptel-runner-start :completion 'response` or the named workflow's
+quoted options `(:completion response)`. A response-mode step ends automatic
+routing in both directions. Use `:save-as` plus a consumer prompt or context
+function to pass values across it.
 
 ## Node traversal and outcomes
 
@@ -405,8 +423,10 @@ not to reproduce this reader. Artifact context follows managed storage regardles
 of the receiving agent's workspace. It does not automatically include the goal.
 
 An initial `:goal` is stored on the run but not automatically placed in ordinary
-agent prompts. Inject it explicitly. `:save-as` stores a parsed result; it does
-not route it automatically. `gptel-runner-put` does not alter prompts already sent.
+agent prompts. Inject it explicitly. The adjacent downstream agent in handoff
+mode receives the accepted raw message. To use its parsed value in Elisp, across containers,
+or in another agent's prompt, store it with `:save-as` and read it with
+`gptel-runner-get`. A blackboard write takes effect on subsequent reads.
 
 Decisions are ordered, append-only, run-local entries with text, optional
 rationale, and source metadata. They persist on the blackboard. Source call/node
@@ -463,12 +483,13 @@ revision and the format repair path for invalid output. Retries can repeat tool
 side effects, so recheck artifacts and make consequential operations idempotent.
 
 `:max-requests` counts runner driver dispatch attempts;
-gptel's internal tool-loop HTTP requests and manual/programmatic feedback do not
-each increment it. Nested gptel-agent workers/discussions are internal to the
+additional open-discussion turns reenter dispatch and consume request budget.
+Internal tool-loop HTTP requests and explicit human-review feedback have
+separate accounting. Nested gptel-agent workers/discussions are internal to the
 outer call and are not separate runner calls or concurrency slots; see the
 [nested-work contract](runtime-integrations.md#gptel-agent-presets-and-nested-work).
 These counters are not complete provider-request or spending caps.
-`:max-calls` counts logical agent calls, including fresh agent retries and output repairs.
+`:max-calls` counts logical agent calls, including routed question/reply turns, fresh agent retries, and output repairs.
 Duration measures active run time, including call gates but excluding whole-run
 pauses. Keep provider/tool limits separate when an actual spend cap is required.
 
@@ -478,30 +499,32 @@ plist with symbolic `:verdict` (`pass`, `revise`, `blocked`), `:summary`, and
 `:issues`. Add a semantic validator if pass must imply no unresolved issues;
 the generic validator alone does not enforce that relationship.
 Issue fields are required string `:severity` / `:message`, optional `:file`,
-positive integer or nil `:line`, and `:suggested_fix`. Treat the schema as a
-provider hint; parser and validator enforce the actual contract.
+positive integer or nil `:line`, and `:suggested_fix`. In handoff mode the driver describes the schema in the prompt and asks for a
+JSON string as the handoff message. In response mode the backend can use its
+usual structured-output mechanism. The runner enforces parsing and validation.
 `gptel-runner-normalize-review (review)` normalizes verdict/issues;
 `gptel-runner-review-progress-key (run &optional review-key)` hashes that material,
 and `gptel-runner-review-diff-progress-key` combines it with the run workspace
 diff. Both default to the key `review`; pass your actual review key.
 
 `:repair-invalid t` or a registered schema allows one automatic format repair.
-It is a fresh call. Its prompt contains goal, effective node workspace, invalid
-output, and validation error, **not the complete inherited context or decision log**.
+It is a fresh call in the same node chat. Its prompt contains the goal,
+effective workspace, invalid output, and validation error. The inherited
+context and decisions from earlier turns remain in the conversation.
 Keep it a format-only operation. Make parser errors explain the required
 shape; do not let repair revise substantive choices. Where a repair needs task
 judgment or full context, build an explicit contextual repair stage instead.
-An empty final answer also gets one repair, carrying the original resolved prompt.
-The empty-answer and invalid-format paths share one repair allowance per node
-execution. Streaming follows gptel/preset settings; intermediate commentary and
-tool activity remain in the transcript/events, while only the final model answer
-is parsed/saved. A tool stop without its required tool payload is retried as a
-transient protocol failure, not accepted as a finished answer.
+An empty final output can also trigger a repair carrying the original resolved
+prompt. The empty-output and invalid-format paths share one repair allowance
+per node execution. In handoff mode nonblank prose without a handoff is a
+discussion turn and parks the call. Streaming follows gptel/preset settings.
+A tool stop missing its required tool payload is a transient protocol failure.
 
-`:pause-after t` holds the response before parsing, saving, and advancing. Accept
-or replace it with `gptel-runner-complete-call-from-buffer`; parser/validator still
-apply. A loaded snapshot cannot restore that live continuation and restarts the
-unfinished gated node.
+`:pause-after t` holds a proposed handoff or final response before parsing,
+saving, and advancing. Accept or replace it with
+`gptel-runner-complete-call-from-buffer`. Current runner session snapshots
+preserve the waiting call's chat and proposed answer. Open the run and accept
+the answer to release the gate, or resume the run to restart unfinished turns.
 
 ## Run control and durable context
 

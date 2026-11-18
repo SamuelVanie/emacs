@@ -5,6 +5,8 @@
 ;; emacs -Q --batch -L /path/to/gptel-runner -l /path/to/skill/scripts/smoke-test.el \
 ;;   -f ert-run-tests-batch-and-exit
 ;; Temporary workspaces and local context fixtures are removed after each test.
+;; A fake success (:value ...) stands for a submitted handoff in these workflows.
+;; Use :status discussion for ordinary prose or :status follow-up for a question.
 
 ;;; Code:
 
@@ -90,6 +92,26 @@
       (should (equal '(1 2)
                      (mapcar (lambda (entry) (plist-get entry :iteration))
                              (gptel-runner-get run 'grp-history)))))))
+
+(ert-deftest grp-smoke-reviewer-asks-for-evidence-before-submitting-json ()
+  (grp-test/with-run
+    (gptel-runner-fake-queue driver 'grp-planner (list :value grp-test/plan))
+    (gptel-runner-fake-queue driver 'grp-implementer
+                             '(:value "A1 passes")
+                             '(:value "See import-test.el, case A1."))
+    (gptel-runner-fake-queue driver 'grp-reviewer
+                             '(:status follow-up :value "Which test covers A1?")
+                             (list :value grp-test/pass))
+    (let* ((run (grp-test/start driver workspace))
+           (implementation-turns (grp-test/prompts driver 'grp-implement))
+           (review-turns (grp-test/prompts driver 'grp-review)))
+      (should (eq (gptel-runner-run-state run) 'succeeded))
+      (should (string-search "Handoff from grp-implement:\nA1 passes" (car review-turns)))
+      (should (string-search "Which test covers A1?" (cadr implementation-turns)))
+      (should (string-search "See import-test.el, case A1." (cadr review-turns)))
+      (should (equal (gptel-runner-get run 'grp-implementation) "A1 passes"))
+      (should (eq (plist-get (gptel-runner-get run 'grp-review) :verdict) 'pass))
+      (should (= 1 (gptel-runner-iteration run 'grp-cycle))))))
 
 (ert-deftest grp-smoke-malformed-review-cannot-pass ()
   (grp-test/with-run
@@ -258,21 +280,27 @@
      :type 'user-error)
     (should-not (gptel-runner-fake-driver-starts driver))))
 
-(ert-deftest grp-smoke-minimal-pipeline-publishes-without-storage-helpers ()
+(ert-deftest grp-smoke-minimal-pipeline-waits-for-acceptance-before-publishing ()
   (grp-test/with-run
     (let ((gptel-runner-output-directory (expand-file-name "outputs/" workspace)))
-      (gptel-runner-fake-queue driver 'grp-minimal-reader '(:value "Evidence: importer.el"))
+      (gptel-runner-fake-queue driver 'grp-minimal-reader
+                               '(:status discussion :value "Evidence: importer.el"))
       (let* ((run (gptel-runner-start 'grp-minimal :driver driver
                                       :goal "Inspect imports" :workspace workspace))
-             (artifact (gptel-runner-get run 'report)))
+             (call (car (gptel-runner-run-calls run))))
+        (should (eq (gptel-runner-call-state call) 'waiting-feedback))
+        (should-not (gptel-runner-get run 'analysis))
+        (should-not (gptel-runner-get run 'report))
+        (gptel-runner-complete-call-from-buffer nil call)
         (should (eq (gptel-runner-run-state run) 'succeeded))
         (should (= 1 (length (gptel-runner-fake-driver-starts driver))))
-        (should (equal (gptel-runner-node-result run 'publish) artifact))
-        (should (equal (gptel-runner-artifacts run) (list artifact)))
-        (should (equal (gptel-runner-read-artifact run artifact) "Evidence: importer.el"))
-        (should (file-readable-p (gptel-runner-artifact-file run artifact)))
-        (should (equal (alist-get 'analysis (gptel-runner-outputs run))
-                       "Evidence: importer.el"))))))
+        (let ((artifact (gptel-runner-get run 'report)))
+          (should (equal (gptel-runner-node-result run 'publish) artifact))
+          (should (equal (gptel-runner-artifacts run) (list artifact)))
+          (should (equal (gptel-runner-read-artifact run artifact) "Evidence: importer.el"))
+          (should (file-readable-p (gptel-runner-artifact-file run artifact)))
+          (should (equal (alist-get 'analysis (gptel-runner-outputs run))
+                         "Evidence: importer.el")))))))
 
 (ert-deftest grp-smoke-produced-artifact-context-reaches-agent ()
   (grp-test/with-run

@@ -92,6 +92,11 @@ Match the preset against the node's job:
 - Instructions permit the intended role and preserve the shared goal/decisions.
 - Read, edit, execution, and external-access tools fit the assignment.
 - Required tool registrations and optional packages are available.
+- The model/backend supports tool calls for handoff completion. The driver
+  supplies `RunnerHandoff` and, when applicable, `RunnerAskPrevious` at request
+  time. Leave those workflow tools out of the preset's static tool registrations.
+- For a text-only provider or a preset requiring ordinary final text, opt in to
+  `:completion 'response` on that step and supply downstream context explicitly.
 - Model/backend and dynamic setup dependencies are identified.
 - Output instructions agree with the node parser/schema and gate behavior.
 
@@ -116,7 +121,10 @@ Inspect the parent's allowed subagents and the actual child definitions too;
 a registered `Agent` tool does not imply every discovered worker is enabled.
 Confirm child tools, model settings, task limits, and any directory overrides
 fit the node's purpose. The outer runner's workspace mode and budgets do not
-independently constrain each nested worker. See
+independently constrain each nested worker. Use a compatible gptel-agent that
+recognizes runner-owned sessions. The runner owns node chats, child discussions,
+and delegated agent transcripts even when global agent session saving is enabled.
+See
 [runtime integration](runtime-integrations.md#gptel-agent-presets-and-nested-work)
 for API compatibility, completion/report semantics, and headless limits.
 

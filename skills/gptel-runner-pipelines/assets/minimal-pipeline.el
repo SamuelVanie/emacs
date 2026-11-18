@@ -5,7 +5,11 @@
 ;; run.  Loading registers definitions only.  Add stages only for actual work.
 ;; (gptel-runner-start 'grp-minimal :goal "Explain the importer"
 ;;                     :workspace "/path/to/project/" :allow-unconfirmed-tools t)
-;; The same definition can be loaded by a job init; no output adapter is needed.
+;; The reader uses RunnerHandoff to submit the text stored under 'analysis.
+;; The Elisp publisher reads that value and writes the report.
+;; An ordinary reply leaves the reader's chat open for feedback or acceptance.
+;; Add :persist t to the start options for automatic runner-owned checkpoints.
+;; The same definition can be loaded by a job init.
 ;; Read 'report with gptel-runner-get, then gptel-runner-read-artifact.
 
 ;;; Code:
@@ -22,7 +26,8 @@
    (gptel-runner-agent-step
     :id 'inspect :agent 'grp-minimal-reader :save-as 'analysis
     :prompt (lambda (run node)
-              (format "Goal: %s\nWorkspace: %s\nInspect and return a concise report with evidence."
+              (format (concat "Goal: %s\nWorkspace: %s\nInspect the project. "
+                              "Submit a concise report with evidence using RunnerHandoff.")
                       (gptel-runner-run-goal run)
                       (gptel-runner-node-workspace run node))))
    (gptel-runner-elisp-step

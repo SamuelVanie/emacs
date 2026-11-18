@@ -48,8 +48,7 @@
        :id 'root :context #'grp/shared-context
        (gptel-runner-agent-step :id 'plan :agent 'grp-planner
                                 :prompt "Plan" :save-as 'grp-plan :pause-after t)
-       (gptel-runner-agent-step :id 'implement :agent 'grp-implementer
-                                :context #'grp/plan-context :prompt "Implement")))
+       (gptel-runner-agent-step :id 'implement :agent 'grp-implementer :prompt "Implement")))
     (gptel-runner-fake-queue driver 'grp-planner '(:value "Unaccepted plan"))
     (gptel-runner-fake-queue driver 'grp-implementer '(:value "Done"))
     (let* ((run (gptel-runner-start 'grp-ops-gated :workspace workspace
@@ -64,6 +63,8 @@
       (should (= 1 (length (gptel-runner-fake-driver-starts driver))))
       (setf (gptel-runner-call-buffer call) buffer)
       (with-current-buffer buffer
+        ;; This stand-in for an idle gptel chat has no transport request.
+        (setq-local gptel--fsm-last nil)
         (insert (propertize "Accepted corrected plan" 'gptel 'response)))
       (gptel-runner-record-decision run "D2: preserve CLI" "User correction")
       (gptel-runner-pause-run run)
@@ -77,16 +78,16 @@
         (should (string-match-p "Accepted corrected plan" (gptel-runner-call-prompt prompt)))
         (should (string-match-p "D2: preserve CLI" (gptel-runner-call-prompt prompt)))))))
 
-(ert-deftest grp-ops-snapshot-restore-keeps-context-not-live-calls ()
+(ert-deftest grp-ops-snapshot-restores-handoff-and-resumes-interrupted-work ()
   (grp-ops/with-environment
     (make-directory (expand-file-name "repo" workspace))
-    (gptel-runner-defworkflow grp-ops-durable (:max-calls 8 :max-duration 60)
+    (gptel-runner-defworkflow grp-ops-durable (:persist t :max-calls 8 :max-duration 60)
       (gptel-runner-sequence
        :id 'root :context #'grp/shared-context
        (gptel-runner-agent-step :id 'plan :agent 'grp-planner
                                 :prompt "Plan" :save-as 'grp-plan)
        (gptel-runner-agent-step :id 'work :agent 'grp-implementer :workspace "repo"
-                                :context #'grp/plan-context :prompt "Implement")
+                                :prompt "Implement")
        (gptel-runner-agent-step :id 'report :agent 'grp-planner :prompt "Report")))
     (gptel-runner-fake-queue driver 'grp-planner (list :value grp-test/plan))
     (gptel-runner-fake-queue driver 'grp-implementer '(:value "Pending" :manual t))
@@ -98,8 +99,6 @@
                  :callback (lambda (_) (cl-incf original-callbacks)))))
       (gptel-runner-record-decision run "D1: use SQLite" "Atomic updates")
       (gptel-runner-pause-run run)
-      (should (eq (gptel-runner-store-save-status run) 'pending))
-      (should-not (file-exists-p (gptel-runner-run-snapshot-file run)))
       (grp-ops/wait-for-save run)
       (let ((file (gptel-runner-run-snapshot-file run))
             (id (gptel-runner-run-id run))
@@ -115,8 +114,12 @@
         (should (= 2 (gptel-runner-budget-calls (gptel-runner-run-budget run))))
         (should (equal (gptel-runner-get run 'grp-plan) grp-test/plan))
         (should (= 1 (length (gptel-runner-decisions run))))
-        (should (equal (mapcar #'gptel-runner-event-type (gptel-runner-run-events run))
-                       '(snapshot-loaded)))
+        (let ((handoff (seq-find (lambda (event)
+                                   (eq (gptel-runner-event-type event) 'node-handoff))
+                                 (gptel-runner-run-events run))))
+          (should handoff)
+          (should (equal (gptel-runner-event-data handoff)
+                         (list :from 'plan :to 'work :message grp-test/plan))))
         (gptel-runner-fake-queue restored-driver 'grp-implementer '(:value "Done"))
         (gptel-runner-fake-queue restored-driver 'grp-planner '(:value "Report"))
         (gptel-runner-resume-run run "Recheck restored artifacts")
@@ -128,12 +131,37 @@
           (should (equal (gptel-runner-call-workspace work)
                          (file-name-as-directory
                           (file-truename (expand-file-name "repo" workspace)))))
+          (should (string-search grp-test/plan (gptel-runner-call-prompt work)))
           (dolist (call calls)
             (should (string-match-p "D1: use SQLite" (gptel-runner-call-prompt call)))
             (should (string-match-p (regexp-quote grp-test/brief)
                                     (gptel-runner-call-prompt call))))
           (should (string-match-p "Recheck restored artifacts" (gptel-runner-call-prompt work)))
           (should-not (string-match-p "Recheck restored artifacts" (gptel-runner-call-prompt report))))))))
+
+(ert-deftest grp-ops-cancel-restore-and-rerun-with-original-goal ()
+  (grp-ops/with-environment
+    (gptel-runner-fake-queue driver 'grp-minimal-reader
+                             '(:status discussion :value "Preliminary findings"))
+    (let* ((gptel-runner-output-directory (expand-file-name "outputs" workspace))
+           (run (gptel-runner-start 'grp-minimal :driver driver :workspace workspace
+                                    :goal "Inspect imports" :persist t :max-calls 1))
+           (file (gptel-runner-run-snapshot-file run))
+           (id (gptel-runner-run-id run)))
+      (should (eq (gptel-runner-call-state (car (gptel-runner-run-calls run))) 'waiting-feedback))
+      (gptel-runner-abort-run run)
+      (grp-ops/wait-for-save run)
+      (gptel-runner-forget-run run)
+      (setq run (gptel-runner-load-run file nil driver))
+      (should (eq (gptel-runner-run-state run) 'cancelled))
+      (should-not (gptel-runner-get run 'report))
+      (gptel-runner-fake-queue driver 'grp-minimal-reader '(:value "Verified report"))
+      (gptel-runner-rerun run)
+      (should (eq (gptel-runner-run-state run) 'succeeded))
+      (should (equal id (gptel-runner-run-id run)))
+      (should (equal "Inspect imports" (gptel-runner-run-goal run)))
+      (should (equal "Verified report"
+                     (gptel-runner-read-artifact run (gptel-runner-get run 'report)))))))
 
 (ert-deftest grp-ops-retry-review-keeps-plan-work-and-history ()
   (grp-ops/with-environment

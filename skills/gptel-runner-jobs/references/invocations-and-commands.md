@@ -18,6 +18,7 @@ transport, addresses, receipts, and background lifecycle.
 | `(gptel-runner-artifacts source)` | Retained descriptors in publication order; source is a run or invocation record. |
 | `(gptel-runner-artifact-file source descriptor)` / `(gptel-runner-read-artifact source descriptor)` | Resolve a readable managed path, or read text; same calls in either mode. |
 | `(gptel-runner-invocation-call invocation call)` | Expand a compact call descriptor into its full inspection record. Both arguments are records. |
+| `(gptel-runner-invocation-forget invocation &optional delete-checkpoint)` | Hide a stopped invocation from the dashboard. Its inspection history is retained. A non-nil second argument also deletes the checkpoint needed for recovery. |
 | `(gptel-runner-invocation-commands invocation)` | Read receipts newest first by submission sequence; accepts a record or ID. |
 | `(gptel-runner-job-command-status invocation command-id)` | Read one command receipt; accepts a record or ID. |
 
@@ -59,8 +60,11 @@ state while still open/closing is not permission to remove its worker service.
         :artifacts (gptel-runner-artifacts invocation)))
 ```
 
-Call descriptors include `:id`, `:epoch`, `:node`, `:agent`, `:state`,
-`:generation`, timing, `:attempts`, `:record`, and optional `:transcript`.
+Call descriptors include `:id`, `:epoch`, `:node`, `:kind`, `:agent`, `:state`,
+`:generation`, timing, `:attempts`, and `:record`. For a published node chat,
+`:chat` and `:chat-format` identify its saved conversation. `:children` lists
+captured child records with IDs, kinds, parent IDs and their published chat
+fields. Older call records may only provide a text `:transcript`.
 The full record adds `:prompt`, `:workspace`, `:result`, and `:error`.
 Opaque runtime objects in inspection data can appear as `(:unavailable TYPE)`;
 this is not executable state. Older worker epochs remain in call history.
@@ -70,9 +74,10 @@ this is not executable state. Older worker epochs remain in call history.
 outcomes without loading the workflow. Histories created before node exports
 report those outcomes unavailable; do not reconstruct them from old calls.
 
-The invocation directory contains `manifest.el`, `checkpoint.el`, `outputs.el`, `nodes.el`,
-`calls/`, `events.el`, `commands/`, `receipts/`, and published `artifacts/` as
-applicable. Events are an append-only sequence of Lisp forms, not one plist.
+The invocation directory contains `manifest.el`, `checkpoint.el`, `outputs.el`,
+`nodes.el`, `calls/`, `chats/`, `child-chats/`, `events.el`, `commands/`,
+`receipts/`, and published `artifacts/` as applicable. The append-only event
+journal includes `node-handoff`, `node-follow-up`, and `node-reply` messages.
 launchd workers also have `stdout.log`, `stderr.log`, and registration files;
 generic CLI output follows the caller's redirection. Read history as data,
 never `load` it. Prefer public readers or dashboard views. For published
@@ -148,21 +153,25 @@ observed call). Node IDs are symbols, strings, or integers, as used by the workf
 | `resume` | Optional `:feedback` string | Resume a paused run; feedback reaches the next unfinished prompt. |
 | `cancel` | None | Abort the run. Disabling its schedule is separate. |
 | `retry` | Optional `:from-node`, `:feedback` | Retry at the safe checkpoint, or from an executed agent or Elisp node. Select by node ID, not a historical call ID. Does not change the goal. |
+| `rerun` | Optional `:reset-budget` t/nil | Restart any terminal run from the first node under the same invocation, goal, inputs, decisions, and chats. Archive prior workflow outputs and node outcomes. Consumed budget counters reset by default. Pass nil to share the remaining budget. |
 | `continue` | Required nonempty `:observation`; optional `:reset-budget` t/nil and budgets | Continue a terminal run with the observation as a new goal. Success starts a new cycle; an unsuccessful run retains completed stages and restarts its checkpoint. |
 | `extend` | Budgets; provide at least one | Increase finite budgets of running/paused work, or restart budget-failed work after extending every exhausted limit. |
 | `extend-repeat` | Required `:node`, `:additional-iterations`; optional budgets | Restart a failed run whose named repeat exhausted its iteration limit. Does not change the saved workflow. |
 | `decision` | Required nonempty `:text`; optional `:reason` string | Record an accepted decision and rationale for future prompts. |
 | `pause-call` | Call address | Suspend one active call for human feedback. |
 | `cancel-call` | Call address | Cancel the selected call; enclosing workflow policy determines propagation. |
-| `feedback` | Call address and required `:feedback` string | Send a new request in the live gptel conversation of a paused/waiting-feedback call. Nonblank text and a retained buffer are required. |
-| `accept` | Call address; optional `:result` string | Accept a paused/waiting-feedback call. Omission/nil uses its latest response. Wait for active feedback to finish; a nonblank result must be available. |
-| `approve`, `reject` | Call address, required `:interaction-id`; optional `:generation` | Answer exactly the pending tool request. Include its observed generation. Rejection cancels that call. |
+| `feedback` | Call address and required nonblank `:feedback` string | Send a turn to the worker chat of a paused/waiting-feedback call. An open discussion can hand off or ask the preceding node. At a human review gate the revision waits for acceptance. |
+| `accept` | Call address, optional `:result` string | Accept a paused/waiting-feedback call. Omission/nil uses the latest response or retained handoff. A nonblank result is required. Wait for any active feedback to finish. |
+| `approve` | Call address, required `:interaction-id`, optional `:generation`, `:allow-outside` | Approve that pending tool interaction. Include its observed generation. Use `:allow-outside t` only for an eligible outside-path request when the user authorizes remembered access. |
+| `approve-all` | Call address, required `:interaction-ids` and `:generation`, optional `:allow-outside` | Approve exactly the displayed set of distinct pending IDs for this call. The optional grant applies to eligible conversations in that set. |
+| `reject` | Call address, required `:interaction-id`, optional `:generation` | Reject the interaction and cancel the owning call and its descendants. |
+| `revoke-outside` | Call address and required `:generation` | Revoke outside-path access granted through this call. |
 
 Optional feedback/result/reason fields accept nil where the operation permits
 omission. `:generation` is a nonnegative integer. `:additional-iterations` is a
 positive integer. There is no remote arbitrary-eval command or callback argument.
 
-Budget changes, continuation, retry, resume, feedback, and approval can dispatch
+Budget changes, continuation, retry, rerun, resume, feedback, and approval can dispatch
 work. Apply the user's existing execution authority and intended budget.
 Continuation preserves consumed budgets unless explicitly reset; extending an
 unlimited budget leaves it unlimited. Changing a goal does not automatically
@@ -204,8 +213,10 @@ approval runs in that child's request context; its siblings may still await
 approval. Rejecting any pending interaction cancels the owning runner call and
 its descendants. Closed/cancelled children lose their approvals even if the
 outer call continues. Re-read `:interactions` after commands or lifecycle changes.
-`feedback` produces another response that still needs `accept`; `resume` restarts
-unfinished workflow work and is not acceptance of a paused call.
+For a handoff-mode node that stopped on ordinary prose, use `feedback` to
+continue that discussion or `accept` to submit its current answer. At an
+explicit human gate (for example `:pause-after t`), use `feedback` for a
+revision and `accept` when ready. Whole-run `resume` schedules unfinished work.
 
 ## Worker recovery
 
@@ -214,7 +225,7 @@ whole run stops its active-duration clock; waiting on a call or tool approval
 continues consuming the duration limit. Closing a dashboard does not stop work
 or answer a gate.
 
-If the owner is gone, only `resume`, `retry`, `continue`, `extend`, `extend-repeat`,
+If the owner is gone, only `resume`, `retry`, `rerun`, `continue`, `extend`, `extend-repeat`,
 and `cancel` can launch recovery, and a readable checkpoint must exist. These
 commands claim the job lock, advance the invocation epoch, rerun the embedded
 job's bootstrap, and restore inside a new worker under the same invocation ID.
@@ -222,13 +233,20 @@ The core operation's state requirements still apply. Another active invocation
 of the job prevents recovery. Recovery uses the configured launcher; a generic
 CLI initial run alone does not configure a portable detached recovery launcher.
 
-Live callbacks, buffers, and pending tool interactions do not survive a crash.
-This includes nested agent/discussion requests and their supervision handles;
-unfinished pipeline nodes restart rather than resuming those child requests.
+Version 4 checkpoints include node chats, child transcripts, inter-node
+messages, and the outstanding question's return path. Version 3 can supply
+node chats. Version 2 contains execution state only. Checkpoints predating
+handoffs retain response completion. Live provider requests, child supervision
+handles, and pending tool approvals expire with the worker. After recovery,
+the workflow schedules fresh turns using the saved context. Refresh the manifest
+for the new epoch before addressing calls or approvals.
+
 Use `resume` for interrupted work restored as paused, `retry` for a retryable
-failure, and the appropriate extension for budget exhaustion. Refresh history
-after recovery; old call addresses and approvals are invalid. A startup failure
-without a checkpoint needs repaired initialization and a new invocation.
+failure, and `extend` or `extend-repeat` for the appropriate exhausted limit.
+For a terminal run, `rerun` uses the existing goal and `continue` takes a new
+one. Launching the job again with `gptel-runner-job-run` creates an independent
+invocation using the supplied job configuration. That is also the recovery path
+after fixing initialization when startup failed before the first checkpoint.
 
 `launch-uncertain` means startup cancellation could not be confirmed. Its
 reservation remains held deliberately. Use launchd diagnostics/reaping to
@@ -237,13 +255,18 @@ duplicate job to bypass ownership.
 
 ## Dashboard access
 
-`M-x gptel-runner-show-dashboard` combines local and external history. Background
-actions operate on the selected external row. The `gptel-runner-background-*`
-inspection commands are `inspect`, `outputs`, `commands`, `transcript`, `events`,
-and `artifact`. They read durable data without adopting the run.
+`M-x gptel-runner-show-dashboard` combines local and external history. Select
+a background run or node row for these actions.
 
-`gptel-runner-background-command` offers all operations above. Convenience
-commands with the same prefix include `pause`, `resume`, `cancel`, `retry`,
-`continue`, `extend`, `feedback`, `accept`, `approve`, and `reject`. Call actions
-require the selected call; approval displays and addresses a pending interaction.
-For automation, prefer `gptel-runner-job-command` with explicit data and receipts.
+| Keys | Action |
+| --- | --- |
+| `RET` | Open worker controls on a run, or the published chat on a node when available. An editable **Local chat copy** keeps ordinary sends and edits in the editor. Older text transcripts open read-only. |
+| `? m` / `? j` | Inspect handoffs, questions, and replies / open a child transcript. On a run row these span the invocation. On a node row they are scoped to that node. Discussion chats can be reopened as local copies. Delegated worker transcripts are read-only. |
+| `? w` | Open worker controls for the selected row. Review pending requests and their arguments. In the panel, `a` approves the displayed pending set and `A` also remembers eligible outside paths for those conversations. |
+| `? f` / `? a` | Send feedback to the worker / accept the waiting node's answer. These act on the workflow. |
+| `? P` / `? r` / `? K` | Pause, resume, or cancel the invocation. |
+| `? t` / `? R` / `? c` | Retry a safe checkpoint or selected node, rerun the whole workflow with its current goal, or continue with a new goal. |
+| `? h` / `? o` / `? A` | Inspect command receipts, saved outputs, or a published artifact. |
+
+For automation, use `gptel-runner-job-command` with explicit data and inspect
+its receipt.

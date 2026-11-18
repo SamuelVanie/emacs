@@ -71,9 +71,11 @@ Only these keys are accepted inside `:arguments`:
 | `:allow-unconfirmed-tools` | Explicit tool confirmation policy, following the user's requested autonomy. Background execution does not change its meaning. |
 | `:decision-memory` | Override decision-memory behavior; omit to inherit. |
 | `:context` | Supported runner context data, such as shared text, file descriptors, or named functions defined by init. See the companion pipeline API for descriptor syntax. |
+| `:completion` | Default completion for agent nodes. Omission inherits the workflow setting. Use the symbol `handoff` for tool-based submission (the default for new workflows) or `response` for ordinary responses. An explicit node setting wins. |
 
 No `:driver`, `:callback`, or `:persist` here. Init selects
-`gptel-runner-default-driver`; workers start with persistence enabled. Use readable
+`gptel-runner-default-driver`; workers start with runner persistence enabled
+for their workflow, node chats, and child transcripts. Use readable
 Lisp data and named functions available after bootstrap. Buffers, processes,
 backend objects, and closures holding editor state are not durable configuration.
 

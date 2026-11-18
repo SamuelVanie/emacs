@@ -136,8 +136,11 @@ current store. Refresh the manifest; the record returned at launch is not live:
 ```
 
 For requested completion monitoring, use bounded, spaced status checks that yield
-to Emacs's event loop. At a human gate, approval, startup error, or failed outcome,
-report the specific state and needed action. A `succeeded` state with
+to Emacs's event loop. A handoff-mode node ending on ordinary prose waits for
+input. Inspect its published chat and `? m` message log. On the waiting node,
+`? f` sends a worker turn and `? a` accepts the response. At an explicit human
+gate, approval, startup error, or failed outcome, report the specific state and
+needed action. A `succeeded` state with
 `:phase closed` establishes the worker finished its history; also inspect required
 outputs/artifacts to verify the user's task. A fake run only verifies job plumbing.
 

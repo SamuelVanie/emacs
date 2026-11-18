@@ -8,8 +8,8 @@
 ;; values grp-planner, grp-implementer, and grp-reviewer below are placeholders:
 ;; replace them with compatible loaded presets, or define suitable presets.
 ;; Runner agent names can remain grp-*; they need not match the preset names.
-;; Check output contracts: the review node expects JSON, so a preset requiring
-;; a conflicting prose format must be adapted or paired with a different parser.
+;; Choose tool-capable presets. The reviewer's RunnerHandoff message contains
+;; JSON matching its schema. Adapt a preset that requires conflicting prose.
 ;; Planner/reviewer need inspection tools; implementer needs the intended write
 ;; and verification tools.  Workspace modes are not tool security boundaries.
 ;;
@@ -17,6 +17,10 @@
 ;; The planner can choose execution details within the brief, not change user
 ;; constraints.  Add :pause-after t to plan if the task needs human acceptance.
 ;; An accepted decision log is injected by the runner, separately from the plan.
+;; The saved plan and latest review cross the repeat boundary as explicit inputs.
+;; Within a round the reviewer receives the implementation handoff directly and
+;; can use RunnerAskPrevious to ask the implementer for evidence. The implementer
+;; replies via RunnerHandoff in its own chat. That reply goes back to the reviewer.
 ;;
 ;; Example after configuring presets and the appropriate load-path:
 ;; (setq my-run
@@ -31,6 +35,7 @@
 ;;        :allow-writes t :allow-unconfirmed-tools t))
 ;; Replace the example brief with task-specific content before a live run.
 ;; For durable runs add :persist t and reload these definitions before restore.
+;; The runner's checkpoint owns the chats, including child discussions and agents.
 ;; To target a different repository, add :workspace "existing-relative-dir"
 ;; (or an absolute path) to each affected agent step, including its reviewer.
 ;; The shared context below reports the effective directory. Relative context
@@ -64,7 +69,7 @@
            "If evidence conflicts with a decision, identify the conflict and "
            "needed resolution; do not silently replace that decision. "
            "Qualify artifact paths by their source workspace when handing work "
-           "to another repository. Return a non-empty final report after tool use.")
+           "to another repository.")
    (gptel-runner-run-goal run)
    (gptel-runner-node-workspace run node)
    (gptel-runner-node-id node)))
@@ -94,7 +99,8 @@
    "scope; label unresolved decisions separately. Keep the plan concise and "
    "include: outcome and purpose; acceptance mapping; chosen approach and reasons; "
    "constraints/non-goals; ordered actions; exact evidence paths; verification; "
-   "assumptions and blockers. Do not copy source files or raw logs into the plan."))
+   "assumptions and blockers. Do not copy source files or raw logs into the plan. "
+   "Submit the completed plan using RunnerHandoff."))
 
 (defun grp/implementation-prompt (run _node)
   "Ask for implementation or revision using selected feedback from RUN."
@@ -102,30 +108,33 @@
    (concat "Revision round: %d\nLatest review (nil means first attempt):\n%S\n\n"
            "Implement the goal using the shared brief and scoped plan. Reinspect "
            "current artifacts. Address each applicable unresolved finding while "
-           "preserving accepted choices. Run relevant verification. Return a "
+           "preserving accepted choices. Run relevant verification. Hand the reviewer a "
            "concise report with changes and artifact paths, acceptance coverage, "
            "decision compliance/conflicts, commands and observed outcomes, "
-           "unresolved issue IDs, and any blocker. Do not claim unrun checks passed.")
+           "unresolved issue IDs, and any blocker. Do not claim unrun checks passed. "
+           "Use RunnerHandoff to submit the report.")
    (1+ (gptel-runner-iteration run 'grp-cycle))
    (gptel-runner-get run 'grp-review)))
 
 (defun grp/review-prompt (run _node)
   "Ask for an independent review of current artifacts in RUN."
   (format
-   (concat "Revision round: %d\nImplementation report (verify claims):\n%s\n\n"
+   (concat "Revision round: %d\n"
+           "Verify the implementer's handoff. If a claim needs clarification, "
+           "use RunnerAskPrevious to ask the implementer for evidence. "
            "Independently inspect artifacts against the original purpose, current "
            "goal, acceptance checks, constraints, and scoped plan. Check recorded "
            "decision compliance and relevant verification evidence. Do not edit "
-           "files. Preserve issue IDs across rounds where applicable. Return only "
-           "JSON with verdict (pass, revise, or blocked), a non-empty summary, "
+           "files. Preserve issue IDs across rounds where applicable. Submit the "
+           "review using RunnerHandoff. Its message must contain only JSON "
+           "with verdict (pass, revise, or blocked), a non-empty summary, "
            "and issues (array of objects with severity and message, optionally "
            "file, line, suggested_fix). PASS requires all acceptance checks to be "
            "satisfied with evidence, no unauthorized decision changes, and no "
            "unresolved issues. REVISE needs at least one actionable issue. BLOCKED "
            "means external input or a decision outside delegated scope is needed; "
            "explain it. Include affected acceptance/decision IDs in findings.")
-   (1+ (gptel-runner-iteration run 'grp-cycle))
-   (grp/required-result run 'grp-implementation)))
+   (1+ (gptel-runner-iteration run 'grp-cycle))))
 
 (defun grp/review-valid-p (review)
   "Validate REVIEW, rejecting approval with unresolved findings."
@@ -162,8 +171,9 @@
 (gptel-runner-defworkflow grp-intent-preserving
     (:max-calls 14 :max-requests 60 :max-concurrency 1
      :max-duration 1800 :decision-memory t)
-  ;; Seven normal calls maximum: one plan plus three implement/review pairs.
-  ;; Fourteen allows one output repair per call; request/tool-loop needs vary.
+  ;; One plan plus three implement/review pairs uses seven calls. The other
+  ;; seven can cover clarification turns or repairs. Tool requests also count
+  ;; toward the separate request budget.
   (gptel-runner-sequence
    :id 'grp-root :context #'grp/shared-context
    (gptel-runner-agent-step

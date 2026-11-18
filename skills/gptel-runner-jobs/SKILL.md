@@ -1,6 +1,6 @@
 ---
 name: gptel-runner-jobs
-description: Define, edit, launch, schedule, inspect, and control durable gptel-runner background jobs in Emacs. Use for job records and APIs, worker initialization, invocation history and outputs, command receipts, or background recovery. Pipeline construction and in-process run management belong to gptel-runner-pipelines.
+description: Define, edit, launch, schedule, inspect, and control durable gptel-runner background jobs in Emacs. Use for worker initialization, saved node and child chats, handoffs and feedback in the background dashboard, job outputs, command receipts, or resuming and rerunning invocations. For pipeline construction and in-process runs, use gptel-runner-pipelines.
 ---
 
 # gptel-runner background jobs
@@ -24,6 +24,20 @@ the [nested-work contract](../gptel-runner-pipelines/references/runtime-integrat
 when those features are present. Child tool approvals use the normal job command
 channel, including multiple pending requests on one node. Question forms and
 separate interactive file-review interfaces still require headless adapters.
+
+Each gptel agent node works in its own conversation. By default it calls
+`RunnerHandoff` to submit its answer. On a route through a sequence it can
+use `RunnerAskPrevious` to ask the preceding agent a question. The final agent
+hands off its result in the same way. Ordinary prose leaves the call waiting
+for feedback. Budget for the extra turns and choose a tool-capable model.
+
+The worker checkpoints these conversations, their child transcripts, and the
+workflow together under the invocation. Leave session saving to the runner.
+On the background dashboard, `RET` on a node opens a local chat copy, `? m`
+shows messages between nodes, and `? j` opens child transcripts. Use
+`? f` on a waiting node to send feedback to the worker. See
+[invocation commands and recovery](references/invocations-and-commands.md)
+for accepting a handoff, resuming, rerunning, continuing, or cancelling.
 
 ## Shared pipeline outputs
 
@@ -154,12 +168,15 @@ The durable `:arguments` allowlist is:
 
 ```elisp
 (:goal :workspace :inputs :max-requests :max-calls :max-concurrency
- :max-duration :allow-writes :allow-unconfirmed-tools :decision-memory :context)
+ :max-duration :allow-writes :allow-unconfirmed-tools :decision-memory :context
+ :completion)
 ```
 
 Do not put `:driver`, `:callback`, or `:persist` there. Select the driver in the
-init file; the job worker enables persistence. Use serializable values and named
-functions defined by the init file, not closures capturing editor state.
+init file; the job worker enables persistence. Omit `:completion` to inherit
+the workflow setting, or use `:completion response` in a data plist for a job
+whose agents should complete on ordinary responses. An explicit node setting
+takes precedence. Use serializable values and named functions defined by init.
 
 Omit `:arguments :workspace` to use the pipeline's default. Explicit nil is
 normalized to the job's base directory and overrides the pipeline default.

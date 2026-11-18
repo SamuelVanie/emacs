@@ -1,5 +1,37 @@
 # Handoffs that preserve intent efficiently
 
+## Messages between node chats
+
+In the standard gptel driver, handoff completion is the default. Use a
+tool-capable model. The driver supplies the applicable workflow tools on each
+request. Send one workflow tool call by itself with a nonblank string.
+
+1. The researcher calls `RunnerHandoff(message)` with its findings. After the
+   node's parser, validator, and any approval gate accept the result, the planner
+   receives that text alongside its own assignment.
+2. If evidence is missing, the planner calls `RunnerAskPrevious(question)`.
+   The researcher receives the question in its existing chat and can use its
+   regular tools. Its `RunnerHandoff(message)` returns a reply to the planner.
+   The original research result and its saved value remain available.
+3. The planner resumes in its chat. It can ask again or call `RunnerHandoff`
+   to submit its plan. The last agent uses the same tool to submit its result.
+   Subsequent Elisp nodes can consume or publish the parsed output.
+
+The sequence determines the recipient. Nested sequences and intervening Elisp
+steps preserve adjacency. A question or reply leaves completed Elisp steps in
+place. A branch, parallel group, repeat, other non-sequence container, or agent
+with response completion bounds the route. Two agents in a sequence *inside*
+one repeat body can exchange messages there. Supply a plan from outside the
+repeat, or a finding from an earlier iteration, through an explicit saved value
+or artifact. A follow-up can travel farther upstream when the responding agent
+itself asks its previous partner. Each turn uses normal call and request budgets.
+
+`:save-as` stores the parsed value for code. The text that another chat receives
+is the accepted handoff string. For a machine-routed JSON review, ask for JSON
+inside `RunnerHandoff`'s `message` and validate it. Avoid duplicating an incoming
+handoff in the receiving prompt unless the task needs a different representation.
+Plain prose leaves the node open for another turn or manual acceptance.
+
 ## Shared brief
 
 Use a short versioned brief when the task is large enough to benefit from IDs:
