@@ -1,5 +1,5 @@
 (gptel-runner-register-agent
- 'plan
+ 'technical-options-plan
  :preset 'gptel-plan
  :workspace-mode 'read)
 
@@ -15,7 +15,7 @@
                   (gptel-runner-get run key))
                 '(proposal-1 proposal-2 proposal-3))))
 
-(defun myproject/plan-prompt (run _node)
+(defun myproject/technical-options-plan-prompt (run _node)
   "Build a prompt for the next distinct technical proposal for RUN."
   (let* ((proposals (myproject/decision-proposals run))
          (number (1+ (length proposals))))
@@ -150,18 +150,18 @@
    :id 'technical-options-sequence
    (gptel-runner-agent-step
     :id 'first-proposal
-    :agent 'plan
-    :prompt #'myproject/plan-prompt
+    :agent 'technical-options-plan
+    :prompt #'myproject/technical-options-plan-prompt
     :save-as 'proposal-1)
    (gptel-runner-agent-step
     :id 'second-proposal
-    :agent 'plan
-    :prompt #'myproject/plan-prompt
+    :agent 'technical-options-plan
+    :prompt #'myproject/technical-options-plan-prompt
     :save-as 'proposal-2)
    (gptel-runner-agent-step
     :id 'third-proposal
-    :agent 'plan
-    :prompt #'myproject/plan-prompt
+    :agent 'technical-options-plan
+    :prompt #'myproject/technical-options-plan-prompt
     :save-as 'proposal-3)
    (gptel-runner-agent-step
     :id 'write-decision-report

@@ -1,26 +1,25 @@
 # Job definitions and APIs
 
-Require `gptel-runner-jobs` for job records and worker APIs. Require
-`gptel-runner-launchd` for the macOS launcher/scheduler, and
-`gptel-runner-jobs-ui` for the jobs view and background dashboard actions.
-`gptel-runner` loads the jobs and UI modules too.
+Require `gptel-runner-jobs` for definition, registration, scheduling, and
+worker APIs. The top-level `gptel-runner` package also loads the jobs module.
 
 ## Definition API
 
 | Call | Contract |
 | --- | --- |
-| `(gptel-runner-job-save job)` | Validate a job plist, write it, and return the normalized saved record. Does not run or install a schedule. |
+| `(gptel-runner-register-job id &rest properties)` | Create or update the definition under a stable string ID and return the saved record. Properties are evaluated keyword arguments. Registration alone saves the configuration. |
+| `(gptel-runner-job-schedule job &optional schedule)` | Install the supplied rule on macOS or activate the saved rule when omitted. Accepts an ID or saved record and returns the updated definition. |
+| `(gptel-runner-job-unschedule job)` | Remove the installed trigger and retain the saved rule, definition, and history. Accepts an ID or saved record and returns the updated definition. |
+| `(gptel-runner-job-save job)` | Validate and save a complete job plist. Generates an ID when omitted. Existing callers can continue to use this API. |
 | `(gptel-runner-job-get id)` | Read a saved job by its string ID from the current store. |
 | `(gptel-runner-job-list)` | Return saved jobs sorted by name. Names need not be unique. |
 | `(gptel-runner-job-run job &optional trigger)` | Launch a saved record or ID; return an invocation record. Trigger defaults to `manual`. See the launch reference. |
 | `(gptel-runner-job-delete id)` | Delete the definition and, on macOS, remove its schedule. Retain invocation history. Does not cancel a running worker. |
 
 `gptel-runner-job-directory` selects the store, normally
-`~/.emacs.d/gptel-runner/jobs/`. Bind it around get/list/save/delete and scheduler
-operations for another store. A record's `:root` identifies that store;
-`job-save` writes to the currently bound store, not an arbitrary supplied `:root`.
-`job-run` and `job-command` honor a supplied record's root, but resolving an ID
-first still requires the correct store.
+`~/.emacs.d/gptel-runner/jobs/`. Bind it around registration and operations by
+ID for another store. A saved record's `:root` identifies its store.
+`gptel-runner-job-save` always writes to the currently bound store.
 
 Use IDs returned by the APIs. Job ID, invocation ID, command ID, and the
 worker's session-local run/call IDs are different identities.
@@ -29,10 +28,10 @@ worker's session-local run/call IDs are different identities.
 
 | Field | Meaning and default |
 | --- | --- |
-| `:name` | Required nonempty string; a display name, not identity. |
+| `:name` | Nonempty display name. Registration defaults it to the string ID when creating a job. |
 | `:workflow` | Required non-nil symbol naming a workflow. It can be registered only by the worker init; saving does not require editor registration. |
 | `:init-file` | Required readable file, stored as an absolute path. Trusted Lisp executed on every worker start, including recovery. |
-| `:id` | Omit for a new job; preserve for updates. |
+| `:id` | Stable string ID supplied as the first argument to registration. Use letters, digits, underscores, or hyphens. |
 | `:arguments` | Runner start keyword plist from the allowlist below; nil means use workflow/runner defaults. |
 | `:base-directory` | Existing directory, stored canonically. Defaults to the old job's base on update, otherwise the saving Emacs's `default-directory`. |
 | `:emacs` | Absolute executable path; defaults to `gptel-runner-job-emacs-program` (the current Emacs executable). |
@@ -94,55 +93,28 @@ pipeline's contract; `gptel-runner-get` can also read optional or produced value
 
 ## Updating a definition
 
-Read, modify, save, and read back under the correct store:
+Register a change under the original ID. Omitted top-level fields retain their
+saved values. To edit a single start argument, copy the existing argument
+plist first because a supplied `:arguments` replaces it in full.
 
 ```elisp
 (let* ((gptel-runner-job-directory job-store)
-       (job (copy-tree (gptel-runner-job-get job-id)))
+       (job (gptel-runner-job-get job-id))
        (arguments (copy-tree (plist-get job :arguments))))
-  (setq arguments (plist-put arguments :goal revised-goal)
-        job (plist-put job :arguments arguments))
-  (gptel-runner-job-save job)
+  (gptel-runner-register-job
+   job-id :arguments (plist-put arguments :goal revised-goal))
   (gptel-runner-job-get job-id))
 ```
 
-Save replaces the record; it is not a general partial update. Only the base
-directory and bootstrap fields have explicit fallback to the old definition.
-Preserve the full record so omitted environment, arguments, schedule, enabled
-state, or executable do not unexpectedly change. Remove a key with `cl-remf`
-when omission is intended, especially for workspace inheritance.
+To resume inheriting the workflow's workspace, remove `:workspace` from the
+copied argument plist before registering the replacement. For a job created
+with `gptel-runner-job-save`, use the existing record's `:id` for registration.
 
 Job edits affect future invocations, not an existing invocation's embedded job.
 Recovery uses that embedded record. Source files and dependencies remain live
 paths, so changing init or workflow code can still affect a later worker restart.
 Keep compatible named workflows and stable explicit node IDs for recovery.
 
-Reapply an installed schedule after changing settings used by its trigger,
-including schedule, executable, or environment. `job-save` alone only updates
-the stored definition. See [launch and scheduling](launch-and-verify.md).
-
-## Definition editor
-
-`M-x gptel-runner-show-jobs` lists definitions. `n` creates a definition, `RET`
-edits it, `g` refreshes, and `?` opens the jobs menu. The editor's `C-c C-c`
-reads and saves exactly one data plist; `C-c C-k` closes it.
-
-Enter raw data, without an outer quote or executable constructors:
-
-```elisp
-(:name "Project review"
- :workflow project-review
- :init-file "/absolute/path/to/worker-init.el"
- :base-directory "/absolute/path/to/project/"
- :arguments (:goal "Review the current changes"
-             :inputs ((subject . "current changes"))
-             :max-calls 20 :max-requests 60 :max-duration 1800)
- :schedule nil
- :enabled t)
-```
-
-Adapt the workflow, paths, and input keys. In this data editor, `(list ...)`,
-`(expand-file-name ...)`, and `'project-review` are read as data, not evaluated
-into intended values. Ordinary evaluated Lisp can use constructors as in
-`SKILL.md`. Preserve `:id` when editing an existing job. Saving in the editor
-also does not run the job or apply schedule changes.
+Reapply an installed schedule with `gptel-runner-job-schedule` after changing
+settings used by its trigger, including the executable or environment.
+See [launch and scheduling](launch-and-verify.md).

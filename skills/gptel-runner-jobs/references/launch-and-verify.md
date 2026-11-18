@@ -52,18 +52,22 @@ ownership handoff; use the existing adapter and process tests as the contract.
 
 ## Install a recurring schedule
 
-Save the requested `:schedule` on the job, then install it:
+On macOS, apply the requested rule to a registered job through the public
+scheduling API. The example installs a recurring Monday 09:00 local trigger.
 
 ```elisp
+(require 'gptel-runner-jobs)
+(setq my-job
+      (gptel-runner-job-schedule my-job-id '(:calendar ((:weekday 1 :hour 9 :minute 0)))))
 (require 'gptel-runner-launchd)
-(setq my-job (gptel-runner-launchd-install my-job-id))
 (gptel-runner-launchd-diagnostics my-job)
 ```
 
-Installation enables future triggers and does not run the pipeline immediately.
-Reinstall after changing a schedule to update the actual launchd registration;
-`job-save` alone does not do so. Read diagnostics and check the reported
-installation result/registration before claiming the schedule is active.
+If the definition already contains the desired `:schedule`, call
+`(gptel-runner-job-schedule my-job-id)` to activate it. Passing a rule saves
+and installs it for future triggers. Registration alone saves the rule.
+Read the returned job's `:scheduler` status and check launchd diagnostics to
+verify that the schedule is active.
 
 Supported schedules:
 
@@ -84,20 +88,17 @@ User LaunchAgents require the login session. Calendar triggers missed during
 sleep coalesce on wake; interval triggers can be missed. Explain these limits
 when relevant to requested timing. Do not promise execution while powered off.
 
-`gptel-runner-launchd-disable` stops future triggers; an active worker continues.
-`gptel-runner-launchd-remove` removes the schedule while retaining job/history.
-Removal retains the saved `:schedule` definition, so it can be installed again.
-Use `gptel-runner-job-delete` only when deleting the job definition itself is
-intended; it retains history too. None of these cancel a running worker.
-Do not use either merely to clean up an unrelated job. For non-macOS scheduling,
-the generic CLI can be used by the user's requested scheduler.
+Use `(gptel-runner-job-unschedule my-job-id)` to remove the installed trigger.
+The saved rule remains available for later scheduling, and active workers
+continue. To delete the definition itself use `gptel-runner-job-delete`.
+Both operations preserve invocation history. The built-in schedule installer
+requires macOS.
 
-Install, disable, remove, and diagnostics accept a saved job record or ID. Bind
-`gptel-runner-job-directory` to its store for these operations, including when
-passing a record, because scheduler status is saved through `job-save`.
-Installation sets `:enabled t`; disabling/removing sets it nil. Each saves a new
-job revision with scheduler status. Re-read after errors: installation can
-have partly changed the service before recording an error.
+Scheduling and unscheduling accept either an ID in the current job store or a
+saved record, and read the latest definition. Installation sets `:enabled t`.
+Removing the trigger sets it to nil. Both return an updated job record with
+scheduler status. After an error, inspect the current record and diagnostics
+because installation can fail after changing the service.
 
 `gptel-runner-launchd-diagnostics` returns `:label`, `:file`, `:saved-status`,
 and raw launchctl `:exit`/`:output`. Treat the text as human diagnostics, not a

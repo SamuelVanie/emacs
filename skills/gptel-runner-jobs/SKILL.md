@@ -1,6 +1,6 @@
 ---
 name: gptel-runner-jobs
-description: Define, edit, launch, schedule, inspect, and control durable gptel-runner background jobs in Emacs. Use for worker initialization, saved node and child chats, handoffs and feedback in the background dashboard, job outputs, command receipts, or resuming and rerunning invocations. For pipeline construction and in-process runs, use gptel-runner-pipelines.
+description: Define, register, and schedule durable Emacs jobs through the gptel-runner Lisp API. Use for worker initialization, launches, saved chats and outputs, dashboard feedback, command receipts, and invocation recovery. For pipeline construction and in-process runs, use gptel-runner-pipelines.
 ---
 
 # gptel-runner background jobs
@@ -9,6 +9,11 @@ Turn the user's task into a durable launch configuration for an existing named
 workflow. A **job** is the reusable configuration; an **invocation** is one
 execution in a separate `emacs -Q --batch` worker. Keep their IDs distinct from
 the worker's session-local run ID.
+
+Evaluate job definitions, registrations, and scheduling calls through the public
+Lisp API in the controlling Emacs. Keep those calls out of the worker init,
+which is loaded again on each invocation and recovery. Use the jobs view for
+inspection and the dashboard for invocation controls.
 
 Reuse pipeline definitions. If a suitable pipeline is missing or needs changes,
 use the companion [gptel-runner-pipelines](../gptel-runner-pipelines/SKILL.md)
@@ -55,8 +60,8 @@ need custom artifact directories or event hooks. Remote mutations still use
 
 Use the relevant reference for the task:
 
-- [Job definitions and APIs](references/job-api.md): saved fields, defaults,
-  inputs, workspaces, updates, deletion, and the job data editor.
+- Read [Job definitions and APIs](references/job-api.md) for registration,
+  saved fields, defaults, inputs, workspaces, updates, and deletion.
 - [Worker initialization](references/worker-bootstrap.md): packages, presets,
   backends, environment, and validation in a fresh Emacs.
 - [Launch and scheduling](references/launch-and-verify.md): manual runs, the
@@ -78,7 +83,7 @@ option differs from this skill.
 ```elisp
 (list :runner (locate-library "gptel-runner")
       :jobs-library (locate-library "gptel-runner-jobs")
-      :loaded-jobs (symbol-file 'gptel-runner-job-save 'defun)
+      :loaded-jobs (symbol-file 'gptel-runner-register-job 'defun)
       :workflows
       (when (boundp 'gptel-runner--workflows)
         (mapcar (lambda (name)
@@ -108,9 +113,9 @@ older core; use a consistent package version for the editor, launcher, and worke
 Updating the installed runner is separate work when not already requested.
 
 Once a compatible jobs module is available, inspect existing jobs with
-`gptel-runner-job-list`. Match the user's intended job before saving: names are
-not unique identifiers. Keep the existing `:id` when updating; otherwise a new
-save creates another job.
+`gptel-runner-job-list`. Match the requested job by its stable string ID.
+Several jobs can share a display name. For an existing job, including one with
+a generated ID, pass its current `:id` when registering changes.
 
 ## Map the task to a launch configuration
 
@@ -118,7 +123,7 @@ Select a suitable existing workflow. Ask only when several candidates imply
 materially different work, or a required goal, input, or workspace is missing.
 Derive these from the request and existing project context where possible:
 
-- A useful job name and the exact registered workflow symbol.
+- A stable job ID, an optional display name, and the exact workflow symbol.
 - A goal preserving the requested outcome, constraints, and acceptance checks.
 - Inputs using the pipeline's actual keys, as a readable Lisp alist or hash table.
 - The workspace and any required files; retain a suitable workflow default.
@@ -136,24 +141,24 @@ Prepare a small worker init file by following
 do not carry over to the worker. Reuse existing backend, preset, tool, and
 pipeline setup files that are suitable for batch use.
 
-## Save the job
+## Register the job from Lisp
 
-Use `gptel-runner-job-save`, not hand-written files in the job store. Required
-keys are `:name`, `:workflow`, and `:init-file`. Adapt this example using the
-discovered symbol, paths, goal, and task-appropriate limits:
+Use `gptel-runner-register-job` with a stable string ID and keyword arguments.
+On first registration supply `:workflow` and `:init-file`. The display name
+defaults to the ID. Adapt the workflow, paths, goal, and limits to the task.
 
 ```elisp
 (require 'gptel-runner-jobs)
 (setq my-job
-      (gptel-runner-job-save
-       (list :name "Project review"
-             :workflow selected-workflow
-             :init-file worker-init-file
-             :base-directory task-directory
-             :arguments
-             (list :goal task-goal
-                   :workspace task-directory
-                   :max-calls 20 :max-requests 60 :max-duration 1800))))
+      (gptel-runner-register-job
+       "project-review"
+       :name "Project review"
+       :workflow selected-workflow
+       :init-file worker-init-file
+       :base-directory task-directory
+       :arguments (list :goal task-goal
+                        :workspace task-directory
+                        :max-calls 20 :max-requests 60 :max-duration 1800)))
 (setq my-job-id (plist-get my-job :id))
 (gptel-runner-job-get my-job-id)
 ```
@@ -184,15 +189,18 @@ normalized to the job's base directory and overrides the pipeline default.
 explicit job workspace paths are normalized when saved. Per-node overrides
 still apply. Jobs do not create worktrees or isolated copies of files.
 
-Other job-level keys are `:id`, `:schedule`, `:environment`, `:emacs`, `:enabled`,
+Other job-level options are `:schedule`, `:environment`, `:emacs`, `:enabled`,
 `:load-path`, and `:preload-features`. Defaults capture the current executable,
 external library paths, and configured preload features. See the bootstrap
-reference before overriding them. `:enabled` defaults to t, but saving neither
-installs a schedule nor executes a pipeline. It is not a manual-run lock.
+reference before overriding them. `:enabled` defaults to t. Registration saves
+the definition for future launches. Use `gptel-runner-job-run` to launch it
+now or `gptel-runner-job-schedule` to activate a recurring trigger on macOS,
+according to the request.
 
-For an update, copy `gptel-runner-job-get`'s record, change the intended fields,
-and save it with the same ID. Save is not a general partial-patch API. Re-read
-the saved record and check its revision and relevant fields. A job update affects
+Register the same ID again with the top-level fields to update. Supplying
+`:arguments` replaces that entire plist. Read the current arguments before
+changing an individual option. Read back the saved record and check its
+revision and relevant fields. A job update affects
 future invocations; existing invocations retain their embedded job configuration.
 Pass a freshly read job record or its ID when launching; passing an older record
 uses that record's configuration. The embedded configuration preserves values
@@ -202,8 +210,8 @@ and paths, not copies of the init file, pipeline source, packages, or credential
 
 Validate the init file in a fresh batch Emacs with the saved bootstrap settings,
 without starting the real workflow; the bootstrap reference explains the checks.
-`job-save` validates the record but does not prove that its workflow or presets
-will load, its inputs meet the task contract, or its provider will work.
+Registration validates the saved configuration. Worker initialization, input
+requirements, and provider availability need their own checks.
 
 For a small end-to-end output check, use the checkout's
 `examples/artifact-pipeline.el`, workflow `artifact-pipeline`, with
@@ -223,5 +231,5 @@ a job alone does not imply an immediate model run or recurring execution.
 Report the saved job name/ID, selected pipeline, init-file path, effective
 workspace, and whether it was saved, launched, or scheduled. Include relevant
 validation limits and any invocation ID or schedule details. Provide
-`M-x gptel-runner-show-jobs` for job definitions and
+`M-x gptel-runner-show-jobs` to inspect registered jobs and
 `M-x gptel-runner-show-dashboard` for invocation history when useful.
