@@ -21,7 +21,12 @@ The worker starts the workflow itself after init completes. Do not call
 `gptel-runner-start`, `gptel-runner-job-run`, or schedule installation from init.
 Avoid loading the entire interactive `init.el`: it may install packages, change
 UI state, prompt, or launch unrelated work. Check reused files for such effects.
-Initialization runs again for recovery, so it must be repeatable.
+Initialization runs again for recovery, so it must be repeatable. Load the same
+pipeline used interactively; the worker sets up managed outputs and persistence.
+Do not bind worker-private globals, register artifact event hooks, or implement
+local/background output branches in init. Check needed public functions with
+`fboundp` during validation; resolve a package-version gap instead of adding
+fallback implementations to the pipeline.
 
 A real worker init normally has this shape, using actual existing setup files:
 

@@ -13,7 +13,10 @@ transport, addresses, receipts, and background lifecycle.
 | `(gptel-runner-invocation-get id)` | Read the latest manifest from the current job store. |
 | `(gptel-runner-invocation-list)` | List newest first, across jobs. Skip unreadable/corrupt manifests with a message. Dead owners of `open`/`closing` invocations are projected as `interrupted` without rewriting history. |
 | `(gptel-runner-invocation-live-p invocation)` | Test exact owner identity. Can mean a live launch reservation, not yet an initialized worker. |
-| `(gptel-runner-invocation-outputs invocation)` | Read the named blackboard values as an alist, or nil if none are published. Requires a record, not an ID. |
+| `(gptel-runner-outputs source)` / `(gptel-runner-get source key default)` | Read all named values as an alist, or one value with a missing default; nil values stay nil. Source is a run or invocation record. |
+| `(gptel-runner-node-outcome source node)` | Current `:node`, `:state`, and known terminal `:value`; `node-state`, `node-result`, `node-error` also accept invocation records and node objects/IDs. |
+| `(gptel-runner-artifacts source)` | Retained descriptors in publication order; source is a run or invocation record. |
+| `(gptel-runner-artifact-file source descriptor)` / `(gptel-runner-read-artifact source descriptor)` | Resolve a readable managed path, or read text; same calls in either mode. |
 | `(gptel-runner-invocation-call invocation call)` | Expand a compact call descriptor into its full inspection record. Both arguments are records. |
 | `(gptel-runner-invocation-commands invocation)` | Read receipts newest first by submission sequence; accepts a record or ID. |
 | `(gptel-runner-job-command-status invocation command-id)` | Read one command receipt; accepts a record or ID. |
@@ -33,7 +36,7 @@ Useful manifest fields:
 | `:state`, `:reason`, `:error` | Pipeline or worker outcome. Reason/error are not guaranteed for every failure; inspect calls and events too. |
 | `:created-at`, `:started-at`, `:finished-at`, `:heartbeat` | Available timing data. A stale timestamp alone is not proof the owner died. |
 | `:calls`, `:interactions` | Compact call history and currently pending tool interactions. |
-| `:outputs`, `:outputs-file`, `:artifacts` | Published output keys, their data file, and copied file descriptors. |
+| `:outputs`, `:outputs-file`, `:nodes-file`, `:artifacts` | Named value keys, their data file, node outcomes file, and retained artifact descriptors. |
 
 Run states include running/paused and terminal succeeded/failed/blocked/stalled/
 cancelled. Job-layer outcomes also include `skipped` with reason `overlap`,
@@ -51,9 +54,9 @@ state while still open/closing is not permission to remove its worker service.
 (let* ((gptel-runner-job-directory job-store)
        (invocation (gptel-runner-invocation-get invocation-id))
        (call (car (last (plist-get invocation :calls)))))
-  (list :outputs (gptel-runner-invocation-outputs invocation)
+  (list :outputs (gptel-runner-outputs invocation)
         :call (when call (gptel-runner-invocation-call invocation call))
-        :artifacts (plist-get invocation :artifacts)))
+        :artifacts (gptel-runner-artifacts invocation)))
 ```
 
 Call descriptors include `:id`, `:epoch`, `:node`, `:agent`, `:state`,
@@ -62,26 +65,39 @@ The full record adds `:prompt`, `:workspace`, `:result`, and `:error`.
 Opaque runtime objects in inspection data can appear as `(:unavailable TYPE)`;
 this is not executable state. Older worker epochs remain in call history.
 
-The invocation directory contains `manifest.el`, `checkpoint.el`, `outputs.el`,
+`gptel-runner-invocation-outputs` remains supported for existing clients; prefer
+`gptel-runner-outputs` in new code. The four node inspection helpers read exported
+outcomes without loading the workflow. Histories created before node exports
+report those outcomes unavailable; do not reconstruct them from old calls.
+
+The invocation directory contains `manifest.el`, `checkpoint.el`, `outputs.el`, `nodes.el`,
 `calls/`, `events.el`, `commands/`, `receipts/`, and published `artifacts/` as
 applicable. Events are an append-only sequence of Lisp forms, not one plist.
 launchd workers also have `stdout.log`, `stderr.log`, and registration files;
 generic CLI output follows the caller's redirection. Read history as data,
-never `load` it. Prefer public readers or dashboard views; when opening a
-descriptor path, resolve it within `:directory` and reject escaping paths.
+never `load` it. Prefer public readers or dashboard views. For published
+artifacts use `gptel-runner-artifact-file`; it validates registration, readability,
+and containment. Do not rebuild its path checks in each pipeline.
 
-To preserve a file as an invocation output, call inside its worker:
+Publication uses the same core functions locally and in workers:
 
 ```elisp
+;; In a pipeline step: return this and use :save-as 'report.
+(gptel-runner-write-artifact run "report.txt" report-text "text/plain")
+;; Copy an existing file when that is the actual source.
 (gptel-runner-publish-artifact run "report" report-file "text/plain")
+;; In the editor, after refreshing the invocation record:
+(gptel-runner-read-artifact invocation (gptel-runner-get invocation 'report))
 ```
 
-The API requires a nonempty name and readable regular file, copies the file
-into history, and returns `(:name ... :file ... :media-type ... :epoch ...
-:published-at ...)`. Later source edits do not alter the copy. Publication
-appends a descriptor; names do not act as replacement keys. This API needs an
-active background invocation. Ordinary local runs can save file paths on their
-blackboard instead. Keep pipeline output design in the pipelines skill.
+Both publishers return `(:name ... :file ... :media-type ... :epoch ...
+:published-at ...)`. Files are retained independently of their sources; names
+append distinct versions. The worker supplies invocation storage automatically.
+Snapshots preserve the registry across recovery, and new workers publish with
+the new epoch. Files are separate from checkpoints and survive run completion.
+Use the [shared output contract](../../gptel-runner-pipelines/references/runner-api.md#managed-outputs-in-every-launch-mode)
+for storage lifetime and context handoffs. No worker-specific branch belongs in
+pipeline output code.
 
 ## Submit a command and inspect its receipt
 
@@ -131,7 +147,7 @@ observed call). Node IDs are symbols, strings, or integers, as used by the workf
 | `pause` | None | Pause the whole run; stop active work and preserve completed results. |
 | `resume` | Optional `:feedback` string | Resume a paused run; feedback reaches the next unfinished prompt. |
 | `cancel` | None | Abort the run. Disabling its schedule is separate. |
-| `retry` | Optional `:from-node`, `:feedback` | Retry at the safe checkpoint, or from an executed agent node. Select by node ID, not a historical call ID. Does not change the goal. |
+| `retry` | Optional `:from-node`, `:feedback` | Retry at the safe checkpoint, or from an executed agent or Elisp node. Select by node ID, not a historical call ID. Does not change the goal. |
 | `continue` | Required nonempty `:observation`; optional `:reset-budget` t/nil and budgets | Continue a terminal run with the observation as a new goal. Success starts a new cycle; an unsuccessful run retains completed stages and restarts its checkpoint. |
 | `extend` | Budgets; provide at least one | Increase finite budgets of running/paused work, or restart budget-failed work after extending every exhausted limit. |
 | `extend-repeat` | Required `:node`, `:additional-iterations`; optional budgets | Restart a failed run whose named repeat exhausted its iteration limit. Does not change the saved workflow. |

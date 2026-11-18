@@ -1,6 +1,8 @@
 ;;; intent-preserving-pipeline.el --- Explicit agent handoffs -*- lexical-binding: t; -*-
 
 ;;; Commentary:
+;; Use this fuller starter only when planning and a bounded review loop are
+;; required.  For a simple inspect/report task, prefer minimal-pipeline.el.
 ;; Adapt this starter; loading it registers definitions but runs no agents.
 ;; Discover loaded presets first (see ../references/presets.md). The :preset
 ;; values grp-planner, grp-implementer, and grp-reviewer below are placeholders:

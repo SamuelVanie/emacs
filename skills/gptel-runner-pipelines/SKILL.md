@@ -20,11 +20,31 @@ pipeline definition, its inputs/outputs, and its runtime API contracts here.
 
 ## Use the pipeline API
 
-Read [the API reference](references/runner-api.md) when writing Lisp. Use public
-runner APIs; keep private gptel calls out of workflows. The source and examples
-are in `~/projects/gptel-runner` when implementation details need inspection.
-For custom drivers, admission hooks, headless interactions, or published pipeline
-outputs, read [runtime integrations](references/runtime-integrations.md).
+Read [the API reference](references/runner-api.md) when writing Lisp. Start with
+the smallest AST that expresses the task, plus task-specific prompts and transforms.
+Before adding a helper, check whether a public API already owns that behavior:
+
+- Named data: `:inputs`, `:save-as`, `gptel-runner-get`, `gptel-runner-put`.
+- Current results/errors: `gptel-runner-node-result`, `-error`, `-outcome`, `-state`;
+  traversal: `gptel-runner-find-node`, `-list-nodes`, `-map-nodes`, `-node-path`.
+- Retained files/text: `gptel-runner-publish-artifact`, `gptel-runner-write-artifact`;
+  readers: `gptel-runner-artifacts`, `-artifact-file`, `-read-artifact`.
+- Context from a produced artifact: `gptel-runner-context-artifact` with its saved key.
+- Recovery/cleanup: `gptel-runner-try`; terminal publication: `gptel-runner-finalize`.
+
+See [managed outputs](references/runner-api.md#managed-outputs-in-every-launch-mode)
+for the common descriptor and storage contract. Local and background workflows
+use the same functions. Do not generate launch-mode branches, temporary report
+files, descriptor/path reconstruction, state-table scans, or private runner calls
+to reproduce these APIs. Custom helpers should add task logic, not wrap public
+functions one-for-one. Avoid generic compatibility frameworks, custom schedulers,
+and defensive scaffolding unrelated to the actual task.
+
+The current source and examples are in `~/projects/gptel-runner`. If the installed
+package lacks a needed public API, identify the version gap and use one consistent
+package version; do not embed fallback implementations in each pipeline. Read
+[runtime integrations](references/runtime-integrations.md) only for custom drivers,
+admission hooks, headless interactions, or dashboard extensions.
 
 ## Discover presets before assigning agents
 
@@ -124,6 +144,9 @@ Use subtree context for a plan shared by only its implementers/reviewers. Use
 node context for specialized evidence. Context layers are additive, so narrower
 text does not remove contradictory broader text or deduplicate it automatically.
 
+For a file produced by an earlier step, use
+`(gptel-runner-context-artifact 'saved-key)`; the runner resolves it when preparing
+the consumer. Do not write a custom file reader or declare a future workspace file.
 Relative context files at **every scope** resolve from the receiving agent's
 effective workspace. For one shared brief across repositories, use inline text,
 an absolute file descriptor, or a function explicitly rooted at the run workspace.
@@ -174,6 +197,8 @@ and artifact verification.
 
 - Use `gptel-runner-try` for failure recovery and cleanup; see
   [try nodes](references/runner-api.md#failure-recovery-and-cleanup).
+- To publish partial results after termination, use an explicit
+  [bounded run finalizer](references/runner-api.md#bounded-run-finalization).
 - Give every node a stable, unique `:id` and every output a clear owner. Use
   different `:save-as` keys for parallel siblings. Fail clearly on a missing
   required input; distinguish an optional first-iteration review from a lost plan.
@@ -188,7 +213,8 @@ and artifact verification.
   cosmetic prose changes must not count as progress. Two identical consecutive
   non-nil keys stall the loop. Do not hide exhausted limits by silently
   resetting budgets or dropping requirements.
-- Persist downstream inputs on the blackboard or in durable workspace artifacts.
+- Preserve downstream inputs through node outcomes, blackboard values, or durable
+  artifacts.
   Use a named workflow and explicit IDs for `:persist t`; re-load the same
   definitions to resume. Worker transcripts are not durable shared memory.
 - Retry/resume feedback reaches one next/selected call. Promote enduring user
@@ -198,12 +224,15 @@ and artifact verification.
 
 ## Implement and verify
 
-For a plan → implement/review loop, adapt
-[the executable starter](assets/intent-preserving-pipeline.el). It defines a
-workflow without launching live agents. Replace its placeholder preset values
-with discovered compatible presets (the runner agent names can stay unchanged),
+For a simple task, adapt [the minimal starter](assets/minimal-pipeline.el):
+one agent and one managed publication step, with no output helper functions.
+Do not copy a planning/review framework into a task that needs only a sequence.
+For an actual plan → implement/review loop, adapt only the relevant parts of
+[the larger starter](assets/intent-preserving-pipeline.el). Both define workflows
+without launching live agents. Replace the chosen placeholder presets with
+discovered compatible presets (the runner agent names can stay unchanged),
 tailor the shared brief and output contracts, and remove unnecessary stages.
-The starter delegates bounded planning choices; add a plan gate if approval is
+The larger starter delegates bounded planning choices; add a plan gate if approval is
 part of the requested workflow. It does not register new tools or configure models.
 
 Load the generated Lisp in batch Emacs and exercise consequential paths with

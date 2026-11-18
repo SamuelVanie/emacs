@@ -43,6 +43,8 @@ forms before loading.
 | `gptel-runner-parallel` | Leading properties, then children; `:policy 'fail-fast`, `'collect`, or `'minimum-successes`; latter needs `:minimum-successes N`; optional aggregate `:save-as` |
 | `gptel-runner-branch` | `:predicate` (alias `:if`) function of run, `:then` node, optional `:else` node, inherited `:context` |
 | `gptel-runner-repeat-until` | Positive `:max`, `:body` node, optional `:until`, `:stop-when`, `:progress-key` functions of run; inherited `:context`; paired `:collect-keys` and `:save-history-as` |
+| `gptel-runner-try` | `:body`, at least one of `:catch`/`:finally`; optional `:error-as`, `:catch-states`, `:save-as` |
+| `gptel-runner-finalize` | Root-only `:body`/`:finally`, positive finite `:max-duration`, separate call/request allowance, optional `:on-cancel` |
 
 Use Elisp steps for local operations and transformations with outputs. A planned
 human gate is an agent step with `:pause-after t`; there is no standalone gate node.
@@ -56,6 +58,41 @@ The gptel adapter accepts a preset symbol or an inline preset plist. A non-nil
 step parser/validator overrides the registered one; nil falls back to it, rather
 than disabling it. `:workspace-mode` defaults to `read`; its supported values
 are `read`, `write`, and `isolated`. Metadata is application data, not behavior.
+
+## Node traversal and outcomes
+
+Use these uniformly for agent, Elisp, and container nodes:
+
+```elisp
+(gptel-runner-find-node source 'review)      ; node or nil
+(gptel-runner-list-nodes source predicate)   ; predicate optional
+(gptel-runner-map-nodes function source)     ; function receives each node
+(gptel-runner-node-path source 'review)      ; root-to-node path or nil
+(gptel-runner-node-state run 'review)
+(gptel-runner-node-outcome run 'review)
+(gptel-runner-node-result run 'review 'unavailable)
+(gptel-runner-node-error run 'review 'no-error)
+```
+
+Traversal accepts a run, workflow object/name, or subtree node; order is root
+first, then children in definition order, including unused branches. Outcome
+helpers take a run object or background invocation record and node object/ID;
+unknown IDs signal an error. Invocation reads use exported node outcomes without
+loading a checkpoint; older histories without this export report it unavailable.
+Traversal needs the workflow definition and does not accept invocation records.
+
+Outcomes contain `:node` and `:state`, plus `:value` for known terminal outcomes.
+`pending`/`running` have no value; `succeeded :value nil` is successful nil;
+`failed :value DATA` contains failure details. `node-result` returns accepted
+successful output (parsed/validated for agents), otherwise its default;
+successful nil stays nil. `node-error` returns failed/blocked/stalled/cancelled
+data, otherwise its default.
+
+Outcomes survive checkpoints without historical calls or `:save-as`. They track
+the current execution: resetting a node clears its previous outcome. Older v2
+snapshots may omit `:value`; check `plist-member` to distinguish unknown from nil.
+Persistent outcome values must be readable Lisp data. Treat returned nodes and
+values as read-only.
 
 ## Elisp steps
 
@@ -118,6 +155,81 @@ while cleanup failure replaces it. An enclosing try can catch propagated failure
 Cancellation and duration expiry stop immediately without cleanup. Other budgets
 still apply. Checkpoints resume the current phase; retry resumes the failed phase.
 Branch/repeat function errors are catchable failures with `:type 'flow-error`.
+
+## Bounded run finalization
+
+Use `gptel-runner-finalize` only at the workflow root:
+
+```elisp
+(gptel-runner-finalize
+ :id 'run :body workflow-node :finally publish-node
+ :max-duration 30 :max-calls 1 :max-requests 2
+ :on-cancel 'skip)               ; 'finalize explicitly opts in
+```
+
+Runs after success, failure, blocked/stalled outcomes, or budget exhaustion,
+sharing the run's partial results. The finalizer needs its own positive finite
+`:max-duration`; `:max-calls` and `:max-requests` default to 1 and accept 0.
+Cancellation skips it by default; cancellation during finalization always stops it.
+`try :finally` behavior is unchanged.
+
+The run retains the body's outcome even if publication fails. Inspect
+`(gptel-runner-finalization-outcome run)`: `:body` and `:result` contain
+`(:state STATE :value VALUE)`; `:phase` is `finalizing` or `complete`.
+The terminal callback waits for finalization. Pause/resume preserves its phase
+and remaining allowance; `extend` cannot increase that allowance. Timers cannot
+preempt non-yielding Lisp. Make publication idempotent for checkpoint restarts.
+
+## Managed outputs in every launch mode
+
+Use one output contract whether `gptel-runner-start` or a job launches the workflow:
+
+| Need | Public call |
+| --- | --- |
+| Named values | `(gptel-runner-get source key &optional default)`; `(gptel-runner-outputs source)` returns an alist including inputs/history |
+| Retain generated text | `(gptel-runner-write-artifact run name text &optional media-type)`; UTF-8, default `text/plain` |
+| Retain an existing file | `(gptel-runner-publish-artifact run name file &optional media-type)`; source stays caller-owned |
+| List retained versions | `(gptel-runner-artifacts source)`; descriptors in publication order |
+| Resolve or read a descriptor | `(gptel-runner-artifact-file source descriptor)`, `(gptel-runner-read-artifact source descriptor)` |
+| Feed an artifact to an agent | `:context (gptel-runner-context-artifact 'saved-key)` |
+
+`run` is the executing run object. Reader `source` accepts a run or a fresh
+invocation record, not an invocation ID. `gptel-runner-put` writes live run values;
+`:save-as` stores the step's return value. Known nil stays nil with a non-nil
+`get` default. Do not add separate local/background reader wrappers.
+
+```elisp
+(gptel-runner-elisp-step
+ :id 'publish :save-as 'report
+ :function (lambda (run _node)
+             (gptel-runner-write-artifact
+              run "report.md" (gptel-runner-get run 'analysis) "text/markdown")))
+;; A later agent can use :context (gptel-runner-context-artifact 'report).
+;; A consumer/inspector can read the same descriptor directly:
+(gptel-runner-read-artifact run (gptel-runner-get run 'report))
+```
+
+Both publishers return `(:name ... :file ... :media-type ... :epoch ...
+:published-at ...)`. `:file` is relative to managed storage, not a workspace;
+resolve it with `gptel-runner-artifact-file`, never hand-assemble an absolute path.
+`:epoch` is nil locally and the worker generation in jobs. Publication appends
+to the artifact registry; `:save-as`/`put` separately names its descriptor on the
+blackboard. Repeated names retain distinct versions rather than overwriting files.
+
+Local storage is private and unique beneath `gptel-runner-output-directory`;
+workers choose invocation storage automatically. No launch-mode tests, temporary
+text files, manual copies, or directory/permission setup belong in the pipeline.
+Files are published atomically with mode 0600 in private directories. Publishing
+managed outputs alone does not require `:workspace-mode 'write` or `:allow-writes`;
+actual workspace mutations still do. Relative file-copy sources use the run
+workspace; for a node override, expand against `gptel-runner-node-workspace`.
+
+Snapshots retain the directory and registry, not file contents. Artifacts survive
+completion, snapshot deletion, forgetting runs, and continuation; delete retained
+directories only as intentional cleanup. A copied snapshot alone does not transport
+its files. Use node outcomes or selected loop history to build partial reports in
+`gptel-runner-finalize`; do not reconstruct results from historical calls. Side
+effects belong in steps, not parsers/context functions that can run again.
 
 ## Starting inputs and workspace defaults
 
@@ -188,11 +300,11 @@ their start arguments. Select a driver explicitly or configure
 | Parser | One raw result argument; return parsed data or signal an error; nil is invalid |
 | Validator | One parsed result argument; return non-nil if acceptable |
 | Branch/loop/progress function | `(run)`; boolean predicate or stable comparable progress value |
-| `gptel-runner-get` | `(run key &optional default)` |
+| `gptel-runner-get` | `(source key &optional default)`; source is a run or invocation record |
 | `gptel-runner-put` | `(run key value)` |
 | `gptel-runner-iteration` | `(run repeat-node-id)`; **completed** iteration count |
 | `gptel-runner-record-decision` | `(run text &optional rationale call)`; run object or displayed run ID |
-| `gptel-runner-node-workspace` | `(run node)`; effective canonical directory for the target agent or Elisp step |
+| `gptel-runner-node-workspace` | `(run node-or-id)`; effective canonical directory for the target agent or Elisp step |
 
 During a loop body, display `(1+ (gptel-runner-iteration run 'cycle))`.
 After that body completes, the count is incremented before the stop/until
@@ -267,8 +379,9 @@ for stalled work elsewhere. For external admission hooks, see
 
 ## Context and decision propagation
 
-Context sources are strings, functions, or `(:file "path")` descriptors, singly
-or in a list. Order is workflow → start/run → registered agent → nodes from
+Context sources are strings, functions, `(:file "path")` descriptors, or
+`(:artifact key)` descriptors from `gptel-runner-context-artifact`, singly or in
+a list. Order is workflow → start/run → registered agent → nodes from
 root to leaf → ordinary task prompt. Recorded decisions are appended afterward
 when decision memory is enabled, as it is by default.
 
@@ -283,10 +396,13 @@ named context function that explicitly resolves from the intended shared root.
 
 File contents and functions are resolved anew when a call is prepared. **All
 declared file descriptors must be readable at workflow start in each receiving
-workspace**, including those on later/unselected nodes. For an artifact
-created by an earlier step, use its blackboard result or a context function that
-reads it when required; do not declare a nonexistent future file descriptor.
-Required missing input should signal an error rather than produce an empty prompt.
+workspace**, including those on later/unselected nodes. For a managed artifact
+created by an earlier step, use `(gptel-runner-context-artifact 'saved-key)`.
+It resolves the descriptor from the blackboard at call preparation, so the file
+need not exist at workflow start. Missing keys/unreadable artifacts fail as context
+errors. Use a context function only for task-specific selection or formatting,
+not to reproduce this reader. Artifact context follows managed storage regardless
+of the receiving agent's workspace. It does not automatically include the goal.
 
 An initial `:goal` is stored on the run but not automatically placed in ordinary
 agent prompts. Inject it explicitly. `:save-as` stores a parsed result; it does
@@ -390,6 +506,6 @@ Use [running and managing pipelines](operations.md) for exact lifecycle signatur
 interactive commands, operation selection, examples, and snapshot limitations.
 Supply first-call context to `gptel-runner-start`; it dispatches immediately, so
 seeding the blackboard afterward is too late. Preserve downstream inputs through
-`:save-as` or durable artifacts, and use readable Lisp values/named context
-functions for persistence. Recovery does not freeze files, copy repositories, or
+node outcomes, `:save-as`, or durable artifacts, and use readable Lisp values/named
+context functions for persistence. Recovery does not freeze files, copy repositories, or
 automatically refresh a completed plan after the goal changes.

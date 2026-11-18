@@ -1,7 +1,7 @@
 ;;; operations-smoke-test.el --- Network-free lifecycle checks -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;; Runs the existing nine starter checks plus operational checks below:
+;; Runs the starter/output checks plus operational checks below:
 ;; emacs -Q --batch -L /path/to/gptel-runner \
 ;;   -l /path/to/skill/scripts/operations-smoke-test.el \
 ;;   -f ert-run-tests-batch-and-exit

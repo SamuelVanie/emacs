@@ -15,6 +15,10 @@
        "../assets/intent-preserving-pipeline.el"
        (file-name-directory (or load-file-name buffer-file-name))) nil t)
 
+(load (expand-file-name
+       "../assets/minimal-pipeline.el"
+       (file-name-directory (or load-file-name buffer-file-name))) nil t)
+
 (defconst grp-test/brief
   "Purpose: recover interrupted imports. A1: completed items stay completed. C1: preserve CLI.")
 (defconst grp-test/plan
@@ -253,5 +257,41 @@
       :workspace workspace :driver driver :goal "Inspect repositories")
      :type 'user-error)
     (should-not (gptel-runner-fake-driver-starts driver))))
+
+(ert-deftest grp-smoke-minimal-pipeline-publishes-without-storage-helpers ()
+  (grp-test/with-run
+    (let ((gptel-runner-output-directory (expand-file-name "outputs/" workspace)))
+      (gptel-runner-fake-queue driver 'grp-minimal-reader '(:value "Evidence: importer.el"))
+      (let* ((run (gptel-runner-start 'grp-minimal :driver driver
+                                      :goal "Inspect imports" :workspace workspace))
+             (artifact (gptel-runner-get run 'report)))
+        (should (eq (gptel-runner-run-state run) 'succeeded))
+        (should (= 1 (length (gptel-runner-fake-driver-starts driver))))
+        (should (equal (gptel-runner-node-result run 'publish) artifact))
+        (should (equal (gptel-runner-artifacts run) (list artifact)))
+        (should (equal (gptel-runner-read-artifact run artifact) "Evidence: importer.el"))
+        (should (file-readable-p (gptel-runner-artifact-file run artifact)))
+        (should (equal (alist-get 'analysis (gptel-runner-outputs run))
+                       "Evidence: importer.el"))))))
+
+(ert-deftest grp-smoke-produced-artifact-context-reaches-agent ()
+  (grp-test/with-run
+    (let ((gptel-runner-output-directory (expand-file-name "outputs/" workspace)))
+      (gptel-runner-fake-queue driver 'grp-minimal-reader '(:value "Verified"))
+      (let ((run
+             (gptel-runner-start
+              (gptel-runner-sequence
+               (gptel-runner-elisp-step
+                :id 'publish :save-as 'report
+                :function (lambda (run _node)
+                            (gptel-runner-write-artifact run "report.txt" "Evidence A1")))
+               (gptel-runner-agent-step
+                :id 'consume :agent 'grp-minimal-reader :prompt "Check evidence"
+                :context (gptel-runner-context-artifact 'report)))
+              :driver driver :workspace workspace)))
+        (should (eq (gptel-runner-run-state run) 'succeeded))
+        (should (string-match-p "Evidence A1"
+                                (gptel-runner-call-prompt
+                                 (car (gptel-runner-fake-driver-starts driver)))))))))
 
 ;;; smoke-test.el ends here

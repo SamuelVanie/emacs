@@ -145,11 +145,19 @@ Inspect only the evidence needed for the next decision:
 | Evidence | Read API |
 | --- | --- |
 | Current plan, result, loop history | `gptel-runner-get` with `grp-plan`, `grp-implementation`, `grp-review`, `grp-history` (or the workflow's actual keys) |
+| All named values | `(gptel-runner-outputs my-run)`; prefer selected keys for downstream prompts |
+| Retained reports | `(gptel-runner-artifacts my-run)`; resolve/read with `gptel-runner-artifact-file` / `gptel-runner-read-artifact` |
 | Decision log and previous goals/results | `(gptel-runner-decisions my-run)`, `(gptel-runner-continuations my-run)` |
-| Node state, including a successful reviewer in a blocked loop | `(gethash 'grp-review (gptel-runner-run-node-states my-run))` and the enclosing repeat's state |
+| Current node state and accepted outcome, including after recovery | `(gptel-runner-node-outcome my-run 'grp-review)`; see [node APIs](runner-api.md#node-traversal-and-outcomes) |
 | Historical/current calls | `(gptel-runner-run-calls my-run)`; select by `gptel-runner-call-id` and `gptel-runner-node-id` of `gptel-runner-call-node` |
 | Selected call details | `gptel-runner-call-state`, `-workspace`, `-prompt`, `-result`, `-error`, `-request-attempt`, `-buffer` accessors |
 | Failure chronology | `(gptel-runner-run-events my-run)`; select recent relevant events using `gptel-runner-event-type`, `-node-id`, `-call-id`, `-data` |
+
+The named-value, node outcome/state/result/error, and artifact readers also
+accept a refreshed background invocation record. They do not restore executable
+state. Local lifecycle controls below still require the owning run; use job
+commands for remote mutations. Do not scan calls or raw state tables to recreate
+the current node's outcome.
 
 Calls/events are in chronological order. Historical failed calls can remain after
 successful recovery. Consult the current node/run state, latest relevant call,
@@ -417,8 +425,10 @@ instead of creating a duplicate. `gptel-runner-resume-snapshot` has signature
 prefer separate calls when inspection is needed, and do not use it for terminal saves.
 
 Version 2 snapshots retain goal, default workspace, blackboard (including decisions,
-loop history, continuation archive), node states, repeat counts/limits, budgets,
-timing/options, terminal failure, and extension context. They do not restore old
+loop history, continuation archive), node states/outcomes, repeat counts/limits, budgets,
+timing/options, terminal failure, extension context, finalization phase, and the
+managed output directory/artifact registry. Artifacts remain separate retained
+files: copying the checkpoint alone does not copy their contents. They do not restore old
 calls, journals, transcripts, callbacks, provider processes, or continuations.
 Supply a fresh callback/driver; unfinished calls restart statelessly and their
 previous usage remains charged. V1 snapshots are unsupported. Keep runtime objects
@@ -432,7 +442,9 @@ as additional execution state restored by `gptel-runner-load-run`.
 
 `gptel-runner-abort-call` terminally cancels one call and propagates through its
 parent policy; an optional branch's cancellation need not cancel the whole run.
-`gptel-runner-abort-run` cancels queued/active work and ends the run as `cancelled`.
+`gptel-runner-abort-run` normally ends the run as `cancelled`; explicit
+[run finalizers](runner-api.md#bounded-run-finalization) control finalization
+after cancellation and retain the body's outcome.
 Neither reverses completed file writes, external requests, or already launched
 tool effects. Inspect those effects before retrying; cancellation is not rollback.
 
@@ -453,4 +465,5 @@ registration and retained runs; it rejects groups with active runs.
 retained runs. Dashboard `? X` invokes `gptel-runner-dashboard-forget-workflow`;
 `? C` invokes `gptel-runner-dashboard-clear-finished` for all terminal runs (not
 paused ones). A prefix argument to these cleanup commands or `? x` also deletes
-snapshots. Cleanup does not remove workspace artifacts or edit the definition file.
+snapshots. Cleanup does not remove managed output directories, workspace artifacts,
+or the definition file. Retained files require separate intentional cleanup.

@@ -92,19 +92,12 @@ confirmation policy. The policy also applies during programmatic feedback.
 
 ## Pipeline file outputs
 
-Use `:save-as` for parsed node results and `gptel-runner-put` for explicit
-application values. Ordinary local runs can retain absolute artifact paths on
-the blackboard; a path does not freeze its contents or copy a file into snapshots.
-Include repository/revision identity when downstream evidence needs it.
-
-Inside a background invocation, `gptel-runner-publish-artifact
-(run name file &optional media-type)` copies a readable regular file into durable
-invocation history and returns a descriptor (`:name`, invocation-relative `:file`,
-`:media-type`, `:epoch`, `:published-at`). The copy survives later changes to the
-source; ordinary direct runs reject publication because no invocation owns it.
-Use this in an explicit output integration after the file exists. Parsers and
-context functions may be re-evaluated, so do not hide publication side effects
-there or assume a model's response invokes this Lisp API.
+Publishing is a core pipeline API, not a background-only integration. Use
+`gptel-runner-write-artifact` for generated text or `gptel-runner-publish-artifact`
+for an existing file. See [managed outputs](runner-api.md#managed-outputs-in-every-launch-mode)
+for signatures, descriptors, context handoffs, and retention. The runner owns
+storage selection; custom drivers and workflow functions should not inspect
+`gptel-runner-jobs--invocation` or duplicate output storage.
 
 ## Dashboard integrations
 

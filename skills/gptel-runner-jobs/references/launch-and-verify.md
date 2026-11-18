@@ -132,7 +132,7 @@ current store. Refresh the manifest; the record returned at launch is not live:
       :reason (plist-get my-invocation :reason)
       :error (plist-get my-invocation :error))
 ;; Read outputs when the invocation has published them:
-(gptel-runner-invocation-outputs my-invocation)
+(gptel-runner-outputs my-invocation)
 ```
 
 For requested completion monitoring, use bounded, spaced status checks that yield

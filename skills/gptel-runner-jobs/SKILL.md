@@ -12,7 +12,25 @@ the worker's session-local run ID.
 
 Reuse pipeline definitions. If a suitable pipeline is missing or needs changes,
 use the companion [gptel-runner-pipelines](../gptel-runner-pipelines/SKILL.md)
-skill for that work. This skill does not teach pipeline construction.
+skill for that work. Reuse the same definition locally and in the worker;
+launching in the background does not need a second pipeline or output adapter.
+Keep job/bootstrap code short: use the runner's launch, inspection, and command
+APIs instead of embedding process management, polling infrastructure, or storage
+helpers into the workflow.
+
+## Shared pipeline outputs
+
+Both modes publish text with `gptel-runner-write-artifact` or copy existing files
+with `gptel-runner-publish-artifact`. They own storage and return the same descriptor.
+Use `gptel-runner-get`, `gptel-runner-outputs`, node outcome/state/result/error helpers,
+and artifact list/path/text readers on either a run or refreshed invocation record.
+Read [the output contract](../gptel-runner-pipelines/references/runner-api.md#managed-outputs-in-every-launch-mode)
+when creating output steps. Do not branch on worker globals, keep temporary output
+paths for local runs, hand-build descriptors, or add compatibility wrappers for
+an old package. If the API is absent, identify the installed/checkout version gap.
+The worker configures storage and checkpoints before dispatch; init does not
+need custom artifact directories or event hooks. Remote mutations still use
+`gptel-runner-job-command` and receipts.
 
 Use the relevant reference for the task:
 
@@ -163,11 +181,13 @@ without starting the real workflow; the bootstrap reference explains the checks.
 `job-save` validates the record but does not prove that its workflow or presets
 will load, its inputs meet the task contract, or its provider will work.
 
-When an end-to-end check of job plumbing is needed, use the checkout's
-`examples/background-jobs.el`, workflow `background-example`, and
-`:preload-features nil` in a temporary job store/workspace. Run it with the generic
-batch entry point in the [launch reference](references/launch-and-verify.md).
-Verify durable outputs and a closed, succeeded invocation. This fake check does
+For a small end-to-end output check, use the checkout's
+`examples/artifact-pipeline.el`, workflow `artifact-pipeline`, with
+`:preload-features nil` in a temporary job store/workspace. It also runs directly
+with `gptel-runner-start`. Use `examples/background-jobs.el`, workflow
+`background-example`, when parallel fake agents or feedback gates are relevant.
+Run the chosen example with the generic batch entry point in the [launch reference](references/launch-and-verify.md).
+Verify durable outputs and a closed, succeeded invocation. This network-free check does
 not establish readiness of real providers or the selected pipeline's presets.
 Do not create test jobs in the user's normal store or install test schedules.
 

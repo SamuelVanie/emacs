@@ -57,7 +57,12 @@ possible instead of trusting a model's claimed identity. A parser receives only
 its value, not the run; perform run-aware comparisons in predicates or consumer
 helpers. Adding custom keys to a node does not make the runner enforce them.
 
-When nodes use different workspaces, qualify artifact paths by their source
+For pipeline-generated reports, save the descriptor returned by
+`gptel-runner-write-artifact`/`gptel-runner-publish-artifact`. Feed it to a later
+agent with `gptel-runner-context-artifact`, or read it with `gptel-runner-read-artifact`;
+no workspace-relative path or custom file-reading helper is needed.
+
+When nodes use different workspaces, qualify workspace artifact paths by their source
 repository/root and revision, or use absolute paths when accessible. A bare
 `src/importer.el` can name different files for different agents. The blackboard
 and decision log remain shared within the run; workspace overrides do not copy

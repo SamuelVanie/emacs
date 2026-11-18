@@ -66,7 +66,7 @@ Only these keys are accepted inside `:arguments`:
 | `:workspace` | Existing working directory override; omission preserves the workflow default. |
 | `:inputs` | Initial blackboard alist or hash table, available before the first prompt. The pipeline reads values with `gptel-runner-get`; they are not automatically prompt text. |
 | `:max-requests`, `:max-calls`, `:max-duration` | Per-invocation limits; duration is seconds. Prefer finite task-appropriate limits. These are not token/cost caps. |
-| `:max-concurrency` | Concurrent agent-call limit within this worker. |
+| `:max-concurrency` | Concurrent agent and Elisp step limit within this worker. |
 | `:allow-writes` | Enable explicitly for a workflow with declared writers. Does not itself create a worktree or restrict tool capabilities. |
 | `:allow-unconfirmed-tools` | Explicit tool confirmation policy, following the user's requested autonomy. Background execution does not change its meaning. |
 | `:decision-memory` | Override decision-memory behavior; omit to inherit. |
@@ -84,7 +84,7 @@ Workspace resolution:
 2. If the key is absent, the worker resolves the workflow's default after init.
    A relative default resolves against the saved base; without a workflow default,
    that base supplies the run directory.
-3. Per-agent overrides still apply, relative to the resulting run workspace.
+3. Per-node overrides still apply, relative to the resulting run workspace.
 
 Keep initial input keys distinct from produced output keys so continuation can
 clear workflow outputs without discarding starting inputs. Use the actual
