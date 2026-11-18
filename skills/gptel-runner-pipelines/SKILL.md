@@ -85,7 +85,7 @@ Use deterministic Lisp for routing, aggregation, stop conditions, and budgets.
 
 For local operations with outputs, mix `gptel-runner-elisp-step` with agent
 nodes. Its `:function` receives `(run node)`; `:save-as` stores its return value.
-See [Elisp steps](references/runner-api.md#elisp-steps).
+Use `:async t` for asynchronous work; see [Elisp steps](references/runner-api.md#elisp-steps).
 
 Choose sequence for dependencies; parallel for independent investigations or
 reviews; branch for a validated choice; bounded repeat for actual revision.

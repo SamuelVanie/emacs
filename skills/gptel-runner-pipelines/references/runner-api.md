@@ -38,7 +38,7 @@ forms before loading.
 | Constructor | Relevant properties and behavior |
 | --- | --- |
 | `gptel-runner-agent-step` | `:id`, `:agent`, `:prompt`, `:save-as`, `:context`; optional `:workspace`, `:parser`, `:validator`, `:repair-invalid`, `:retries`, `:pause-after` |
-| `gptel-runner-elisp-step` | Required `:function`; optional `:id`, `:save-as`, `:workspace`, `:workspace-mode`, `:retries`; see below |
+| `gptel-runner-elisp-step` | Required `:function`; optional `:id`, `:save-as`, `:workspace`, `:workspace-mode`, `:retries`, `:async`, `:timeout`; see below |
 | `gptel-runner-sequence` | Leading keyword/value properties, then child nodes; fail-fast; inherited `:context` |
 | `gptel-runner-parallel` | Leading properties, then children; `:policy 'fail-fast`, `'collect`, or `'minimum-successes`; latter needs `:minimum-successes N`; optional aggregate `:save-as` |
 | `gptel-runner-branch` | `:predicate` (alias `:if`) function of run, `:then` node, optional `:else` node, inherited `:context` |
@@ -67,8 +67,8 @@ are `read`, `write`, and `isolated`. Metadata is application data, not behavior.
 ```
 
 Mix these with agents in sequences, parallel groups, branches, and repeats.
-The return value is the output, including nil. Execution is synchronous in a
-temporary buffer with the node workspace as `default-directory`; keep functions
+By default, the return value is the output, including nil. Execution is synchronous
+in a temporary buffer with the node workspace as `default-directory`; keep functions
 short. Elisp steps consume concurrency slots, but no call/request budget, and
 Elisp-only workflows need no driver or agent registration.
 
@@ -77,6 +77,23 @@ writer locks with agents. Errors fail the step; `:retries` defaults to zero.
 Agent-only options (`:prompt`, `:context`, `:parser`, `:validator`,
 `:repair-invalid`, `:pause-after`) are rejected; validate inside the function.
 Saved outputs participate in checkpoints and recovery like agent outputs.
+
+### Asynchronous Elisp
+
+- With `:async t`, `:function` receives `(run node resolve reject)` and returns
+  promptly. Call `(funcall resolve value)` to succeed or `(funcall reject data)`
+  to fail with `(:type elisp-error :error DATA)`; `:save-as` stores resolved values.
+- Return nil or a cleanup function `(lambda (reason) ...)` to stop processes,
+  cancel timers, and release buffers. It runs once with `succeeded`, `failed`,
+  `cancelled`, `paused`, or `timeout`; cleanup errors are journaled.
+- Optional `:timeout` is positive finite seconds per attempt, starting at
+  admission. Expiry fails with `:type 'elisp-timeout`. `:retries` also retries
+  rejections/timeouts, with a fresh timeout. Timers cannot preempt non-yielding Lisp.
+- Duplicate and late callbacks are ignored. Inline completion waits for startup
+  to return its cleanup. Pending work holds concurrency slots and writer locks.
+- `gptel-runner-pause-run` cleans up; resume restarts unfinished work with fresh
+  callbacks. Use lexical binding and capture your own buffers: the temporary
+  startup buffer does not survive the function's return.
 
 ## Failure recovery and cleanup
 
