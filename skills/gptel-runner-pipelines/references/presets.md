@@ -59,7 +59,7 @@ Use a discovered symbol in place of this example name:
        (spec (gptel-get-preset name)))
   (unless spec (user-error "Preset is not loaded: %S" name))
   (mapcar (lambda (key) (cons key (plist-get spec key)))
-          '(:description :parents :system :model :use-tools :confirm-tool-calls)))
+          '(:description :parents :system :model :use-tools :confirm-tool-calls :agent-tool-policy)))
 ```
 
 Read the candidate's `:tools` definition too. For actual tool objects, inspect
@@ -106,6 +106,22 @@ instructions. Adapt the consuming parser or define a compatible preset explicitl
 do not silently overwrite an existing user preset. Inheriting a parent with
 `:system "..."` can replace its full prompt; preserve required role instructions
 deliberately when composing a new one.
+
+### Tool argument policies
+
+To restrict a node's tool calls, select a named policy on its gptel preset.
+Use the tool's exact argument names in trusted Lisp.
+
+```elisp
+(gptel-agent-define-tool-policy 'workspace-reader
+  :allow '((:tool "Read" :args (:file_path (under workspace)))))
+(gptel-make-preset 'read-files :use-tools t :tools '("Read")
+                   :agent-tool-policy 'workspace-reader)
+```
+
+Unmatched calls and matching `:deny` rules are blocked. Children inherit the
+restrictions. Runner admits its own `RunnerHandoff`. Allow `RunnerAskPrevious`
+if the node needs to ask follow-up questions.
 
 ### Presets using gptel-agent features
 

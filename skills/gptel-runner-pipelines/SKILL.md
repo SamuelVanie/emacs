@@ -277,9 +277,9 @@ configure pipeline agents to run tools autonomously. Put `:allow-unconfirmed-too
 in the options of `gptel-runner-defworkflow`, or pass it to `gptel-runner-start`
 for a single run. An explicit `:allow-unconfirmed-tools nil` at startup overrides
 the workflow default and restores the usual confirmation policy for that run.
-With the updated runner and gptel-agent, this opt-in also allows local reads
-outside the working directory for pipeline nodes and their supervised workers
-and discussions. Outside file mutations still require approval. Pass
+With unconfirmed tools enabled, supervised nodes, workers and discussions can
+read local paths outside their workspaces without an outside-read prompt. Any [preset tool policy](references/presets.md#tool-argument-policies)
+still applies. Outside file mutations still require approval. Pass
 `:allow-writes t` at startup for writable workflows. Honor the agreed scope
 and any requested human gates. Check the selected worker's tool hooks when
 verifying unattended behavior.

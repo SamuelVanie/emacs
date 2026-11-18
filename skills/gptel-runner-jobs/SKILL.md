@@ -137,9 +137,10 @@ pipeline actually consumes `gptel-runner-run-goal`, its inputs, or supplied
 silently to fill a missing contract.
 
 Prepare a small worker init file by following
-[worker initialization](references/worker-bootstrap.md). Loaded editor settings
-do not carry over to the worker. Reuse existing backend, preset, tool, and
-pipeline setup files that are suitable for batch use.
+[worker initialization](references/worker-bootstrap.md). Reuse batch-compatible
+backend, preset, tool, and pipeline setup. If a preset selects `:agent-tool-policy`,
+load its named definition from the worker's `:init-file` on launch and recovery.
+If a saved node predates its preset's policy, start a new invocation to use it.
 
 ## Register the job from Lisp
 

@@ -71,7 +71,8 @@ With `:allow-unconfirmed-tools t`, the updated runner uses the optional
 `gptel-agent-supervision-allow-outside-reads` API. During the run, `Read`,
 `Glob`, `Grep`, and `PathInfo` can inspect local paths outside the working
 directory of a node, delegated worker, or discussion without an outside-path
-prompt. Outside writes, edits, and other file mutations still require approval.
+prompt, subject to the preset's tool policy. Outside writes, edits, and other
+file mutations still require approval.
 
 For a loaded integration, this read-only query checks actual API availability
 and the source of the loaded implementation, without sending model requests:
