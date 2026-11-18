@@ -10,33 +10,19 @@ contexts. Every agent should understand **what success means, why it matters,
 what has already been decided, and what its own contribution must accomplish**.
 Preserve intent explicitly; do not rely on the agents remembering a conversation.
 
-For an existing pipeline, go to [running and managing pipelines](references/operations.md).
-It covers preflight/start, inspection, an operation-selection table, human feedback,
-recovery, budgets, snapshots, and cleanup. Keep creation and operation in this
-skill; read the design sections below when definitions or handoffs need changes.
+For starting, inspecting, recovering, or managing an existing pipeline, read
+[operations](references/operations.md). Use the design sections below when
+definitions or handoffs need changes.
 
 For background job creation, worker bootstrap, scheduling, and remote invocation
 control, use the companion [jobs skill](../gptel-runner-jobs/SKILL.md). Keep the
 pipeline definition, its inputs/outputs, and its runtime API contracts here.
 
-## Ground the implementation
+## Use the pipeline API
 
-Locate the installed gptel-runner source, its README, and relevant examples.
-On this machine the development checkout is normally
-`~/projects/gptel-runner`; in Emacs, `(locate-library "gptel-runner")` identifies
-the discoverable library, while `(symbol-file 'gptel-runner-start 'defun)` locates
-the loaded start definition. Check for a different loaded version before relying
-on checkout-only features. Follow applicable project instructions.
-
-Read [the API reference](references/runner-api.md) when writing the Lisp. Verify
-the constructors/options you use against the local source. Architecture proposals
-such as `overall_description_must_read.md` describe intent, including features
-that may not exist. Do not invent gate, transform, dialogue, dependency, or merge
-nodes. Use public runner APIs, keeping private gptel calls out of workflows.
-
-The references were checked against `8cdc6ed` on 2026-11-17. In particular,
-`:inputs`, workflow-default workspaces, and programmatic call feedback require
-this newer source. Package version `0.1.0` alone does not identify the feature set.
+Read [the API reference](references/runner-api.md) when writing Lisp. Use public
+runner APIs; keep private gptel calls out of workflows. The source and examples
+are in `~/projects/gptel-runner` when implementation details need inspection.
 For custom drivers, admission hooks, headless interactions, or published pipeline
 outputs, read [runtime integrations](references/runtime-integrations.md).
 
@@ -194,7 +180,7 @@ and artifact verification.
 - For revision loops, use `:until`, `:stop-when`, and a meaningful progress key.
   Compare normalized unresolved issues plus artifact/test state when available;
   cosmetic prose changes must not count as progress. Two identical consecutive
-  non-nil keys currently stall the loop. Do not hide exhausted limits by silently
+  non-nil keys stall the loop. Do not hide exhausted limits by silently
   resetting budgets or dropping requirements.
 - Persist downstream inputs on the blackboard or in durable workspace artifacts.
   Use a named workflow and explicit IDs for `:persist t`; re-load the same

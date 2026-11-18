@@ -1,12 +1,5 @@
 # Pipeline runtime integrations
 
-Verified against `8cdc6ed` on 2026-11-17. Read this for custom drivers, external
-resource admission, headless feedback, or publishing a pipeline's file outputs.
-Ordinary pipeline authoring needs the [API](runner-api.md) and
-[operations](operations.md) references. Job definitions, worker bootstrap,
-schedules, remote commands, and command receipts stay in the
-[jobs skill](../../gptel-runner-jobs/SKILL.md).
-
 ## Drivers and deterministic execution checks
 
 Select `gptel-runner-gptel-driver-create` for live gptel calls or

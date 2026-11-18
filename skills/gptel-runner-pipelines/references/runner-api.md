@@ -1,11 +1,7 @@
 # API details that affect pipeline correctness
 
-Grounded in gptel-runner commit `8cdc6ed` inspected on 2026-11-17, including
-start-time inputs, workflow-default workspaces, and the runtime integration APIs.
-Recheck the installed source when an option differs. The engine requires Emacs
-29.1+; live requests additionally need compatible gptel (declared minimum
-0.9.9.4) and configured presets. An unchanged package version is not proof that
-the loaded compiled functions include this commit's features.
+Requires Emacs 29.1+; live requests also require compatible gptel (minimum
+0.9.9.4) and configured presets.
 
 ## Definitions and constructors
 
@@ -47,8 +43,8 @@ forms before loading.
 | `gptel-runner-branch` | `:predicate` (alias `:if`) function of run, `:then` node, optional `:else` node, inherited `:context` |
 | `gptel-runner-repeat-until` | Positive `:max`, `:body` node, optional `:until`, `:stop-when`, `:progress-key` functions of run; inherited `:context`; paired `:collect-keys` and `:save-history-as` |
 
-There is no public generic transform node or standalone gate node in this
-version. Put deterministic projection in prompt/context helpers or predicates,
+There is no public generic transform node or standalone gate node.
+Put deterministic projection in prompt/context helpers or predicates,
 without using their repeated evaluation for unrelated side effects. A planned
 human gate is an agent step with `:pause-after t`.
 
@@ -262,7 +258,7 @@ this particular hazard.
 
 `fail-fast` requires every parallel child to succeed. `collect` finishes the
 join successfully even when children fail; inspect each child's state before
-using its value. `minimum-successes` tolerates some failures and currently waits
+using its value. `minimum-successes` tolerates some failures and waits
 for all remaining children once the threshold is possible/met; it is not a race
 that automatically stops at the first N successes. Aggregate records contain
 `:node`, `:state`, and `:value`; identify them by node, not completion position.
@@ -289,7 +285,7 @@ into an iteration or keep retrying an invalid parsed result. Use a repeat for
 revision and the format repair path for invalid output. Retries can repeat tool
 side effects, so recheck artifacts and make consequential operations idempotent.
 
-`:max-requests` counts runner driver dispatch attempts in this implementation;
+`:max-requests` counts runner driver dispatch attempts;
 gptel's internal tool-loop HTTP requests and manual/programmatic feedback do not
 each increment it. It is not a complete provider-request or spending cap.
 `:max-calls` counts logical calls, including fresh step retries and output repairs.
@@ -311,8 +307,8 @@ diff. Both default to the key `review`; pass your actual review key.
 
 `:repair-invalid t` or a registered schema allows one automatic format repair.
 It is a fresh call. Its prompt contains goal, effective node workspace, invalid
-output, and validation error, **not the complete inherited context or decision log** in this
-version. Keep it a format-only operation. Make parser errors explain the required
+output, and validation error, **not the complete inherited context or decision log**.
+Keep it a format-only operation. Make parser errors explain the required
 shape; do not let repair revise substantive choices. Where a repair needs task
 judgment or full context, build an explicit contextual repair stage instead.
 An empty final answer also gets one repair, carrying the original resolved prompt.
@@ -336,21 +332,3 @@ seeding the blackboard afterward is too late. Preserve downstream inputs through
 `:save-as` or durable artifacts, and use readable Lisp values/named context
 functions for persistence. Recovery does not freeze files, copy repositories, or
 automatically refresh a completed plan after the goal changes.
-
-## Source map for future updates
-
-Compare this verified commit with the intended checkout and inspect dirty changes
-too. Use implementation and tests to resolve differences with README examples or
-architecture proposals; a newer jobs commit can also change shared pipeline APIs.
-
-| Concern | Source / network-free coverage in the runner checkout |
-| --- | --- |
-| Constructors, context, inputs, workspace defaults, lifecycle | `gptel-runner-flow.el`; `test/gptel-runner-test.el`, `test/gptel-runner-background-core-test.el` |
-| Scheduling, budgets, events, admission | `gptel-runner-core.el`; the same core tests |
-| Presets, streaming, feedback, tool interactions | `gptel-runner-gptel.el`; mocked transport in `test/gptel-runner-gptel-test.el` |
-| Review contract and progress | `gptel-runner-review.el`; `examples/dual-review-loop.el`, `examples/implement-review.el` |
-| Snapshots and dashboard | `gptel-runner-store.el`, `gptel-runner-ui.el`; `test/gptel-runner-test.el` |
-| Pipeline artifact publication | `gptel-runner-publish-artifact` in `gptel-runner-jobs.el`; `examples/background-jobs.el` (publishing requires a worker) |
-
-Use the skill's [lifecycle smoke checks](../scripts/operations-smoke-test.el) to
-exercise the starter and its handoffs against a new checkout without providers.

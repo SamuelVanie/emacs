@@ -38,9 +38,8 @@ For a shell-capable agent, the shorter names-only query is:
 emacsclient --eval '(and (boundp (quote gptel--known-presets)) (mapcar (function car) gptel--known-presets))'
 ```
 
-The inspected gptel versions have no public enumeration function.
 `gptel--known-presets` is a private alist: use it only for guarded, read-only
-discovery after checking the installed version. Do not mutate it or add a private
+discovery. Do not mutate it or add a private
 API dependency to generated workflow code. Use the public `gptel-get-preset` to
 read a selected preset and `gptel-make-preset` to define one when needed.
 
@@ -114,9 +113,9 @@ not a fixed inventory.
 
 For gptel-agent, inspect the configured `gptel-agent-dirs` and its Markdown/Org
 definitions. The public `gptel-agent-read-file` reads one file and returns
-`(NAME . PLIST)`; inspect its supported arguments in the installed version.
+`(NAME . PLIST)`.
 An agent file, an enabled subagent, and a gptel preset are different things.
-In the locally inspected version, `gptel-agent-update` registers the main
+`gptel-agent-update` registers the main
 `gptel-agent`, `gptel-plan`, and `ask` presets, not every discovered agent file.
 Do not assume a `researcher` file makes `:preset 'researcher` work.
 

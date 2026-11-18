@@ -1,9 +1,5 @@
 # Running and managing pipelines
 
-Verified against gptel-runner `8cdc6ed` on 2026-11-17. Recheck the loaded source
-when versions differ. This reference operates the definitions described in
-[runner-api.md](runner-api.md); it does not grant extra execution authority.
-
 Contents: [load/preflight](#load-and-preflight), [start](#start-and-retain-the-run),
 [inspect](#inspect-and-determine-success), [choose an operation](#choose-the-operation),
 [gates](#human-gates-and-pausing), [recovery](#retry-and-changed-goals),
@@ -12,15 +8,9 @@ Contents: [load/preflight](#load-and-preflight), [start](#start-and-retain-the-r
 
 ## Load and preflight
 
-1. Identify the intended Emacs session and code version. `locate-library` reports
-   the discoverable file; `(symbol-file 'gptel-runner-start 'defun)` reports the
-   loaded definition. A changed `load-path` does not replace already loaded Lisp.
-   Inspect the local README and implementation rather than hot-reloading a live
-   scheduler merely to match a checkout. Inspect the loaded function's docstring
-   and `(fboundp 'gptel-runner-gptel-feedback)` when newer APIs are needed; a
-   compiled function's argument list can be uninformative. An unknown start
-   keyword can be silently ignored because start accepts other keys: successful
-   evaluation alone does not prove that an older runner supports `:inputs`.
+1. Use the intended Emacs session. `(locate-library "gptel-runner")` identifies
+   the discoverable library; `(symbol-file 'gptel-runner-start 'defun)` identifies
+   the loaded definition. Changing `load-path` does not replace loaded Lisp.
 2. Inspect the pipeline file before loading it: registration-only definitions are
    safe to load within setup scope, but top-level start forms launch work. Load
    gptel and needed tool packages, selected preset definitions, then the runner,
@@ -53,7 +43,7 @@ Contents: [load/preflight](#load-and-preflight), [start](#start-and-retain-the-r
    and dependencies available for restoration. Inspect existing retained runs or
    snapshots before starting another copy of work already in progress.
 
-There is no public dry-run/validate-only command in this version. `gptel-runner-start`
+There is no public dry-run/validate-only command. `gptel-runner-start`
 validates definitions and dispatches immediately. Use an isolated batch Emacs and
 fake driver for routing checks, not a live start to test preflight. A fake driver
 does not validate actual presets, credentials, tool capabilities, or artifacts.
@@ -64,6 +54,7 @@ does not validate actual presets, credentials, tool capabilities, or artifacts.
 node plus keywords `:goal`, `:workspace`, `:inputs`, `:driver`, `:max-calls`, `:max-requests`,
 `:max-duration` (seconds), `:max-concurrency`, `:context`, `:decision-memory`,
 `:persist`, `:allow-writes`, `:allow-unconfirmed-tools`, and `:callback`.
+Unknown keywords may be silently ignored; use the supported options above.
 Anonymous roots cannot be durably paused or saved. Omitted budget limits inherit
 workflow defaults; otherwise nil means unlimited. Omitted workspace inherits the
 workflow's `:workspace` default, then the calling buffer's `default-directory`.
