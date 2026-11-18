@@ -34,15 +34,14 @@ Contents: [load/preflight](#load-and-preflight), [start](#start-and-retain-the-r
 5. Confirm finite call/request/active-duration limits, concurrency, repeat bounds,
    intended gates, and the existing authorization for writes and tool execution.
    `:allow-writes t` must be supplied explicitly to start writable workflows.
-   By default, pass `:allow-unconfirmed-tools t` explicitly in start
-   arguments; workflow defaults do not supply these flags. Retain approval
-   when explicitly requested. Separate access controls and tool hooks can still
-   require approval, so test worker behavior. Neither flag restricts the filesystem,
-   and `isolated` does not provision a worktree.
-6. A durable run requires a named workflow and readable Lisp data. Generated
-   node IDs are supported when the restored workflow layout matches. Optional
-   explicit IDs help you identify nodes. Keep the definition, named context
-   functions, and dependencies available for restoration. Inspect retained runs or
+   For an autonomous workflow, set `:allow-unconfirmed-tools t` in its
+   definition or pass it at startup. An explicit nil at startup overrides the
+   workflow setting. Preserve requested approval gates. If an outside read
+   still prompts, check the [worker's loaded packages](runtime-integrations.md#gptel-agent-presets-and-nested-work)
+   and any independent tool hooks.
+6. For durable work use a named workflow, stable explicit IDs, readable Lisp
+   blackboard/context data, and named context functions. Keep its definition file
+   and dependencies available for restoration. Inspect existing retained runs or
    snapshots before starting another copy of work already in progress.
 
 There is no public dry-run/validate-only command. `gptel-runner-start`

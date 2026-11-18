@@ -272,7 +272,7 @@ For example, after registering `my-worker` with a compatible preset:
             (gptel-runner-node-workspace run node) subject)))
 
 (gptel-runner-defworkflow input-example
-    (:max-calls 3 :max-requests 6 :max-duration 300)
+    (:max-calls 3 :max-requests 6 :max-duration 300 :allow-unconfirmed-tools t)
   (gptel-runner-agent-step
    :id 'inspect :agent 'my-worker :prompt #'example/input-prompt
    :save-as 'report))
@@ -280,8 +280,7 @@ For example, after registering `my-worker` with a compatible preset:
 ;; Dispatches immediately: choose the driver and existing directory beforehand.
 (gptel-runner-start 'input-example
  :goal "Explain the cancellation path" :workspace my-project-root
- :inputs '((subject . "src/importer.el")) :driver my-driver
- :allow-unconfirmed-tools t)
+ :inputs '((subject . "src/importer.el")) :driver my-driver)
 ```
 
 `:inputs` is a start argument, not an inherited workflow option. It makes data
@@ -304,9 +303,11 @@ default `:workspace`; pass computed directories at start instead.
 Budgets, concurrency, `:persist`, and `:decision-memory` also allow explicit start
 overrides of workflow defaults. Package fallbacks are unlimited calls/requests/
 duration, concurrency 1, decision memory t, and persistence nil. Workflow and run
-`:context` are additive. Goal, inputs, driver, callback, and the two permission
-flags are supplied at start; putting them in workflow options does not supply
-their start arguments. Select a driver explicitly or configure
+`:context` are additive. `:allow-unconfirmed-tools` uses the explicit start
+value first, then the workflow default, then nil. For example, starting the
+workflow above with `:allow-unconfirmed-tools nil` restores its usual tool
+confirmation policy for that run. Supply goal, inputs, driver, callback, and
+`:allow-writes` as start arguments. Select a driver explicitly or configure
 `gptel-runner-default-driver`.
 
 ## Function signatures

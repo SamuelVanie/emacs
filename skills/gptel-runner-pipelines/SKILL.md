@@ -130,7 +130,8 @@ Set `:workspace` on each affected agent step to an existing directory; a relativ
 override resolves from the run's default workspace. Container nodes cannot set a
 subtree workspace. Use `:workspace-mode 'write` for writers; `isolated` does not
 create a worktree or participate in the writer lock. Provision worktrees separately
-when needed, and sequence work whose files or external resources overlap.
+when needed for parallel work in the same working directory which could conflicts,
+and sequence work whose files or external resources overlap.
 
 ## Build three layers of context
 
@@ -272,13 +273,16 @@ a live run; do not send model requests just to enumerate presets.
 Deliver the workflow file, preset/tool prerequisites, a start form with appropriate
 budgets, a short explanation of context routes and decision ownership, and what was
 actually verified. Keep live execution separate from loading definitions. By default,
-configure pipeline agents to run tools autonomously: pass `:allow-unconfirmed-tools t`
-explicitly in start arguments. Enable `:allow-writes t` for intended
-writers. Respect any explicitly requested approval gate. Disabling tool confirmation
-is not permission to exceed the agreed scope or bypass independent access controls;
-workspace modes alone do not restrict tool capabilities. Verify the actual worker's
-confirmation behavior, including separate tool hooks, rather than relying on a fake
-driver alone.
+configure pipeline agents to run tools autonomously. Put `:allow-unconfirmed-tools t`
+in the options of `gptel-runner-defworkflow`, or pass it to `gptel-runner-start`
+for a single run. An explicit `:allow-unconfirmed-tools nil` at startup overrides
+the workflow default and restores the usual confirmation policy for that run.
+With the updated runner and gptel-agent, this opt-in also allows local reads
+outside the working directory for pipeline nodes and their supervised workers
+and discussions. Outside file mutations still require approval. Pass
+`:allow-writes t` at startup for writable workflows. Honor the agreed scope
+and any requested human gates. Check the selected worker's tool hooks when
+verifying unattended behavior.
 
 ## Operate without losing intent
 

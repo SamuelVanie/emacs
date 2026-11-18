@@ -67,6 +67,12 @@ public functions; compatible versions must be loaded in the process doing the wo
 | `gptel-agent-supervision-retry` | Rearm the failed root request's gate before the host resumes that FSM. |
 | `gptel-agent-supervision-stop` | Release supervision and cancel descendants; the host owns root transport cancellation. |
 
+With `:allow-unconfirmed-tools t`, the updated runner uses the optional
+`gptel-agent-supervision-allow-outside-reads` API. During the run, `Read`,
+`Glob`, `Grep`, and `PathInfo` can inspect local paths outside the working
+directory of a node, delegated worker, or discussion without an outside-path
+prompt. Outside writes, edits, and other file mutations still require approval.
+
 For a loaded integration, this read-only query checks actual API availability
 and the source of the loaded implementation, without sending model requests:
 
@@ -74,6 +80,7 @@ and the source of the loaded implementation, without sending model requests:
 (list :agent-loaded (featurep 'gptel-agent-tools)
       :agent-runtime (symbol-file 'gptel-agent-supervise 'defun)
       :runner-runtime (symbol-file 'gptel-runner-gptel-driver-create 'defun)
+      :supervised-outside-reads (fboundp 'gptel-agent-supervision-allow-outside-reads)
       :agent-api
       (mapcar (lambda (name) (cons name (fboundp name)))
               '(gptel-agent-supervise gptel-agent-supervision-request-live-p
@@ -175,8 +182,8 @@ the outer call and its descendants. Never reuse an ID for a later interaction or
 serialize live call objects for another process. Use the jobs layer to route
 answers to a background worker.
 
-Headless mode does not grant tool approval or change the explicit start-time
-confirmation policy. The policy also applies during programmatic feedback.
+Headless workers honor the run's effective confirmation policy, including
+during programmatic feedback.
 `AskUserQuestion` forms and separate interactive file-review interfaces still
 need their own headless adapters; routing gptel tool approvals does not make
 those interfaces remotely usable. Inspect the selected preset's actual tools
