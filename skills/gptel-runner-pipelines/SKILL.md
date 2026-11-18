@@ -1,6 +1,6 @@
 ---
 name: gptel-runner-pipelines
-description: Create, run, monitor, recover, and manage gptel-runner pipelines and their Emacs Lisp APIs. Use for workflows of gptel agents, input/context and decision handoffs, bounded review loops, human gates, budgets, and durable resume. Background job definitions, worker setup, and scheduling belong to gptel-runner-jobs.
+description: Create, run, monitor, recover, and manage gptel-runner pipelines and their Emacs Lisp APIs. Use for workflows of gptel agents and Elisp steps, input/context and decision handoffs, bounded review loops, human gates, budgets, and durable resume. Background job definitions, worker setup, and scheduling belong to gptel-runner-jobs.
 ---
 
 # gptel-runner pipelines
@@ -82,6 +82,10 @@ table is usually sufficient:
 Adapt this to the task. Do not add research, planning, synthesis, or review agents
 unless they have distinct work that earns their extra call and handoff cost.
 Use deterministic Lisp for routing, aggregation, stop conditions, and budgets.
+
+For local operations with outputs, mix `gptel-runner-elisp-step` with agent
+nodes. Its `:function` receives `(run node)`; `:save-as` stores its return value.
+See [Elisp steps](references/runner-api.md#elisp-steps).
 
 Choose sequence for dependencies; parallel for independent investigations or
 reviews; branch for a validated choice; bounded repeat for actual revision.

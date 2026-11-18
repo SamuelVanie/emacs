@@ -38,15 +38,14 @@ forms before loading.
 | Constructor | Relevant properties and behavior |
 | --- | --- |
 | `gptel-runner-agent-step` | `:id`, `:agent`, `:prompt`, `:save-as`, `:context`; optional `:workspace`, `:parser`, `:validator`, `:repair-invalid`, `:retries`, `:pause-after` |
+| `gptel-runner-elisp-step` | Required `:function`; optional `:id`, `:save-as`, `:workspace`, `:workspace-mode`, `:retries`; see below |
 | `gptel-runner-sequence` | Leading keyword/value properties, then child nodes; fail-fast; inherited `:context` |
 | `gptel-runner-parallel` | Leading properties, then children; `:policy 'fail-fast`, `'collect`, or `'minimum-successes`; latter needs `:minimum-successes N`; optional aggregate `:save-as` |
 | `gptel-runner-branch` | `:predicate` (alias `:if`) function of run, `:then` node, optional `:else` node, inherited `:context` |
 | `gptel-runner-repeat-until` | Positive `:max`, `:body` node, optional `:until`, `:stop-when`, `:progress-key` functions of run; inherited `:context`; paired `:collect-keys` and `:save-history-as` |
 
-There is no public generic transform node or standalone gate node.
-Put deterministic projection in prompt/context helpers or predicates,
-without using their repeated evaluation for unrelated side effects. A planned
-human gate is an agent step with `:pause-after t`.
+Use Elisp steps for local operations and transformations with outputs. A planned
+human gate is an agent step with `:pause-after t`; there is no standalone gate node.
 
 Agent registration also supports `:context`, `:parser`, `:validator`, `:schema`,
 `:retry-policy`, and `:metadata`. Schema is registered on the agent; do not assume
@@ -57,6 +56,27 @@ The gptel adapter accepts a preset symbol or an inline preset plist. A non-nil
 step parser/validator overrides the registered one; nil falls back to it, rather
 than disabling it. `:workspace-mode` defaults to `read`; its supported values
 are `read`, `write`, and `isolated`. Metadata is application data, not behavior.
+
+## Elisp steps
+
+```elisp
+(gptel-runner-elisp-step
+ :id 'process :save-as 'processed
+ :function (lambda (run _node)
+             (upcase (gptel-runner-get run 'agent-output))))
+```
+
+Mix these with agents in sequences, parallel groups, branches, and repeats.
+The return value is the output, including nil. Execution is synchronous in a
+temporary buffer with the node workspace as `default-directory`; keep functions
+short. Elisp steps consume concurrency slots, but no call/request budget, and
+Elisp-only workflows need no driver or agent registration.
+
+`:workspace-mode` defaults to `read`; use `write` with `:allow-writes t` to share
+writer locks with agents. Errors fail the step; `:retries` defaults to zero.
+Agent-only options (`:prompt`, `:context`, `:parser`, `:validator`,
+`:repair-invalid`, `:pause-after`) are rejected; validate inside the function.
+Saved outputs participate in checkpoints and recovery like agent outputs.
 
 ## Starting inputs and workspace defaults
 
@@ -131,7 +151,7 @@ their start arguments. Select a driver explicitly or configure
 | `gptel-runner-put` | `(run key value)` |
 | `gptel-runner-iteration` | `(run repeat-node-id)`; **completed** iteration count |
 | `gptel-runner-record-decision` | `(run text &optional rationale call)`; run object or displayed run ID |
-| `gptel-runner-node-workspace` | `(run node)`; effective canonical directory for the target agent step |
+| `gptel-runner-node-workspace` | `(run node)`; effective canonical directory for the target agent or Elisp step |
 
 During a loop body, display `(1+ (gptel-runner-iteration run 'cycle))`.
 After that body completes, the count is incremented before the stop/until
@@ -140,8 +160,8 @@ predicate. Initial `:until` is also checked before the first body execution.
 
 ## Per-node workspaces and concurrent writers
 
-Agent-step `:workspace` accepts a non-empty directory-name string. Omitted or nil
-inherits the run workspace; relative paths resolve from the run workspace and
+Agent and Elisp step `:workspace` accepts a non-empty directory-name string.
+Omitted or nil inherits the run workspace; relative paths resolve from the run workspace and
 absolute paths are used directly. Paths are canonicalized, including symlinks,
 with a trailing separator. All overrides must name existing directories and are
 validated before any calls start. Functions and nonexistent future directories
@@ -288,7 +308,7 @@ side effects, so recheck artifacts and make consequential operations idempotent.
 `:max-requests` counts runner driver dispatch attempts;
 gptel's internal tool-loop HTTP requests and manual/programmatic feedback do not
 each increment it. It is not a complete provider-request or spending cap.
-`:max-calls` counts logical calls, including fresh step retries and output repairs.
+`:max-calls` counts logical agent calls, including fresh agent retries and output repairs.
 Duration measures active run time, including call gates but excluding whole-run
 pauses. Keep provider/tool limits separate when an actual spend cap is required.
 
