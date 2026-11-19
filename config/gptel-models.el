@@ -73,10 +73,11 @@
     gpt-6.1-terra
     claude-haiku-5.5
     claude-sonnet-5.5
-    gemini-3.8-flash
+    gemini-4-hydrogen
+    gemini-4-carbon
     gpt-5.3-codex
     gpt-6-luna
-    gpt-6.1-sol
+    gpt-6.2-sol
     kimi-k3
     mai-code-1.1-flash)
   "Copilot model ids to expose in gptel.")
@@ -88,7 +89,7 @@
 (require 'gptel-gh)
 
 (defvar my/gptel-copilot-responses-model-ids
-  '(gpt-6.1-terra gpt-6-luna gpt-6.1-sol)
+  '(gpt-6.1-terra gpt-6-luna gpt-6.2-sol)
   "Additional Responses API models not yet in gptel's Copilot catalog.
 Keep explicit entries here for newer models; other unknown models use
 Chat Completions.  Known models use gptel's per-model capabilities.")

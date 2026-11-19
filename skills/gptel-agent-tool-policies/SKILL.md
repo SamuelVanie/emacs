@@ -14,7 +14,7 @@ Source: `~/.emacs.d/straight/repos/gptel-agent/gptel-agent-policy.el` (docstring
 
 ## Semantics (memorize, do not re-derive)
 
-- A tool with **no allow rule is denied**. Mentioning a tool in `:allow` with no `:args` allows all its arguments.
+- A tool with **no allow rule is denied** (verified with `gptel-agent-policy--allows-p`). Mentioning a tool in `:allow` with no `:args` allows all its arguments.
 - Any matching `:deny` beats any `:allow`.
 - Only the keys you mention are constrained; unmentioned arguments are free.
 - Keys are the tool's **argument names** with a leading colon (`:command`, `:file_path`, `:path`, `:root_directory`, `:subagent_type`). Check real names with
@@ -60,13 +60,12 @@ Always include: the project tree, `temporary-file-directory` (oversized tool res
 
 **Skill tool.** `(:tool "Skill" :args (:skill "glab"))` or `(one-of ...)`: otherwise agents may load unrelated skills.
 
-**MCP tools (read-only).** Policy denies by omission, but prune too:
-1. Keep two explicit **allowlists of tool names** per server (never a denylist of mutating ones: new server tools would leak in).
-2. Allow each name in the policy: `(mapcar (lambda (n) (list :tool n)) names)`.
-3. Put those names in the preset `:tools` (filter with `(ignore-errors (gptel-get-tool n))` so missing servers do not break loading).
-4. In a `-Q` worker the servers are not defined (they live in `~/.emacs.d/config/custom.el`): define `mcp-hub-servers` in the job init file, read the token from `ATLASSIAN_TOKEN` env or parse it from custom.el, never paste secrets into repo files. Connect with `(gptel-mcp-connect '("srv1" "srv2") t t)` (CONNECT-ONLY, synchronous), then remove non-allowlisted tools from `gptel--known-tools` (category `"mcp-<server>"`).
-5. Tool names are the server's own (`confluence-*`, `jira-*`, `internal-*`); the category prefix is `mcp-`. Server lists: `~/.emacs.d/transient/history.el`.
-6. Verify in batch: `emacs -Q --batch -L <straight/build dirs> -l job-init.el --eval '(princ (and (ignore-errors (gptel-get-tool "jira-create-issue")) t))'` must print `nil`. Set `ATLASSIAN_TOKEN` in that shell.
+**MCP tools (read-only).** Do not hand-prune `gptel--known-tools`.
+1. Define the servers in `mcp-hub-servers` (in a `-Q` worker, in the job init file; token from `ATLASSIAN_TOKEN` or parsed from `~/.emacs.d/config/custom.el`, never pasted into repo files).
+2. Keep one allowlist of tool names per server and connect through mcp.el: `(gptel-mcp-connect '(("srv" "tool1" "tool2") ...) t)` (non-function callback = synchronous).
+3. Put the names in the presets' `:tools` (filter with `(ignore-errors (gptel-get-tool n))`). The agent only sees what the preset lists.
+4. Policy: the engine denies any tool without an allow rule (verified: a policy with no `AgentControl` rule returns nil for it), so each listed tool still needs an allow entry. Generate them from the same list (`(mapcar (lambda (n) (list :tool n)) names)`) rather than writing them by hand; use `:args`/`:deny` only where a real restriction exists.
+5. Note that `gptel-mcp-connect` registers every tool of the server in gptel (`gptel-get-tool` finds mutating ones); only the filter decides what is activated. The preset list and policy are what keep agents away from them.
 
 ## Jobs and runner
 
