@@ -1,6 +1,6 @@
 ---
 name: gptel-agent-tool-policies
-description: Write, test and wire gptel-agent tool policies (`gptel-agent-define-tool-policy`, `:agent-tool-policy`) that restrict what autonomous agents, runner pipelines and background jobs may do. Use when asked to sandbox agents, forbid posting/writing, allow only read-only Bash/glab/git, limit file reads, or expose MCP tools read-only.
+description: Write, test, and debug gptel-agent tool policies (`gptel-agent-define-tool-policy`, `:agent-tool-policy`) for agents, pipelines, and jobs. Use for unexpected tool denials, scoped delegation and oversized results, read-only Bash/glab/git or MCP, and file-access restrictions.
 ---
 
 # Tool policies for autonomous agents
@@ -27,14 +27,20 @@ Source: `~/.emacs.d/straight/repos/gptel-agent/gptel-agent-policy.el` (docstring
 
 ## Workflow (do it in this order, once)
 
-1. List the tools the agents really need (read the preset `:tools`) and their argument names (snippet above).
+1. Inventory required calls by caller, workspace, and effective schema. Include request-local tools supplied to children and follow-up calls: the preset `:tools` list alone misses them. Every required call must be both exposed and admitted by the inherited policy.
 2. Write `:allow` per tool, as narrow as the task permits; put dangerous sub-cases in `:deny`.
 3. Select it in **every** preset involved: coordinator preset AND `gptel-agent-register`ed sub-agents (`:agent-tool-policy 'name`). A missing one is an unprotected agent.
 4. Define the policy **before** the presets/registrations (it is read at request time but keep it first for clarity).
 5. Test with `gptel-agent-policy--allows-p` (below) before any real run. Never test by launching a model run.
 6. Run the project's existing tests; reload the file in `Eval` before re-testing (a stale definition gives all-`nil` results, the classic false alarm).
 
-## Test harness (use as is)
+## Diagnose a denied run
+
+- Inspect saved events, node chats, and child transcripts. Extract the **exact tool name, full arguments, and workspace**. Reports may omit shell wrappers or flags; a `succeeded` runner state can still publish blocked reviews.
+- Replay the raw call and a known-good variant against the worker's policy and effective schema. Distinguish a missing allow entry, a matching deny, and an argument/schema mismatch. If a standalone read passes but a compound call fails, document the supported form rather than loosening the shell rules.
+- Validate a job's saved bootstrap in fresh batch Emacs with provider connections and any load-time inventory probes stubbed, and with disposable test storage. For an authorized live smoke test, start a fresh invocation and check that children actually start, return evidence, and deliver reports to the parent.
+
+## Test harness
 
 ```elisp
 (load "/path/to/definitions.el" nil t)   ; reload first!
@@ -53,10 +59,23 @@ Ban `; & | < > $ \` ( ) newline` outside quotes. Deny, separately, options that 
 - Do not allow `glab mr note|approve|merge|update|create`, `glab issue note`, `git fetch|checkout|commit|push|config`.
 Remember `Bash` also takes `query` and `background`; leave `query` free, pin `:background (optional false)`.
 
-**File reads.** `(under ROOTS...)` on `Read :file_path`, `Grep :path`, `PathInfo :path`, `Glob :root_directory (optional ...)`.
-Always include: the project tree, `temporary-file-directory` (oversized tool results are spooled there for `result-explorer`), and the skill dirs `~/.emacs.d/skills/` and `~/.agents/skills/` (agents read skill `references/`). Deny secrets by basename component: `.env .git .m2 .ssh .gnupg .aws .config/gcloud`. Do not allow `Write/Edit/Insert/Mkdir/Rmdir/Eval`: omitting them is enough.
+Put known-good forms in the prompts that issue Bash calls: one foreground read from the node workspace per call, with API paths containing query parameters quoted. With the corresponding allow rules, use `glab api 'projects/:id/merge_requests?state=opened&per_page=100' --paginate` or `glab mr list --output json --per-page 100 --page 1`. Use separate calls for later pages. Prefer `--output` if the policy denies `-F`. Keep `cd … &&`, loops, `2>&1`, and standalone shell processing of result files out of the workflow. A denied read or truncated preview is not an empty inventory.
 
-**Delegation tools.** Constrain `Agent :subagent_type (one-of ...)`, `:directory (optional (under ROOT))`, `:result_file (optional (under TMP))`; `Discussion :preset "..." :directory (under ROOT) :worktree (optional false)`; `DiscussionControl :action (one-of ...)`. `DiscussionReport`/`AgentControl` can be allowed bare. Runner nodes: the runner authorizes `RunnerHandoff` itself; add `RunnerAskPrevious` only if follow-up questions are wanted.
+**File reads.** `(under ROOTS...)` on `Read :file_path`, `Grep :path`, `PathInfo :path`, `Glob :root_directory (optional ...)`.
+Allow the project tree and relevant skill dirs (e.g. `~/.emacs.d/skills/` and `~/.agents/skills/`) when agents read skill references. Add a spool root to ordinary `Read`/`Grep` only if direct spool access is required; the built-in result explorer does not need it. Deny secrets by basename component: `.env .git .m2 .ssh .gnupg .aws .config/gcloud`. Do not allow `Write/Edit/Insert/Mkdir/Rmdir/Eval`: omitting them is enough.
+
+**Delegation tools.** Explicitly allow every stage the workflow uses. Constrain `Agent :subagent_type (one-of ...)`, `:directory (optional (under ROOT))`, and `:result_file (optional (under SPOOL-ROOT))`. For read-only discussions, use matching rules such as:
+
+```elisp
+(:tool "Discussion" :args (:preset "my-read-only-preset" :directory (under workspace)
+                           :worktree (optional false) :model (optional "")))
+(:tool "DiscussionControl" :args (:action (one-of "list" "read" "send" "wait")))
+(:tool "DiscussionReport")
+```
+
+Allow `AgentControl` if the parent collects agent outcomes. The runner authorizes `RunnerHandoff` itself; add `RunnerAskPrevious` only if needed. Test a valid create and report path as well as denied worktrees, sibling directories, other presets/models, and cleanup. Use `:json-false` as the submitted argument in Lisp tests; `false` is the policy pattern.
+
+**Oversized results.** Allowing `Agent` with subtype `result-explorer` only admits the launch. Add `(:tool "ResultRead")` and `(:tool "ResultGrep")` to the inherited policy, not to ordinary preset tool lists. The built-in explorer supplies these tools; neither takes a file path. Its harness validates the exact registered `result_file`/`query` pair and reads only that file. Constrain `Agent :result_file` to the worker's actual spool root (normally `gptel-agent-temp/` under the worker's temp directory). Test launch admission and both child read calls, plus a mismatched query or an unregistered file.
 
 **Skill tool.** `(:tool "Skill" :args (:skill "glab"))` or `(one-of ...)`: otherwise agents may load unrelated skills.
 
@@ -71,23 +90,21 @@ Always include: the project tree, `temporary-file-directory` (oversized tool res
 
 - Policy and presets are loaded by the job's `:init-file` (via the pipeline file); the worker re-reads files on every launch, so **no job re-registration is needed** after editing them. A saved node chat created before the policy existed keeps old settings: start a new invocation.
 - Changing launchd-relevant settings (`:environment`, `:emacs`) needs `gptel-runner-job-schedule` again; policy edits do not.
-- Keep the existing agent instructions untouched when the request is only about permissions: restrictions belong to the policy, not prose.
+- Preserve task instructions. Update tool-use guidance when the task and policy otherwise disagree; keep enforcement in the policy.
 - Do not rely on `:workspace-mode 'read`: the runner does not enforce it.
 
 ## Pitfalls that cost rounds
 
 - Testing before reloading the file (everything returns nil).
 - Testing with nonexistent paths: `under` canonicalizes real paths, so use files that exist.
-- Forgetting one preset/sub-agent, or the temp dir (breaks oversized-output handling) or skill dirs (breaks skills).
 - Over-broad `rx`: `(* anything)` after a prefix lets `; rm -rf` through. Always anchor and exclude metacharacters.
 - `timeout` is absent on macOS: do not use it in verification commands.
 - Policy cannot see inside a command: for Bash it only matches the string. Keep the allowlist small rather than trying to parse shell.
-- A denial reads `Error: Tool policy denied X with the supplied arguments.`: when an agent reports it, widen the specific rule, do not remove the policy.
 
 ## Checklist before declaring done
 
-- [ ] Every preset/sub-agent has `:agent-tool-policy`.
+- [ ] Every job preset/sub-agent has `:agent-tool-policy`; required calls are exposed and admitted at every stage, including child result reads and reporting.
 - [ ] Allowed + denied sample matrix run through `gptel-agent-policy--allows-p` (include `..`, secrets, write/post commands, mutating MCP tools).
 - [ ] Batch init check: mutating MCP tools absent, read ones present.
 - [ ] Project test suite passes after reload.
-- [ ] Report what was not tested (no end-to-end model run).
+- [ ] Say whether a fresh invocation was tested end to end; distinguish actual workflow coverage from runner completion.
