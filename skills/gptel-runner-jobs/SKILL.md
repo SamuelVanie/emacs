@@ -27,8 +27,10 @@ Jobs can use gptel-agent presets, nested agents, and discussions through the
 standard driver. Verify compatible packages in the initialized worker and read
 the [nested-work contract](../gptel-runner-pipelines/references/runtime-integrations.md#gptel-agent-presets-and-nested-work)
 when those features are present. Child tool approvals use the normal job command
-channel, including multiple pending requests on one node. Question forms and
-separate interactive file-review interfaces still require headless adapters.
+channel, including multiple pending requests on one node. Use `deny` to decline
+selected tools while letting their agents continue; `reject` cancels the owning
+node and its descendants. Question forms and separate interactive file-review
+interfaces still require headless adapters.
 
 Each gptel agent node works in its own conversation. By default it calls
 `RunnerHandoff` to submit its answer. On a route through a sequence it can
@@ -38,7 +40,8 @@ for feedback. Budget for the extra turns and choose a tool-capable model.
 
 The worker checkpoints these conversations, their child transcripts, and the
 workflow together under the invocation. Leave session saving to the runner.
-On the background dashboard, `RET` on a node opens a local chat copy, `? m`
+On the background dashboard, `RET` opens pending approvals first, otherwise a
+node's published chat as a local copy. `? v` opens the chat directly, `? m`
 shows messages between nodes, and `? j` opens child transcripts. Use
 `? f` on a waiting node to send feedback to the worker. See
 [invocation commands and recovery](references/invocations-and-commands.md)

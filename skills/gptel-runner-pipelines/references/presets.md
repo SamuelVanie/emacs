@@ -120,8 +120,17 @@ Use the tool's exact argument names in trusted Lisp.
 ```
 
 Unmatched calls and matching `:deny` rules are blocked. Children inherit the
-restrictions. Runner admits its own `RunnerHandoff`. Allow `RunnerAskPrevious`
-if the node needs to ask follow-up questions.
+restrictions with each policy's original workspace; changing a child's directory
+does not relocate its parent's permitted roots. A child policy can narrow the
+permissions further. Runner admits its own `RunnerHandoff`. Allow
+`RunnerAskPrevious` if the node needs to ask follow-up questions.
+
+Policies apply even with `:allow-unconfirmed-tools t` or an outside-access grant.
+A path-constrained policy can authorize a built-in outside read, but does not
+preapprove outside mutations. Live requests retain their policy definitions
+through retries and child work. Saved chats retain policy names and roots, so
+load the named definitions again before restoring them; do not assume editing a
+policy changes requests already in flight.
 
 ### Presets using gptel-agent features
 
@@ -135,6 +144,10 @@ advice, or supervision handles to each pipeline definition.
 
 Inspect the parent's allowed subagents and the actual child definitions too;
 a registered `Agent` tool does not imply every discovered worker is enabled.
+An omitted `:agents` allows all eligible subagents; explicit `:agents nil` allows
+none. Per-chat selections and inherited restrictions can narrow this further.
+The main `gptel-agent`, `gptel-plan`, and `ask` presets cannot be used as
+subagents, and self-delegation is disallowed.
 Confirm child tools, model settings, task limits, and any directory overrides
 fit the node's purpose. The outer runner's workspace mode and budgets do not
 independently constrain each nested worker. Use a compatible gptel-agent that
@@ -153,13 +166,24 @@ load forms. File names need not equal preset symbols, and a file on disk can be
 intentionally absent from the startup configuration. Treat these paths as hints,
 not a fixed inventory.
 
-For gptel-agent, inspect the configured `gptel-agent-dirs` and its Markdown/Org
-definitions. The public `gptel-agent-read-file` reads one file and returns
-`(NAME . PLIST)`.
+For gptel-agent, inspect the configured `gptel-agent-dirs`, its Markdown/Org
+definitions, and calls to `gptel-agent-register` in the intended setup. Elisp
+registrations take precedence over same-named files. The public
+`gptel-agent-read-file` reads one file and returns `(NAME . PLIST)`; optional
+template bindings resolve prompt placeholders, and its metadata-only argument
+omits the prompt.
 An agent file, an enabled subagent, and a gptel preset are different things.
 `gptel-agent-update` registers the main
 `gptel-agent`, `gptel-plan`, and `ask` presets, not every discovered agent file.
 Do not assume a `researcher` file makes `:preset 'researcher` work.
+
+For a new nested worker defined in Lisp, use `gptel-agent-register` with a
+nonempty `:description` and its inspected settings, then
+`gptel-agent-add-subagent` if a parent's allowlist needs that worker. These
+registrations last for the Emacs session; include them in the worker init for
+background jobs. Refresh existing chats with `gptel-agent-update` or by
+reapplying a main preset. Requests already running keep their captured definitions.
+Registering a subagent still does not create a same-named gptel preset.
 
 If a suitable definition exists but is unloaded, inspect it and load the intended
 definition or arrange its normal load dependency within the authorized workflow

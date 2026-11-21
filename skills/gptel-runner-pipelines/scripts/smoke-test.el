@@ -7,6 +7,8 @@
 ;; Temporary workspaces and local context fixtures are removed after each test.
 ;; A fake success (:value ...) stands for a submitted handoff in these workflows.
 ;; Use :status discussion for ordinary prose or :status follow-up for a question.
+;; Fake dispatches count once toward requests; live gptel tool rounds and review
+;; feedback consume further requests. These tests do not measure live tool usage.
 
 ;;; Code:
 

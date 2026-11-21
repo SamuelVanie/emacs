@@ -112,14 +112,18 @@ both extension APIs, record-decision, and forget-run do accept object or ID.
 
 ## Inspect and determine success
 
-Open `M-x gptel-runner-show-dashboard`. Select an agent node and press `RET`
-to open its editable chat. On a run row `RET` opens its journal. Use `? m` for
+Open `M-x gptel-runner-show-dashboard`. On an agent row, `RET` opens pending
+tool approvals first, otherwise its editable chat. `? v` opens the chat directly.
+On a run or Elisp row `RET` opens its journal. Use `? m` for
 handoffs, questions, and replies, or `? j` for child discussions and delegated
 worker transcripts. Selecting a node filters the view to that node. Use `? e`
 for events and `? v` to visit the selected node's worker chat. Press `g` to
 refresh and `q` to quit. The action menu enables controls for the selected row.
+An indirect clone of a node chat or child transcript is a read-only view; send
+requests from the base node chat. Closing that view does not stop its live work.
 
-For a background invocation, `RET` opens a published local chat copy. Send
+For a background invocation, `RET` opens pending approvals first, otherwise a
+published local chat copy; `? v` opens the chat directly. Send
 feedback to the worker from its waiting node row with `? f`. The
 [jobs skill](../../gptel-runner-jobs/SKILL.md) covers remote controls. A local
 run ID alone does not identify a background invocation.
@@ -164,7 +168,12 @@ Calls/events are in chronological order. Historical failed calls can remain afte
 successful recovery. Consult the current node/run state, latest relevant call,
 round history, and input versions together. A displayed call may be `succeeded`
 while the run is `blocked` because its valid review triggered `:stop-when`.
-`waiting-confirmation` needs tool approval; `waiting-tool` means tool execution
+`waiting-confirmation` needs tool approval; use `? y` to review the pending
+requests and approve only the displayed requests intended for execution. For
+programmatic selection or denial, use the public
+[interaction APIs](runtime-integrations.md#gptel-agent-presets-and-nested-work).
+Denying selected tools lets the agent continue with a rejection result;
+cancelling the call terminates its work. `waiting-tool` means tool execution
 (possibly waiting for user input). In `waiting-feedback`, check whether an
 agent ended its turn in prose or a proposed result is awaiting approval. The
 node chat retains the conversation for subsequent turns, including tools and
@@ -199,7 +208,7 @@ recording decisions, interactive wrappers use the selected dashboard row.
 | Stop all work for a longer wait | `(gptel-runner-pause-run run &optional reason)` | `P`, `gptel-runner-dashboard-pause-run`; named workflow, stop duration clock, queue snapshot |
 | Restart a paused run | `(gptel-runner-resume-run run &optional feedback callback)` | `r`, `gptel-runner-dashboard-resume-run`; completed nodes kept, unfinished work restarts |
 | Retry same goal after failed/blocked/stalled/cancelled outcome | `(gptel-runner-retry run &key from-node feedback callback)` | `t`, `gptel-runner-dashboard-retry-run`; safe checkpoint |
-| Rerun an executed agent node in an unsuccessful run | Same retry API with `:from-node 'node-id` | `T`, `gptel-runner-dashboard-retry-node` on a call row; invalidate node and dependent sequence work |
+| Rerun an executed agent or Elisp node in an unsuccessful run | Same retry API with `:from-node 'node-id` | `T`, `gptel-runner-dashboard-retry-node` on a call row; invalidate node and dependent sequence work |
 | Rerun the entire finished workflow with its current goal | `(gptel-runner-rerun run &key reset-budget callback)` | `R` starts at the root, retains chats and inputs, and resets consumed budget by default |
 | New observation/goal after terminal outcome | `(gptel-runner-continue run observation &key reset-budget additional-requests additional-calls additional-duration callback)` | `c`, `gptel-runner-dashboard-continue-run`; new cycle after success, checkpoint after other outcomes |
 | Add run capacity while running/paused, or recover run-budget failure | `(gptel-runner-extend run &key additional-requests additional-calls additional-duration callback)` | `b`, `gptel-runner-dashboard-extend-run`; cumulative use retained |
@@ -234,8 +243,8 @@ available for review. Send a revision request with `? f` or from Lisp:
 ```
 
 At a human review gate, feedback requires a free workspace/concurrency slot.
-It runs asynchronously outside ordinary dispatch counters, then waits again
-for acceptance. Inspect the revised answer or any `feedback-failed` event.
+It reuses the logical call but charges each provider send to the request budget,
+then waits again for acceptance. Inspect the revised answer or any `feedback-failed` event.
 Acceptance is disabled while a feedback request is active. From the chat use
 `M-x gptel-runner-complete-call-from-buffer` to submit the active region or
 the latest response. With a proposed handoff and no newer response, acceptance
@@ -266,16 +275,18 @@ starter's reviewer and its dependent work:
 
 Plain retry keeps the goal, completed prerequisites, saved results, and cumulative
 budget usage. A completed body that blocked or stalled a repeat restarts as a whole,
-including the implementer. `:from-node` must name an **executed agent step ID**, not
-an agent name, repeat/container, skipped branch, or call ID. It clears that node's
+including the implementer. `:from-node` must name an **executed agent or Elisp step
+ID** in the workflow body, not an agent name, repeat/container, skipped branch,
+call ID, or run-finalizer node. It clears that node's
 saved result and later sequence results; earlier results and independent successful
 parallel siblings survive. Enclosing repeat history/counters survive, and completing
 the retried body consumes another iteration. Downstream subtrees that are invalidated
 restart their own loop state/results. Selecting an old call does not rewind to its
 historical iteration. Check remaining capacity before any retry.
 
-Retry `:feedback` reaches the selected node's next prepared prompt, or the next
-prepared prompt when no node was specified. Resume feedback likewise reaches only
+Retry `:feedback` reaches the selected agent's next prepared prompt, or the next
+agent prompt when no node was specified or an Elisp step was selected.
+Resume feedback likewise reaches only
 the first unfinished prompt. Neither becomes a durable shared instruction by itself.
 Record an authorized lasting correction **before** releasing work:
 
@@ -356,8 +367,12 @@ enough run-level headroom if needed. A stalled/blocked repeat with capacity left
 needs cause-aware retry, not iteration extension. Existing blackboard results may
 remain until replaced, so conditional producers still need freshness checks.
 
-Normally retry rejects exhausted limits. There is an important exception: after
-work launched by an extension fails, retry can **reapply the stored extension**
+Retrying a local `elisp-error` or `elisp-timeout` does not require unused provider
+calls or requests. Any following agent still needs its normal budget; duration
+and repeat limits still apply.
+
+For agent work, retry normally rejects exhausted limits. After work launched
+by an extension fails, retry can **reapply the stored extension**
 to newly exhausted run/repeat limits. Inspect `gptel-runner-run-extension-context`
 and the `run-retried` event's `:reapplied-extension` / `:reapplied-repeat-extension`.
 Such a retry can grant more capacity; do not silently repeat it beyond the authorized
@@ -388,15 +403,21 @@ Status is `pending`, `writing`, `clean`, or `error`. Observe `snapshot-saved` or
 event loop. After this requested save, require `clean` plus the expected readable
 file before claiming durability. `clean` alone on a run never saved means only
 that nothing is pending. A file's existence alone may reflect an older snapshot.
-Pause first for a settled checkpoint before shutdown or removal. Normal Emacs
-shutdown flushes pending writes; an abnormal exit can lose queued progress.
+Pause first for a settled checkpoint before shutdown or removal. Normal
+interactive shutdown flushes pending writes, retries failed saves, and cancels
+exit if a save still fails. Forced `kill-emacs` and batch exits only attempt a
+best-effort flush; those exits and crashes can lose queued progress.
 
 After restart, load the same presets/tools, helpers, agents, workflow definition,
 and driver before loading the snapshot as data. Reload all per-step workspace
 overrides; they come from the workflow definition, not embedded workflow code.
-Check the actual repositories/revisions and required context files still exist;
-restore revalidates directories and declared context files, but does not freeze
-external artifacts or verify that a changed definition has equivalent meaning.
+Opening a snapshot validates the workflow structure and permissions but does
+not require the original workspace or context files: saved history remains
+inspectable after those files are removed. Before executing more work, check
+the repositories and inputs needed by the nodes that will run. Resume/retry/rerun
+check each executing node's workspace and context; completed nodes do not need
+their original files. Restore does not freeze external artifacts or verify that
+a changed definition has equivalent meaning.
 
 ```elisp
 (setq my-run (gptel-runner-load-run
@@ -415,7 +436,7 @@ instead of creating a duplicate. `gptel-runner-resume-snapshot` has signature
 `(file &optional feedback callback driver)` and combines load/resume immediately;
 prefer separate calls when inspection is needed, and do not use it for terminal saves.
 
-Version 4 saves workflow checkpoints, budgets, accepted outcomes, blackboard
+Snapshots save workflow checkpoints, budgets, accepted outcomes, blackboard
 data, and the managed output registry together with each node's chat and drafts,
 child discussions, delegated agent transcripts, and inter-node messages. The
 outstanding question's return path is saved so an upstream reply can reach its
@@ -427,9 +448,8 @@ The runner exclusively owns these chats even with global
 `gptel-agent-session-mode` enabled and even before a run is saved. Use runner
 sessions for recovery. A compatible gptel-agent preserves native assistant/tool
 boundaries and chat settings through its serializer. Plain gptel uses its own
-chat format. Version 3 includes node chats, version 2 includes workflow
-checkpoints, and captured child transcripts require version 4. Older sessions
-that predate handoff completion reopen in response mode. Version 1 is unsupported.
+chat format. Older snapshots retain only the data they originally recorded;
+inspect the restored completion mode and available transcripts before recovery.
 Keep saved outcomes and context readable as Lisp data. A mode-`0600` snapshot
 may contain prompts, tool outputs, and drafts. A background invocation's
 published inspection history is separate from its recoverable runner session.

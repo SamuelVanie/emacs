@@ -40,8 +40,9 @@ functions one-for-one. Avoid generic compatibility frameworks, custom schedulers
 and defensive scaffolding unrelated to the actual task.
 
 The current source and examples are in `~/projects/gptel-runner`. If the installed
-package lacks a needed public API, identify the version gap and use one consistent
-package version; do not embed fallback implementations in each pipeline. Read
+package lacks a needed public API, identify the installation mismatch and use
+compatible packages throughout; do not embed fallback implementations in each
+pipeline. Read
 [runtime integrations](references/runtime-integrations.md) for gptel-agent presets
 and nested work, custom drivers, admission hooks, headless interactions, or
 dashboard extensions.
@@ -279,8 +280,10 @@ for a single run. An explicit `:allow-unconfirmed-tools nil` at startup override
 the workflow default and restores the usual confirmation policy for that run.
 With unconfirmed tools enabled, supervised nodes, workers and discussions can
 read local paths outside their workspaces without an outside-read prompt. Any [preset tool policy](references/presets.md#tool-argument-policies)
-still applies. Outside file mutations still require approval. Pass
-`:allow-writes t` at startup for writable workflows. Honor the agreed scope
+still applies. Outside file mutations require approval unless outside access was
+explicitly granted to that conversation during the active supervised call; see
+the [interaction contract](references/runtime-integrations.md#gptel-agent-presets-and-nested-work).
+Pass `:allow-writes t` at startup for writable workflows. Honor the agreed scope
 and any requested human gates. Check the selected worker's tool hooks when
 verifying unattended behavior.
 

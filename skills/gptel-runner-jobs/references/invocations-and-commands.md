@@ -11,7 +11,7 @@ transport, addresses, receipts, and background lifecycle.
 | Call | Contract |
 | --- | --- |
 | `(gptel-runner-invocation-get id)` | Read the latest manifest from the current job store. |
-| `(gptel-runner-invocation-list)` | List newest first, across jobs. Skip unreadable/corrupt manifests with a message. Dead owners of `open`/`closing` invocations are projected as `interrupted` without rewriting history. |
+| `(gptel-runner-invocation-list)` | List newest first, across jobs. Skip unreadable/corrupt manifests with a message. `open`/`closing` invocations without a live owner, and `starting` invocations with a confirmed dead reservation owner, are projected as `interrupted` without rewriting history. |
 | `(gptel-runner-invocation-live-p invocation)` | Test exact owner identity. Can mean a live launch reservation, not yet an initialized worker. |
 | `(gptel-runner-outputs source)` / `(gptel-runner-get source key default)` | Read all named values as an alist, or one value with a missing default; nil values stay nil. Source is a run or invocation record. |
 | `(gptel-runner-node-outcome source node)` | Current `:node`, `:state`, and known terminal `:value`; `node-state`, `node-result`, `node-error` also accept invocation records and node objects/IDs. |
@@ -164,6 +164,7 @@ observed call). Node IDs are symbols, strings, or integers, as used by the workf
 | `accept` | Call address, optional `:result` string | Accept a paused/waiting-feedback call. Omission/nil uses the latest response or retained handoff. A nonblank result is required. Wait for any active feedback to finish. |
 | `approve` | Call address, required `:interaction-id`, optional `:generation`, `:allow-outside` | Approve that pending tool interaction. Include its observed generation. Use `:allow-outside t` only for an eligible outside-path request when the user authorizes remembered access. |
 | `approve-all` | Call address, required `:interaction-ids` and `:generation`, optional `:allow-outside` | Approve exactly the displayed set of distinct pending IDs for this call. The optional grant applies to eligible conversations in that set. |
+| `deny` | Call address, required `:interaction-ids` and `:generation` | Decline exactly these distinct pending requests, returning tool-denial results to their source conversations so the agents can continue. Does not cancel the node. |
 | `reject` | Call address, required `:interaction-id`, optional `:generation` | Reject the interaction and cancel the owning call and its descendants. |
 | `revoke-outside` | Call address and required `:generation` | Revoke outside-path access granted through this call. |
 
@@ -210,13 +211,23 @@ specific source/tool request, not merely the first entry for a waiting node:
 Interaction ID, worker epoch, and call generation identify different things.
 A stale approval cannot authorize a subsequent tool request. An accepted child
 approval runs in that child's request context; its siblings may still await
-approval. Rejecting any pending interaction cancels the owning runner call and
-its descendants. Closed/cancelled children lose their approvals even if the
+approval. Use `deny` with the selected IDs to return denials without cancelling
+the node; use `reject` only when cancellation is intended. Denial can trigger a
+new model turn, so inspect the refreshed state and remaining budget.
+Closed/cancelled children lose their approvals even if the
 outer call continues. Re-read `:interactions` after commands or lifecycle changes.
 For a handoff-mode node that stopped on ordinary prose, use `feedback` to
 continue that discussion or `accept` to submit its current answer. At an
 explicit human gate (for example `:pause-after t`), use `feedback` for a
 revision and `accept` when ready. Whole-run `resume` schedules unfinished work.
+
+An outside-path grant applies only to the conversations owning the selected
+eligible requests, but covers **all local outside paths**, including subsequent
+mutations, not just the paths displayed for approval. It ends on pause,
+completion, restart, directory change, or
+revocation and is not saved in checkpoints. Other nodes and future children do
+not inherit it. Tool argument policies, other confirmations, and file reviews
+still apply.
 
 ## Worker recovery
 
@@ -233,11 +244,11 @@ The core operation's state requirements still apply. Another active invocation
 of the job prevents recovery. Recovery uses the configured launcher; a generic
 CLI initial run alone does not configure a portable detached recovery launcher.
 
-Version 4 checkpoints include node chats, child transcripts, inter-node
-messages, and the outstanding question's return path. Version 3 can supply
-node chats. Version 2 contains execution state only. Checkpoints predating
-handoffs retain response completion. Live provider requests, child supervision
-handles, and pending tool approvals expire with the worker. After recovery,
+Checkpoints include node chats, child transcripts, inter-node messages, and the
+outstanding question's return path. Older snapshots may omit some of this data;
+inspect what was actually saved rather than assuming missing history is recoverable.
+Live provider requests, child supervision handles, and pending tool approvals
+expire with the worker. After recovery,
 the workflow schedules fresh turns using the saved context. Refresh the manifest
 for the new epoch before addressing calls or approvals.
 
@@ -260,9 +271,10 @@ a background run or node row for these actions.
 
 | Keys | Action |
 | --- | --- |
-| `RET` | Open worker controls on a run, or the published chat on a node when available. An editable **Local chat copy** keeps ordinary sends and edits in the editor. Older text transcripts open read-only. |
+| `RET` | Open worker controls on a run or a node with pending approvals; otherwise open the node's published chat when available. An editable **Local chat copy** keeps ordinary sends and edits in the editor. Older text transcripts open read-only. |
+| `? v` | Open the node's published chat directly, including when approvals are pending. Use worker commands to change the running invocation. |
 | `? m` / `? j` | Inspect handoffs, questions, and replies / open a child transcript. On a run row these span the invocation. On a node row they are scoped to that node. Discussion chats can be reopened as local copies. Delegated worker transcripts are read-only. |
-| `? w` | Open worker controls for the selected row. Review pending requests and their arguments. In the panel, `a` approves the displayed pending set and `A` also remembers eligible outside paths for those conversations. |
+| `? w` | Open worker controls for the selected row. In the panel, `y` approves and `d` denies the request at point or requests in the active region; `a` approves all shown and `D` denies all shown. `A` also grants all local outside paths to eligible requesting conversations. Denial lets the agent continue; **Reject & cancel node** cancels it. |
 | `? f` / `? a` | Send feedback to the worker / accept the waiting node's answer. These act on the workflow. |
 | `? P` / `? r` / `? K` | Pause, resume, or cancel the invocation. |
 | `? t` / `? R` / `? c` | Retry a safe checkpoint or selected node, rerun the whole workflow with its current goal, or continue with a new goal. |

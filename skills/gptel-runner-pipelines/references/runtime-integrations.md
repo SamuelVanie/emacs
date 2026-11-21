@@ -34,6 +34,14 @@ Only implement a custom driver when the supplied drivers do not fit:
 | `gptel-runner-driver-cancel (driver call)` | Stop provider work and arrange cleanup. |
 | `gptel-runner-driver-pause (driver call)` | Optional; defaults to driver cancellation of external work while the core keeps the call nonterminal. |
 | `gptel-runner-driver-await-feedback (driver call)` | Optional; prepare a completed provider transcript for human feedback; default is no-op. |
+| `gptel-runner-driver-counts-requests-p (driver)` | Optional; return non-nil to account for each provider send in the driver instead of the core charging once per driver-start. |
+
+A driver opting into request accounting must check and charge the request budget
+before every provider send, including tool continuations and retries, report
+`request-started`, and finish the call on exhaustion. Preparing a prompt alone
+does not consume a request. Follow the standard adapter's implementation and
+request-budget tests when building such a driver; do not merely opt out of the
+core's dispatch charge.
 
 For a conversational node, return `success` with the submitted handoff string,
 `follow-up` with a question for the preceding agent, or `discussion` with
@@ -43,8 +51,9 @@ statuses in its queued outcomes, so exercise the return path by queueing a
 `follow-up` for the requester, a reply for its predecessor, then a final result
 for the requester. To exercise errors use `cancelled`, `blocked`, `transient`, or
 a failure status. Transient metadata can contain `:http-status`, `:retry-after`,
-`:retryable`, and `:permanent`. Core owns budgets, state transitions, parsing,
-validation, and retry decisions. Keep private gptel API adaptation in
+`:retryable`, and `:permanent`. Core owns budget limits, state transitions,
+parsing, validation, and retry decisions; an opting-in driver owns per-send
+request accounting. Keep private gptel API adaptation in
 `gptel-runner-gptel.el`, not in generated pipelines. Consult that adapter and its
 mocked-transport tests before integrating provider-specific behavior.
 
@@ -67,12 +76,13 @@ public functions; compatible versions must be loaded in the process doing the wo
 | `gptel-agent-supervision-retry` | Rearm the failed root request's gate before the host resumes that FSM. |
 | `gptel-agent-supervision-stop` | Release supervision and cancel descendants; the host owns root transport cancellation. |
 
-With `:allow-unconfirmed-tools t`, the updated runner uses the optional
+With `:allow-unconfirmed-tools t`, the runner uses the optional
 `gptel-agent-supervision-allow-outside-reads` API. During the run, `Read`,
 `Glob`, `Grep`, and `PathInfo` can inspect local paths outside the working
 directory of a node, delegated worker, or discussion without an outside-path
 prompt, subject to the preset's tool policy. Outside writes, edits, and other
-file mutations still require approval.
+file mutations still require approval unless outside access was explicitly
+granted to the requesting conversation; see [tool interactions](#tool-interactions-and-headless-workers).
 
 For a loaded integration, this read-only query checks actual API availability
 and the source of the loaded implementation, without sending model requests:
@@ -123,10 +133,14 @@ Completion and information flow:
   callbacks. Inspect effects already performed before restarting.
 
 Nested work is internal to a node, not additional runner nodes. Its calls and
-concurrency are not separately charged against the runner's budgets, and nested
-HTTP requests do not make `:max-requests` a provider spend cap. Use agent task
-limits where appropriate. Register the outer node as a writer when its children
-can write; runner locks cover its declared workspace, not every directory a
+concurrency are not separately charged against the runner's budgets. The standard
+driver charges each outer provider send, including tool rounds, retries, feedback,
+and synthesis after child results, to `:max-requests`. Independently managed child
+requests are outside that counter, so it is not a total provider spend cap. Set
+child `:task-timeout` and `:max-request-rounds` as needed; an omitted value uses
+the corresponding gptel-agent fallback, which may be unlimited. Register the
+outer node as a writer when its children can write; runner locks cover its
+declared workspace, not every directory a
 child might choose. Prefer explicit pipeline nodes when separate scheduling,
 workspace locking, results, or budgets are required for each participant.
 
@@ -159,29 +173,47 @@ Neither mechanism detects overlapping parent/child directories or shared externa
 resources, and neither provisions isolation. Preserve `write` registrations for
 actual writers even when their worktrees are separate.
 
-## Headless tool interactions
+## Tool interactions and headless workers
 
-With `gptel-runner-headless` non-nil, the gptel driver publishes pending tool
-approval through `gptel-runner-interaction-hook`, rather than local approval UI.
+The gptel driver publishes pending tool approvals through
+`gptel-runner-interaction-hook`. With `gptel-runner-headless` non-nil, it routes
+them there instead of displaying local approval UI; foreground native approvals
+are also registered for runner inspection and controls.
 Each hook function receives `(call interaction)`. The serializable interaction
 contains `:id`, `:kind` (`tool-approval`), `:call-id`, `:generation`,
-`:source-buffer`, and `:tools` (name/args). Live callbacks remain private to the
+`:source-buffer`, `:tools` (name/args), and `:outside-access` when an outside-file
+grant is available. Live callbacks remain private to the
 owning process. Subagent and discussion approvals are routed to the outer call;
 several children can have different pending interaction IDs simultaneously.
 Treat `:source-buffer` as a display label, not the request identity.
 
-`gptel-runner-gptel-answer-interaction (call interaction-id approve)` answers that
-exact pending interaction once. Non-nil approve executes its tools; nil cancels
-the call with `tool-rejected`, whose effect on the run follows the parent policy.
-It validates the generation, source buffer, request info identity and source
-FSM's pending tool state, plus agent-supervision liveness when applicable.
-Use `gptel-runner-gptel-interaction-pending-p (call id)` to check a selected ID;
-the outer call's state alone cannot identify which child awaits approval.
-Acceptance executes in the source request's context. Closing a child or
-pausing/cancelling the node invalidates its pending approval; rejection cancels
-the outer call and its descendants. Never reuse an ID for a later interaction or
-serialize live call objects for another process. Use the jobs layer to route
-answers to a background worker.
+Use the public interaction APIs in the owning process:
+
+| API | Behavior |
+| --- | --- |
+| `gptel-runner-gptel-pending-interactions (call)` | Return data-only descriptions of currently actionable approvals. |
+| `gptel-runner-gptel-interaction-pending-p (call id)` | Check whether this exact approval remains actionable. |
+| `gptel-runner-gptel-approve-interactions (call ids &optional allow-outside)` | Approve exactly the selected IDs, validating the full set before executing any tools. Newly generated requests are not included. |
+| `gptel-runner-gptel-deny-interactions (call ids)` | Return rejection results for the selected requests and let their agents continue. |
+| `gptel-runner-gptel-answer-interaction (call id approve &optional allow-outside)` | Approve one request when `approve` is non-nil; nil **cancels the outer call** with `tool-rejected` and stops its descendants. |
+| `gptel-runner-gptel-revoke-outside-access (call)` | Revoke outside-file grants issued through this call's runner controls. |
+
+Replies validate the generation, source buffer, request info identity and source
+FSM's pending tool state, plus agent-supervision liveness when applicable. The
+outer call's state alone cannot identify which child awaits approval. Acceptance
+executes in the source request's context. Closing a child or pausing/cancelling
+the node invalidates its pending approval. Never reuse an ID for a later
+interaction or serialize live call objects for another process. Use the jobs
+command channel to route answers to a background worker.
+
+Non-nil `allow-outside` grants all local outside paths to the requesting
+conversation, including subsequent mutations; it is broader than approving
+one tool call. Use it only for an explicitly authorized grant on an approval
+marked `:outside-access`. It does not bypass tool policies, ordinary tool
+confirmations, or file reviews. The grant is not inherited by other children or
+saved across restarts, is invalidated by a directory change, and is revoked when
+the runner stops the owning supervision. Denying an individual request and
+cancelling its node are different operations; choose the intended one.
 
 Headless workers honor the run's effective confirmation policy, including
 during programmatic feedback.

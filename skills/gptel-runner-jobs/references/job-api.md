@@ -41,7 +41,9 @@ worker's session-local run/call IDs are different identities.
 | `:schedule` | nil, a positive-seconds interval, or calendar rules; see the launch reference. Saving it does not apply it to launchd. |
 | `:enabled` | Defaults to t when absent. The CLI `trigger` checks it; manual `job-run` and CLI `run` do not. Setting it alone does not install/unload a service or cancel work. |
 
-The API supplies `:root`, an incrementing `:revision`, `:format`, and `:version`.
+The API supplies `:root`, an incrementing `:revision`, `:format`, `:version`, and
+an opaque `:launchd-id` for service identity. Use diagnostics to find service
+labels; the job's stable ID is scoped to its store, not to the whole Mac.
 Scheduler operations save `:scheduler` with `:state`, `:operation`, `:updated-at`,
 and `:error`. Treat these as service metadata, not user-authored settings.
 

@@ -1,7 +1,8 @@
 # API details that affect pipeline correctness
 
-Requires Emacs 29.1+; live requests also require compatible gptel (minimum
-0.9.9.4) and configured presets.
+Use the Emacs and gptel requirements declared by the current package. Live
+requests also need configured presets; the adapter checks required gptel entry
+points before dispatch and reports compatibility failures.
 
 ## Definitions and constructors
 
@@ -107,7 +108,7 @@ successful nil stays nil. `node-error` returns failed/blocked/stalled/cancelled
 data, otherwise its default.
 
 Outcomes survive checkpoints without historical calls or `:save-as`. They track
-the current execution: resetting a node clears its previous outcome. Older v2
+the current execution: resetting a node clears its previous outcome. Older
 snapshots may omit `:value`; check `plist-member` to distinguish unknown from nil.
 Persistent outcome values must be readable Lisp data. Treat returned nodes and
 values as read-only.
@@ -437,6 +438,16 @@ Avoid copying the full decision log into prompts as well as enabling injection.
 
 ## Loops, joins, and result freshness
 
+A branch retains its selected arm across pause/resume and checkpoint retries,
+even if the arm changes values read by its predicate. A fresh execution of that
+branch evaluates the predicate again. Do not expect a retry inside the chosen
+arm to switch routes merely because the blackboard changed.
+
+When an outer iteration starts a nested repeat afresh, the inner iteration
+counter and stall/retry progress reset. Its collected history and extended limit
+remain. Inner history can therefore contain repeated `:iteration` numbers across
+outer rounds; add task-specific outer-round provenance when consumers need it.
+
 Repeat options `:collect-keys '(implementation review)` and
 `:save-history-as 'history` must be supplied together. Every collected key must
 be written by the body; history must have a separate destination. Entries are:
@@ -483,14 +494,21 @@ into an iteration or keep retrying an invalid parsed result. Use a repeat for
 revision and the format repair path for invalid output. Retries can repeat tool
 side effects, so recheck artifacts and make consequential operations idempotent.
 
-`:max-requests` counts runner driver dispatch attempts;
-additional open-discussion turns reenter dispatch and consume request budget.
-Internal tool-loop HTTP requests and explicit human-review feedback have
-separate accounting. Nested gptel-agent workers/discussions are internal to the
-outer call and are not separate runner calls or concurrency slots; see the
-[nested-work contract](runtime-integrations.md#gptel-agent-presets-and-nested-work).
-These counters are not complete provider-request or spending caps.
-`:max-calls` counts logical agent calls, including routed question/reply turns, fresh agent retries, and output repairs.
+With the standard gptel driver, `:max-requests` counts each runner-owned provider
+send attempt: initial sends, automatic tool rounds, discussion replies, explicit
+review feedback, and transport retries. Prompt preparation alone does not consume
+a request. The response at the limit can finish; attempting another send fails
+the call with a request-budget error. Successful tool rounds do not consume the
+transport retry allowance. Fake and custom drivers default to one request per
+driver-start invocation; see the [driver contract](runtime-integrations.md) when
+implementing a driver that performs multiple sends.
+
+Ordinary manual chat sends and independently managed gptel-agent child requests
+remain outside that counter. Nested agents/discussions also do not consume
+separate runner calls or concurrency slots; configure their own limits as
+described in the [nested-work contract](runtime-integrations.md#gptel-agent-presets-and-nested-work).
+Runner budgets are not complete spending caps. `:max-calls` counts logical agent
+calls, including routed question/reply turns, fresh agent retries, and output repairs.
 Duration measures active run time, including call gates but excluding whole-run
 pauses. Keep provider/tool limits separate when an actual spend cap is required.
 
