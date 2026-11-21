@@ -1987,7 +1987,8 @@ This is a better flymake, it has many features. That permits to better see the e
                :repo "rjprins/markdown-modern"
                :files ("lisp/*"))
     :config
-    (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-modern-mode)))
+    (add-to-list 'major-mode-remap-alist
+             '(markdown-mode . markdown-modern-mode)))
 #+end_src
 
 **** yasnippet
