@@ -2505,6 +2505,16 @@ My orchestration package that permits to create full agents pipeline
     )
 #+end_src
 
+
+My ui modifications to the gptel's chat buffers
+#+begin_src emacs-lisp
+(use-package gptel-ui
+  :after gptel
+  :straight (:host github :repo "SamuelVanie/gptel-ui" :files ("*"))
+  :config
+  (gptel-ui-global-mode 1))
+#+end_src
+
 Another gptel plugin
 That one is gptel-inline, which permits to interact with gptel as its name says it, it's really great.
 
