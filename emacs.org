@@ -1196,7 +1196,7 @@ Find the repository here : [[https://github.com/magnars/multiple-cursors.el][mul
     :straight t
     :config
     (setq solarized-use-more-italic t)
-    (load-theme 'solarized-dark-high-contrast t))
+    (load-theme 'solarized-flexoki-dark t))
   (use-package pierre-themes
     :straight (:host github :repo "shaneikennedy/pierre-themes.el" :files ("*.el")))
   (use-package foxglove-themes
@@ -1984,7 +1984,7 @@ This is a better flymake, it has many features. That permits to better see the e
     :straight (markdown-modern
                :type git
                :host github
-               :repo "rjprins/markdown-modern"
+               :repo "SamuelVanie/markdown-modern"
                :files ("lisp/*"))
     :config
     (add-to-list 'major-mode-remap-alist
@@ -2469,7 +2469,7 @@ Make gptel work as an agent
 #+begin_src emacs-lisp
   (use-package gptel-agent
     :after gptel
-    :straight (:host github :repo "SamuelVanie/gptel-agent" :branch "newdirection" :files ("*"))
+    :straight (:host github :repo "SamuelVanie/gptel-agent" :branch "master" :files ("*"))
     :config
     (gptel-agent-session-mode 1)
     (let ((dir (expand-file-name "agents/" user-emacs-directory)))
