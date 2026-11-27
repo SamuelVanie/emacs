@@ -1030,7 +1030,7 @@ Permit to expand region quickly, making it less painful to mark some region.
 #+end_src
 
 
-** Dirvish
+** Dired
 
 make emacs' dired mode better by adding some features on top of it.
 
@@ -1045,53 +1045,6 @@ make emacs' dired mode better by adding some features on top of it.
           (setq dired-use-ls-dired t
                 insert-directory-program gls
                 dired-listing-switches "-aBhl --group-directories-first")))))
-
-  (use-package dirvish
-    :straight t
-    :init
-    (dirvish-override-dired-mode)
-    :custom
-    (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
-     '(("h" "~/"                          "Home")
-       ("d" "~/Downloads/"                "Downloads")
-       ("m" "/mnt/"                       "Drives")
-       ("p" "~/projects/"		  "Projects")
-       ("s" "/ssh:my-remote-server"      "SSH server")
-       ("e" "/sudo:root@localhost:/etc"  "Modify program settings")
-       ("t" "~/.local/share/Trash/files/" "TrashCan")))
-    :config
-    ;; (dirvish-peek-mode)             ; Preview files in minibuffer
-    ;; (dirvish-side-follow-mode)      ; similar to `treemacs-follow-mode'
-    (setq dirvish-mode-line-format
-          '(:left (sort symlink) :right (omit yank index)))
-    (setq dirvish-attributes           ; The order *MATTERS* for some attributes
-          '(vc-state subtree-state nerd-icons collapse git-msg file-time file-size)
-          dirvish-side-attributes
-          '(vc-state nerd-icons collapse file-size))
-    ;; open large directory (over 20000 files) asynchronously with `fd' command
-    (setq dirvish-large-directory-threshold 20000)
-    :bind ; Bind `dirvish-fd|dirvish-side|dirvish-dwim' as you see fit
-    (("C-c f f" . dirvish-side)
-     ("C-c f d" . dirvish)
-     :map dirvish-mode-map               ; Dirvish inherits `dired-mode-map'
-     (";"   . dired-up-directory)        ; So you can adjust `dired' bindings here
-     ("?"   . dirvish-dispatch)          ; [?] a helpful cheatsheet
-     ("a"   . dirvish-setup-menu)        ; [a]ttributes settings:`t' toggles mtime, `f' toggles fullframe, etc.
-     ("f"   . dirvish-file-info-menu)    ; [f]ile info
-     ("o"   . dirvish-quick-access)      ; [o]pen `dirvish-quick-access-entries'
-     ("s"   . dirvish-quicksort)         ; [s]ort flie list
-     ("r"   . dirvish-history-jump)      ; [r]ecent visited
-     ("l"   . dirvish-ls-switches-menu)  ; [l]s command flags
-     ("v"   . dirvish-vc-menu)           ; [v]ersion control commands
-     ("*"   . dirvish-mark-menu)
-     ("y"   . dirvish-yank-menu)
-     ("N"   . dirvish-narrow)
-     ("q"   . dirvish-quit)
-     ("TAB" . dirvish-subtree-toggle)
-     ("M-f" . dirvish-history-go-forward)
-     ("M-b" . dirvish-history-go-backward)
-     ("M-e" . dirvish-emerge-menu)))
-
 #+end_src
 
 
@@ -1958,6 +1911,139 @@ A tool that manages multiple versions of the same package.
     :straight (:type git :host github :repo "SamuelVanie/gmise" :files ("*.el")))
 #+end_src
 
+
+** lsp-mode
+
+Best lsp client in emacs.
+To register a new one over tcp :
+
+#+begin_example
+(lsp-register-client
+(make-lsp-client
+ :new-connection
+ (lsp-tcp-connection
+  (lambda (port)
+    `("cobol-language-support" "--port" ,(number-to-string port))))
+ :priority 5
+ :activation-fn (lsp-activate-on "cobol")
+ :major-modes '(cobol-ts-mode cobol-mode)
+ :server-id 'cobol-lsp))
+#+end_example
+
+over stdio is simpler, just use (lsp-stdio-connection "name_of_server") or (lsp-stdio-connection '("name_of_server" "args1" ...))
+
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :straight t
+    :commands (lsp lsp-deferred)
+    :config
+    (lsp-enable-which-key-integration t)
+    (setq lsp-ui-doc-show-with-mouse nil)
+    (setq lsp-headerline-breadcrumb-enable nil)
+    (setq lsp-enable-suggest-server-download nil)
+    (setq lsp-enable-dap-auto-configure nil)
+    (general-define-key
+     :keymaps 'meow-normal-state-keymap
+     :prefix "`"
+     "r" #'xref-find-references-and-replace
+     "e" #'display-local-help
+     "o" #'xref-find-definitions-other-window)
+    (general-define-key
+     :keymaps 'meow-normal-state-keymap
+     :prefix "h"
+     "h" #'lsp-ui-doc-toggle
+     "q" #'lsp-ui-doc-hide
+     "a" #'lsp-execute-code-action
+     "f" #'lsp-ui-doc-focus-frame
+     "u" #'lsp-ui-doc-unfocus-frame
+     "d" #'lsp-ui-peek-find-definitions
+     "s" #'lsp-ui-peek-find-workspace-symbol
+     "e" #'lsp-ui-flycheck-list
+     "r" #'lsp-ui-peek-find-references
+     "i" #'lsp-ui-peek-find-implementation))
+
+  (use-package lsp-ui
+    :straight t
+    :after lsp
+    :commands lsp-ui-mode
+    :hook (lsp-mode . lsp-ui-mode))
+
+  (setq treesit-font-lock-level 4)
+#+end_src
+
+
+Dap-mode, work better with lsp-mode.
+
+Example of configuration
+
+#+begin_example
+(with-eval-after-load 'dap-mode
+                     (dap-register-debug-provider
+                      "pwa-node"
+                      (lambda (conf)
+                        (let ((port (dap--find-available-port)))
+                          (append conf
+                                  (list :host "127.0.0.1"
+                                        :debugServer port
+                                        :program-to-start
+                                        (format "%s %d 127.0.0.1"
+                                                (shell-quote-argument "js-debug")
+                                                port))))))
+                     
+                     (dap-register-debug-template
+                      "Debug presori-backend"
+                      (list :type "pwa-node"
+                            :request "launch"
+                            :name "Debug presori-backend"
+                            :runtimeExecutable "node"
+                            :runtimeArgs ["--import" "tsx"]
+                            :program "backend/src/index.ts"
+                            :cwd "/Users/s.vanie/projects/presori/"
+                            :sourceMaps t
+                            :autoAttachChildProcesses t
+                            :resolveSourceMapLocations ["**" "!**/node_modules/**"]))
+                     
+                     )
+#+end_example
+
+#+begin_src emacs-lisp
+  (use-package dap-mode
+    :straight t
+    :after general
+    :custom
+    (dap-auto-configure-features '(sessions locals tooltip))
+    :config
+    (defun smv/dap-focus-stopped-session (session)
+      "Make SESSION current when it stops."
+      (unless (eq session (dap--cur-session))
+        (dap--switch-to-session session)))
+
+    (with-eval-after-load 'dap-mode
+      (add-hook 'dap-stopped-hook
+                #'smv/dap-focus-stopped-session))
+
+    (advice-add 'dap--initialize-message
+                :filter-return
+                (lambda (message)
+                  (plist-put
+                   message
+                   :arguments
+                   (plist-put (plist-get message :arguments)
+                              :supportsStartDebuggingRequest t))))
+    
+    (dap-mode 1)
+    (dap-ui-mode 1)
+    (require 'dap-tasks))
+
+  (with-eval-after-load 'dap-mode
+    (general-define-key
+     :keymaps 'meow-normal-state-keymap
+     :prefix "%"
+     "d" #'dap-hydra))
+#+end_src
+
+
+
 ** Languages
 
 *** IDE Features
@@ -2048,15 +2134,21 @@ Mode for yaml configuration files editing.
 #+end_src
 
 
+
+
 *** Java
 
 Installing this permits to automatically detects and load packages from the maven file
 
 #+begin_src emacs-lisp
+  (use-package lsp-java
+    :straight t
+    :after lsp-mode)
+
   (use-package jal
     :straight t
     :config
-    (jal-eglot-java-mode 1))
+    (jal-lsp-java-mode 1))
 #+end_src
 
 *** Web Programming
